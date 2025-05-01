@@ -48,8 +48,8 @@ if [ -f $KMOD_SRC ]; then
 fi
 
 # add init script
-cp ../../../overlays/shared/init rootfs/init
-chmod +x rootfs/init
+cp ../../../overlays/shared/init init
+chmod +x init
 
 
 # Create initramfs image
