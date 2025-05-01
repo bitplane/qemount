@@ -1,6 +1,5 @@
-# Rootless QEMU MicroVM Makefile
-
 ARCH := x86_64
+FS := iso9660
 KERNEL_VERSION := 6.11
 BUSYBOX_VERSION := 1.36.1
 
@@ -9,62 +8,67 @@ KERNEL_DIR := $(BUILD_DIR)/linux
 KERNEL_SRC := $(KERNEL_DIR)/linux-$(KERNEL_VERSION)
 KERNEL_IMAGE := $(KERNEL_SRC)/arch/$(ARCH)/boot/bzImage
 
-INITRAMFS_DIR := $(BUILD_DIR)/initramfs
-INITRAMFS_IMAGE := $(INITRAMFS_DIR)/initramfs.cpio.gz
+INITRAMFS_DIR := $(BUILD_DIR)/initramfs/$(ARCH)/$(FS)
+BUSYBOX_SRC := $(INITRAMFS_DIR)/busybox-$(BUSYBOX_VERSION)
+BUSYBOX_TARBALL := $(INITRAMFS_DIR)/busybox-$(BUSYBOX_VERSION).tar.bz2
+BUSYBOX_INSTALL := $(BUSYBOX_SRC)/_install
 
-ISO_DIR := $(BUILD_DIR)/fs/iso9660
-ISO_IMAGE := $(ISO_DIR)/rootfs.iso
-ISO_DATA := overlays/iso9660/data
+INITRAMFS_IMAGE := $(INITRAMFS_DIR)/initramfs.cpio.gz
+ROOTFS_DIR := $(INITRAMFS_DIR)/rootfs
 
 OVERLAY_DIR := overlays
-
-CONFIG_INITRAMFS_PATH := config/initramfs/$(ARCH)/busybox.config
+SHARED_OVERLAY := $(wildcard $(OVERLAY_DIR)/shared/*)
+FS_OVERLAY := $(wildcard $(OVERLAY_DIR)/$(FS)/*)
+CONFIG_INITRAMFS_PATH := config/initramfs/$(ARCH)/$(FS)/busybox.config
 CONFIG_KERNEL_PATH := config/kernel/$(ARCH)/minimal.config
 
-.PHONY: all run clean config config-initramfs config-kernel
+ISO_DIR := $(BUILD_DIR)/fs/$(FS)
+ISO_IMAGE := $(ISO_DIR)/rootfs.iso
+ISO_DATA := $(OVERLAY_DIR)/$(FS)/data
+
+BUSYBOX_BUILD_STAMP := $(INITRAMFS_DIR)/.busybox-built
+INITRAMFS_BUILD_STAMP := $(INITRAMFS_DIR)/.initramfs-built
+
+.PHONY: all clean run config config-initramfs config-kernel
 
 all: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
 $(KERNEL_IMAGE): $(CONFIG_KERNEL_PATH) scripts/build-kernel.sh
 	@echo "==> Building Linux kernel $(KERNEL_VERSION) for $(ARCH)..."
-	@bash scripts/build-kernel.sh $(KERNEL_VERSION) $(ARCH) $(KERNEL_DIR) $(KERNEL_IMAGE)
+	bash scripts/build-kernel.sh $(KERNEL_VERSION) $(ARCH) $(KERNEL_DIR) $(KERNEL_IMAGE)
 
-$(INITRAMFS_IMAGE): $(KERNEL_IMAGE) $(wildcard $(OVERLAY_DIR)/shared/*) $(CONFIG_INITRAMFS_PATH)
+$(BUSYBOX_TARBALL):
+	mkdir -p $(INITRAMFS_DIR)
+	wget -O $@ "https://busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2"
+
+$(BUSYBOX_INSTALL): $(BUSYBOX_TARBALL) $(CONFIG_INITRAMFS_PATH)
+	@echo "==> Building BusyBox..."
+	bash scripts/build-busybox.sh $(BUSYBOX_VERSION) $(ARCH) $(CONFIG_INITRAMFS_PATH) $(BUSYBOX_SRC)
+	touch $(BUSYBOX_BUILD_STAMP)
+
+$(INITRAMFS_IMAGE): $(INITRAMFS_BUILD_STAMP)
+	cp $(INITRAMFS_DIR)/rootfs.cpio.gz $@
+
+$(INITRAMFS_BUILD_STAMP): $(BUSYBOX_INSTALL) $(SHARED_OVERLAY) $(FS_OVERLAY) scripts/build-initramfs.sh
 	@echo "==> Building initramfs..."
-	@bash scripts/build-initramfs.sh $(BUSYBOX_VERSION) $(KERNEL_VERSION) $(INITRAMFS_IMAGE)
+	bash scripts/build-initramfs.sh $(ARCH) $(BUSYBOX_VERSION) $(KERNEL_VERSION) $(INITRAMFS_IMAGE)
+	touch $@
 
-$(ISO_IMAGE): $(wildcard $(OVERLAY_DIR)/iso9660/data/*)
+$(ISO_IMAGE): $(wildcard $(ISO_DATA)/*) scripts/build-iso.sh
 	@echo "==> Building ISO image..."
-	@bash scripts/build-iso.sh $(ARCH) $(ISO_DATA) $(ISO_IMAGE)
+	bash scripts/build-iso.sh $(ARCH) $(ISO_DATA) $(ISO_IMAGE)
 
 run: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 	@echo "==> Running QEMU..."
-	@bash scripts/run-qemu.sh $(ARCH) $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
-
-clean:
-	@echo "==> Cleaning build output..."
-	rm -rf $(BUILD_DIR)
+	bash scripts/run-qemu.sh $(ARCH) $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
 config: config-initramfs config-kernel
 
-config-initramfs:
-	@echo "Creating BusyBox config for $(ARCH)..."
-	@mkdir -p $(dir $(CONFIG_INITRAMFS_PATH))
-	@if [ ! -f "$(CONFIG_INITRAMFS_PATH)" ]; then \
-		tar -xf build/initramfs/busybox-$(BUSYBOX_VERSION).tar.bz2 -C build/initramfs; \
-		cd build/initramfs/busybox-$(BUSYBOX_VERSION) >/dev/null; \
-		make defconfig; \
-		cp .config "$$OLDPWD/$(CONFIG_INITRAMFS_PATH)"; \
-	else \
-		echo "$(CONFIG_INITRAMFS_PATH) already exists."; \
-	fi
+$(CONFIG_INITRAMFS_PATH):
+	bash scripts/gen-busybox-config.sh $(ARCH) $(FS) $(BUSYBOX_VERSION)
 
-config-kernel:
-	@echo "Creating minimal kernel config for $(ARCH)..."
-	@mkdir -p $(dir $(CONFIG_KERNEL_PATH))
-	@if [ ! -f "$(CONFIG_KERNEL_PATH)" ]; then \
-		echo "Please create a kernel config manually at $(CONFIG_KERNEL_PATH)"; \
-		exit 1; \
-	else \
-		echo "$(CONFIG_KERNEL_PATH) already exists."; \
-	fi
+$(CONFIG_KERNEL_PATH):
+	bash scripts/gen-kernel-config.sh $(ARCH)
+
+clean:
+	rm -rf $(BUILD_DIR)
