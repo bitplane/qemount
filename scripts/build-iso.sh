@@ -1,11 +1,12 @@
 #!/bin/bash
-set -eux
+set -euxo pipefail
 
 ARCH=$1
 DATA_DIR=$2
 ISO_IMAGE=$3
 
-mkdir -p "$(dirname "$ISO_IMAGE")"
+ISO_DIR=$(dirname "$ISO_IMAGE")
+mkdir -p "$ISO_DIR"
 
 # Use dummy data if none provided
 if [ ! -d "$DATA_DIR" ]; then
@@ -13,5 +14,5 @@ if [ ! -d "$DATA_DIR" ]; then
   echo "Hello from afuse99p" > "$DATA_DIR/hello.txt"
 fi
 
-genisoimage -quiet -o "$ISO_IMAGE" -R "$DATA_DIR"
+genisoimage -quiet -R -o "$ISO_IMAGE" "$DATA_DIR"
 echo "ISO created at $ISO_IMAGE"

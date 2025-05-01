@@ -6,52 +6,64 @@ KERNEL_VERSION=${KERNEL_VERSION:-6.5}
 BUSYBOX_VERSION=${BUSYBOX_VERSION:-1.36.1}
 INITRAMFS_IMAGE=${INITRAMFS_IMAGE:-build/initramfs/initramfs.cpio.gz}
 
-INITRAMFS_DIR=$(dirname "$INITRAMFS_IMAGE" | sed 's/\.cpio\.gz$//')/rootfs
-mkdir -p "$INITRAMFS_DIR"
-cd build/initramfs
+INITRAMFS_DIR=$(dirname "$INITRAMFS_IMAGE")
+ROOTFS_DIR="$INITRAMFS_DIR/rootfs"
+BUSYBOX_TARBALL="build/initramfs/busybox-$BUSYBOX_VERSION.tar.bz2"
+BUSYBOX_SRC="build/initramfs/busybox-$BUSYBOX_VERSION"
+CONFIG_PATH="config/initramfs/$ARCH/busybox.config"
+
+mkdir -p "$ROOTFS_DIR"
 
 # Download BusyBox
-if [ ! -f busybox-$BUSYBOX_VERSION.tar.bz2 ]; then
-    wget https://busybox.net/downloads/busybox-$BUSYBOX_VERSION.tar.bz2
+if [ ! -f "$BUSYBOX_TARBALL" ]; then
+    wget -O "$BUSYBOX_TARBALL" "https://busybox.net/downloads/busybox-$BUSYBOX_VERSION.tar.bz2"
 fi
-if [ ! -d busybox-$BUSYBOX_VERSION ]; then
-    tar xf busybox-$BUSYBOX_VERSION.tar.bz2
-fi
-cd busybox-$BUSYBOX_VERSION
 
-# Configure BusyBox
-CONFIG_PATH="../../../config/initramfs/$ARCH/busybox.config"
-if [ -f "$CONFIG_PATH" ]; then
-    echo "Using saved BusyBox config for $ARCH"
-    cp "$CONFIG_PATH" .config
-else
-    echo "No config found, generating with defconfig..."
-    make defconfig
-    mkdir -p "$(dirname "$CONFIG_PATH")"
-    cp .config "$CONFIG_PATH"
+# Extract and build BusyBox
+if [ ! -d "$BUSYBOX_SRC" ]; then
+    tar -xf "$BUSYBOX_TARBALL" -C "$(dirname "$BUSYBOX_SRC")"
 fi
+
+# Enter BusyBox source directory
+pushd "$BUSYBOX_SRC"  # Now in BusyBox source dir
+make distclean || true
+
+# Validate and copy BusyBox config
+CONFIG_PATH=$(realpath "$OLDPWD/$CONFIG_PATH")
+if [ ! -f "$CONFIG_PATH" ]; then
+    echo "ERROR: BusyBox config not found at $CONFIG_PATH" >&2
+    exit 1
+fi
+cp "$CONFIG_PATH" .config
 
 make -j"$(nproc)"
-make CONFIG_PREFIX="$PWD/../rootfs" install
+make CONFIG_PREFIX="$PWD/_install" install
+popd  # Back from BusyBox source dir
 
-cd ../rootfs
-mkdir -p etc dev proc sys tmp
-chmod 1777 tmp
+# Copy rootfs contents
+cp -a "$BUSYBOX_SRC/_install/." "$ROOTFS_DIR/"
+mkdir -p "$ROOTFS_DIR"/etc "$ROOTFS_DIR"/dev "$ROOTFS_DIR"/proc "$ROOTFS_DIR"/sys "$ROOTFS_DIR"/tmp
+chmod 1777 "$ROOTFS_DIR/tmp"
 
 # Add kernel module if available
-KMOD_SRC=../../linux-${KERNEL_VERSION}/fs/isofs/isofs.ko
+KMOD_SRC="build/linux/linux-${KERNEL_VERSION}/fs/isofs/isofs.ko"
 if [ -f "$KMOD_SRC" ]; then
-    mkdir -p lib/modules/$KERNEL_VERSION/kernel/fs/isofs
-    cp "$KMOD_SRC" lib/modules/$KERNEL_VERSION/kernel/fs/isofs/
+    mkdir -p "$ROOTFS_DIR/lib/modules/$KERNEL_VERSION/kernel/fs/isofs"
+    cp "$KMOD_SRC" "$ROOTFS_DIR/lib/modules/$KERNEL_VERSION/kernel/fs/isofs/"
 fi
 
 # Copy init script
-cp ../../../overlays/shared/init init
-chmod +x init
+cp overlays/shared/init "$ROOTFS_DIR/init"
+chmod +x "$ROOTFS_DIR/init"
 
 # Generate initramfs
-cd ..
-find rootfs | cpio -o --format=newc > "${INITRAMFS_IMAGE%.gz}"
-gzip -f "${INITRAMFS_IMAGE%.gz}"
+OUTFILE="${INITRAMFS_IMAGE%.gz}"
+mkdir -p "$(dirname "$OUTFILE")"
+
+pushd "$ROOTFS_DIR"  # Now in rootfs directory
+find . | cpio -o --format=newc > "$OLDPWD/$OUTFILE"
+popd  # Back from rootfs directory
+
+gzip -f "$OUTFILE"
 
 echo "Initramfs build complete: $INITRAMFS_IMAGE"

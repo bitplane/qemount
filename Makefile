@@ -16,15 +16,18 @@ ISO_DIR := $(BUILD_DIR)/fs/iso9660
 ISO_IMAGE := $(ISO_DIR)/rootfs.iso
 ISO_DATA := overlays/iso9660/data
 
-.PHONY: all run clean
+CONFIG_INITRAMFS_PATH := config/initramfs/$(ARCH)/busybox.config
+CONFIG_KERNEL_PATH := config/kernel/$(ARCH)/minimal.config
+
+.PHONY: all run clean config config-initramfs config-kernel
 
 all: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
-$(KERNEL_IMAGE):
+$(KERNEL_IMAGE): $(CONFIG_KERNEL_PATH)
 	@echo "==> Building Linux kernel $(KERNEL_VERSION) for $(ARCH)..."
 	@bash scripts/build-kernel.sh $(KERNEL_VERSION) $(ARCH) $(KERNEL_DIR) $(KERNEL_IMAGE)
 
-$(INITRAMFS_IMAGE): $(KERNEL_IMAGE)
+$(INITRAMFS_IMAGE): $(KERNEL_IMAGE) $(CONFIG_INITRAMFS_PATH)
 	@echo "==> Building initramfs with BusyBox $(BUSYBOX_VERSION)..."
 	@bash scripts/build-initramfs.sh $(BUSYBOX_VERSION) $(KERNEL_VERSION) $(INITRAMFS_IMAGE)
 
@@ -39,3 +42,28 @@ run: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 clean:
 	@echo "==> Cleaning build output..."
 	rm -rf $(BUILD_DIR)
+
+config: config-initramfs config-kernel
+
+config-initramfs:
+	@echo "Creating BusyBox config for $(ARCH)..."
+	@mkdir -p $(dir $(CONFIG_INITRAMFS_PATH))
+	@if [ ! -f "$(CONFIG_INITRAMFS_PATH)" ]; then \
+		tar -xf build/initramfs/busybox-$(BUSYBOX_VERSION).tar.bz2 -C build/initramfs; \
+		pushd build/initramfs/busybox-$(BUSYBOX_VERSION) >/dev/null; \
+		make defconfig; \
+		cp .config "$$OLDPWD/$(CONFIG_INITRAMFS_PATH)"; \
+		popd >/dev/null; \
+	else \
+		echo "$(CONFIG_INITRAMFS_PATH) already exists."; \
+	fi
+
+config-kernel:
+	@echo "Creating minimal kernel config for $(ARCH)..."
+	@mkdir -p $(dir $(CONFIG_KERNEL_PATH))
+	@if [ ! -f "$(CONFIG_KERNEL_PATH)" ]; then \
+		echo "Please create a kernel config manually at $(CONFIG_KERNEL_PATH)"; \
+		exit 1; \
+	else \
+		echo "$(CONFIG_KERNEL_PATH) already exists."; \
+	fi
