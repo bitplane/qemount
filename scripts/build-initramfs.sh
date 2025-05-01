@@ -20,8 +20,17 @@ if [ ! -d busybox-$BUSYBOX_VERSION ]; then
 fi
 cd busybox-$BUSYBOX_VERSION
 
-# Configure minimal BusyBox
-cp ../../../config/initramfs/$ARCH/busybox.config .config
+# Configure BusyBox
+CONFIG_PATH="../../../config/initramfs/$ARCH/busybox.config"
+if [ -f "$CONFIG_PATH" ]; then
+    echo "Using saved BusyBox config for $ARCH"
+    cp "$CONFIG_PATH" .config
+else
+    echo "No config found, generating with defconfig..."
+    make defconfig
+    mkdir -p "../../../config/initramfs/$ARCH"
+    cp .config "$CONFIG_PATH"
+fi
 
 # Build and install BusyBox
 make -j$(nproc)
@@ -37,6 +46,11 @@ if [ -f $KMOD_SRC ]; then
     mkdir -p lib/modules/$KERNEL_VERSION/kernel/fs/isofs
     cp $KMOD_SRC lib/modules/$KERNEL_VERSION/kernel/fs/isofs/
 fi
+
+# add init script
+cp ../../../overlays/shared/init rootfs/init
+chmod +x rootfs/init
+
 
 # Create initramfs image
 cd ..
