@@ -1,16 +1,20 @@
 #!/bin/sh
+set -x
+echo "INIT STARTED" > /dev/console
+exec sleep 99999
+
 
 mount -t proc none /proc
 mount -t sysfs none /sys
 
 # Try to load the ISO9660 module if it exists
-if [ -f /lib/modules/*/kernel/fs/isofs/isofs.ko ]; then
-    insmod /lib/modules/*/kernel/fs/isofs/isofs.ko || echo "Failed to load isofs.ko"
-fi
+#if [ -f /lib/modules/*/kernel/fs/isofs/isofs.ko ]; then
+#    insmod /lib/modules/*/kernel/fs/isofs/isofs.ko || echo "Failed to load isofs.ko"
+#fi
 
 # Try to mount the CD-ROM to /mnt
-mkdir -p /mnt
-mount -t iso9660 /dev/sr0 /mnt || echo "Failed to mount /dev/sr0"
+#mkdir -p /mnt
+#mount -t iso9660 /dev/sr0 /mnt || echo "Failed to mount /dev/sr0"
 
-echo "Boot complete. Dropping to shell."
-exec sh
+#echo "Boot complete. Dropping to shell."
+exec sh -c 'sleep infinity'

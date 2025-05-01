@@ -1,7 +1,7 @@
 # Rootless QEMU MicroVM Makefile
 
 ARCH := x86_64
-KERNEL_VERSION := 6.5
+KERNEL_VERSION := 6.11
 BUSYBOX_VERSION := 1.36.1
 
 BUILD_DIR := build
@@ -16,6 +16,8 @@ ISO_DIR := $(BUILD_DIR)/fs/iso9660
 ISO_IMAGE := $(ISO_DIR)/rootfs.iso
 ISO_DATA := overlays/iso9660/data
 
+OVERLAY_DIR := overlays
+
 CONFIG_INITRAMFS_PATH := config/initramfs/$(ARCH)/busybox.config
 CONFIG_KERNEL_PATH := config/kernel/$(ARCH)/minimal.config
 
@@ -23,15 +25,17 @@ CONFIG_KERNEL_PATH := config/kernel/$(ARCH)/minimal.config
 
 all: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
-$(KERNEL_IMAGE): $(CONFIG_KERNEL_PATH)
+$(KERNEL_IMAGE): $(CONFIG_KERNEL_PATH) scripts/build-kernel.sh
 	@echo "==> Building Linux kernel $(KERNEL_VERSION) for $(ARCH)..."
 	@bash scripts/build-kernel.sh $(KERNEL_VERSION) $(ARCH) $(KERNEL_DIR) $(KERNEL_IMAGE)
 
-$(INITRAMFS_IMAGE): $(KERNEL_IMAGE) $(CONFIG_INITRAMFS_PATH)
-	@echo "==> Building initramfs with BusyBox $(BUSYBOX_VERSION)..."
+
+
+$(INITRAMFS_IMAGE): $(KERNEL_IMAGE) $(wildcard $(OVERLAY_DIR)/shared/*) $(CONFIG_INITRAMFS_PATH)
+	@echo "==> Building initramfs..."
 	@bash scripts/build-initramfs.sh $(BUSYBOX_VERSION) $(KERNEL_VERSION) $(INITRAMFS_IMAGE)
 
-$(ISO_IMAGE):
+$(ISO_IMAGE): $(wildcard $(OVERLAY_DIR)/iso9660/data/*)
 	@echo "==> Building ISO image..."
 	@bash scripts/build-iso.sh $(ARCH) $(ISO_DATA) $(ISO_IMAGE)
 
@@ -50,10 +54,9 @@ config-initramfs:
 	@mkdir -p $(dir $(CONFIG_INITRAMFS_PATH))
 	@if [ ! -f "$(CONFIG_INITRAMFS_PATH)" ]; then \
 		tar -xf build/initramfs/busybox-$(BUSYBOX_VERSION).tar.bz2 -C build/initramfs; \
-		pushd build/initramfs/busybox-$(BUSYBOX_VERSION) >/dev/null; \
+		cd build/initramfs/busybox-$(BUSYBOX_VERSION) >/dev/null; \
 		make defconfig; \
 		cp .config "$$OLDPWD/$(CONFIG_INITRAMFS_PATH)"; \
-		popd >/dev/null; \
 	else \
 		echo "$(CONFIG_INITRAMFS_PATH) already exists."; \
 	fi
