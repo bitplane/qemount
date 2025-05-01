@@ -13,16 +13,13 @@ This file lists steps required to complete and flesh out the rootless microVM Po
 - Canonical initramfs output path fixed (`build/initramfs/initramfs.cpio.gz`)
 - All build paths now controlled via Makefile; scripts accept variables as arguments or env
 - All build scripts (kernel, initramfs, ISO, run) are now Makefile-driven and path-correct
-
-## 🐛 Bugs
-- **`init`** can't be found (file not found error) even when using /bin/ls
+- Fixed Bug: building dynamically linked busybox causes file not found and spinlock
 
 ## 🔜 Next Steps
+* **Prove concept 1**: mount a block device or file that's passed in to the run script.
+* **Prove concept 2**: prove we can pass this back out as a filesystem, via either 9p or nbd (using a socket in tmpdir)
 - **`init` script variants**: Add support for per-filesystem `init` overrides (e.g. `overlays/ext4/init`, etc.)
-- **QEMU serial interaction**: Add kernel logging to serial and optional shell prompt (`exec sh`) fallback
-- **Test script**: Add a quick test target to `Makefile` that boots QEMU, checks for `/mnt/hello.txt`, and exits
-- **Dropbear integration (optional)**: Include small SSH server for VM access (forward port 2222)
-- **Support virtio-9p (optional)**: Mount a host directory via 9p for read/write filesystem testing
+* **client script variants**: For each filesystem, have a mount script.
 - **Cross-arch support**: Generalize paths/configs for aarch64 and add ARCH-aware config selection
 - **Packaging and cleanup**:
   - Add `make clean` steps for ISO, initramfs, and kernel artifacts
