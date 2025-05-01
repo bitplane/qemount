@@ -5,7 +5,7 @@ ARCH=$1
 KERNEL_VERSION=6.5
 
 KERNEL_IMAGE=build/linux/linux-${KERNEL_VERSION}/arch/${ARCH}/boot/bzImage
-INITRD=build/initramfs/initramfs.cpio.gz
+INITRD=build/initramfs.cpio.gz
 FS_ISO=build/fs/iso9660/rootfs.iso
 
 if [ ! -f "$KERNEL_IMAGE" ]; then
