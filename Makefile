@@ -4,7 +4,7 @@ ARCH := x86_64
 KERNEL_VERSION := 6.5
 BUSYBOX_VERSION := 1.36.1
 
-KERNEL_IMAGE := build/linux-$(KERNEL_VERSION)/arch/$(ARCH)/boot/bzImage
+KERNEL_IMAGE := build/linux/linux-$(KERNEL_VERSION)/arch/$(ARCH)/boot/bzImage
 INITRAMFS_IMAGE := build/initramfs/initramfs.cpio.gz
 ISO_DIR := build/fs/iso9660
 ISO_IMAGE := $(ISO_DIR)/rootfs.iso

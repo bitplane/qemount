@@ -1,22 +1,33 @@
 #!/bin/bash
 
-# Placeholder script to run the QEMU microVM (rootless, no KVM)
+# Script to run the QEMU microVM (rootless, no KVM)
 ARCH=$1
+KERNEL_VERSION=6.5
 
-KERNEL_IMAGE=build/linux/arch/x86/boot/bzImage
+KERNEL_IMAGE=build/linux/linux-${KERNEL_VERSION}/arch/${ARCH}/boot/bzImage
 INITRD=build/initramfs/initramfs.cpio.gz
-# Example ISO filesystem (assuming it is built or placed at this path)
 FS_ISO=build/fs/iso9660/rootfs.iso
+
+if [ ! -f "$KERNEL_IMAGE" ]; then
+  echo "Error: kernel image not found: $KERNEL_IMAGE" >&2
+  exit 1
+fi
+if [ ! -f "$INITRD" ]; then
+  echo "Error: initramfs not found: $INITRD" >&2
+  exit 1
+fi
+if [ ! -f "$FS_ISO" ]; then
+  echo "Error: ISO image not found: $FS_ISO" >&2
+  exit 1
+fi
 
 echo "Starting QEMU in rootless mode..."
 
-# Basic QEMU command line for x86_64 with ISO9660 filesystem
-# Using user-mode networking and virtio devices
-qemu-system-x86_64 \
-    -kernel $KERNEL_IMAGE \
-    -initrd $INITRD \
+qemu-system-${ARCH} \
+    -kernel "$KERNEL_IMAGE" \
+    -initrd "$INITRD" \
     -append "console=ttyS0 root=/dev/ram0" \
-    -cdrom $FS_ISO \
+    -cdrom "$FS_ISO" \
     -device virtio-net,netdev=usernet \
     -netdev user,id=usernet,hostfwd=tcp::2222-:22 \
     -nographic

@@ -1,32 +1,28 @@
 # TODO: Implementation Steps
 
-This file lists steps required to complete and flesh out the rootless microVM PoC:
+This file lists steps required to complete and flesh out the rootless microVM PoC.
 
-- **Kernel Configuration**: Add needed kernel options for filesystem and virtio. For example, enable `CONFIG_ISO9660_FS`, `CONFIG_NET_9P`, and virtio drivers (network, block) in the kernel config, or ensure these are built as modules.
+## ✅ Completed
+- Kernel configuration with module support (e.g. `isofs.ko`)
+- Initramfs creation using BusyBox with minimal applets
+- Copying `init` script from shared overlay
+- ISO9660 image generation (`build-iso.sh`)
+- QEMU run script with version-aware paths and error handling
+- Basic Makefile targets: `build-kernel`, `build-initramfs`, `build-iso`, `run`
 
-- **Initramfs `init` Script**: Create an init script (e.g. `init` or `init.sh`) inside the initramfs that will run on boot. This should:
-  - Mount special filesystems (`/proc`, `/sys`).
-  - Insert necessary modules with `insmod` (e.g. iso9660.ko).
-  - Mount the ISO9660 filesystem (typically on `/mnt` or similar).
-  - Possibly start `dropbear` or another SSH server for access.
-  - Switch to a shell or continue to a login prompt.
+## 🔜 Next Steps
+- **`init` script variants**: Add support for per-filesystem `init` overrides (e.g. `overlays/ext4/init`, etc.)
+- **QEMU serial interaction**: Add kernel logging to serial and optional shell prompt (`exec sh`) fallback
+- **Test script**: Add a quick test target to `Makefile` that boots QEMU, checks for `/mnt/hello.txt`, and exits
+- **Dropbear integration (optional)**: Include small SSH server for VM access (forward port 2222)
+- **Support virtio-9p (optional)**: Mount a host directory via 9p for read/write filesystem testing
+- **Cross-arch support**: Generalize paths/configs for aarch64 and add ARCH-aware config selection
+- **Packaging and cleanup**:
+  - Add `make clean` steps for ISO, initramfs, and kernel artifacts
+  - Create a `make dist` or `make image` target to bundle artifacts for sharing
 
-- **ISO Image Creation**: Build or generate the ISO9660 image (`build/fs/iso9660/rootfs.iso`) containing some test data or rootfs. This could use tools like `genisoimage`/`mkisofs` or scripts (e.g. using Buildroot or Alpine to create a minimal filesystem). The Makefile or scripts should have a target to build this image.
-
-- **Dynamic Modules in initramfs**: Ensure that any module dependencies are handled. Since we load modules manually, we might need to include dependencies in the initramfs or use insmod in the correct order. Alternatively, include a minimal `modules.dep`.
-
-- **Networking**: Verify that networking (virtio-net with usermode net) works as intended. Configure `dropbear` keys and enable port forwarding so that SSH (port 22 in guest) is accessible on host (port 2222).
-
-- **Cross-Platform Support**: Extend to other architectures (e.g. `aarch64`) by parameterizing `ARCH` and adding configuration. For each arch, cross-compile the kernel or use appropriate toolchains.
-
-- **Size and Performance Optimizations**: Optimize the initramfs size by removing unnecessary files. Optionally, use compression or multistage init to reduce footprint. Evaluate performance of reverse-SSHFS vs. virtio-9p and document trade-offs.
-
-- **Cleanup and Packaging**: Implement cleanup targets (e.g. `make clean`) and possibly packaging of final artifacts (e.g. creating a bootable ISO with kernel+initrd). Document usage of the scripts and possible customization.
-
-- **Testing**: Create automated tests or step-by-step instructions to verify that:
-  - Kernel boots and loads initramfs correctly.
-  - ISO9660 mounts and content is accessible in the guest.
-  - SSH access (dropbear) works over the forwarded port.
-  - Rootless (non-root) invocation of QEMU succeeds.
-
-Use these TODO items to guide the final implementation of the system.
+## 💡 Exploratory Ideas
+- Add overlay hooks per filesystem type (e.g. preload modules, preload data)
+- Rootless socket mount helpers (e.g. launch per-mount microVMs via Unix socket triggers)
+- Automate detection of host filesystems and inject drivers dynamically
+- Shell wrapper or CLI frontend (e.g. `afuse99p mount.iso`) that launches a microVM transparently

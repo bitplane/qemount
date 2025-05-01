@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# Script to run the QEMU microVM (rootless, no KVM)
-ARCH=$1
-KERNEL_VERSION=6.5
+# Script to build a minimal ISO9660 image for QEMU guest
+set -eux
 
-KERNEL_IMAGE=build/linux-${KERNEL_VERSION}/arch/${ARCH}/boot/bzImage
-INITRD=build/initramfs/initramfs.cpio.gz
-FS_ISO=build/fs/iso9660/rootfs.iso
+ARCH=${ARCH:-x86_64}
+ISO_DIR=build/fs/iso9660
+DATA_DIR=overlays/iso9660/data
+ISO_OUT=$ISO_DIR/rootfs.iso
 
-echo "Starting QEMU in rootless mode..."
+mkdir -p "$ISO_DIR"
 
-qemu-system-${ARCH} \
-    -kernel $KERNEL_IMAGE \
-    -initrd $INITRD \
-    -append "console=ttyS0 root=/dev/ram0" \
-    -cdrom $FS_ISO \
-    -device virtio-net,netdev=usernet \
-    -netdev user,id=usernet,hostfwd=tcp::2222-:22 \
-    -nographic
+# Use dummy data if none provided
+if [ ! -d "$DATA_DIR" ]; then
+  mkdir -p "$DATA_DIR"
+  echo "Hello from afuse99p" > "$DATA_DIR/hello.txt"
+fi
 
-echo "QEMU exited"
+# Create ISO image
+genisoimage -quiet -o "$ISO_OUT" -R "$DATA_DIR"
+echo "ISO created at $ISO_OUT"
