@@ -1,14 +1,13 @@
 #!/bin/bash
-ARCH=${ARCH:-x86_64}
-
-# Script to build an initramfs cpio with BusyBox and kernel modules
-BUSYBOX_VERSION=$1
-KERNEL_VERSION=$2
-
 set -eux
 
-INITRAMFS_DIR=build/initramfs/rootfs
-mkdir -p $INITRAMFS_DIR
+ARCH=${ARCH:-x86_64}
+KERNEL_VERSION=${KERNEL_VERSION:-6.5}
+BUSYBOX_VERSION=${BUSYBOX_VERSION:-1.36.1}
+INITRAMFS_IMAGE=${INITRAMFS_IMAGE:-build/initramfs/initramfs.cpio.gz}
+
+INITRAMFS_DIR=$(dirname "$INITRAMFS_IMAGE" | sed 's/\.cpio\.gz$//')/rootfs
+mkdir -p "$INITRAMFS_DIR"
 cd build/initramfs
 
 # Download BusyBox
@@ -28,33 +27,31 @@ if [ -f "$CONFIG_PATH" ]; then
 else
     echo "No config found, generating with defconfig..."
     make defconfig
-    mkdir -p "../../../config/initramfs/$ARCH"
+    mkdir -p "$(dirname "$CONFIG_PATH")"
     cp .config "$CONFIG_PATH"
 fi
 
-# Build and install BusyBox
-make -j$(nproc)
-make CONFIG_PREFIX=$PWD/../rootfs install
+make -j"$(nproc)"
+make CONFIG_PREFIX="$PWD/../rootfs" install
 
 cd ../rootfs
 mkdir -p etc dev proc sys tmp
 chmod 1777 tmp
 
-# Add kernel module if exists
+# Add kernel module if available
 KMOD_SRC=../../linux-${KERNEL_VERSION}/fs/isofs/isofs.ko
-if [ -f $KMOD_SRC ]; then
+if [ -f "$KMOD_SRC" ]; then
     mkdir -p lib/modules/$KERNEL_VERSION/kernel/fs/isofs
-    cp $KMOD_SRC lib/modules/$KERNEL_VERSION/kernel/fs/isofs/
+    cp "$KMOD_SRC" lib/modules/$KERNEL_VERSION/kernel/fs/isofs/
 fi
 
-# add init script
+# Copy init script
 cp ../../../overlays/shared/init init
 chmod +x init
 
-
-# Create initramfs image
+# Generate initramfs
 cd ..
-find rootfs | cpio -o --format=newc > ../initramfs.cpio
-gzip -f ../initramfs.cpio
+find rootfs | cpio -o --format=newc > "${INITRAMFS_IMAGE%.gz}"
+gzip -f "${INITRAMFS_IMAGE%.gz}"
 
-echo "Initramfs build complete: initramfs.cpio.gz"
+echo "Initramfs build complete: $INITRAMFS_IMAGE"

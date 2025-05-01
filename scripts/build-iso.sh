@@ -1,14 +1,11 @@
 #!/bin/bash
-
-# Script to build a minimal ISO9660 image for QEMU guest
 set -eux
 
-ARCH=${ARCH:-x86_64}
-ISO_DIR=build/fs/iso9660
-DATA_DIR=overlays/iso9660/data
-ISO_OUT=$ISO_DIR/rootfs.iso
+ARCH=$1
+DATA_DIR=$2
+ISO_IMAGE=$3
 
-mkdir -p "$ISO_DIR"
+mkdir -p "$(dirname "$ISO_IMAGE")"
 
 # Use dummy data if none provided
 if [ ! -d "$DATA_DIR" ]; then
@@ -16,6 +13,5 @@ if [ ! -d "$DATA_DIR" ]; then
   echo "Hello from afuse99p" > "$DATA_DIR/hello.txt"
 fi
 
-# Create ISO image
-genisoimage -quiet -o "$ISO_OUT" -R "$DATA_DIR"
-echo "ISO created at $ISO_OUT"
+genisoimage -quiet -o "$ISO_IMAGE" -R "$DATA_DIR"
+echo "ISO created at $ISO_IMAGE"

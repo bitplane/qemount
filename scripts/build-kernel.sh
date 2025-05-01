@@ -1,45 +1,29 @@
 #!/bin/bash
-
-# Placeholder script to download and build the Linux kernel
-KERNEL_VERSION=$1
-ARCH=$2
-
 set -eux
 
-BUILD_DIR=build/linux
-KERNEL_ARCHIVE=linux-${KERNEL_VERSION}.tar.xz
-KERNEL_SRC_DIR=linux-${KERNEL_VERSION}
+KERNEL_VERSION=$1
+ARCH=$2
+KERNEL_DIR=$3
+KERNEL_IMAGE=$4
 
-mkdir -p $BUILD_DIR
-cd $BUILD_DIR
+mkdir -p "$KERNEL_DIR"
+cd "$KERNEL_DIR"
 
-if [ ! -f $KERNEL_ARCHIVE ]; then
-    echo "Downloading Linux kernel source (v$KERNEL_VERSION)..."
-    wget https://cdn.kernel.org/pub/linux/kernel/v6.x/$KERNEL_ARCHIVE
+KERNEL_TAR="linux-${KERNEL_VERSION}.tar.xz"
+KERNEL_SRC="linux-${KERNEL_VERSION}"
+
+# Download kernel
+if [ ! -f "$KERNEL_TAR" ]; then
+    wget "https://cdn.kernel.org/pub/linux/kernel/v6.x/$KERNEL_TAR"
 fi
 
-if [ ! -d $KERNEL_SRC_DIR ]; then
-    echo "Extracting kernel source..."
-    tar xf $KERNEL_ARCHIVE
+# Extract if needed
+if [ ! -d "$KERNEL_SRC" ]; then
+    tar xf "$KERNEL_TAR"
 fi
 
-cd $KERNEL_SRC_DIR
-
+cd "$KERNEL_SRC"
 CONFIG_PATH=../../../config/kernel/$ARCH/minimal.config
-
-if [ -f "$CONFIG_PATH" ]; then
-    echo "Using minimal config from $CONFIG_PATH"
-    cp $CONFIG_PATH .config
-    make olddefconfig
-else
-    echo "No minimal config found, using defconfig"
-    make ARCH=$ARCH defconfig
-fi
-
-# Remove old busybox build if needed
-rm -rf ../../initramfs/busybox-
-
-echo "Building kernel (this may take a while)..."
-make -j$(nproc) ARCH=$ARCH
-
-echo "Kernel build complete. Kernel image at arch/${ARCH}/boot/bzImage"
+cp "$CONFIG_PATH" .config
+make olddefconfig
+make -j"$(nproc)" ARCH=$ARCH
