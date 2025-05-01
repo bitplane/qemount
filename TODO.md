@@ -14,6 +14,9 @@ This file lists steps required to complete and flesh out the rootless microVM Po
 - All build paths now controlled via Makefile; scripts accept variables as arguments or env
 - All build scripts (kernel, initramfs, ISO, run) are now Makefile-driven and path-correct
 
+## 🐛 Bugs
+- **`init`** can't be found (file not found error) even when using /bin/ls
+
 ## 🔜 Next Steps
 - **`init` script variants**: Add support for per-filesystem `init` overrides (e.g. `overlays/ext4/init`, etc.)
 - **QEMU serial interaction**: Add kernel logging to serial and optional shell prompt (`exec sh`) fallback

@@ -24,7 +24,7 @@ echo "Starting QEMU in rootless mode..."
 qemu-system-${ARCH} \
     -kernel "$KERNEL_IMAGE" \
     -initrd "$INITRAMFS_IMAGE" \
-    -append "console=ttyS0 earlyprintk=serial,ttyS0 root=/dev/ram0 init=/init"
+    -append "console=ttyS0 root=/dev/ram0 init=ls" \
     -cdrom "$ISO_IMAGE" \
     -device virtio-net,netdev=usernet \
     -netdev user,id=usernet,hostfwd=tcp::2222-:22 \
