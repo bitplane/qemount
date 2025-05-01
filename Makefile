@@ -29,7 +29,7 @@ ISO_DATA := $(OVERLAY_DIR)/$(FS)/data
 BUSYBOX_BUILD_STAMP := $(INITRAMFS_DIR)/.busybox-built
 INITRAMFS_BUILD_STAMP := $(INITRAMFS_DIR)/.initramfs-built
 
-.PHONY: all clean run config config-initramfs config-kernel
+.PHONY: all clean run
 
 all: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
@@ -58,17 +58,16 @@ $(ISO_IMAGE): $(wildcard $(ISO_DATA)/*) scripts/build-iso.sh
 	@echo "==> Building ISO image..."
 	bash scripts/build-iso.sh $(ARCH) $(ISO_DATA) $(ISO_IMAGE)
 
-run: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
-	@echo "==> Running QEMU..."
-	bash scripts/run-qemu.sh $(ARCH) $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
-
-config: config-initramfs config-kernel
-
 $(CONFIG_INITRAMFS_PATH):
 	bash scripts/gen-busybox-config.sh $(ARCH) $(FS) $(BUSYBOX_VERSION)
 
 $(CONFIG_KERNEL_PATH):
 	bash scripts/gen-kernel-config.sh $(ARCH)
+
+
+run: $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
+	@echo "==> Running QEMU..."
+	bash scripts/run-qemu.sh $(ARCH) $(KERNEL_IMAGE) $(INITRAMFS_IMAGE) $(ISO_IMAGE)
 
 clean:
 	rm -rf $(BUILD_DIR)
