@@ -1,11 +1,10 @@
 #!/bin/bash
 set -eux
 
-ARCH=${ARCH:-x86_64}
-KERNEL_VERSION=${KERNEL_VERSION:-6.5}
-KERNEL_IMAGE=${KERNEL_IMAGE:-build/linux/linux-${KERNEL_VERSION}/arch/${ARCH}/boot/bzImage}
-INITRAMFS_IMAGE=${INITRAMFS_IMAGE:-build/initramfs/initramfs.cpio.gz}
-ISO_IMAGE=${ISO_IMAGE:-build/fs/iso9660/rootfs.iso}
+ARCH=$1
+KERNEL_IMAGE=$2
+INITRAMFS_IMAGE=$3
+ISO_IMAGE=$4
 
 if [ ! -f "$KERNEL_IMAGE" ]; then
   echo "Error: kernel image not found: $KERNEL_IMAGE" >&2

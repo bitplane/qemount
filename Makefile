@@ -29,8 +29,6 @@ $(KERNEL_IMAGE): $(CONFIG_KERNEL_PATH) scripts/build-kernel.sh
 	@echo "==> Building Linux kernel $(KERNEL_VERSION) for $(ARCH)..."
 	@bash scripts/build-kernel.sh $(KERNEL_VERSION) $(ARCH) $(KERNEL_DIR) $(KERNEL_IMAGE)
 
-
-
 $(INITRAMFS_IMAGE): $(KERNEL_IMAGE) $(wildcard $(OVERLAY_DIR)/shared/*) $(CONFIG_INITRAMFS_PATH)
 	@echo "==> Building initramfs..."
 	@bash scripts/build-initramfs.sh $(BUSYBOX_VERSION) $(KERNEL_VERSION) $(INITRAMFS_IMAGE)
