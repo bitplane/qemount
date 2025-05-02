@@ -11,7 +11,7 @@ INITRAMFS_IMAGE=$(realpath "$INITRAMFS_IMAGE")
 INITRAMFS_DIR=$(dirname "$INITRAMFS_IMAGE")
 ROOTFS_DIR="$INITRAMFS_DIR/rootfs"
 SRC_DIR="$INITRAMFS_DIR/busybox-$BUSYBOX_VERSION"
-INSTALL_DIR="$SRC_DIR/_install"
+INSTALL_DIR="$SRC_DIR/_install"  # Don't realpath — might not exist
 
 rm -rf "$ROOTFS_DIR"
 mkdir -p "$ROOTFS_DIR"/{etc,dev,proc,sys,tmp}

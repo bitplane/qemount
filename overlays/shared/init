@@ -1,15 +1,25 @@
 #!/bin/sh
+set -eux
+
+# Mount system filesystems
 mount -t proc none /proc
 mount -t sysfs none /sys
 
-# Try to load the ISO9660 module if it exists
-if [ -f /lib/modules/*/kernel/fs/isofs/isofs.ko ]; then
-    insmod /lib/modules/*/kernel/fs/isofs/isofs.ko || echo "Failed to load isofs.ko"
-fi
+# Load ISO9660 if modular
+modprobe isofs || insmod /lib/modules/*/kernel/fs/isofs/isofs.ko || echo "no isofs module"
 
-# Try to mount the CD-ROM to /mnt
+# Mount the ISO image
 mkdir -p /mnt
-mount -t iso9660 /dev/sr0 /mnt || echo "Failed to mount /dev/sr0"
+mount -t iso9660 /dev/sr0 /mnt || echo "Failed to mount ISO"
 
-echo "Boot complete. Dropping to shell."
-exec sh
+# Export it via 9p back to host using shared mountpoint
+mkdir -p /host
+mount -t 9p -o trans=virtio,version=9p2000.L fusekfs /host || echo "Failed to mount host 9p"
+
+# Mirror the ISO into host-visible dir
+mkdir -p /host/mnt
+cp -a /mnt/* /host/mnt/ || echo "Failed to export ISO to host"
+
+# Block forever until umount on host
+echo "Boot complete. Waiting..."
+exec tail -f /dev/null
