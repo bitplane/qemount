@@ -11,53 +11,64 @@ transports. Spin up a tiny VM that provides access to an image, one instance per
 * ... basically a clutch between any image/block device and anything else
 
 
+## Project Structure
 ```
 mountq/
 ├── guest/                     # Guest environment definitions
 │   ├── linux-6.11/            # Linux kernel 6.11 guest
 │   │   ├── Makefile           # How to build this guest's image
-│   │   ├── meta.conf          # Guest metadata (arch and FS support...)
-│   │   ├── config/            # Config files for this guest, used by Makefile
+│   │   ├── meta.conf          # Guest metadata (arch, FS support, protocols, etc.)
+│   │   ├── config/            # Config files for this guest (kernel, busybox...)
 │   │   │   ├── kernel.x86_64.config
 │   │   │   ├── kernel.arm64.config
-│   │   │   ├── busybox.x86_64.config
 │   │   │   └── ...
-│   │   ├── init.sh            # Template/source for init script in initramfs
-│   │   └── run.sh.template    # Template for the final run.sh
+│   │   ├── init.sh            # Template/source for init script in initramfs (Linux)
+│   │   └── run.sh.template    # Template for the final run.sh launcher
 │   │
 │   ├── linux-5.15/            # Linux kernel 5.15 LTS guest
+│   │   └── ... (Makefile, meta.conf, etc.)
 │   ├── linux-.../             # Variations, like out of tree modules etc
 │   ├── freedos/               # FreeDOS guest (Makefile might wrap different tools)
+│   │   └── ...
 │   └── ...                    # Haiku, Amiga, Mac, Acorn, WinCE etc
 │
-├── build/                     # Build output (gitignored)
+├── build/                     # Build output for VM images & cache (gitignored)
 │   ├── images/                # Built VM images
-│   │   ├── linux-6.11-x86_64/ # Specific built image
+│   │   ├── linux-6.11-x86_64/ # Specific built image instance
 │   │   │   ├── meta.conf      # Copy of metadata for this build
 │   │   │   ├── bzImage        # Kernel (or Image.gz for arm64, etc.)
 │   │   │   ├── initramfs.cpio.gz # Initramfs (with export logic)
 │   │   │   └── run.sh         # Generated script to launch this VM image
 │   │   ├── linux-6.11-arm64/
-│   │   ├── freedos-x86_64/
-│   │   └── haiku-x86_64/
-│   │
-│   ├── cache/                 # Cached downloads, extracted src etc
-│   │   ├── linux-6.11.tar.xz
-│   │   └── busybox-1.36.1.tar.bz2
-│   │
-│   └── registry.json          # Generated registry of all built images
+│   │   └── ...
+│   ├── cache/                 # Cached downloads (tarballs etc.)
+│   │   └── ...
+│   └── registry.json          # Generated registry of all built VM images
 │
 ├── clients/                   # Client implementations (for host OSes)
-│   ├── linux-fuse/            # Main reason for the project to exist
-│   ├── windows-driver/
-│   ├── mac/
+│   ├── linux-fuse/            # Linux FUSE client
+│   ├── windows-driver/        # Windows client (e.g., Dokan driver)
+│   ├── mac/                   # macOS client (e.g., macFUSE)
 │   └── .../                   # file-roller, docker web, anything at all!
 │
 ├── scripts/                   # Helper scripts (called by Makefiles or for users)
-│   ├── build-registry.sh      # Script to generate registry.json from build/images
+│   ├── build-registry.sh      # Script to generate registry.json from build/images/
 │   ├── find-vm.sh             # Script to find VM in registry by capabilities
 │   └── setup-deps.sh          # (Optional: Install host build dependencies)
 │
+├── testdata/                  # Source definitions, scripts & Makefile for test data
+│   ├── Makefile               # Builds images into testdata/images/
+│   ├── scripts/               # Helper scripts for generation/download
+│   │   └── ...                # e.g., generate_ext4.sh
+│   ├── template/              # Source file structure templates
+│   │   └── basic/             # A basic set of test files/dirs
+│   │       ├── hello.txt
+│   │       └── ...
+│   └── images/                # Generated test images (gitignored)
+│       ├── basic.iso
+│       └── ...
+│
 ├── Makefile                   # Root Makefile for orchestration
-└── README.md                  # Docs
+├── README.md                  # This file
+└── .gitignore                 # Should ignore /build/ and /testdata/images/
 ```
