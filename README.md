@@ -13,48 +13,51 @@ transports. Spin up a tiny VM that provides access to an image, one instance per
 
 ```
 mountq/
-├── src/
-│   └── os/                   # OS definitions
-│       ├── linux-6.11/       # Linux kernel 6.11
-│       │   ├── build.sh      # How to build this OS
-│       │   └── meta.conf     # OS metadata including arch and FS support
-│       ├── linux-5.15/       # Linux kernel 5.15 LTS
-│       ├── freedos/          # FreeDOS
-│       └── haiku/            # Haiku OS
+├── guest/                     # Guest environment definitions
+│   ├── linux-6.11/            # Linux kernel 6.11 guest
+│   │   ├── Makefile           # How to build this guest's image
+│   │   ├── meta.conf          # Guest metadata (arch and FS support...)
+│   │   ├── config/            # Config files for this guest, used by Makefile
+│   │   │   ├── kernel.x86_64.config
+│   │   │   ├── kernel.arm64.config
+│   │   │   ├── busybox.x86_64.config
+│   │   │   └── ...
+│   │   ├── init.sh            # Template/source for init script in initramfs
+│   │   └── run.sh.template    # Template for the final run.sh
+│   │
+│   ├── linux-5.15/            # Linux kernel 5.15 LTS guest
+│   ├── linux-.../             # Variations, like out of tree modules etc
+│   ├── freedos/               # FreeDOS guest (Makefile might wrap different tools)
+│   └── ...                    # Haiku, Amiga, Mac, Acorn, WinCE etc
 │
-├── build/                    # Build output
-│   ├── images/               # Built VM images
-│   │   ├── linux-6.11-x86_64/
-│   │   │   ├── meta.conf     # Complete metadata
-│   │   │   ├── bzImage       # Kernel image
-│   │   │   ├── initramfs.cpio.gz  # Initial RAM disk
-│   │   │   ├── run.sh        # Run script
-│   │   │   └── fs/           # Filesystem capabilities
-│   │   │       ├── iso9660   # ISO9660 capabilities
-│   │   │       ├── ext4      # ext4 capabilities
-│   │   │       └── ntfs      # NTFS capabilities
-│   │   │
+├── build/                     # Build output (gitignored)
+│   ├── images/                # Built VM images
+│   │   ├── linux-6.11-x86_64/ # Specific built image
+│   │   │   ├── meta.conf      # Copy of metadata for this build
+│   │   │   ├── bzImage        # Kernel (or Image.gz for arm64, etc.)
+│   │   │   ├── initramfs.cpio.gz # Initramfs (with export logic)
+│   │   │   └── run.sh         # Generated script to launch this VM image
 │   │   ├── linux-6.11-arm64/
 │   │   ├── freedos-x86_64/
 │   │   └── haiku-x86_64/
 │   │
-│   └── registry.json         # Generated registry
+│   ├── cache/                 # Cached downloads, extracted src etc
+│   │   ├── linux-6.11.tar.xz
+│   │   └── busybox-1.36.1.tar.bz2
+│   │
+│   └── registry.json          # Generated registry of all built images
 │
-├── clients/                  # Client implementations
-│   ├── linux/
-│   ├── windows/
-│   ├── macos/
-│   └── wasm/
+├── clients/                   # Client implementations (for host OSes)
+│   ├── linux-fuse/            # Main reason for the project to exist
+│   ├── windows-driver/
+│   ├── mac/
+│   └── .../                   # file-roller, docker web, anything at all!
 │
-├── scripts/
-│   ├── build-image.sh        # Build a specific image
-│   ├── build-all.sh          # Build all images
-│   ├── build-registry.sh     # Generate registry
-│   └── find-vm.sh            # Find VM in registry
+├── scripts/                   # Helper scripts (called by Makefiles or for users)
+│   ├── build-registry.sh      # Script to generate registry.json from build/images
+│   ├── find-vm.sh             # Script to find VM in registry by capabilities
+│   └── setup-deps.sh          # (Optional: Install host build dependencies)
 │
-├── build.sh                  # Main build script
-└── README.md
-
+├── Makefile                   # Root Makefile for orchestration
+└── README.md                  # Docs
 ```
-
-
