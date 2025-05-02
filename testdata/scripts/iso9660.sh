@@ -1,18 +1,27 @@
 #!/bin/bash
-set -euxo pipefail
+# Creates an ISO9660 image from a directory
+set -eo pipefail
 
-ARCH=$1
-DATA_DIR=$2
-ISO_IMAGE=$3
-
-ISO_DIR=$(dirname "$ISO_IMAGE")
-mkdir -p "$ISO_DIR"
-
-# Use dummy data if none provided
-if [ ! -d "$DATA_DIR" ]; then
-  mkdir -p "$DATA_DIR"
-  echo "Hello from afuse99p" > "$DATA_DIR/hello.txt"
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <source_dir> <output.iso>"
+    exit 1
 fi
 
-genisoimage -quiet -R -o "$ISO_IMAGE" "$DATA_DIR"
-echo "ISO created at $ISO_IMAGE"
+SRC_DIR="$1"
+OUTPUT="$2"
+OUTDIR=$(dirname "$OUTPUT")
+
+# Create output directory if needed
+mkdir -p "$OUTDIR"
+
+# Create ISO image
+if command -v genisoimage &>/dev/null; then
+    genisoimage -r -J -o "$OUTPUT" "$SRC_DIR"
+elif command -v mkisofs &>/dev/null; then
+    mkisofs -r -J -o "$OUTPUT" "$SRC_DIR"
+else
+    echo "Error: Need genisoimage or mkisofs"
+    exit 1
+fi
+
+echo "Created ISO: $OUTPUT"
