@@ -26,8 +26,6 @@ qemu-system-${ARCH} \
     -initrd "$INITRAMFS_IMAGE" \
     -append "console=ttyS0 root=/dev/ram0 init=ls" \
     -cdrom "$ISO_IMAGE" \
-    -device virtio-net,netdev=usernet \
-    -netdev user,id=usernet,hostfwd=tcp::2222-:22 \
     -nographic
 
 echo "QEMU exited"
