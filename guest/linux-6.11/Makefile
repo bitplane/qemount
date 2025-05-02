@@ -25,18 +25,19 @@ KERNEL_TARBALL := $(CACHE_DIR)/linux-$(KERNEL_VERSION).tar.xz
 BUSYBOX_TARBALL := $(CACHE_DIR)/busybox-$(BUSYBOX_VERSION).tar.bz2
 
 # Config Paths
-DEFAULT_KERNEL_CONFIG := config/kernel.config # Default kernel config
-KERNEL_CONFIG_FILE := config/kernel.$(KERNEL_ARCH).config # Arch-specific link/file target
+DEFAULT_KERNEL_CONFIG := config/kernel.config
+KERNEL_CONFIG_FILE := config/kernel.$(KERNEL_ARCH).config
 DEFAULT_BUSYBOX_CONFIG := config/busybox.config
-BUSYBOX_CONFIG_FILE := config/busybox.$(KERNEL_ARCH).config # Arch-specific link/file target
+BUSYBOX_CONFIG_FILE := config/busybox.$(KERNEL_ARCH).config
 
 # Script paths
 SCRIPT_DIR := scripts
-BUILD_KERNEL_SH := $(SCRIPT_DIR)/build-kernel.sh
+BUILD_KERNEL_SH := $(SCRIPT_DIR)/build_kernel.sh
 COPY_KERNEL_SH := $(SCRIPT_DIR)/copy_kernel_image.sh
-BUILD_BUSYBOX_SH := $(SCRIPT_DIR)/build-busybox.sh
-BUILD_INITRAMFS_SH := $(SCRIPT_DIR)/build-initramfs.sh
+BUILD_BUSYBOX_SH := $(SCRIPT_DIR)/build_busybox.sh
+BUILD_INITRAMFS_SH := $(SCRIPT_DIR)/build_initramfs.sh
 ENSURE_LINK_SH := $(SCRIPT_DIR)/ensure_link.sh
+# BUILD_RUN_SCRIPT_SH is no longer needed
 
 # Final Output Paths
 FINAL_KERNEL := $(OUTPUT_DIR)/$(FINAL_KERNEL_NAME)
@@ -46,8 +47,8 @@ FINAL_META_CONF := $(OUTPUT_DIR)/meta.conf
 
 # --- Intermediate Build Locations / Stamps ---
 # These paths are passed to scripts, which should create them if needed.
-BUSYBOX_INSTALL_DIR := $(CACHE_DIR)/build/$(GUEST_NAME)-busybox-$(TARGET_ARCH)-install
-KERNEL_BUILD_DIR := $(CACHE_DIR)/build/$(GUEST_NAME)-kernel-$(TARGET_ARCH)-build
+BUSYBOX_INSTALL_DIR := $(CACHE_DIR)/$(GUEST_NAME)-busybox-$(TARGET_ARCH)-install
+KERNEL_BUILD_DIR := $(CACHE_DIR)/$(GUEST_NAME)-kernel-$(TARGET_ARCH)-build
 KERNEL_BUILD_STAMP := $(KERNEL_BUILD_DIR)/.kernel_built
 BUSYBOX_INSTALL_STAMP := $(BUSYBOX_INSTALL_DIR)/.stamp
 
@@ -141,7 +142,7 @@ $(FINAL_INITRAMFS): $(KERNEL_BUILD_STAMP) $(BUSYBOX_INSTALL_STAMP) $(BUILD_INITR
 	@if [ $$? -ne 0 ]; then echo "Initramfs build script failed!"; exit 1; fi
 
 # --- run.sh Generation (Final Output) ---
-# Depends on the template. Script handles output dir creation.
+# Depends on the template. Replaces placeholders using sed directly.
 $(FINAL_RUN_SH): run.sh.template
 	@echo "Generating $@ from template..."
 	@mkdir -p "$(OUTPUT_DIR)" # Ensure final output dir exists
@@ -152,6 +153,7 @@ $(FINAL_RUN_SH): run.sh.template
 	    -e 's|@@TARGET_ARCH@@|$(TARGET_ARCH)|g' \
 	    -e 's|@@KERNEL_ARCH@@|$(KERNEL_ARCH)|g' \
 	    run.sh.template > $@
+	@if [ $$? -ne 0 ]; then echo "Run script generation failed!"; rm -f $@; exit 1; fi
 	chmod +x $@
 
 # --- meta.conf Copy (Final Output) ---
