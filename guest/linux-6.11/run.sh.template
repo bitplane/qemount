@@ -1,87 +1,46 @@
 #!/bin/bash
-#
-# Generated run script for mountq guest: linux-6.11 (@@TARGET_ARCH@@)
-#
-# Usage: ./run.sh <image_file_to_mount> <export_socket_path> [qemu_options...]
-#   - image_file_to_mount: Path to the filesystem image (e.g., .iso, .ext4)
-#   - export_socket_path: Path on the host for the 9P export socket.
-#   - qemu_options...: Additional options passed directly to QEMU.
-
+# qemount launcher for linux-6.11 (@@TARGET_ARCH@@)
 set -euo pipefail
 
-# --- Argument Parsing ---
+# Basic usage check
 if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <image_file_to_mount> <export_socket_path> [qemu_options...]"
-    echo "Example: $0 /path/to/mydata.iso /tmp/mountq-XYZ.sock"
+    echo "Usage: $0 <image_file> <export_socket> [qemu_options...]"
+    echo "Example: $0 /path/to/mydata.iso /tmp/mountq.sock"
     exit 1
 fi
 
-IMAGE_TO_MOUNT="$1"
-EXPORT_SOCKET="$2"
-shift 2 # Remove the first two arguments, leaving any extra QEMU options
+IMAGE="$1"
+SOCKET="$2"
+shift 2  # Remove first two args
 
-if [ ! -e "$IMAGE_TO_MOUNT" ]; then
-    echo "Error: Image file not found: '$IMAGE_TO_MOUNT'" >&2
-    exit 1
-fi
+# Check files exist
+[ ! -e "$IMAGE" ] && echo "Error: Image not found: $IMAGE" >&2 && exit 1
 
-# Get the directory where this script resides (the build output dir)
-SCRIPT_DIR=$(dirname "$(realpath "$0")")
-KERNEL_PATH="$SCRIPT_DIR/@@KERNEL_FILENAME@@"
-INITRAMFS_PATH="$SCRIPT_DIR/@@INITRAMFS_FILENAME@@"
+# Script directory and paths
+DIR="$(dirname "$(realpath "$0")")"
+KERNEL="$DIR/@@KERNEL_FILENAME@@"
+INITRAMFS="$DIR/@@INITRAMFS_FILENAME@@"
 
-if [ ! -f "$KERNEL_PATH" ]; then
-    echo "Error: Kernel file not found: '$KERNEL_PATH'" >&2
-    exit 1
-fi
-if [ ! -f "$INITRAMFS_PATH" ]; then
-    echo "Error: Initramfs file not found: '$INITRAMFS_PATH'" >&2
-    exit 1
-fi
+# Check kernel and initramfs
+[ ! -f "$KERNEL" ] && echo "Error: Kernel not found: $KERNEL" >&2 && exit 1
+[ ! -f "$INITRAMFS" ] && echo "Error: Initramfs not found: $INITRAMFS" >&2 && exit 1
 
-# --- QEMU Command ---
-QEMU_CMD="@@QEMU_COMMAND@@"
-INITRAMFS_FILENAME="@@INITRAMFS_FILENAME@@" # Used in append line if needed
+# Kernel command line
+APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda"
 
-# Kernel command line arguments for the guest's /init script
-# - console=ttyS0: Use the first serial port as the console.
-# - root=/dev/ram0: Standard initramfs parameter.
-# - rdinit=/init: Specify the init program within the initramfs.
-# - mountq.target=/dev/vda: Tell /init which device holds the target filesystem. (Virtio block default)
-# - mountq.export_port=org.qemu.9p.export: Tell /init which virtio port name to use for 9P export.
-# - quiet: Reduce kernel boot messages (optional)
-APPEND_ARGS="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda mountq.export_port=org.qemu.9p.export"
-
-echo "Starting QEMU for @@TARGET_ARCH@@..."
-echo "  Kernel: $KERNEL_PATH"
-echo "  Initramfs: $INITRAMFS_PATH"
-echo "  Image: $IMAGE_TO_MOUNT"
-echo "  9P Socket: $EXPORT_SOCKET"
-echo "  Append: $APPEND_ARGS"
-echo "  Extra QEMU args: $@"
-
-"$QEMU_CMD" \
-    -kernel "$KERNEL_PATH" \
-    -initrd "$INITRAMFS_PATH" \
-    -append "$APPEND_ARGS" \
+# Launch QEMU
+echo "Starting qemount VM for @@TARGET_ARCH@@..."
+@@QEMU_COMMAND@@ \
+    -kernel "$KERNEL" \
+    -initrd "$INITRAMFS" \
+    -append "$APPEND" \
     -nographic \
     -m 256M \
     -smp 1 \
-    \
-    `# Attach the target filesystem image as a virtio block device (/dev/vda in guest)` \
-    -drive file="$IMAGE_TO_MOUNT",if=virtio,format=raw,id=targetfs,cache=none \
-    \
-    `# Set up virtio-serial device for communication` \
+    -drive file="$IMAGE",if=virtio,format=raw,id=targetfs,cache=none \
     -device virtio-serial-pci,id=virtio-serial0 \
-    \
-    `# Create the 9P export channel using a host socket` \
-    -chardev socket,id=char9p,path="$EXPORT_SOCKET",server=on,wait=off \
+    -chardev socket,id=char9p,path="$SOCKET",server=on,wait=off \
     -device virtserialport,chardev=char9p,name=org.qemu.9p.export,bus=virtio-serial0.0 \
-    \
-    `# Pass through any additional user-provided QEMU options` \
     "$@"
 
-QEMU_EXIT_CODE=$?
-echo "QEMU exited with code $QEMU_EXIT_CODE"
-
-exit $QEMU_EXIT_CODE
+exit $?
