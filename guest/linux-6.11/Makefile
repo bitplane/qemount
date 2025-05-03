@@ -27,6 +27,7 @@ BUSYBOX_TARBALL := $(CACHE_DIR)/busybox-$(BUSYBOX_VERSION).tar.bz2
 # Config Paths
 DEFAULT_KERNEL_CONFIG := config/kernel.config
 KERNEL_CONFIG_FILE := config/kernel.$(KERNEL_ARCH).config
+FILESYSTEMS_CONFIG_FILE := config/filesystems.config
 DEFAULT_BUSYBOX_CONFIG := config/busybox.config
 BUSYBOX_CONFIG_FILE := config/busybox.$(KERNEL_ARCH).config
 
@@ -82,12 +83,13 @@ $(KERNEL_CONFIG_FILE): $(DEFAULT_KERNEL_CONFIG) $(ENSURE_LINK_SH)
 
 # --- Kernel Build (Intermediate Stamp) ---
 # Depends on the config file target. Script handles output dir creation.
-$(KERNEL_BUILD_STAMP): $(KERNEL_TARBALL) $(KERNEL_CONFIG_FILE) $(BUILD_KERNEL_SH)
+$(KERNEL_BUILD_STAMP): $(KERNEL_TARBALL) $(KERNEL_CONFIG_FILE) $(FILESYSTEMS_CONFIG_FILE) $(BUILD_KERNEL_SH)
 	@echo "Building Kernel via script for KERNEL_ARCH=$(KERNEL_ARCH) into $(KERNEL_BUILD_DIR)..."
 	$(BUILD_KERNEL_SH) \
 		"$(KERNEL_VERSION)" \
 		"$(KERNEL_ARCH)" \
 		"$(KERNEL_CONFIG_FILE)" \
+		"$(FILESYSTEMS_CONFIG_FILE)" \
 		"$(CACHE_DIR)" \
 		"$(KERNEL_BUILD_DIR)" \
 		"$(CROSS_COMPILE)" \

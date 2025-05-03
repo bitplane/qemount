@@ -3,7 +3,8 @@
 # guest/linux-6.11/scripts/build_initramfs.sh
 #
 # Creates a compressed CPIO initramfs image.
-# Copies BusyBox, kernel modules, and the init script.
+# Copies BusyBox, kernel modules (stripped), and the init script.
+# Relies on devtmpfs in the kernel to create device nodes.
 #
 # Usage:
 # ./build_initramfs.sh <KERNEL_VERSION> <KERNEL_ARCH> <KERNEL_BUILD_DIR> \
@@ -18,7 +19,7 @@ if [ "$#" -ne 7 ]; then
     exit 1
 fi
 
-KERNEL_VERSION="$1"
+KERNEL_VERSION="$1" # Expecting full version like 6.11.0 now
 KERNEL_ARCH="$2"
 KERNEL_BUILD_DIR_REL="$3"  # Relative or absolute path to kernel build artifacts
 BUSYBOX_INSTALL_DIR_REL="$4" # Relative or absolute path to busybox install dir
@@ -34,6 +35,7 @@ FINAL_INITRAMFS_PATH=$(realpath "$FINAL_INITRAMFS_PATH_REL")
 # INIT_SH_TEMPLATE_PATH is relative to CWD (guest/linux-6.11)
 
 # --- Check Prerequisites ---
+# ... (prerequisite checks remain the same) ...
 if [ ! -d "$KERNEL_BUILD_DIR" ]; then
     echo "Error: Kernel build directory '$KERNEL_BUILD_DIR' not found. Run kernel build first." >&2
     exit 1
@@ -48,63 +50,86 @@ if [ ! -f "$INIT_SH_TEMPLATE_PATH" ]; then
 fi
 command -v cpio >/dev/null 2>&1 || { echo >&2 "Error: cpio command not found."; exit 1; }
 command -v gzip >/dev/null 2>&1 || { echo >&2 "Error: gzip command not found."; exit 1; }
-# depmod might need to be cross-version if host != target
 DEPMOD_CMD="depmod"
-# Consider using depmod from kernel build tools if cross-compiling? For now, use host's.
+
 
 # --- Prepare Temporary Rootfs ---
 TMP_ROOTFS_DIR=$(mktemp -d "${TMPDIR:-/tmp}/initramfs-rootfs.XXXXXX")
+# *** Create temp CPIO file OUTSIDE the rootfs dir ***
+INITRAMFS_CPIO_TMP=$(mktemp "${TMPDIR:-/tmp}/initramfs.cpio.XXXXXX")
 echo "Created temporary rootfs directory: $TMP_ROOTFS_DIR"
+echo "Temporary CPIO file: $INITRAMFS_CPIO_TMP"
+
 
 cleanup() {
     echo "Cleaning up temporary rootfs: $TMP_ROOTFS_DIR"
-    # Use sudo if needed, although created by user so shouldn't be necessary
     rm -rf "$TMP_ROOTFS_DIR"
+    echo "Cleaning up temporary cpio file: $INITRAMFS_CPIO_TMP"
+    rm -f "$INITRAMFS_CPIO_TMP"
 }
 trap cleanup EXIT # Ensure cleanup runs on script exit
 
 # Create basic directory structure
 echo "Creating basic filesystem structure..."
-mkdir -p "$TMP_ROOTFS_DIR"/{bin,sbin,etc,proc,sys,dev,tmp,mnt,usr/{bin,sbin},lib/modules/${KERNEL_VERSION}}
+# Ensure KERNEL_VERSION passed in includes the patch level, e.g., 6.11.0
+MODULES_SUBDIR="lib/modules/${KERNEL_VERSION}"
+# NOTE: No /dev created here, relying on devtmpfs from the kernel
+mkdir -p "$TMP_ROOTFS_DIR"/{bin,sbin,etc,proc,sys,tmp,mnt,usr/{bin,sbin},"${MODULES_SUBDIR}"}
 chmod 1777 "$TMP_ROOTFS_DIR/tmp"
 
 # --- Copy BusyBox ---
 echo "Copying BusyBox installation..."
-# Copy everything from the install dir
 cp -a "$BUSYBOX_INSTALL_DIR"/* "$TMP_ROOTFS_DIR/"
-# Ensure essential symlinks exist if not created by install (optional, depends on busybox config)
-# Example: ln -sf /bin/busybox "$TMP_ROOTFS_DIR/bin/sh"
 
-# --- Install Kernel Modules ---
-echo "Installing kernel modules from $KERNEL_BUILD_DIR..."
-# Use the modules_install target directly into the temporary rootfs
-# ARCH and CROSS_COMPILE should be in the environment from the Makefile
-make -C "$KERNEL_BUILD_DIR" INSTALL_MOD_PATH="$TMP_ROOTFS_DIR" modules_install
+# --- Install Kernel Modules (Stripped) ---
+echo "Installing *stripped* kernel modules from $KERNEL_BUILD_DIR..."
+# Check if modules exist before trying to install
+MODULE_COUNT=$(find "$KERNEL_BUILD_DIR" -name '*.ko' -type f | wc -l)
+if [ "$MODULE_COUNT" -eq 0 ]; then
+    echo "Warning: No .ko files found in $KERNEL_BUILD_DIR. Kernel modules might not have been built correctly."
+    # Still run modules_install for builtins, but the lack of .ko files is the core issue
+fi
+# Run modules_install - capture output to check for errors
+INSTALL_LOG=$(mktemp "${TMPDIR:-/tmp}/modules_install.log.XXXXXX")
+if ! make -C "$KERNEL_BUILD_DIR" INSTALL_MOD_PATH="$TMP_ROOTFS_DIR" INSTALL_MOD_STRIP=1 modules_install > "$INSTALL_LOG" 2>&1; then
+    echo "Error during 'make modules_install'. Log:"
+    cat "$INSTALL_LOG"
+    rm -f "$INSTALL_LOG"
+    # Consider exiting if modules are essential: exit 1
+fi
+rm -f "$INSTALL_LOG"
+
+# Add a check *after* installation
+INSTALLED_MODULE_COUNT=$(find "$TMP_ROOTFS_DIR/${MODULES_SUBDIR}" -name '*.ko' -type f | wc -l)
+echo "Found $INSTALLED_MODULE_COUNT .ko files installed in initramfs."
+if [ "$INSTALLED_MODULE_COUNT" -eq 0 ] && [ "$MODULE_COUNT" -gt 0 ]; then
+    echo "Error: modules_install seems to have failed to copy .ko files! Check kernel build output."
+    # Consider exiting here if modules are essential: exit 1
+fi
+
 
 # --- Generate modules.dep ---
-echo "Generating modules.dep..."
-# Run depmod relative to the temporary rootfs
-# Note: This uses the host's depmod. May need adjustment for cross-compilation if host/target differ significantly.
-"$DEPMOD_CMD" -b "$TMP_ROOTFS_DIR" "$KERNEL_VERSION"
+# Only run depmod if modules were actually installed
+if [ "$INSTALLED_MODULE_COUNT" -gt 0 ]; then
+    echo "Generating modules.dep..."
+    # Use the full KERNEL_VERSION here
+    "$DEPMOD_CMD" -b "$TMP_ROOTFS_DIR" "$KERNEL_VERSION"
+else
+    echo "Skipping depmod generation as no modules were installed."
+fi
 
 # --- Copy Init Script ---
 echo "Copying init script..."
-# CRITICAL: Copy the source init.sh to /init inside the rootfs
 cp "$INIT_SH_TEMPLATE_PATH" "$TMP_ROOTFS_DIR/init"
 chmod +x "$TMP_ROOTFS_DIR/init"
 
 # --- Create Device Nodes (Minimal) ---
-# mknod is needed in busybox config
-echo "Creating minimal device nodes..."
-mknod -m 660 "$TMP_ROOTFS_DIR/dev/console" c 5 1 || echo "Warning: Failed to create /dev/console node"
-mknod -m 660 "$TMP_ROOTFS_DIR/dev/null" c 1 3    || echo "Warning: Failed to create /dev/null node"
-# Add other essential nodes if needed (e.g., /dev/ttyS0, /dev/ram0, /dev/vda, /dev/sr0)
-# Example: mknod -m 660 "$TMP_ROOTFS_DIR/dev/ttyS0" c 4 64
-# Example: mknod -m 660 "$TMP_ROOTFS_DIR/dev/vda" b 254 0 # Virtio block device
+# echo "Creating minimal device nodes..." # Removed mknod calls
+# Relying on CONFIG_DEVTMPFS=y and CONFIG_DEVTMPFS_MOUNT=y in kernel config
 
 # --- Create CPIO Archive ---
-INITRAMFS_CPIO_TMP="${TMP_ROOTFS_DIR}/initramfs.cpio"
 echo "Creating CPIO archive: $INITRAMFS_CPIO_TMP"
+# *** Archive from TMP_ROOTFS_DIR, output to INITRAMFS_CPIO_TMP (outside) ***
 (cd "$TMP_ROOTFS_DIR" && find . | cpio -o --format=newc > "$INITRAMFS_CPIO_TMP")
 
 # --- Compress Archive and Move to Final Location ---
@@ -113,11 +138,8 @@ gzip -f -9 "$INITRAMFS_CPIO_TMP" -c > "$FINAL_INITRAMFS_PATH"
 
 if [ $? -ne 0 ]; then
     echo "Error: Failed to create or compress initramfs." >&2
-    # rm -f "$FINAL_INITRAMFS_PATH" # Optionally remove partial file
     exit 1
 fi
 
 echo "Initramfs created successfully: $FINAL_INITRAMFS_PATH"
-
-# Cleanup is handled by the trap
 exit 0

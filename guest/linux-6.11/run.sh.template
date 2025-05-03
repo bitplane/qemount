@@ -75,7 +75,7 @@ echo "  Extra QEMU args: $@"
     -device virtio-serial-pci,id=virtio-serial0 \
     \
     `# Create the 9P export channel using a host socket` \
-    -chardev socket,id=char9p,path="$EXPORT_SOCKET" \
+    -chardev socket,id=char9p,path="$EXPORT_SOCKET",server=on,wait=off \
     -device virtserialport,chardev=char9p,name=org.qemu.9p.export,bus=virtio-serial0.0 \
     \
     `# Pass through any additional user-provided QEMU options` \
