@@ -19,6 +19,11 @@ OUTPUT_DIR=$(dirname "$OUTPUT_BINARY_PATH")
 mkdir -p "$CACHE_DIR"
 mkdir -p "$OUTPUT_DIR"
 
+# temporary until we have a makefile entry
+if [ -f "$OUTPUT_BINARY_PATH" ]; then
+    return 0
+fi
+
 # --- Download ---
 if [ ! -f "$DROPBEAR_TARBALL_PATH" ]; then
     echo "Downloading dropbear ${DROPBEAR_VERSION} from ${DROPBEAR_URL}..."

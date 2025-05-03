@@ -2,33 +2,27 @@
 # qemount launcher for linux-6.11 (@@TARGET_ARCH@@)
 set -euo pipefail
 
-# Basic usage check
 if [ "$#" -lt 2 ]; then
     echo "Usage: $0 <image_file> <export_socket> [qemu_options...]"
-    echo "Example: $0 /path/to/mydata.iso /tmp/mountq.sock"
+    echo "Example: $0 /path/to/mydata.iso /tmp/qemount.sock"
     exit 1
 fi
 
 IMAGE="$1"
 SOCKET="$2"
-shift 2  # Remove first two args
+shift 2
 
-# Check files exist
 [ ! -e "$IMAGE" ] && echo "Error: Image not found: $IMAGE" >&2 && exit 1
 
-# Script directory and paths
 DIR="$(dirname "$(realpath "$0")")"
 KERNEL="$DIR/@@KERNEL_FILENAME@@"
 INITRAMFS="$DIR/@@INITRAMFS_FILENAME@@"
 
-# Check kernel and initramfs
 [ ! -f "$KERNEL" ] && echo "Error: Kernel not found: $KERNEL" >&2 && exit 1
 [ ! -f "$INITRAMFS" ] && echo "Error: Initramfs not found: $INITRAMFS" >&2 && exit 1
 
-# Kernel command line
-APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda mode=sh"
+APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda mode=sshd"
 
-# Launch QEMU
 echo "Starting qemount VM for @@TARGET_ARCH@@..."
 @@QEMU_COMMAND@@ \
     -kernel "$KERNEL" \
@@ -39,8 +33,8 @@ echo "Starting qemount VM for @@TARGET_ARCH@@..."
     -smp 1 \
     -drive file="$IMAGE",if=virtio,format=raw,id=targetfs,cache=none \
     -device virtio-serial-pci,id=virtio-serial0 \
-    -chardev socket,id=char9p,path="$SOCKET",server=on,wait=off \
-    -device virtserialport,chardev=char9p,name=org.qemu.9p.export,bus=virtio-serial0.0 \
+    -chardev socket,id=charssh,path="$SOCKET",server=on,wait=off \
+    -device virtserialport,chardev=charssh,name=org.qemount.sock,bus=virtio-serial0.0 \
     "$@"
 
 exit $?

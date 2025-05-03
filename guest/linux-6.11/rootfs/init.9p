@@ -1,5 +1,5 @@
 #!/bin/sh
-iset -eu
+set -eu
 
 if [ -e "$PORT_PATH" ]; then
     echo "[INFO] Starting 9P server..."
