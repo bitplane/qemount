@@ -1,4 +1,4 @@
-# mountq
+# qemount
 
 Let's mount everything/anything using qemu, by exposing it over 9p or other
 transports. Spin up a tiny VM that provides access to an image, one instance per mount.
@@ -13,7 +13,7 @@ transports. Spin up a tiny VM that provides access to an image, one instance per
 
 ## Project Structure
 ```
-mountq/
+qemount/
 ├── guest/                     # Guest environment definitions
 │   ├── linux-6.11/            # Linux kernel 6.11 guest
 │   │   ├── Makefile           # How to build this guest's image
@@ -59,13 +59,13 @@ mountq/
 ├── testdata/                  # Source definitions, scripts & Makefile for test data
 │   ├── Makefile               # Builds images into testdata/images/
 │   ├── scripts/               # Helper scripts for generation/download
-│   │   └── ...                # e.g., generate_ext4.sh
+│   │   └── ...                # e.g., ext4.sh
 │   ├── template/              # Source file structure templates
 │   │   └── basic/             # A basic set of test files/dirs
 │   │       ├── hello.txt
 │   │       └── ...
 │   └── images/                # Generated test images (gitignored)
-│       ├── basic.iso
+│       ├── basic.iso9660
 │       └── ...
 │
 ├── Makefile                   # Root Makefile for orchestration
