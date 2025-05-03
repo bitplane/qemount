@@ -3,3 +3,4 @@
 /testdata/images
 *.log
 *.txt
+*.lock
