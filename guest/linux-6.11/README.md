@@ -1,8 +1,8 @@
 # Linux 6.11 Guest
 
-Linux kernel with busybox. Can mount any filesystems that are built in.
-
-
+Linux kernel with busybox. Can mount any filesystems that are built in. and
+expose them over multiple transports for the user to consume via FUSE or other
+non-root methods.
 
 ## linux
 
