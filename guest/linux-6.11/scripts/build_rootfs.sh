@@ -24,6 +24,9 @@ chmod +x "$STAGING_ROOTFS_DIR/init"
 # Copy BusyBox
 rsync -a "$BUSYBOX_INSTALL_DIR/" "$STAGING_ROOTFS_DIR/"
 
+# Install symlinks for BusyBox utilities (non-interactive)
+"$STAGING_ROOTFS_DIR/bin/busybox" --install -s "$STAGING_ROOTFS_DIR/bin" </dev/null
+
 # Build and copy 9pserve
 "$BUILD_9P_SCRIPT" "$TARGET_ARCH" "$NINEPSERVE_CACHE" "$CACHE_DIR"
 cp "$NINEPSERVE_CACHE" "$STAGING_ROOTFS_DIR/bin/9pserve"
