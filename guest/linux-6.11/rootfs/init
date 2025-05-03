@@ -1,8 +1,9 @@
 #!/bin/sh
-set -eux
+iset -eu
 
 on_exit() {
-    poweroff -f || sleep infinity
+    poweroff -f
+    sleep infinity
 }
 trap exit EXIT
 
@@ -54,6 +55,7 @@ else
 fi
 
 # Run interactive shell (blocking, not backgrounded)
-/bin/sh 
+/bin/sh
 
 on_exit
+sleep infinity
