@@ -1,14 +1,23 @@
 #!/bin/sh
 set -eux
+
+exit() {
+    poweroff -f || sleep infinity
+}
+trap exit EXIT
+
 TARGET_DEV=${mountq_target:-/dev/vda}
 FALLBACK_DEV=${mountq_fallback:-/dev/sr0}
 MOUNT_POINT=/mnt
-PORT_PATH=/dev/virtio-ports/org.qemu.9p.export
+PORT_PATH=/dev/vport0p1
 
 mount -t devtmpfs devtmpfs /dev
 mount -t proc none /proc
 mount -t sysfs none /sys
 mkdir -p "$MOUNT_POINT"
+
+# run mdev to detect serial
+mdev -sS
 
 # Try to detect available device
 if [ -b "$TARGET_DEV" ]; then
@@ -47,6 +56,4 @@ fi
 # Run interactive shell (blocking, not backgrounded)
 /bin/sh 
 
-# Shut down the VM afterwards, or sleep forever
-# (important because it'll spin lock otherwise)
-poweroff -f || sleep infinity
+exit
