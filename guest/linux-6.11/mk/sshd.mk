@@ -1,0 +1,13 @@
+DROPBEAR_TARBALL := $(DOWNLOAD_DIR)/dropbear-$(DROPBEAR_VERSION).tar.bz2
+DROBEAR_BINARY := $(CACHE_DIR)/dropbearmulti-$(DROPBEAR_VERSION)-$(TARGET_ARCH)
+
+.PHONY: dropbear
+dropbear: $(DROBEAR_BINARY)
+
+$(DROBEAR_BINARY): $(DROPBEAR_TARBALL)
+	$(SCRIPT_DIR)/build_sshd.sh \
+		"$(DROPBEAR_VERSION)" \
+		"$(TARGET_ARCH)" \
+		"$(CACHE_DIR)" \
+		"$@" \
+		"$(CROSS_COMPILE)"

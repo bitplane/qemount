@@ -1,33 +1,35 @@
-# guest/linux-6.11/Makefile
-# Modular build system for the linux-6.11 guest
+# guest/linux-6.11/Makefile - Main Makefile for qemount guest
 
-# Main Targets - define before includes to set the default target
 .PHONY: all image downloads clean distclean
 
 # Default target
 all: image
 
+# Include Makefile fragments in dependency order
 include mk/common.mk
 include mk/downloads.mk
 include mk/kernel.mk
 include mk/busybox.mk
-include mk/rootfs.mk  
+include mk/rootfs.mk
+include mk/sshd.mk
+include mk/9p.mk
+include mk/initramfs.mk
 include mk/outputs.mk
 
-# Main guest image target
+# Top-level image build
 image: downloads $(FINAL_KERNEL) $(FINAL_INITRAMFS) $(FINAL_RUN_SH) $(FINAL_META_CONF)
 	@echo "Guest image built successfully in $(OUTPUT_DIR)"
 
-# Clean target - we don't delete configs as they're automatically 
-# regenerated when needed and cached for faster builds
+# Clean build outputs (but leave downloads intact)
 clean:
 	rm -rf "$(STAGING_ROOTFS_DIR)"
-	rm -f "$(ROOTFS_STAGING_STAMP)"
+	rm -f "$(ROOTFS_STAGING_STAMP)" "$(SSH_DEPLOY_STAMP)"
 	rm -f "$(BUSYBOX_INSTALL_STAMP)"
 	rm -f "$(KERNEL_BUILD_STAMP)"
+	rm -f "$(FINAL_INITRAMFS)"
 	@echo "Clean completed"
 
-# Full clean that removes all artifacts including cached configs
+# Full cleanup including config and source dirs
 distclean: clean
 	rm -f "$(BUSYBOX_CONFIG)" "$(BUSYBOX_DEFAULT_CONFIG)"
 	rm -rf "$(BUSYBOX_INSTALL_DIR)"

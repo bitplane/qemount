@@ -7,24 +7,23 @@ KERNEL_BUILD_DIR=$(realpath "$3")
 STAGING_ROOTFS_DIR=$(realpath "$4")
 FINAL_INITRAMFS_PATH=$(realpath "$5")
 
-# Prepare paths
-MODULES_SUBDIR="lib/modules/${KERNEL_VERSION}"
-mkdir -p "$STAGING_ROOTFS_DIR/${MODULES_SUBDIR}"
+# Paths
+MODULES_DIR="$STAGING_ROOTFS_DIR/lib/modules/${KERNEL_VERSION}"
+TMP_CPIO=$(mktemp "${TMPDIR:-/tmp}/initramfs.cpio.XXXXXX")
 
-# Install kernel modules
-make -C "$KERNEL_BUILD_DIR" INSTALL_MOD_PATH="$STAGING_ROOTFS_DIR" INSTALL_MOD_STRIP=1 modules_install
+# Install kernel modules (if any)
+make -C "$KERNEL_BUILD_DIR" INSTALL_MOD_PATH="$STAGING_ROOTFS_DIR" INSTALL_MOD_STRIP=1 modules_install || true
 
-# Generate modules.dep if modules exist
-if [ "$(find "$STAGING_ROOTFS_DIR/${MODULES_SUBDIR}" -name '*.ko' -type f | wc -l)" -gt 0 ]; then
+# Generate modules.dep if needed
+if [ -d "$MODULES_DIR" ] && find "$MODULES_DIR" -name '*.ko' | grep -q .; then
+    echo "[initramfs] running depmod"
     depmod -b "$STAGING_ROOTFS_DIR" "$KERNEL_VERSION"
 fi
 
-# Create CPIO archive
-INITRAMFS_CPIO_TMP=$(mktemp "${TMPDIR:-/tmp}/initramfs.cpio.XXXXXX")
-(cd "$STAGING_ROOTFS_DIR" && find . | cpio -o --format=newc > "$INITRAMFS_CPIO_TMP")
+# Create compressed initramfs archive
+echo "[initramfs] building archive to $FINAL_INITRAMFS_PATH"
+(cd "$STAGING_ROOTFS_DIR" && find . | cpio -o --format=newc > "$TMP_CPIO")
+gzip -f -9 "$TMP_CPIO" -c > "$FINAL_INITRAMFS_PATH"
+rm -f "$TMP_CPIO"
 
-# Compress and cleanup
-gzip -f -9 "$INITRAMFS_CPIO_TMP" -c > "$FINAL_INITRAMFS_PATH"
-rm -f "$INITRAMFS_CPIO_TMP"
-
-exit 0
+echo "[initramfs] done"

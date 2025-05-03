@@ -1,17 +1,8 @@
 #!/bin/sh
+set -eux
 
-if [ -e "$PORT_PATH" ]; then
-  echo "[INFO] Starting Dropbear on $PORT_PATH..."
-  while true; do
-    echo "[INFO] Waiting for SSH connection..."
-    exec 3<>"$PORT_PATH"
-    exec 0<&3
-    exec 1>&3
-    exec 2>&3
-    dropbear -i || /bin/sh
-  done
+echo "[sshd] bringing up loopback…"
+ifconfig lo up
 
-else
-  echo "[ERROR] SSH FD not found: $PORT_PATH"
-fi
-
+echo "[sshd] starting Dropbear on 0.0.0.0:22"
+exec dropbear -F -p 0.0.0.0:22 -r /etc/dropbear/dropbear_rsa_host_key

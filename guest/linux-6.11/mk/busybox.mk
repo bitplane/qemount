@@ -9,6 +9,8 @@ BUSYBOX_INSTALL_STAMP := $(BUSYBOX_INSTALL_DIR)/.stamp
 BUILD_BUSYBOX_SH := $(SCRIPT_DIR)/build_busybox.sh
 MERGE_CONFIG_PY := $(SCRIPT_DIR)/merge_config.py
 
+BUSYBOX_BINARY := $(CACHE_DIR)/busybox-$(BUSYBOX_VERSION)-$(TARGET_ARCH)
+
 # Get default BusyBox config
 $(BUSYBOX_DEFAULT_CONFIG): $(BUSYBOX_TARBALL)
 	@echo "Getting BusyBox default config..."
@@ -16,7 +18,6 @@ $(BUSYBOX_DEFAULT_CONFIG): $(BUSYBOX_TARBALL)
 	if [ ! -d "$(BUSYBOX_SRC_DIR)/configs" ]; then \
 		tar -xf "$(BUSYBOX_TARBALL)" --strip-components=1 -C "$(BUSYBOX_SRC_DIR)"; \
 	fi
-	# Create a minimal config to start with
 	cd "$(BUSYBOX_SRC_DIR)" && make allnoconfig >/dev/null 2>&1
 	cp "$(BUSYBOX_SRC_DIR)/.config" "$@"
 
@@ -43,3 +44,7 @@ $(BUSYBOX_INSTALL_STAMP): $(BUSYBOX_CONFIG) $(BUILD_BUSYBOX_SH) $(MERGE_CONFIG_P
 		"$(CROSS_COMPILE)" \
 		"$(abspath $(MERGE_CONFIG_PY))" \
 	&& touch $@
+
+# Export a standalone busybox binary for staging
+$(BUSYBOX_BINARY): $(BUSYBOX_INSTALL_STAMP)
+	cp "$(BUSYBOX_INSTALL_DIR)/bin/busybox" "$@"

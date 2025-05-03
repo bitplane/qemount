@@ -2,39 +2,32 @@
 # qemount launcher for linux-6.11 (@@TARGET_ARCH@@)
 set -euo pipefail
 
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 <image_file> <export_socket> [qemu_options...]"
-    echo "Example: $0 /path/to/mydata.iso /tmp/qemount.sock"
+# Usage: ./run.sh  <image_file> <ignored_socket_path>  [extra‑qemu‑opts]
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <image_file> [ignored_socket] [qemu_opts...]" >&2
     exit 1
 fi
 
-IMAGE="$1"
-SOCKET="$2"
-shift 2
+IMAGE="$1"; shift        # mandatory
+SOCKET="${1:-/tmp/dummy}"; [ $# -gt 0 ] && shift  # kept for old callers
 
-[ ! -e "$IMAGE" ] && echo "Error: Image not found: $IMAGE" >&2 && exit 1
-
-DIR="$(dirname "$(realpath "$0")")"
+DIR="$(cd "$(dirname "$0")" && pwd)"
 KERNEL="$DIR/@@KERNEL_FILENAME@@"
 INITRAMFS="$DIR/@@INITRAMFS_FILENAME@@"
 
-[ ! -f "$KERNEL" ] && echo "Error: Kernel not found: $KERNEL" >&2 && exit 1
-[ ! -f "$INITRAMFS" ] && echo "Error: Initramfs not found: $INITRAMFS" >&2 && exit 1
+[ -e "$IMAGE" ]      || { echo "Image not found: $IMAGE" >&2; exit 1; }
+[ -f "$KERNEL" ]     || { echo "Kernel not found!" >&2;   exit 1; }
+[ -f "$INITRAMFS" ]  || { echo "Initramfs not found!" >&2;exit 1; }
 
-APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda mode=sshd"
+APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mode=sshd"
 
-echo "Starting qemount VM for @@TARGET_ARCH@@..."
+echo "Starting qemount VM (SSH forwarded to :2222)…"
 @@QEMU_COMMAND@@ \
-    -kernel "$KERNEL" \
-    -initrd "$INITRAMFS" \
-    -append "$APPEND" \
-    -nographic \
-    -m 256M \
-    -smp 1 \
-    -drive file="$IMAGE",if=virtio,format=raw,id=targetfs,cache=none \
-    -device virtio-serial-pci,id=virtio-serial0 \
-    -chardev socket,id=charssh,path="$SOCKET",server=on,wait=off \
-    -device virtserialport,chardev=charssh,name=org.qemount.sock,bus=virtio-serial0.0 \
-    "$@"
-
-exit $?
+  -kernel  "$KERNEL" \
+  -initrd  "$INITRAMFS" \
+  -append  "$APPEND" \
+  -nographic -m 256M -smp 1 \
+  -drive file="$IMAGE",if=virtio,format=raw,cache=none \
+  -net nic \
+  -net user,hostfwd=tcp::2222-:22 \
+  "$@"
