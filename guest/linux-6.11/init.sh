@@ -89,13 +89,26 @@ if [ "$MOUNT_SUCCESS" -eq 1 ] && [ "$HOST_MOUNT_SUCCESS" -eq 1 ]; then
     cp -r "$MOUNT_POINT"/* /host/mnt/ 2>/dev/null || echo "Warning: Errors occurred during copy to host via 9p. Copy may be incomplete."
     echo "Copy complete (or attempted)."
     # Optional: Sync filesystem buffers to ensure data is sent over 9p
+    echo "Syncing filesystems..."
     sync
+    # Optional: Unmount the host share cleanly before poweroff
+    echo "Unmounting host share..."
+    umount /host || echo "Warning: Failed to unmount /host"
 else
     echo "Skipping copy to host: Either guest mount or host 9p mount failed."
 fi
 
+# --- Final Shutdown ---
+echo "Setup complete. Requesting power off..."
+# Use poweroff -f to force shutdown without trying to kill processes/sync disks again
+# This should signal QEMU via ACPI (if enabled in kernel) to exit.
+poweroff -f
 
-# --- Final Wait ---
-echo "Setup complete. Entering idle loop..."
-# Use sleep in a loop for robustness instead of tail -f /dev/null
+# Fallback in case poweroff fails (should not be reached if ACPI works)
+echo "Poweroff command failed? Halting."
+halt -p -f
+
+# Ultimate fallback
+echo "Halting failed? Entering infinite sleep."
 while true; do sleep 3600; done
+
