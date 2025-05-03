@@ -1,219 +1,106 @@
 #!/bin/bash
 set -euo pipefail
 
-TARGET_ARCH="$1"
-OUTPUT_BINARY_PATH=$(realpath "$2")
-CACHE_DIR=$(realpath "$3")
+# --- Script Arguments ---
+# If DIOD_VERSION is not provided as the first argument, use default.
+DEFAULT_DIOD_VERSION="1.0.24"
+DIOD_VERSION="${1:-$DEFAULT_DIOD_VERSION}"
+TARGET_ARCH="$2"            # e.g., x86_64, arm64
+CACHE_DIR=$(realpath "$3")  # Absolute path to cache directory
+OUTPUT_BINARY_PATH=$(realpath "$4") # Absolute path for the final binary (e.g., .../staging/bin/diod)
+CROSS_COMPILE_PREFIX="$5"   # e.g., x86_64-linux-gnu-
 
-mkdir -p "$(dirname "$OUTPUT_BINARY_PATH")"
+# --- Setup Paths ---
+DIOD_TARBALL_NAME="diod-${DIOD_VERSION}.tar.gz"
+DIOD_TARBALL_PATH="${CACHE_DIR}/${DIOD_TARBALL_NAME}"
+DIOD_SRC_DIR="${CACHE_DIR}/diod-${DIOD_VERSION}"
+DIOD_URL="https://github.com/chaos/diod/releases/download/${DIOD_VERSION}/${DIOD_TARBALL_NAME}"
+OUTPUT_DIR=$(dirname "$OUTPUT_BINARY_PATH")
+
+# --- Ensure Directories Exist ---
 mkdir -p "$CACHE_DIR"
+mkdir -p "$OUTPUT_DIR"
 
-SOURCE_DIR="$CACHE_DIR/9pfs-minimal"
-SOURCE_FILE="$SOURCE_DIR/9pfs.c"
-mkdir -p "$SOURCE_DIR"
+# --- Download ---
+if [ ! -f "$DIOD_TARBALL_PATH" ]; then
+    echo "Downloading diod ${DIOD_VERSION} from ${DIOD_URL}..."
+    # Use wget with timeout and retry options for robustness
+    wget --connect-timeout=10 --tries=3 -c "$DIOD_URL" -O "$DIOD_TARBALL_PATH"
+else
+    echo "Using cached diod tarball: $DIOD_TARBALL_PATH"
+fi
 
-# Create a minimal 9P server implementation
-cat > "$SOURCE_FILE" << 'EOF'
-/*
- * Minimal 9P server implementation for qemount
- */
+# --- Extract ---
+# Remove previous extraction if it exists to ensure clean source
+rm -rf "$DIOD_SRC_DIR"
+echo "Extracting diod source to $DIOD_SRC_DIR..."
+mkdir -p "$DIOD_SRC_DIR"
+tar -xzf "$DIOD_TARBALL_PATH" --strip-components=1 -C "$DIOD_SRC_DIR"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <errno.h>
-#include <stdint.h>
-#include <inttypes.h>
+# --- Build ---
+echo "Configuring and building diod statically for ${TARGET_ARCH}..."
+cd "$DIOD_SRC_DIR"
 
-/* 9P message types */
-#define Tversion 100
-#define Rversion 101
-#define Tattach  104
-#define Rattach  105
-#define Tstat    124
-#define Rstat    125
-#define Twalk    110
-#define Rwalk    111
-#define Topen    112
-#define Ropen    113
-#define Tread    116
-#define Rread    117
-#define Twrite   118
-#define Rwrite   119
-#define Tclunk   120
-#define Rclunk   121
+# Determine the HOST triple for ./configure (usually derived from CROSS_COMPILE_PREFIX)
+# Removes the trailing hyphen if present
+HOST_TRIPLE=${CROSS_COMPILE_PREFIX%-}
+if [ -z "$HOST_TRIPLE" ]; then
+    echo "Warning: CROSS_COMPILE_PREFIX is empty, attempting native build configure."
+    # For native builds, HOST_TRIPLE might not be needed, or configure guesses it.
+else
+    echo "Using HOST_TRIPLE: $HOST_TRIPLE"
+fi
 
-#define VERSION9P "9P2000"
-#define NOTAG      (uint16_t)(~0)
-#define NOFID      (uint32_t)(~0)
-#define MAX_PATH   4096
-#define MAX_MSG    8192
+# Clean any previous configure/build artifacts first
+# Although we rm -rf the dir, this is belt-and-suspenders for Autotools
+if [ -f Makefile ]; then
+    echo "Running make distclean..."
+    make distclean || echo "make distclean failed (maybe not needed), continuing..."
+fi
 
-typedef struct {
-    uint32_t type;
-    uint8_t  flags;
-    uint64_t length;
-    uint64_t offset;
-    char     name[MAX_PATH];
-    int      fd;
-} Fid;
+# Configure using Autotools standard procedure for cross-compilation
+# Pass environment variables for compiler, flags, etc.
+# Adding -D_GNU_SOURCE to CPPFLAGS and CFLAGS to help find definitions like makedev
+echo "Running configure..."
+# Note: --disable-xattr, --disable-shared, --enable-static are not valid options for this configure script.
+# Set environment variables for configure
+# IMPORTANT: Do not put comments on lines ending with a backslash (\)
+CC="${CROSS_COMPILE_PREFIX}gcc" \
+AR="${CROSS_COMPILE_PREFIX}ar" \
+RANLIB="${CROSS_COMPILE_PREFIX}ranlib" \
+STRIP="${CROSS_COMPILE_PREFIX}strip" \
+CPPFLAGS="-D_GNU_SOURCE" \
+CFLAGS="-D_GNU_SOURCE -O2 -Wall" \
+LDFLAGS="-static" \
+./configure \
+    --host="$HOST_TRIPLE" \
+    || { echo "Configure script failed!"; exit 1; }
 
-static char *root_path = NULL;
-static Fid *fids[128] = {NULL};
 
-static void send_error(int fd, uint16_t tag, const char *err) {
-    uint8_t msg[MAX_MSG];
-    uint32_t size = 0;
-    
-    size = 9 + strlen(err);
-    
-    *(uint32_t*)&msg[0] = size;
-    msg[4] = Rversion;
-    *(uint16_t*)&msg[5] = tag;
-    strcpy((char*)&msg[7], err);
-    
-    write(fd, msg, size);
-}
+# Run make to build the binary
+echo "Running make..."
+make V=1 # Add V=1 for verbose make output
 
-static void handle_version(int fd, uint8_t *msg, uint32_t size) {
-    uint8_t resp[MAX_MSG];
-    uint32_t resp_size = 0;
-    uint16_t tag = *(uint16_t*)&msg[5];
-    uint32_t msize = *(uint32_t*)&msg[7];
-    
-    if (msize > MAX_MSG)
-        msize = MAX_MSG;
-    
-    resp_size = 13 + strlen(VERSION9P);
-    *(uint32_t*)&resp[0] = resp_size;
-    resp[4] = Rversion;
-    *(uint16_t*)&resp[5] = tag;
-    *(uint32_t*)&resp[7] = msize;
-    strcpy((char*)&resp[11], VERSION9P);
-    
-    write(fd, resp, resp_size);
-}
+echo "Build complete."
 
-static void handle_attach(int fd, uint8_t *msg, uint32_t size) {
-    uint8_t resp[MAX_MSG];
-    uint32_t resp_size = 0;
-    uint16_t tag = *(uint16_t*)&msg[5];
-    uint32_t fid = *(uint32_t*)&msg[7];
-    
-    if (fid < 128 && fids[fid] == NULL) {
-        fids[fid] = malloc(sizeof(Fid));
-        if (fids[fid]) {
-            memset(fids[fid], 0, sizeof(Fid));
-            fids[fid]->type = Tattach;
-            strcpy(fids[fid]->name, root_path);
-            fids[fid]->fd = -1;
-        }
-    }
-    
-    resp_size = 20;
-    *(uint32_t*)&resp[0] = resp_size;
-    resp[4] = Rattach;
-    *(uint16_t*)&resp[5] = tag;
-    memset(&resp[7], 0, 13);
-    
-    write(fd, resp, resp_size);
-}
+# --- Copy Output ---
+# The final binary is typically in src/ after configure && make
+BUILT_BINARY_PATH="${DIOD_SRC_DIR}/src/diod"
+if [ ! -f "$BUILT_BINARY_PATH" ]; then
+    echo "Error: Built diod binary not found at $BUILT_BINARY_PATH" >&2
+    # Sometimes it might be in the top-level directory
+    if [ -f "${DIOD_SRC_DIR}/diod" ]; then
+        BUILT_BINARY_PATH="${DIOD_SRC_DIR}/diod"
+        echo "Found binary at top level: ${BUILT_BINARY_PATH}"
+    else
+         echo "Also checked top-level directory. Build failed or binary location unknown." >&2
+         exit 1
+    fi
+fi
 
-static void handle_clunk(int fd, uint8_t *msg, uint32_t size) {
-    uint8_t resp[MAX_MSG];
-    uint32_t resp_size = 0;
-    uint16_t tag = *(uint16_t*)&msg[5];
-    uint32_t fid = *(uint32_t*)&msg[7];
-    
-    if (fid < 128 && fids[fid] != NULL) {
-        if (fids[fid]->fd >= 0)
-            close(fids[fid]->fd);
-        free(fids[fid]);
-        fids[fid] = NULL;
-    }
-    
-    resp_size = 7;
-    *(uint32_t*)&resp[0] = resp_size;
-    resp[4] = Rclunk;
-    *(uint16_t*)&resp[5] = tag;
-    
-    write(fd, resp, resp_size);
-}
+echo "Copying built diod binary to $OUTPUT_BINARY_PATH"
+cp "$BUILT_BINARY_PATH" "$OUTPUT_BINARY_PATH"
+chmod +x "$OUTPUT_BINARY_PATH" # Ensure the final binary is executable
 
-int main(int argc, char **argv) {
-    int port_fd;
-    uint8_t msg_buf[MAX_MSG];
-    uint32_t msg_size;
-    uint8_t msg_type;
-    
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <port_device> <path_to_export>\n", argv[0]);
-        exit(1);
-    }
-    
-    root_path = argv[2];
-    
-    port_fd = open(argv[1], O_RDWR);
-    if (port_fd < 0) {
-        perror("Failed to open port device");
-        exit(1);
-    }
-    
-    fprintf(stderr, "9P server started, exporting %s\n", root_path);
-    
-    while (1) {
-        ssize_t n = read(port_fd, msg_buf, 4);
-        if (n <= 0) break;
-        
-        msg_size = *(uint32_t*)&msg_buf[0];
-        if (msg_size > MAX_MSG) {
-            fprintf(stderr, "Message too large: %d\n", msg_size);
-            continue;
-        }
-        
-        n = read(port_fd, &msg_buf[4], msg_size - 4);
-        if (n <= 0) break;
-        
-        msg_type = msg_buf[4];
-        
-        switch (msg_type) {
-            case Tversion:
-                handle_version(port_fd, msg_buf, msg_size);
-                break;
-            case Tattach:
-                handle_attach(port_fd, msg_buf, msg_size);
-                break;
-            case Tclunk:
-                handle_clunk(port_fd, msg_buf, msg_size);
-                break;
-            default:
-                send_error(port_fd, *(uint16_t*)&msg_buf[5], "Not implemented");
-                break;
-        }
-    }
-    
-    close(port_fd);
-    return 0;
-}
-EOF
-
-# Compile with static linking
-CROSS_PREFIX=${CROSS_COMPILE:-}
-case "$TARGET_ARCH" in
-    arm64) CROSS_PREFIX=${CROSS_COMPILE:-aarch64-linux-gnu-} ;;
-    arm) CROSS_PREFIX=${CROSS_COMPILE:-arm-linux-gnueabi-} ;;
-    riscv64) CROSS_PREFIX=${CROSS_COMPILE:-riscv64-linux-gnu-} ;;
-esac
-
-${CROSS_PREFIX}gcc -static -Os -Wall -o "$SOURCE_DIR/9pfs" "$SOURCE_FILE"
-${CROSS_PREFIX}strip "$SOURCE_DIR/9pfs"
-
-cp -f "$SOURCE_DIR/9pfs" "$OUTPUT_BINARY_PATH"
-chmod +x "$OUTPUT_BINARY_PATH"
-
+echo "build_9p.sh (diod with configure) finished successfully."
 exit 0

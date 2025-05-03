@@ -1,32 +1,61 @@
 #!/bin/bash
 set -euo pipefail
 
-TARGET_ARCH="$1"
-SOURCE_ROOTFS_DIR=$(realpath "$2")
-STAGING_ROOTFS_DIR=$(realpath "$3")
-CACHE_DIR=$(realpath "$4")
-BUSYBOX_INSTALL_DIR=$(realpath "$5")
+# --- Script Arguments ---
+TARGET_ARCH="$1"             # e.g., x86_64, arm64
+SOURCE_ROOTFS_DIR=$(realpath "$2") # Path to the source rootfs files (e.g., guest/linux-6.11/rootfs)
+STAGING_ROOTFS_DIR=$(realpath "$3") # Path to build the staging rootfs (e.g., build/cache/...)
+CACHE_DIR=$(realpath "$4")   # Path to the main cache directory
+BUSYBOX_INSTALL_DIR=$(realpath "$5") # Path where busybox was installed
+# Make sure CROSS_COMPILE is inherited from the environment or passed if needed
+CROSS_COMPILE="${CROSS_COMPILE:-}" # Default to empty if not set
 
+# --- Setup Paths ---
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-BUILD_9P_SCRIPT="$SCRIPT_DIR/build_9p.sh"
-NINEPSERVE_CACHE="$CACHE_DIR/9pserve-$(basename "$STAGING_ROOTFS_DIR")"
+BUILD_9P_SCRIPT="$SCRIPT_DIR/build_9p.sh" # Path to the script that builds diod
+# Define the final path for the 9P server binary within the staging rootfs
+# Using 'diod' as the name, but could be '9pserve' if preferred.
+NINEPSERVE_STAGING_PATH="$STAGING_ROOTFS_DIR/bin/diod"
 
-# Prepare staging directory
+# --- Prepare Staging Directory ---
+echo "Preparing staging rootfs directory: $STAGING_ROOTFS_DIR"
 rm -rf "$STAGING_ROOTFS_DIR"
 mkdir -p "$STAGING_ROOTFS_DIR"
 
-# Copy source rootfs and create basic structure
+# --- Copy Source Rootfs and Create Basic Structure ---
+echo "Copying base rootfs structure from $SOURCE_ROOTFS_DIR"
+# Use rsync for efficient copying
 rsync -a "$SOURCE_ROOTFS_DIR/" "$STAGING_ROOTFS_DIR/"
-mkdir -p "$STAGING_ROOTFS_DIR"/{proc,sys,tmp,mnt,bin,sbin,etc,usr,lib}
-chmod 1777 "$STAGING_ROOTFS_DIR/tmp"
-chmod +x "$STAGING_ROOTFS_DIR/init"
 
-# Copy BusyBox
+echo "Creating standard directories..."
+mkdir -p "$STAGING_ROOTFS_DIR"/{proc,sys,tmp,mnt,dev,bin,sbin,etc,usr,lib}
+chmod 1777 "$STAGING_ROOTFS_DIR/tmp" # Set sticky bit on /tmp
+# Ensure init script is executable if it exists
+if [ -f "$STAGING_ROOTFS_DIR/init" ]; then
+    chmod +x "$STAGING_ROOTFS_DIR/init"
+fi
+
+# --- Copy BusyBox ---
+echo "Copying BusyBox binaries from $BUSYBOX_INSTALL_DIR"
 rsync -a "$BUSYBOX_INSTALL_DIR/" "$STAGING_ROOTFS_DIR/"
 
-# Build and copy 9pserve
-"$BUILD_9P_SCRIPT" "$TARGET_ARCH" "$NINEPSERVE_CACHE" "$CACHE_DIR"
-cp "$NINEPSERVE_CACHE" "$STAGING_ROOTFS_DIR/bin/9pserve"
-chmod +x "$STAGING_ROOTFS_DIR/bin/9pserve"
+# --- Build and Copy 9P Server (diod) ---
+echo "Building and installing 9P server (diod)..."
+# Call the build_9p.sh script (which now builds diod)
+# Pass empty string "" as first arg to use default diod version (1.0.24)
+"$BUILD_9P_SCRIPT" \
+    "" \
+    "$TARGET_ARCH" \
+    "$CACHE_DIR" \
+    "$NINEPSERVE_STAGING_PATH" \
+    "$CROSS_COMPILE"
 
+# Check if the binary was created successfully
+if [ ! -f "$NINEPSERVE_STAGING_PATH" ]; then
+    echo "Error: 9P server binary failed to build or copy to $NINEPSERVE_STAGING_PATH" >&2
+    exit 1
+fi
+echo "9P server (diod) installed to $NINEPSERVE_STAGING_PATH"
+
+echo "Rootfs staging complete in $STAGING_ROOTFS_DIR"
 exit 0
