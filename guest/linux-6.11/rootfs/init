@@ -1,5 +1,5 @@
 #!/bin/sh
-iset -eu
+set -eu
 
 on_exit() {
     poweroff -f
@@ -11,6 +11,8 @@ TARGET_DEV=${mountq_target:-/dev/vda}
 FALLBACK_DEV=${mountq_fallback:-/dev/sr0}
 MOUNT_POINT=/mnt
 PORT_PATH=/dev/vport0p1
+export MOUNT_POINT
+export PORT_PATH
 
 mount -t devtmpfs devtmpfs /dev
 mount -t proc none /proc
@@ -42,20 +44,18 @@ else
   echo "No target device found to mount."
   MOUNT_SUCCESS=0
 fi
-# Start 9P server if mount succeeded
-if [ "$MOUNT_SUCCESS" -eq 1 ]; then
-  if [ -e "$PORT_PATH" ]; then
-    echo "[INFO] Starting 9P server..."
-    9pserve "$PORT_PATH" "$MOUNT_POINT" &
-  else
-    echo "[ERROR] 9P port path not found: $PORT_PATH"
-  fi
-else
-  echo "[WARN] Skipping 9P server startup due to failed mount."
-fi
 
-# Run interactive shell (blocking, not backgrounded)
+export MOUNT_SUCCESS
+
+MODE=$(sed -n 's/.*mode=\([^ ]*\).*/\1/p' /proc/cmdline)
+SCRIPT="/init.${MODE:-sh}" 
+
+echo "[INIT] Dispatching to: $SCRIPT"
+"$SCRIPT"
+
 /bin/sh
 
+# keep trying every way we can to stop this from spinlocking
 on_exit
+poweroff -f
 sleep infinity

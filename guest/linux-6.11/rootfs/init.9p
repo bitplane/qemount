@@ -1,0 +1,9 @@
+#!/bin/sh
+iset -eu
+
+if [ -e "$PORT_PATH" ]; then
+    echo "[INFO] Starting 9P server..."
+    9pserve "$PORT_PATH" "$MOUNT_POINT" &
+else
+    echo "[ERROR] 9P port path not found: $PORT_PATH"
+fi

@@ -26,7 +26,7 @@ INITRAMFS="$DIR/@@INITRAMFS_FILENAME@@"
 [ ! -f "$INITRAMFS" ] && echo "Error: Initramfs not found: $INITRAMFS" >&2 && exit 1
 
 # Kernel command line
-APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda"
+APPEND="console=ttyS0 root=/dev/ram0 rdinit=/init quiet mountq.target=/dev/vda mode=sh"
 
 # Launch QEMU
 echo "Starting qemount VM for @@TARGET_ARCH@@..."
