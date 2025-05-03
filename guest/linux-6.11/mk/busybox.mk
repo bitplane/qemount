@@ -7,6 +7,7 @@ BUSYBOX_BASE_CONFIG := config/busybox.config
 BUSYBOX_ARCH_CONFIG := config/busybox.$(KERNEL_ARCH).config
 BUSYBOX_INSTALL_STAMP := $(BUSYBOX_INSTALL_DIR)/.stamp
 BUILD_BUSYBOX_SH := $(SCRIPT_DIR)/build_busybox.sh
+MERGE_CONFIG_PY := $(SCRIPT_DIR)/merge_config.py
 
 # Get default BusyBox config
 $(BUSYBOX_DEFAULT_CONFIG): $(BUSYBOX_TARBALL)
@@ -31,13 +32,14 @@ $(BUSYBOX_CONFIG): $(BUSYBOX_DEFAULT_CONFIG) $(BUSYBOX_BASE_CONFIG) $(wildcard $
 	fi
 
 # Build BusyBox
-$(BUSYBOX_INSTALL_STAMP): $(BUSYBOX_CONFIG) $(BUILD_BUSYBOX_SH)
+$(BUSYBOX_INSTALL_STAMP): $(BUSYBOX_CONFIG) $(BUILD_BUSYBOX_SH) $(MERGE_CONFIG_PY)
 	@echo "Building BusyBox for $(KERNEL_ARCH)..."
 	$(BUILD_BUSYBOX_SH) \
 		"$(BUSYBOX_VERSION)" \
 		"$(KERNEL_ARCH)" \
-		"$<" \
+		"$(abspath $<)" \
 		"$(CACHE_DIR)" \
 		"$(BUSYBOX_INSTALL_DIR)" \
 		"$(CROSS_COMPILE)" \
+		"$(abspath $(MERGE_CONFIG_PY))" \
 	&& touch $@
