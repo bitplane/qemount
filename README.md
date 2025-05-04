@@ -11,7 +11,7 @@ transports. Spin up a tiny VM that provides access to an image, one instance per
 * ... basically a clutch between any image/block device and anything else
 
 
-## Project Structure
+## Project Structure (out of date - now using containers)
 ```
 qemount/
 ├── guest/                     # Guest environment definitions

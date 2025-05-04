@@ -1,5 +1,5 @@
 ARG ARCH=x86_64
-FROM qemount-builder-native:x86_64
+FROM qemount-builder-native:${ARCH}
 
 # Download and extract
 RUN mkdir -p /build

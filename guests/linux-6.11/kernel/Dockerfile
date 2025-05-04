@@ -1,6 +1,5 @@
 ARG ARCH=x86_64
-
-FROM qemount-builder-base:$(ARCH)
+FROM qemount-builder-base:${ARCH}
 
 RUN mkdir -p /build
 WORKDIR /build
