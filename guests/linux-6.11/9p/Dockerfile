@@ -1,13 +1,12 @@
+FROM qemount-compiler:${ARCH}
 ARG ARCH=x86_64
-FROM qemount-builder-native:${ARCH}
 
-# Download and extract Plan 9 source containing u9fs
-RUN mkdir -p /build
+# Install additional dependencies
+RUN apk add --no-cache \
+    zlib-dev \
+    autoconf \
+    automake
+
+# Download and extract dropbear
 WORKDIR /build
-RUN git clone https://github.com/unofficial-mirror/u9fs.git
-
-# Build u9fs with static linking
-WORKDIR /build/u9fs
-RUN make LDFLAGS="-static"
-
-# The built binary will be at /build/u9fs/u9fs
+RUN wget https://matt

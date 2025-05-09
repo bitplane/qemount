@@ -1,0 +1,9 @@
+guests/linux-6.11/initramfs/Dockerfile
+guests/linux-6.11/initramfs/root/init
+guests/linux-6.11/initramfs/root/init.9p
+guests/linux-6.11/initramfs/root/init.sh
+guests/linux-6.11/initramfs/root/init.sshd
+guests/linux-6.11/rootfs/$(ARCH)/bin/busybox
+guests/linux-6.11/rootfs/$(ARCH)/bin/dropbearmulti
+guests/linux-6.11/rootfs/$(ARCH)/bin/diod
+common/compiler
