@@ -12,6 +12,9 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 * ... basically a clutch between any image/block device, URL, file and anything else,
   the UNIX way - everything is a file.
 
+## STATUS
+
+0. planning/proof of concept
 
 ## Project Structure
 ```
@@ -49,7 +52,7 @@ qemount/
 └── .gitignore                 # bliss
 ```
 
-## Support
+## Research / notes
 
 ### Linux / BSD
 
