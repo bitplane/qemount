@@ -1,4 +1,5 @@
-FROM qemount-compiler
+ARG ARCH=x86_64
+FROM qemount-common-compiler-${ARCH}
 ARG ARCH=x86_64
 
 # Install additional dependencies for kernel build

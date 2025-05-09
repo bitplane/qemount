@@ -5,5 +5,5 @@ guests/linux-6.11/initramfs/root/init.sh
 guests/linux-6.11/initramfs/root/init.sshd
 guests/linux-6.11/rootfs/$(ARCH)/bin/busybox
 guests/linux-6.11/rootfs/$(ARCH)/bin/dropbearmulti
-guests/linux-6.11/rootfs/$(ARCH)/bin/diod
+guests/linux-6.11/rootfs/$(ARCH)/bin/u9fs
 common/compiler

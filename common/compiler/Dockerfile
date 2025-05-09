@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-# Install basic build tools and cross-compilers
+# Install basic build tools
 RUN apk update && apk add --no-cache \
     build-base \
     gcc \
@@ -28,23 +28,15 @@ RUN apk update && apk add --no-cache \
     bc \
     mtools \
     cpio \
-    # For cross compilation - aarch64
-    aarch64-none-elf-gcc \
-    aarch64-none-elf-binutils \
-    # For cross compilation - arm
-    arm-none-eabi-gcc \
-    arm-none-eabi-binutils \
-    # For RISC-V if needed
-    # riscv64-none-elf-gcc \
-    # riscv64-none-elf-binutils \
-    && rm -rf /var/cache/apk/*
+    zlib-dev
 
-# Create build directory
+# Create build directories
 RUN mkdir -p /build /outputs
 
-# Default to static linking for maximum portability
+# Set default environment for static builds
 ENV CFLAGS="-static"
 ENV CXXFLAGS="-static"
 ENV LDFLAGS="-static"
 
+# Default working directory
 WORKDIR /build

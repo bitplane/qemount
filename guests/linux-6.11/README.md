@@ -12,16 +12,11 @@ todo: build in Docker and figure out what is required to make it work
 
 todo: build in Docker and figure out what is required to make it work
 
-## diod
+## u9fs (9P Server)
 
-todo: verify the below
-
-```
-sudo apt-get install build-essential ncurses-dev automake autoconf git pkgconf
-sudo apt-get install lua5.1 liblua5.1-dev libmunge-dev libcap-dev libattr1-dev
-```
+The project uses u9fs, a simple 9P server implementation from Plan 9. It's statically compiled
+to ensure it can run within the minimal environment of the VM.
 
 ## nbd
 
 todo: figure out an nbd server
-

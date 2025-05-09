@@ -1,2 +1,3 @@
 guests/linux-6.11/9p/Dockerfile
+guests/linux-6.11/9p/simple9p.c
 common/compiler

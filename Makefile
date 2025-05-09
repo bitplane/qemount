@@ -14,7 +14,8 @@ build/Makefile:
 clean: build/Makefile
 	@$(MAKE) -C build clean
 
-refresh: 
+refresh:
+	#@find build -type f -name 'Makefile' -print0 | xargs -0 rm
 	@./generate_makefiles.py
 
 list: build/Makefile

@@ -1,4 +1,5 @@
-FROM qemount-compiler
+ARG ARCH=x86_64
+FROM qemount-common-compiler-${ARCH}
 ARG ARCH=x86_64
 
 # Download and extract BusyBox
@@ -37,8 +38,9 @@ RUN if [ "$ARCH" = "x86_64" ]; then \
     # Build busybox statically \
     make -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE CONFIG_STATIC=y
 
-# Create output directory with architecture-specific path
+# Create output directory structure matching the outputs.txt
+# This path should match exactly what's in outputs.txt
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
 
-# Copy busybox to output
+# Copy busybox to output location
 RUN cp -v /build/busybox-1.36.1/busybox /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/
