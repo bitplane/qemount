@@ -72,3 +72,37 @@ qemount/
 ├── README.md                  # This file
 └── .gitignore                 # Should ignore /build/ and /testdata/images/
 ```
+
+## Support
+
+### Linux / BSD
+
+| Filesystem      | Linux 6.11       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
+| --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
+| **ext2**        | ✅               | ✅          | ✅               | ✅               | Solid everywhere                |
+| **ext3**        | ✅               | ✅          | 💩               | 💩               | BSDs ignore journal             |
+| **ext4**        | 🏆               | ❌          | 💩               | ❌               | Linux-only journaling           |
+| **FAT12/16/32** | ✅               | ✅          | ✅               | ✅               | Universal                       |
+| **exFAT**       | 🏆               | ❌          | 💩 (FUSE)        | 💩 (FUSE)        | Linux has native driver         |
+| **NTFS**        | 🏆 (`ntfs3`)     | 💩 (`ntfs`) | 💩 (`ntfs`/FUSE) | 💩 (`ntfs`/FUSE) | Write support best in Linux     |
+| **UFS1**        | 💩               | ❌          | ✅               | ✅               | FreeBSD best, Linux very broken |
+| **UFS2**        | ❌               | ❌          | 🏆               | ✅               | Only FreeBSD has full support   |
+| **ZFS**         | ✅               | ❌          | 🏆               | ✅ (module)      | All can do it, FreeBSD wins     |
+| **Btrfs**       | 🏆               | ❌          | ❌               | ❌               | Linux-only, good for COW        |
+| **XFS**         | 🏆               | ✅          | ❌               | ❌               | Linux-only                      |
+| **ReiserFS**    | 💩 (deprecated)  | ✅          | ❌               | ❌               | Historical only                 |
+| **F2FS**        | ✅               | ❌          | ❌               | ❌               | Android/Linux FS                |
+| **JFS**         | ✅               | ✅          | ❌               | ❌               | IBM FS, Linux-only              |
+| **ISO9660**     | ✅               | ✅          | 🏆               | ✅               | FreeBSD supports weird hybrids  |
+| **UDF**         | ✅               | 💩          | ✅               | ✅               | CD/DVD/BR support               |
+| **HFS**         | 💩 (HFS+)        | 💩          | ✅ (RO)          | ✅ (RO)          | Apple FS, write is weak         |
+| **APFS**        | 💩 (FUSE)        | ❌          | ❌               | ❌               | Reverse engineered FUSE only    |
+| **CHFS**        | ❌               | ❌          | ❌               | 🏆               | NetBSD-only, for NAND flash     |
+| **LFS**         | ❌               | ❌          | ❌               | 🏆               | NetBSD log-structured           |
+| **MinixFS**     | ✅               | ✅          | ✅ (RO)          | ✅               | Niche use                       |
+| **SquashFS**    | ✅               | ❌          | ✅ (module)      | ❌               | Read-only compressed            |
+| **OverlayFS**   | 🏆               | ❌          | 💩 (UnionFS)     | 💩 (Union)       | Linux OverlayFS > BSD Union     |
+| **TMPFS**       | ✅               | ✅          | ✅               | ✅               | All good                        |
+| **DevFS**       | ✅               | ✅          | ✅               | ✅               | Basic virtual FS                |
+| **ProcFS**      | ✅               | ✅          | ✅               | ✅               | Universally supported           |
+
