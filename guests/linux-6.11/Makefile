@@ -61,14 +61,14 @@ $(CACHE)/rootfs/bin/dropbearmulti: $(wildcard sshd/*)
 # 🔌 Build 9P server
 #
 .PHONY: 9p
-9p: $(CACHE)/rootfs/bin/diod
-$(CACHE)/rootfs/bin/diod: $(wildcard 9p/*)
+9p: $(CACHE)/rootfs/bin/u9fs
+$(CACHE)/rootfs/bin/u9fs: $(wildcard 9p/*)
 	cd 9p && podman build \
 		--build-arg ARCH=$(ARCH) \
 		-t qemount-linux-9p:$(ARCH) .
 	mkdir -p $(CACHE)/rootfs/bin
 	podman run --rm -v $(CACHE)/rootfs/bin:/output qemount-linux-9p:$(ARCH) \
-		bash -c "cp /build/diod-*/src/diod /output/" 
+		bash -c "cp /build/u9fs/u9fs /output/" 
 
 
 #
@@ -79,10 +79,9 @@ initramfs: $(OUT)/initramfs.cpio.gz
 $(OUT)/initramfs.cpio.gz: busybox sshd $(wildcard initramrd/*)
 	# Build initramfs.
 	cd initramfs && podman build \
-		-f initramfs/Dockerfile \
 		--build-arg ARCH=$(ARCH) \
 		-t qemount-linux-initramfs:$(ARCH) \
-		-v $(CURDIR)/initramfs/root:/source
+		-v $(CURDIR)/initramfs/root:/source .
 	mkdir -p $(OUT)
 	podman run --rm \
 		-v $(OUT):/output \

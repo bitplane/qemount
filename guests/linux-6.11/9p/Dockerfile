@@ -1,15 +1,13 @@
 ARG ARCH=x86_64
 FROM qemount-builder-native:${ARCH}
 
-# Download and extract
+# Download and extract Plan 9 source containing u9fs
 RUN mkdir -p /build
 WORKDIR /build
-RUN wget https://github.com/chaos/diod/releases/download/1.0.24/diod-1.0.24.tar.gz
-RUN tar -xzf diod-1.0.24.tar.gz
+RUN git clone https://github.com/unofficial-mirror/u9fs.git
 
-# Configure
-WORKDIR /build/diod-1.0.24
-RUN ./configure
+# Build u9fs with static linking
+WORKDIR /build/u9fs
+RUN make LDFLAGS="-static"
 
-# Build
-RUN make
+# The built binary will be at /build/u9fs/u9fs
