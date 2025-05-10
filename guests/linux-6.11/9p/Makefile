@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -static -D_XOPEN_SOURCE=600
+CFLAGS = -g -O0 -static -D_XOPEN_SOURCE=600
 TARGET = simple9p
 
 LIBIXP_DIR = libixp
@@ -43,7 +43,8 @@ $(BUILD_DIR)/libixp.a: | $(LIBIXP_DIR) $(BUILD_DIR)
 # Build our server
 $(BUILD_DIR)/$(TARGET): simple9p.c $(BUILD_DIR)/libixp.a | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -I$(LIBIXP_DIR)/include -o $@ $< $(BUILD_DIR)/libixp.a -lpthread
-	strip $@
+	# Don't strip for debugging
+	# strip $@
 
 install: $(BUILD_DIR)/$(TARGET)
 	mkdir -p $(OUTPUT_DIR)

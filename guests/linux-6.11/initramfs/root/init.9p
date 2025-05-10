@@ -7,10 +7,10 @@ echo "[INFO] MOUNT_POINT=$MOUNT_POINT"
 
 if [ -e "$PORT_PATH" ]; then
     echo "[INFO] Device found at $PORT_PATH"
-    echo "[INFO] Starting simple9p server in debug mode..."
+    echo "[INFO] Starting simple9p server in debug mode with strace..."
     
-    # Start the 9P server with the device
-    exec /bin/simple9p -d -p "$PORT_PATH" "$MOUNT_POINT"
+    # Start the 9P server with strace
+    exec strace -f -e trace=read,write,open,close,ioctl /bin/simple9p -d -p "$PORT_PATH" "$MOUNT_POINT"
 else
     echo "[ERROR] 9P port path not found: $PORT_PATH"
     echo "[ERROR] Expected device does not exist"
