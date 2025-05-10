@@ -4,7 +4,7 @@ set -eu
 if [ -e "$PORT_PATH" ]; then
     echo "[INFO] Starting 9P server..."
     # Use a single bidirectional connection
-    exec u9fs -a none -u $(whoami) "$MOUNT_POINT" <> "$PORT_PATH" &
+    exec u9fs "$MOUNT_POINT" <> "$PORT_PATH" &
 else
     echo "[ERROR] 9P port path not found: $PORT_PATH"
 fi

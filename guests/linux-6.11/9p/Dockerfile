@@ -18,6 +18,10 @@ RUN git clone https://github.com/unofficial-mirror/u9fs.git
 WORKDIR /build/u9fs
 ADD authrhosts.c /build/u9fs/authrhosts.c
 
+# Force static linking by modifying the makefile
+RUN sed -i 's/^CFLAGS=/CFLAGS=-static /' makefile && \
+    sed -i 's/^LDFLAGS=/LDFLAGS=-static /' makefile
+
 # Build with static linking
 RUN CFLAGS="-static" LDFLAGS="-static" make clean || true
 RUN CFLAGS="-static" LDFLAGS="-static" make
