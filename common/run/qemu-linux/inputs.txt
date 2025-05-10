@@ -1,0 +1,2 @@
+common/run/qemu-linux/build.sh
+common/run/qemu-linux/run.sh

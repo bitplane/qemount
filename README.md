@@ -16,6 +16,18 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 
 0. planning/proof of concept
 
+### plan
+
+- [x] prove it can be done and actually works
+- [x] make a build system that isn't shit
+- [ ] get a working guest
+  - [x] kernel + busybox image
+  - [ ] 9p server
+  - [ ] ssh server
+- [ ] make FUSE reference client
+  - [x] 9p client
+  - [ ] wrapper script
+
 ## Project Structure
 ```
 qemount/
