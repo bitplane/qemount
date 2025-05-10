@@ -8,11 +8,16 @@
 #include <libgen.h>
 
 void fs_read(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     struct stat st;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }
@@ -32,23 +37,43 @@ void fs_read(Ixp9Req *r) {
 }
 
 void fs_write(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     int fd;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }
     
-    fd = open(fullpath, O_WRONLY);
+    /* Check if file was opened for writing */
+    if(!(state->open_flags & (O_WRONLY | O_RDWR))) {
+        ixp_respond(r, "file not opened for writing");
+        return;
+    }
+    
+    /* Open the file with the stored flags */
+    fd = open(fullpath, state->open_flags);
     if(fd < 0) {
         ixp_respond(r, strerror(errno));
         return;
     }
     
-    lseek(fd, r->ifcall.twrite.offset, SEEK_SET);
-    int n = write(fd, r->ifcall.twrite.data, r->ifcall.twrite.count);
+    /* Handle offset for non-append mode */
+    if(!(state->open_flags & O_APPEND)) {
+        if(lseek(fd, r->ifcall.twrite.offset, SEEK_SET) < 0) {
+            close(fd);
+            ixp_respond(r, strerror(errno));
+            return;
+        }
+    }
+    
+    ssize_t n = write(fd, r->ifcall.twrite.data, r->ifcall.twrite.count);
     close(fd);
     
     if(n < 0) {
@@ -61,16 +86,21 @@ void fs_write(Ixp9Req *r) {
 }
 
 void fs_create(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char newpath[PATH_MAX];
     char fullpath[PATH_MAX];
     struct stat st;
     int fd;
     mode_t mode;
-    char *aux;
+    FidState *newstate;
+    
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
     
     /* Build the new path */
-    strncpy(newpath, path, PATH_MAX-1);
+    strncpy(newpath, state->path, PATH_MAX-1);
     newpath[PATH_MAX-1] = '\0';
     
     if(strcmp(newpath, "/") != 0) {
@@ -100,8 +130,28 @@ void fs_create(Ixp9Req *r) {
             return;
         }
     } else {
-        /* Create file */
-        fd = open(fullpath, O_CREAT | O_EXCL | O_RDWR, mode);
+        /* Create file with requested permissions */
+        int create_flags = O_CREAT | O_EXCL;
+        
+        /* Add flags based on requested mode */
+        switch(r->ifcall.tcreate.mode & 3) {
+            case P9_OREAD:
+                create_flags |= O_RDONLY;
+                break;
+            case P9_OWRITE:
+                create_flags |= O_WRONLY;
+                break;
+            case P9_ORDWR:
+                create_flags |= O_RDWR;
+                break;
+        }
+        
+        if(r->ifcall.tcreate.mode & P9_OTRUNC)
+            create_flags |= O_TRUNC;
+        if(r->ifcall.tcreate.mode & P9_OAPPEND)
+            create_flags |= O_APPEND;
+        
+        fd = open(fullpath, create_flags, mode);
         if(fd < 0) {
             ixp_respond(r, strerror(errno));
             return;
@@ -115,16 +165,48 @@ void fs_create(Ixp9Req *r) {
         return;
     }
     
-    /* Update the fid */
-    aux = strdup(newpath);
-    if(!aux) {
+    /* Create new state for the fid */
+    newstate = malloc(sizeof(FidState));
+    if(!newstate) {
         ixp_respond(r, "out of memory");
         return;
     }
     
-    free(r->fid->aux);
-    r->fid->aux = aux;
+    newstate->path = strdup(newpath);
+    newstate->open_mode = r->ifcall.tcreate.mode;
     
+    /* Set open flags based on create mode */
+    newstate->open_flags = 0;
+    switch(r->ifcall.tcreate.mode & 3) {
+        case P9_OREAD:
+            newstate->open_flags = O_RDONLY;
+            break;
+        case P9_OWRITE:
+            newstate->open_flags = O_WRONLY;
+            break;
+        case P9_ORDWR:
+            newstate->open_flags = O_RDWR;
+            break;
+    }
+    
+    if(r->ifcall.tcreate.mode & P9_OTRUNC)
+        newstate->open_flags |= O_TRUNC;
+    if(r->ifcall.tcreate.mode & P9_OAPPEND)
+        newstate->open_flags |= O_APPEND;
+    
+    if(!newstate->path) {
+        free(newstate);
+        ixp_respond(r, "out of memory");
+        return;
+    }
+    
+    /* Replace old state with new state */
+    if(state->path)
+        free(state->path);
+    free(state);
+    r->fid->aux = newstate;
+    
+    /* Update QID */
     r->fid->qid.type = S_ISDIR(st.st_mode) ? P9_QTDIR : P9_QTFILE;
     r->fid->qid.path = st.st_ino;
     r->fid->qid.version = st.st_mtime;
@@ -135,11 +217,16 @@ void fs_create(Ixp9Req *r) {
 }
 
 void fs_remove(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     struct stat st;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }

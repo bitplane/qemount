@@ -4,43 +4,72 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 /* Real file operations */
 void fs_attach(Ixp9Req *r) {
-    char *aux = strdup("/");
-    if(!aux) {
+    FidState *state = malloc(sizeof(FidState));
+    if(!state) {
+        ixp_respond(r, "out of memory");
+        return;
+    }
+    
+    state->path = strdup("/");
+    state->open_mode = 0;
+    state->open_flags = 0;
+    
+    if(!state->path) {
+        free(state);
         ixp_respond(r, "out of memory");
         return;
     }
     
     r->fid->qid.type = P9_QTDIR;
     r->fid->qid.path = 0;
-    r->fid->aux = aux;
+    r->fid->aux = state;
     r->ofcall.rattach.qid = r->fid->qid;
     ixp_respond(r, nil);
 }
 
 void fs_walk(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
+    FidState *newstate;
     char newpath[PATH_MAX];
     char fullpath[PATH_MAX];
     struct stat st;
     int i;
-    char *aux = NULL;
+    
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+
+    /* Clone fid for walk to newfid */
+    newstate = malloc(sizeof(FidState));
+    if(!newstate) {
+        ixp_respond(r, "out of memory");
+        return;
+    }
+    
+    newstate->path = strdup(state->path);
+    newstate->open_mode = 0;
+    newstate->open_flags = 0;
+    
+    if(!newstate->path) {
+        free(newstate);
+        ixp_respond(r, "out of memory");
+        return;
+    }
+    
+    r->newfid->aux = newstate;
 
     if(r->ifcall.twalk.nwname == 0) {
-        aux = strdup(path);
-        if(!aux) {
-            ixp_respond(r, "out of memory");
-            return;
-        }
-        r->newfid->aux = aux;
         r->newfid->qid = r->fid->qid;
         ixp_respond(r, nil);
         return;
     }
 
-    strncpy(newpath, path, PATH_MAX-1);
+    strncpy(newpath, newstate->path, PATH_MAX-1);
     newpath[PATH_MAX-1] = '\0';
     
     for(i = 0; i < r->ifcall.twalk.nwname; i++) {
@@ -79,21 +108,29 @@ void fs_walk(Ixp9Req *r) {
     r->ofcall.rwalk.nwqid = i;
     r->newfid->qid = r->ofcall.rwalk.wqid[i-1];
     
-    aux = strdup(newpath);
-    if(!aux) {
+    /* Update the newstate path */
+    free(newstate->path);
+    newstate->path = strdup(newpath);
+    if(!newstate->path) {
         ixp_respond(r, "out of memory");
         return;
     }
-    r->newfid->aux = aux;
+    
     ixp_respond(r, nil);
 }
 
 void fs_open(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     struct stat st;
+    int flags = 0;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }
@@ -101,6 +138,38 @@ void fs_open(Ixp9Req *r) {
     if(lstat(fullpath, &st) < 0) {
         ixp_respond(r, strerror(errno));
         return;
+    }
+    
+    /* Convert 9P open mode to Unix flags */
+    switch(r->ifcall.topen.mode & 3) {
+        case P9_OREAD:
+            flags = O_RDONLY;
+            break;
+        case P9_OWRITE:
+            flags = O_WRONLY;
+            break;
+        case P9_ORDWR:
+            flags = O_RDWR;
+            break;
+    }
+    
+    if(r->ifcall.topen.mode & P9_OTRUNC)
+        flags |= O_TRUNC;
+    if(r->ifcall.topen.mode & P9_OAPPEND)
+        flags |= O_APPEND;
+    
+    /* Store the mode and flags for later use */
+    state->open_mode = r->ifcall.topen.mode;
+    state->open_flags = flags;
+    
+    /* Test if we can actually open the file with these flags */
+    if(!S_ISDIR(st.st_mode)) {
+        int fd = open(fullpath, flags);
+        if(fd < 0) {
+            ixp_respond(r, strerror(errno));
+            return;
+        }
+        close(fd);
     }
     
     r->fid->qid.type = P9_QTFILE;
@@ -125,7 +194,10 @@ void fs_flush(Ixp9Req *r) {
 
 void fs_freefid(IxpFid *f) {
     if(f && f->aux) {
-        free(f->aux);
+        FidState *state = f->aux;
+        if(state->path)
+            free(state->path);
+        free(state);
         f->aux = NULL;
     }
 }

@@ -30,23 +30,26 @@ Ixp9Srv p9srv = {
 
 /* Handle device connection directly */
 static void serve_device(int fd) {
-    IxpConn *conn;
+    if(debug)
+        fprintf(stderr, "serve_device: Starting with fd=%d\n", fd);
     
-    /* For character devices, we need to handle the connection directly */
-    conn = malloc(sizeof(IxpConn));
-    if(!conn) {
-        fprintf(stderr, "Failed to allocate connection\n");
-        return;
-    }
+    /* Since this is a character device, we treat it as a direct connection */
+    /* not a listening socket, so we handle it directly */
     
-    memset(conn, 0, sizeof(IxpConn));
-    conn->srv = &server;
-    conn->fd = fd;
-    conn->aux = nil;
-    conn->close = nil;
+    /* Create a connection structure */
+    IxpConn conn = {0};
+    conn.fd = fd;
+    conn.srv = &server;
+    conn.aux = &p9srv;  /* Pass the 9P server structure */
     
-    /* Serve the connection */
-    ixp_serve9conn(conn);
+    if(debug)
+        fprintf(stderr, "serve_device: Serving 9P directly on device\n");
+    
+    /* Serve 9P protocol on this device */
+    ixp_serve9conn(&conn);
+    
+    if(debug)
+        fprintf(stderr, "serve_device: Connection closed\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -107,8 +110,9 @@ int main(int argc, char *argv[]) {
         if(debug)
             fprintf(stderr, "Opened device %s as fd %d\n", addr, fd);
         
-        /* Initialize server */
+        /* Initialize server structure */
         memset(&server, 0, sizeof(server));
+        server.aux = &p9srv;
         
         /* Serve the device connection directly */
         serve_device(fd);

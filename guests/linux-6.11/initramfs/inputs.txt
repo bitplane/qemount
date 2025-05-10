@@ -1,3 +1,4 @@
+guests/linux-6.11/rootfs/$(ARCH)/bin/socat
 guests/linux-6.11/rootfs/$(ARCH)/bin/strace
 guests/linux-6.11/rootfs/$(ARCH)/bin/busybox
 guests/linux-6.11/rootfs/$(ARCH)/bin/dropbearmulti

@@ -14,6 +14,13 @@ extern char *root_path;
 extern int debug;
 extern Ixp9Srv p9srv;
 
+/* Fid state structure to track open files */
+typedef struct FidState {
+    char *path;
+    int open_mode;   /* 9P open mode */
+    int open_flags;  /* Unix open flags */
+} FidState;
+
 /* Path functions */
 void cleanname(char *name);
 char *getfullpath(const char *path, char *buffer, size_t bufsize);

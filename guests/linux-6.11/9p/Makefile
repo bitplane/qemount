@@ -31,7 +31,7 @@ clean:
 	rm -rf build
 
 install: $(TARGET)
-	mkdir -p /build/output/$(ARCH)/bin
-	cp $(TARGET) /build/output/$(ARCH)/bin/
+	mkdir -p /outputs/guests/linux-6.11/rootfs/$(ARCH)/bin
+	cp $(TARGET) /outputs/guests/linux-6.11/rootfs/$(ARCH)/bin/
 
 .PHONY: all clean libixp install

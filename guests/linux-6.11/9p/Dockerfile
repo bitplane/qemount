@@ -16,7 +16,7 @@ WORKDIR /build
 RUN git clone --depth 1 https://github.com/0intro/libixp.git
 
 # Copy our source files
-COPY simple9p.c path.c fs_ops.c fs_io.c fs_stat.c fs_dir.c server.h Makefile ./
+COPY . ./
 
 # Build everything
 RUN make

@@ -7,6 +7,8 @@
 #include <libgen.h>
 
 void build_stat(IxpStat *s, const char *path, const char *fullpath, struct stat *st) {
+    const char *name_ptr;
+    
     s->type = 0;
     s->dev = 0;
     
@@ -40,13 +42,18 @@ void build_stat(IxpStat *s, const char *path, const char *fullpath, struct stat 
         }
     }
     
-    s->name = strrchr(path, '/');
-    if(s->name && s->name[1])
-        s->name++;
+    /* Handle name assignment properly for const */
+    name_ptr = strrchr(path, '/');
+    if(name_ptr && name_ptr[1])
+        name_ptr++;
     else
-        s->name = path;
+        name_ptr = path;
     if(strcmp(path, "/") == 0)
-        s->name = "/";
+        name_ptr = "/";
+    
+    /* Cast away const - libixp expects a non-const string */
+    s->name = (char *)name_ptr;
+    
     s->uid = getenv("USER");
     if(!s->uid) s->uid = "none";
     s->gid = s->uid;
@@ -54,14 +61,19 @@ void build_stat(IxpStat *s, const char *path, const char *fullpath, struct stat 
 }
 
 void fs_stat(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     struct stat st;
     IxpStat s;
     IxpMsg m;
     uint16_t size;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state || !state->path) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }
@@ -71,7 +83,7 @@ void fs_stat(Ixp9Req *r) {
         return;
     }
     
-    build_stat(&s, path, fullpath, &st);
+    build_stat(&s, state->path, fullpath, &st);
     
     size = ixp_sizeof_stat(&s);
     r->ofcall.rstat.nstat = size;
@@ -89,12 +101,17 @@ void fs_stat(Ixp9Req *r) {
 }
 
 void fs_wstat(Ixp9Req *r) {
-    char *path = r->fid->aux;
+    FidState *state = r->fid->aux;
     char fullpath[PATH_MAX];
     IxpStat *s = &r->ifcall.twstat.stat;
     struct stat st;
     
-    if(!getfullpath(path, fullpath, sizeof(fullpath))) {
+    if(!state || !state->path) {
+        ixp_respond(r, "invalid fid state");
+        return;
+    }
+    
+    if(!getfullpath(state->path, fullpath, sizeof(fullpath))) {
         ixp_respond(r, "invalid path");
         return;
     }
@@ -114,7 +131,7 @@ void fs_wstat(Ixp9Req *r) {
         char newfullpath[PATH_MAX];
         char *dir, *pathcopy;
         
-        pathcopy = strdup(path);
+        pathcopy = strdup(state->path);
         if(!pathcopy) {
             ixp_respond(r, "out of memory");
             return;
@@ -135,9 +152,9 @@ void fs_wstat(Ixp9Req *r) {
         }
         
         /* Update the fid's path */
-        free(r->fid->aux);
-        r->fid->aux = strdup(newpath);
-        if(!r->fid->aux) {
+        free(state->path);
+        state->path = strdup(newpath);
+        if(!state->path) {
             ixp_respond(r, "out of memory");
             return;
         }

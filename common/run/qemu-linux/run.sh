@@ -89,9 +89,9 @@ if [ "$MODE" = "9p" ]; then
     rm -f "$SOCKET_PATH"
     
     QEMU_ARGS+=(
-        -device virtio-serial
-        -chardev "socket,path=$SOCKET_PATH,server=on,wait=off,id=p9sock"
-        -device "virtserialport,chardev=p9sock,name=9pport"
+        -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off \
+        -device virtio-serial \
+        -device virtserialport,chardev=p9channel,name=9pport
     )
     echo "9P server will be available at: $SOCKET_PATH"
     echo "Connect with: 9pfuse $SOCKET_PATH <mountpoint>"
