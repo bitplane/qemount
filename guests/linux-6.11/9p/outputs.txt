@@ -1,1 +1,1 @@
-guests/linux-6.11/rootfs/$(ARCH)/bin/u9fs
+guests/linux-6.11/rootfs/$(ARCH)/bin/simple9p

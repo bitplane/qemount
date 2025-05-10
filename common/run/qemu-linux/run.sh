@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Generic QEMU runner script
-# Usage: run-qemu.sh <arch> <kernel> <initramfs> [options]
+# Modified QEMU runner script for 9P support
+# Usage: run-9p.sh <arch> <kernel> <initramfs> [options]
 # Options:
 #   -i <image>    Add a disk image
 #   -9p           Enable 9P server mode
@@ -85,16 +85,21 @@ fi
 
 # Add 9P support if requested
 if [ "$MODE" = "9p" ]; then
+    # Clean up any existing socket
+    rm -f "$SOCKET_PATH"
+    
     QEMU_ARGS+=(
         -device virtio-serial
         -chardev "socket,path=$SOCKET_PATH,server=on,wait=off,id=p9sock"
         -device "virtserialport,chardev=p9sock,name=9pport"
     )
     echo "9P server will be available at: $SOCKET_PATH"
+    echo "Connect with: 9pfuse $SOCKET_PATH <mountpoint>"
 fi
 
 # Add any extra arguments
 QEMU_ARGS+=("${EXTRA_ARGS[@]}")
 
 # Run QEMU
+echo "Starting QEMU..."
 exec "$QEMU_BIN" "${QEMU_ARGS[@]}"

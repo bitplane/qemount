@@ -1,10 +1,18 @@
 #!/bin/sh
 set -eu
 
+echo "[INFO] Starting 9P server mode..."
+echo "[INFO] PORT_PATH=$PORT_PATH"
+echo "[INFO] MOUNT_POINT=$MOUNT_POINT"
+
 if [ -e "$PORT_PATH" ]; then
-    echo "[INFO] Starting 9P server..."
-    # Use a single bidirectional connection
-    exec u9fs "$MOUNT_POINT" <> "$PORT_PATH" &
+    echo "[INFO] Device found at $PORT_PATH"
+    echo "[INFO] Starting simple9p server in debug mode..."
+    
+    # Start the 9P server with the device
+    exec /bin/simple9p -d -p "$PORT_PATH" "$MOUNT_POINT"
 else
     echo "[ERROR] 9P port path not found: $PORT_PATH"
+    echo "[ERROR] Expected device does not exist"
+    exit 1
 fi
