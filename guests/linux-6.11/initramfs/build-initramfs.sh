@@ -6,9 +6,7 @@ ARCH="${ARCH:-x86_64}"
 
 # Copy binaries from host build into our root
 mkdir -p /build/root/bin
-cp -v /host/build/guests/linux-6.11/rootfs/${ARCH}/bin/busybox /build/root/bin/
-cp -v /host/build/guests/linux-6.11/rootfs/${ARCH}/bin/dropbearmulti /build/root/bin/
-cp -v /host/build/guests/linux-6.11/rootfs/${ARCH}/bin/u9fs /build/root/bin/
+cp -v /host/build/guests/linux-6.11/rootfs/${ARCH}/bin/* /build/root/bin/
 
 mkdir -p "$(dirname "/outputs/${OUTPUT_PATH}")"
 
