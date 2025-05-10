@@ -1,12 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-# Modified QEMU runner script for 9P support
-# Usage: run-9p.sh <arch> <kernel> <initramfs> [options]
+# Modified QEMU runner script with network support
+# Usage: run-qemu.sh <arch> <kernel> <initramfs> [options]
 # Options:
 #   -i <image>    Add a disk image
-#   -9p           Enable 9P server mode
+#   -9p           Enable 9P server mode  
 #   -s <socket>   9P socket path (default: /tmp/9p.sock)
+#   -n            Enable networking
 
 if [ $# -lt 3 ]; then
     echo "Usage: $0 <arch> <kernel> <initramfs> [options] [-- extra_qemu_args]"
@@ -14,7 +15,8 @@ if [ $# -lt 3 ]; then
     echo "  -i <image>    Add a disk image"
     echo "  -9p           Enable 9P server mode"
     echo "  -s <socket>   9P socket path (default: /tmp/9p.sock)"
-    echo "Example: $0 x86_64 kernel initramfs.cpio.gz -i test.img -9p"
+    echo "  -n            Enable networking"
+    echo "Example: $0 x86_64 kernel initramfs.cpio.gz -i test.img -9p -n"
     exit 1
 fi
 
@@ -27,6 +29,7 @@ shift 3
 IMAGE=""
 MODE=""
 SOCKET_PATH="/tmp/9p.sock"
+ENABLE_NET=""
 EXTRA_ARGS=()
 
 # Parse options
@@ -43,6 +46,10 @@ while [[ $# -gt 0 ]]; do
         -s)
             SOCKET_PATH="$2"
             shift 2
+            ;;
+        -n)
+            ENABLE_NET="yes"
+            shift
             ;;
         --)
             shift
@@ -83,14 +90,22 @@ if [ -n "$IMAGE" ]; then
     QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
 fi
 
+# Add networking if requested
+if [ -n "$ENABLE_NET" ]; then
+    QEMU_ARGS+=(
+        -netdev user,id=net0,hostfwd=tcp::10022-:22,hostfwd=tcp::5640-:5640
+        -device virtio-net-pci,netdev=net0
+    )
+fi
+
 # Add 9P support if requested
 if [ "$MODE" = "9p" ]; then
     # Clean up any existing socket
     rm -f "$SOCKET_PATH"
     
     QEMU_ARGS+=(
-        -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off \
-        -device virtio-serial \
+        -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
+        -device virtio-serial
         -device virtserialport,chardev=p9channel,name=9pport
     )
     echo "9P server will be available at: $SOCKET_PATH"
