@@ -108,6 +108,12 @@ class QemountBuildSystem:
             lines.append(f"# Container build lock file for caching")
             lines.append(f"{lock_file}: $(ROOT_DIR)/{component['path']}/Dockerfile")
             
+            # Auto-add metadata files as dependencies
+            for meta_file in ["inputs.txt", "outputs.txt", "Dockerfile"]:
+                meta_path = f"{component['path']}/{meta_file}"
+                if (self.project_root / meta_path).exists():
+                    lines.append(f"{lock_file}: $(ROOT_DIR)/{meta_path}")
+            
             # Add all input files that exist in source tree as dependencies for the container
             for input_path in component["inputs"]:
                 if (self.project_root / input_path).exists():
@@ -220,7 +226,7 @@ class QemountBuildSystem:
             f"BUILD_DIR := {self.build_dir}",
             "ARCH ?= $(shell uname -m)",
             "",
-            ".PHONY: all clean refresh list",
+            ".PHONY: all clean clean-outputs clean-containers clean-makefiles clean-all refresh list",
             ""
         ]
         
@@ -230,35 +236,41 @@ class QemountBuildSystem:
         
         # Add include statements for all component Makefiles
         for component in self.components:
-            component_makefile = f"builder/{component['path']}/Makefile"
+            component_makefile = f"$(BUILD_DIR)/builder/{component['path']}/Makefile"
             lines.append(f"include {component_makefile}")
         
-        # Add clean target that handles everything directly
-        lines.append("clean:")
+        # Add clean targets - split into categories
+        lines.append("clean: clean-outputs")
+        lines.append("")
         
+        lines.append("clean-outputs:")
         # Clean all outputs
         for component in self.components:
             for output in component["outputs"]:
                 lines.append(f"\trm -f $(BUILD_DIR)/{output}")
+        lines.append("")
         
-        # Clean all lock files
-        lines.append("\t@find $(BUILD_DIR)/builder -name '.*.lock' -delete")
-        
-        # Clean all containers with the qemount- prefix
+        lines.append("clean-containers:")
         lines.append("\t@echo \"Removing container images...\"")
         lines.append("\t@for container in $$(podman images --format '{{.Repository}}' | grep '^qemount-'); do \\")
         lines.append("\t    echo \"Removing $$container\"; \\")
         lines.append("\t    podman rmi -f $$container 2>/dev/null || true; \\")
         lines.append("\tdone")
+        lines.append("")
         
-        # Clean generated makefiles
+        lines.append("clean-makefiles:")
         lines.append("\t@echo \"Removing generated makefiles...\"")
         lines.append("\t@find $(BUILD_DIR)/builder -name 'Makefile' -delete")
+        lines.append("\t@find $(BUILD_DIR)/builder -name '.*.lock' -delete")
+        lines.append("")
+        
+        lines.append("clean-all: clean-outputs clean-containers clean-makefiles")
+        lines.append("\t@echo \"Clean complete\"")
         lines.append("")
         
         # Add refresh target
         lines.append("refresh:")
-        lines.append(f"\t@$(ROOT_DIR)/generate_makefiles.py")
+        lines.append(f"\t@$(ROOT_DIR)/common/scripts/generate_makefiles.py")
         lines.append("")
         
         # Add list target
@@ -299,7 +311,7 @@ class QemountBuildSystem:
         log.info("Generating root Makefile...")
         self.generate_root_makefile()
         
-        log.info("Done! To build, run: make -C build")
+        log.info("Done! To build, run: make")
 
 if __name__ == "__main__":
     # Use current directory as project root by default

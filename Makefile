@@ -1,5 +1,5 @@
-# Top-level Makefile for qemount
-.PHONY: all clean refresh list
+# Include the generated Makefile if it exists
+-include build/Makefile
 
 # Default architecture if not set
 ARCH ?= $(shell uname -m)
@@ -8,15 +8,6 @@ export ARCH
 all: build/Makefile
 	@$(MAKE) -C build all
 
-build/Makefile:
-	@./generate_makefiles.py
-
-clean: build/Makefile
-	@$(MAKE) -C build clean
-
-refresh:
-	#@find build -type f -name 'Makefile' -print0 | xargs -0 rm
-	@./generate_makefiles.py
-
-list: build/Makefile
-	@$(MAKE) -C build list
+# Auto-regenerate on metadata changes
+build/Makefile: common/scripts/generate_makefiles.py $(shell find . -name "inputs.txt" -o -name "outputs.txt" -o -name "Dockerfile" -o -name "build.sh")
+	@./common/scripts/generate_makefiles.py
