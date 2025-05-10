@@ -104,27 +104,22 @@ class QemountBuildSystem:
         ]
         
         # If component has a Dockerfile, add a lockfile target for build caching
+
         if component["has_dockerfile"]:
             lines.append(f"# Container build lock file for caching")
             lines.append(f"{lock_file}: $(ROOT_DIR)/{component['path']}/Dockerfile")
-            
-            # Auto-add metadata files as dependencies
-            for meta_file in ["inputs.txt", "outputs.txt", "Dockerfile"]:
-                meta_path = f"{component['path']}/{meta_file}"
-                if (self.project_root / meta_path).exists():
-                    lines.append(f"{lock_file}: $(ROOT_DIR)/{meta_path}")
-            
-            # Add all input files that exist in source tree as dependencies for the container
+    
+            # Add ALL files in the component directory as dependencies (Docker-like behavior)
+            lines.append(f"{lock_file}: $(shell find $(ROOT_DIR)/{component['path']} -type f)")
+    
+            # Process explicit inputs for component dependencies
             for input_path in component["inputs"]:
-                if (self.project_root / input_path).exists():
-                    # If the input is a directory that is also a component, depend on its lock file
-                    if self.is_component_path(input_path):
-                        input_container = f"qemount-{input_path.replace('/', '-')}-$(ARCH)"
-                        input_lock = f"$(BUILD_DIR)/builder/{input_path}/.{input_container}.lock"
-                        lines.append(f"{lock_file}: {input_lock}")
-                    else:
-                        lines.append(f"{lock_file}: $(ROOT_DIR)/{input_path}")
-            
+                if self.is_component_path(input_path):
+                    # Component dependencies still need explicit handling
+                    input_container = f"qemount-{input_path.replace('/', '-')}-$(ARCH)"
+                    input_lock = f"$(BUILD_DIR)/builder/{input_path}/.{input_container}.lock"
+                    lines.append(f"{lock_file}: {input_lock}")
+
             lines.append(f"\t@mkdir -p $(dir $@)")
             lines.append(f"\t@echo \"Building container {container_name} for ARCH=$(ARCH)...\"")
             lines.append(f"\t@podman build --build-arg ARCH=$(ARCH) -t {container_name} $(ROOT_DIR)/{component['path']}")
@@ -177,7 +172,7 @@ class QemountBuildSystem:
                     
                     # Use Docker with explicit copy command for each output
                     lines.append(f"\t@echo \"Extracting {output} from container {container_name}...\"")
-                    lines.append(f"\t@podman run --rm -v $(BUILD_DIR):/exports -e ARCH=$(ARCH) {container_name} cp -v /outputs/{output} /exports/{output}")
+                    lines.append(f"\t@podman run --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) {container_name} {output}")
                 
                 lines.append("")
         else:

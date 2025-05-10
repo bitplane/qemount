@@ -1,2 +1,1 @@
-guests/linux-6.11/sshd/Dockerfile
 common/compiler

@@ -31,7 +31,7 @@ RUN apk update && apk add --no-cache \
     zlib-dev
 
 # Create build directories
-RUN mkdir -p /build /outputs
+RUN mkdir -p /build /outputs /host/build
 
 # Set default environment for static builds
 ENV CFLAGS="-static"
@@ -40,3 +40,6 @@ ENV LDFLAGS="-static"
 
 # Default working directory
 WORKDIR /build
+
+COPY --chmod=755 deploy.sh /usr/local/bin/deploy.sh
+ENTRYPOINT ["/usr/local/bin/deploy.sh"]

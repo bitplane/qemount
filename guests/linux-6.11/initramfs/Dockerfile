@@ -1,15 +1,10 @@
-ARG ARCH=x86_64
 FROM qemount-common-compiler-${ARCH}
-ARG ARCH=x86_64
+ARG ARCH
 
-# Add files
-RUN mkdir -p /build
-ADD root /build/root
-WORKDIR /build/root
+# Copy the init scripts and build script
+COPY root /build/root
+COPY --chmod=755 build-initramfs.sh /usr/local/bin/build-initramfs.sh
 
-RUN find . | cpio -o --format=newc > ../initramfs.cpio
-RUN gzip -9 ../initramfs.cpio
+WORKDIR /build
 
-# Copy the file to the output directory
-RUN mkdir -p /outputs/guests/linux-6.11-${ARCH} && \
-    cp /build/initramfs.cpio.gz /outputs/guests/linux-6.11-${ARCH}/initramfs.cpio.gz
+ENTRYPOINT ["/usr/local/bin/build-initramfs.sh"]

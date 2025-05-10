@@ -7,10 +7,8 @@ WORKDIR /build
 RUN wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
 RUN tar -xf busybox-1.36.1.tar.bz2
 
-# Copy config files and scripts
-COPY busybox.config /build/busybox.config
-COPY merge_config.py /build/merge_config.py
-COPY ensure_link.sh /build/ensure_link.sh
+# Copy config files and scripts - copy entire directory
+COPY . /build/
 
 # Configure build based on architecture
 WORKDIR /build/busybox-1.36.1
