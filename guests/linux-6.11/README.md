@@ -6,9 +6,10 @@ non-root methods.
 
 ## filesystem support
 
-
+todo: cat /proc/filesystems
 
 ## u9fs (9P Server)
 
-The project uses u9fs, a simple 9P server implementation from Plan 9. It's
-statically compiled so it actually runs.
+This is a bit of a mess. We need cross compilation and also static builds. We
+should probably just lift the code and drop it in here. It's not like it's
+changed recently.
