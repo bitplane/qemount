@@ -1,55 +1,37 @@
 CC = gcc
-CFLAGS = -g -O0 -static -D_XOPEN_SOURCE=600
-TARGET = simple9p
+CFLAGS = -g -O0 -static -D_XOPEN_SOURCE=600 -Ilibixp/include
+LDFLAGS = -static
+LIBS = build/libixp.a -lpthread
 
-LIBIXP_DIR = libixp
-BUILD_DIR = build
-OUTPUT_DIR = /outputs/guests/linux-6.11/rootfs/$(ARCH)/bin
+SRCS = simple9p.c path.c fs_ops.c fs_io.c fs_stat.c fs_dir.c
+OBJS = $(patsubst %.c,build/%.o,$(SRCS))
+TARGET = build/simple9p
 
-# Core libixp source files
-LIBIXP_SRCS = \
-	convert.c \
-	error.c \
-	map.c \
-	message.c \
-	request.c \
-	rpc.c \
-	server.c \
-	socket.c \
-	transport.c \
-	util.c \
-	timer.c \
-	client.c \
-	thread.c
+all: build libixp $(TARGET)
 
-.PHONY: all clean install
+$(TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
-all: $(BUILD_DIR)/$(TARGET)
+build/%.o: %.c server.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-$(LIBIXP_DIR):
-	git clone https://github.com/0intro/libixp.git $(LIBIXP_DIR)
+build:
+	mkdir -p build
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-# Build libixp manually to avoid their build system issues
-$(BUILD_DIR)/libixp.a: | $(LIBIXP_DIR) $(BUILD_DIR)
-	cd $(LIBIXP_DIR)/lib/libixp && \
-	for f in $(LIBIXP_SRCS); do \
-		$(CC) $(CFLAGS) -I../../include -c $$f -o $(CURDIR)/$(BUILD_DIR)/$${f%.c}.o || exit 1; \
+libixp:
+	cd libixp/lib/libixp && \
+	for f in convert.c error.c map.c message.c request.c rpc.c server.c socket.c transport.c util.c timer.c client.c thread.c; do \
+		gcc -g -O0 -static -D_XOPEN_SOURCE=600 -I../../include -c $$f -o $(shell pwd)/build/$${f%.c}.o || exit 1; \
 	done
-	ar rcs $@ $(BUILD_DIR)/*.o
-
-# Build our server
-$(BUILD_DIR)/$(TARGET): simple9p.c $(BUILD_DIR)/libixp.a | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -I$(LIBIXP_DIR)/include -o $@ $< $(BUILD_DIR)/libixp.a -lpthread
-	# Don't strip for debugging
-	# strip $@
-
-install: $(BUILD_DIR)/$(TARGET)
-	mkdir -p $(OUTPUT_DIR)
-	cp $(BUILD_DIR)/$(TARGET) $(OUTPUT_DIR)/
+	ar rcs build/libixp.a build/convert.o build/error.o build/map.o build/message.o \
+		build/request.o build/rpc.o build/server.o build/socket.o build/transport.o \
+		build/util.o build/timer.o build/client.o build/thread.o
 
 clean:
-	rm -rf $(BUILD_DIR)
-	rm -rf $(LIBIXP_DIR)
+	rm -rf build
+
+install: $(TARGET)
+	mkdir -p /build/output/$(ARCH)/bin
+	cp $(TARGET) /build/output/$(ARCH)/bin/
+
+.PHONY: all clean libixp install
