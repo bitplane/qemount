@@ -1,5 +1,5 @@
 ARG ARCH
-FROM qemount-common-compiler-${ARCH}
+FROM localhost/qemount-common-compiler-${ARCH}
 ARG ARCH
 
 # Install additional dependencies including static fuse library
