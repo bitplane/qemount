@@ -31,7 +31,8 @@ RUN apk update && apk add --no-cache \
     mtools \
     cpio \
     zlib-dev \
-    patch
+    patch \
+    findutils
 
 # Set up compiler for target architecture  
 RUN BUILD_ARCH=$(uname -m) && \
@@ -60,6 +61,7 @@ RUN BUILD_ARCH=$(uname -m) && \
     fi
 
 # Set up standard environment
+ENV PATH="/opt/${ARCH}-linux-musl${ARCH_VARIANT}-cross/bin:${PATH}"
 ENV CC=target-gcc
 ENV CXX=target-g++
 ENV LD=target-ld
