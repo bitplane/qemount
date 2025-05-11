@@ -7,8 +7,9 @@ WORKDIR /build
 RUN wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
 RUN tar -xf busybox-1.36.1.tar.bz2
 
-# Copy config files and scripts
-COPY . /build/
+COPY *.config /build/
+COPY *.py /build/
+COPY *.sh /build/
 
 WORKDIR /build/busybox-1.36.1
 
@@ -37,3 +38,7 @@ RUN if [ "$ARCH" = "x86_64" ]; then \
 # Create output directory and copy
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
 RUN cp -v /build/busybox-1.36.1/busybox /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/
+RUN cd /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/ && \
+    for f in $(./busybox --list); do \
+        ln -s ./busybox "$f"; \
+    done
