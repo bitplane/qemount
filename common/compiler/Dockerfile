@@ -1,4 +1,3 @@
-# common/compiler/Dockerfile
 FROM alpine:latest
 ARG ARCH
 ARG ARCH_VARIANT=""

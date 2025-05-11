@@ -1,7 +1,6 @@
-# guests/linux-6.11/kernel/Dockerfile
-ARG ARCH=x86_64
+ARG ARCH
 FROM qemount-common-compiler-${ARCH}
-ARG ARCH=x86_64
+ARG ARCH
 
 # Install additional dependencies for kernel build
 RUN apk add --no-cache \

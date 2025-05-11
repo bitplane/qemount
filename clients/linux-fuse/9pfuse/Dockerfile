@@ -1,4 +1,4 @@
-ARG ARCH=x86_64
+ARG ARCH
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
 

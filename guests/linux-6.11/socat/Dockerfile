@@ -1,5 +1,4 @@
-# guests/linux-6.11/socat/Dockerfile
-ARG ARCH=x86_64
+ARG ARCH
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
 

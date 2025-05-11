@@ -1,7 +1,6 @@
-# guests/linux-6.11/busybox/Dockerfile
-ARG ARCH=x86_64
+ARG ARCH
 FROM qemount-common-compiler-${ARCH}
-ARG ARCH=x86_64
+ARG ARCH
 
 # Download and extract BusyBox
 WORKDIR /build

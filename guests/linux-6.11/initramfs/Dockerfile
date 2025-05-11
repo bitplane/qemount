@@ -1,3 +1,4 @@
+ARG ARCH
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
 
