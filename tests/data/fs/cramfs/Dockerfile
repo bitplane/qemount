@@ -13,7 +13,7 @@ RUN apk add --no-cache \
 # Build cramfs tools from source
 RUN git clone https://github.com/npitre/cramfs-tools.git /tmp/cramfs-tools && \
     cd /tmp/cramfs-tools && \
-    make CC=$CC CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" && \
+    make && \
     cp mkcramfs /usr/local/bin/ && \
     rm -rf /tmp/cramfs-tools
 
