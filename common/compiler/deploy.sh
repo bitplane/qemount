@@ -7,4 +7,4 @@ fi
 
 OUTPUT_PATH="$1"
 mkdir -p "$(dirname "/host/build/$OUTPUT_PATH")"
-cp -v "/outputs/$OUTPUT_PATH" "/host/build/$OUTPUT_PATH"
+cp -r "/outputs/$OUTPUT_PATH" "/host/build/$OUTPUT_PATH"
