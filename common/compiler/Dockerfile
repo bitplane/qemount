@@ -1,5 +1,4 @@
-ARG ARCH
-FROM qemount-common-compiler-${ARCH}
+FROM alpine:latest
 ARG ARCH
 ARG ARCH_VARIANT=""
 
