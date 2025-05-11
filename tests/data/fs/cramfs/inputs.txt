@@ -1,0 +1,2 @@
+common/compiler
+tests/data/templates/basic.tar

@@ -4,7 +4,7 @@ generate_makefiles.py
 
 This script generates Makefiles for a component-based build system,
 letting Make handle the dependency resolution while the actual build
-happens in containers (via Dockerfile) or build scripts.
+happens in containers via Dockerfile.
 """
 
 import os
@@ -23,7 +23,7 @@ class QemountBuildSystem:
         self.project_root = Path(project_root).resolve()
         self.build_dir = self.project_root / "build"
         self.builder_dir = self.build_dir / "builder"
-        self.component_dirs = ["guests", "clients", "common"]
+        self.component_dirs = ["guests", "clients", "common", "tests"]
         
         # Ensure directories exist
         self.builder_dir.mkdir(parents=True, exist_ok=True)
@@ -39,12 +39,11 @@ class QemountBuildSystem:
             if not base_dir.exists():
                 continue
                 
-            # Find all build.sh and Dockerfile files
-            for file_type in ["build.sh", "Dockerfile"]:
-                for filepath in base_dir.glob(f"**/{file_type}"):
-                    component_dir = filepath.parent
-                    component_path = component_dir.relative_to(self.project_root)
-                    components.append(str(component_path))
+            # Find all Dockerfile files
+            for filepath in base_dir.glob(f"**/Dockerfile"):
+                component_dir = filepath.parent
+                component_path = component_dir.relative_to(self.project_root)
+                components.append(str(component_path))
         
         # Sort and deduplicate
         return sorted(set(components))
@@ -64,14 +63,12 @@ class QemountBuildSystem:
             with open(outputs_file, "r") as f:
                 outputs = [line.strip() for line in f.readlines() if line.strip() and not line.strip().startswith('#')]
         
-        has_build_script = (self.project_root / component_path / "build.sh").exists()
         has_dockerfile = (self.project_root / component_path / "Dockerfile").exists()
         
         return {
             "path": component_path,
             "inputs": inputs,
             "outputs": outputs,
-            "has_build_script": has_build_script,
             "has_dockerfile": has_dockerfile
         }
     
@@ -104,7 +101,6 @@ class QemountBuildSystem:
         ]
         
         # If component has a Dockerfile, add a lockfile target for build caching
-
         if component["has_dockerfile"]:
             lines.append(f"# Container build lock file for caching")
             lines.append(f"{lock_file}: $(ROOT_DIR)/{component['path']}/Dockerfile")
@@ -150,29 +146,22 @@ class QemountBuildSystem:
                     else:
                         target_line += f" $(ROOT_DIR)/{input_path}"
                 
-                # If using Dockerfile, add dependency on the lock file instead of all inputs
+                # If using Dockerfile, add dependency on the lock file
                 if component["has_dockerfile"]:
-                    target_line = f"$(BUILD_DIR)/{output}: {lock_file}"
+                    target_line += f" {lock_file}"
                 
                 lines.append(target_line)
                 
-                # Add build commands
-                if component["has_build_script"]:
-                    # For build.sh, pass the output path as an argument
-                    lines.append(f"\t@mkdir -p $(dir $@)")
-                    lines.append(f"\t@echo \"Building {output} using build script...\"")
-                    lines.append(f"\t@$(ROOT_DIR)/{component['path']}/build.sh $@")
-                else:
-                    # For Dockerfile, run the container with a specific copy command
-                    output_dir = os.path.dirname(output)
-                    output_file = os.path.basename(output)
-                    
-                    # Create output directory
-                    lines.append(f"\t@mkdir -p $(dir $@)")
-                    
-                    # Use Docker with explicit copy command for each output
-                    lines.append(f"\t@echo \"Extracting {output} from container {container_name}...\"")
-                    lines.append(f"\t@podman run --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) {container_name} {output}")
+                # Add build commands for Dockerfile
+                output_dir = os.path.dirname(output)
+                output_file = os.path.basename(output)
+                
+                # Create output directory
+                lines.append(f"\t@mkdir -p $(dir $@)")
+                
+                # Use Docker with explicit copy command for each output
+                lines.append(f"\t@echo \"Extracting {output} from container {container_name}...\"")
+                lines.append(f"\t@podman run --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) {container_name} {output}")
                 
                 lines.append("")
         else:
@@ -180,14 +169,10 @@ class QemountBuildSystem:
             if component["has_dockerfile"]:
                 lines.append(f"all: {lock_file}")
                 lines.append("")
-            elif component["has_build_script"]:
-                lines.append("all:")
-                lines.append(f"\t@$(ROOT_DIR)/{component['path']}/build.sh")
-                lines.append("")
             else:
-                # Neither build script nor Dockerfile - probably just a placeholder
+                # Neither Dockerfile - probably just a placeholder
                 lines.append("all:")
-                lines.append(f"\t@echo \"Nothing to do for component {component['path']}\"")
+                lines.append(f"\t@echo \"Component {component['path']} has no Dockerfile\"")
                 lines.append("")
         
         # Write makefile if it's new or changed
@@ -288,6 +273,7 @@ class QemountBuildSystem:
                     lines.append(f"\t@echo \"    - {output}\"")
             else:
                 lines.append(f"\t@echo \"    (no defined outputs)\"")
+        lines.append("")
         
         # Write the makefile
         with open(makefile_path, "w") as f:
