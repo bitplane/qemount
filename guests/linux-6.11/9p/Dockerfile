@@ -2,7 +2,6 @@ ARG ARCH
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
 
-# Install build dependencies
 RUN apk add --no-cache \
     git \
     make \
@@ -12,7 +11,6 @@ RUN apk add --no-cache \
 
 WORKDIR /build
 
-# Clone libixp
 RUN git clone --depth 1 https://github.com/bitplane/simple9p.git && \
     cd simple9p && \
     ./build.sh

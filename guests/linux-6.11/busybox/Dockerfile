@@ -2,6 +2,8 @@ ARG ARCH
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
 
+RUN apk add python3
+
 # Download and extract BusyBox
 WORKDIR /build
 RUN wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
@@ -14,17 +16,7 @@ COPY *.sh /usr/local/bin/
 WORKDIR /build/busybox-1.36.1
 
 # Configure build - use compiler from parent image
-RUN if [ "$ARCH" = "x86_64" ]; then \
-      export BUSYBOX_ARCH=x86_64; \
-    elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-      export BUSYBOX_ARCH=aarch64; \
-    elif [ "$ARCH" = "arm" ]; then \
-      export BUSYBOX_ARCH=arm; \
-    else \
-      echo "Unsupported architecture: $ARCH"; \
-    fi; \
-    # Create default config \
-    make defconfig && \
+RUN make defconfig && \
     # Create architecture-specific config symlink \
     /usr/local/bin/ensure_link.sh /build/busybox.${BUSYBOX_ARCH}.config /build/busybox.config && \
     # Merge configs \

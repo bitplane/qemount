@@ -2,8 +2,10 @@
 -include build/Makefile
 
 # Default architecture if not set
-ARCH ?= $(shell uname -m)
+ARCH ?= $(shell ./common/scripts/canonical_arch.sh)
+PLATFORM ?= $(shell ./common/scripts/arch_to_platform.sh $(ARCH))
 export ARCH
+export PLATFORM
 
 all: build/Makefile
 	@$(MAKE) -C build all

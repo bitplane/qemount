@@ -26,32 +26,16 @@ COPY *.config /build/linux-6.11/
 
 WORKDIR /build/linux-6.11
 
-# Set architecture-specific variables
-RUN if [ "$ARCH" = "x86_64" ]; then \
-      export KERNEL_ARCH=x86_64; \
-      export IMAGE_NAME=bzImage; \
-    elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-      export KERNEL_ARCH=arm64; \
-      export IMAGE_NAME=Image.gz; \
-    elif [ "$ARCH" = "arm" ]; then \
-      export KERNEL_ARCH=arm; \
-      export IMAGE_NAME=zImage; \
-    else \
-      echo "Unsupported architecture: $ARCH"; \
-      exit 1; \
-    fi; \
-    # Merge appropriate config files \
-    CONF_TO_USE="kernel.$KERNEL_ARCH.config"; \
+RUN CONF_TO_USE="kernel.$KERNEL_ARCH.config"; \
     if [ ! -f "$CONF_TO_USE" ]; then \
       CONF_TO_USE="kernel.config"; \
     fi; \
     echo "Using config file: $CONF_TO_USE"; \
-    make ARCH=$KERNEL_ARCH defconfig && \
+    make defconfig && \
     ./scripts/kconfig/merge_config.sh -m .config $CONF_TO_USE && \
     ./scripts/kconfig/merge_config.sh -m .config filesystems.config && \
-    yes "" | make ARCH=$KERNEL_ARCH oldconfig && \
-    # Build the kernel using our cross compiler \
-    make -j$(nproc) ARCH=$KERNEL_ARCH CC=$CC LD=${CC%-gcc}-ld AR=${CC%-gcc}-ar $IMAGE_NAME
+    yes "" | make oldconfig && \
+    make -j$(nproc)
 
 # Create output directory
 RUN mkdir -p /outputs/guests/linux-6.11-${ARCH}

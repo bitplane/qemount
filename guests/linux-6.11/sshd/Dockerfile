@@ -15,13 +15,7 @@ RUN tar -xf dropbear-2025.87.tar.bz2
 
 WORKDIR /build/dropbear-2025.87
 
-# Configure with our cross compiler
-RUN ./configure \
-    --host=${ARCH}-linux-musl \
-    --disable-zlib \
-    CC=$CC \
-    CFLAGS="$CFLAGS" \
-    LDFLAGS="$LDFLAGS"
+RUN ./configure --disable-zlib 
 
 # Build dropbear with static linking
 RUN make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 STATIC=1 -j$(nproc)
@@ -31,4 +25,4 @@ RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
 
 # Copy dropbearmulti to output and strip it
 RUN cp -v /build/dropbear-2025.87/dropbearmulti /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/ && \
-    ${CC%-gcc}-strip /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/dropbearmulti || true
+    strip /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/dropbearmulti || true

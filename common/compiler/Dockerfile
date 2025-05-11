@@ -1,38 +1,30 @@
 FROM alpine:latest
 ARG ARCH
-ARG ARCH_VARIANT=""
 
-# OUR standard naming - consistent everywhere
-ENV TARGET_TRIPLE=${ARCH}-linux-musl${ARCH_VARIANT}
-ENV CROSS_COMPILE=${TARGET_TRIPLE}-
+# Install build tools
+RUN apk add --no-cache \
+    build-base \
+    musl-dev \
+    linux-headers \
+    bash \
+    git \
+    findutils
 
-# Standard environment for all builds
-ENV CC=target-gcc
-ENV CXX=target-g++
-ENV LD=target-ld
-ENV AR=target-ar
-ENV STRIP=target-strip
-ENV OBJCOPY=target-objcopy
-ENV NM=target-nm
+# Set compiler variables explicitly
+ENV CC=gcc
+ENV CXX=g++
+ENV LD=ld
+ENV AR=ar
+ENV STRIP=strip
+ENV NM=nm
+
+# Standard build flags for static binaries
 ENV CFLAGS="-static"
 ENV CXXFLAGS="-static"
 ENV LDFLAGS="-static"
 
-# Copy setup scripts
-COPY setup-native.sh setup-cross.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/setup-*.sh
-
-# Run appropriate setup based on architecture
-RUN if [ "$(uname -m)" = "$ARCH" ]; then \
-        /usr/local/bin/setup-native.sh; \
-    else \
-        /usr/local/bin/setup-cross.sh "$ARCH"; \
-    fi
-
-# Create standard directories
+# Create directories
 RUN mkdir -p /build /outputs /host/build
-
-# Default working directory
 WORKDIR /build
 
 # Copy deployment script

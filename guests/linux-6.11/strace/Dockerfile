@@ -14,16 +14,12 @@ WORKDIR /build/strace-6.7
 
 # Configure with static linking using our cross compiler
 RUN ./configure \
-    --host=${ARCH}-linux-musl \
     --enable-static \
     --disable-shared \
-    --disable-mpers \
-    CC=$CC \
-    LDFLAGS="$LDFLAGS -pthread" \
-    CFLAGS="$CFLAGS"
+    --disable-mpers 
 
 RUN make -j$(nproc)
 
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin && \
     cp -v src/strace /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/ && \
-    ${CC%-gcc}-strip /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/strace || true
+    strip /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/strace || true

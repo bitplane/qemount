@@ -15,20 +15,13 @@ RUN tar -xzf socat-1.7.4.4.tar.gz
 
 WORKDIR /build/socat-1.7.4.4
 
-# Configure for static build with our cross compiler
 RUN ./configure \
-    --host=${ARCH}-linux-musl \
     --enable-static \
-    --disable-shared \
-    CC=$CC \
-    CFLAGS="$CFLAGS" \
-    LDFLAGS="$LDFLAGS"
+    --disable-shared
 
 # Build socat
-RUN make -j$(nproc)
-
-# Strip the binary
-RUN ${CC%-gcc}-strip socat || true
+RUN make -j$(nproc) && \
+    strip socat || true
 
 # Create output directory and copy binary
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
