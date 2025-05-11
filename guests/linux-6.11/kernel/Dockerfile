@@ -1,3 +1,4 @@
+# guests/linux-6.11/kernel/Dockerfile
 ARG ARCH=x86_64
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH=x86_64
@@ -24,22 +25,18 @@ RUN tar -xf linux-6.11.tar.xz
 # Copy config files
 COPY *.config /build/linux-6.11/
 
-# Move to kernel source directory
 WORKDIR /build/linux-6.11
 
 # Set architecture-specific variables
 RUN if [ "$ARCH" = "x86_64" ]; then \
       export KERNEL_ARCH=x86_64; \
       export IMAGE_NAME=bzImage; \
-      export CROSS_COMPILE=""; \
     elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
       export KERNEL_ARCH=arm64; \
       export IMAGE_NAME=Image.gz; \
-      export CROSS_COMPILE="aarch64-none-elf-"; \
     elif [ "$ARCH" = "arm" ]; then \
       export KERNEL_ARCH=arm; \
       export IMAGE_NAME=zImage; \
-      export CROSS_COMPILE="arm-none-eabi-"; \
     else \
       echo "Unsupported architecture: $ARCH"; \
       exit 1; \
@@ -53,14 +50,14 @@ RUN if [ "$ARCH" = "x86_64" ]; then \
     make ARCH=$KERNEL_ARCH defconfig && \
     ./scripts/kconfig/merge_config.sh -m .config $CONF_TO_USE && \
     ./scripts/kconfig/merge_config.sh -m .config filesystems.config && \
-    yes "" | make ARCH=$KERNEL_ARCH CROSS_COMPILE=$CROSS_COMPILE oldconfig && \
-    # Build the kernel \
-    make -j$(nproc) ARCH=$KERNEL_ARCH CROSS_COMPILE=$CROSS_COMPILE $IMAGE_NAME
+    yes "" | make ARCH=$KERNEL_ARCH oldconfig && \
+    # Build the kernel using our cross compiler \
+    make -j$(nproc) ARCH=$KERNEL_ARCH CC=$CC LD=${CC%-gcc}-ld AR=${CC%-gcc}-ar $IMAGE_NAME
 
-# Create output directory with architecture-specific path
+# Create output directory
 RUN mkdir -p /outputs/guests/linux-6.11-${ARCH}
 
-# Copy kernel image to output (with generalized path logic)
+# Copy kernel image to output
 RUN if [ "$ARCH" = "x86_64" ]; then \
       cp -v arch/x86_64/boot/bzImage /outputs/guests/linux-6.11-${ARCH}/kernel; \
     elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \

@@ -1,6 +1,7 @@
-CC = gcc
-CFLAGS = -g -O0 -static -D_XOPEN_SOURCE=600 -Ilibixp/include
-LDFLAGS = -static
+# guests/linux-6.11/9p/Makefile
+CC ?= gcc
+CFLAGS += -g -O0 -D_XOPEN_SOURCE=600 -Ilibixp/include
+LDFLAGS += -static
 LIBS = build/libixp.a -lpthread
 
 SRCS = simple9p.c path.c fs_ops.c fs_io.c fs_stat.c fs_dir.c
@@ -21,7 +22,7 @@ build:
 libixp:
 	cd libixp/lib/libixp && \
 	for f in convert.c error.c map.c message.c request.c rpc.c server.c socket.c transport.c util.c timer.c client.c thread.c; do \
-		gcc -g -O0 -static -D_XOPEN_SOURCE=600 -I../../include -c $$f -o $(shell pwd)/build/$${f%.c}.o || exit 1; \
+		$(CC) $(CFLAGS) -I../../include -c $$f -o $$(pwd)/../../../build/$${f%.c}.o || exit 1; \
 	done
 	ar rcs build/libixp.a build/convert.o build/error.o build/map.o build/message.o \
 		build/request.o build/rpc.o build/server.o build/socket.o build/transport.o \
@@ -30,8 +31,4 @@ libixp:
 clean:
 	rm -rf build
 
-install: $(TARGET)
-	mkdir -p /outputs/guests/linux-6.11/rootfs/$(ARCH)/bin
-	cp $(TARGET) /outputs/guests/linux-6.11/rootfs/$(ARCH)/bin/
-
-.PHONY: all clean libixp install
+.PHONY: all clean libixp

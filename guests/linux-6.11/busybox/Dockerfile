@@ -1,3 +1,4 @@
+# guests/linux-6.11/busybox/Dockerfile
 ARG ARCH=x86_64
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH=x86_64
@@ -7,20 +8,18 @@ WORKDIR /build
 RUN wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
 RUN tar -xf busybox-1.36.1.tar.bz2
 
-# Copy config files and scripts - copy entire directory
+# Copy config files and scripts
 COPY . /build/
 
-# Configure build based on architecture
 WORKDIR /build/busybox-1.36.1
+
+# Configure build - use compiler from parent image
 RUN if [ "$ARCH" = "x86_64" ]; then \
       export BUSYBOX_ARCH=x86_64; \
-      export CROSS_COMPILE=""; \
     elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
       export BUSYBOX_ARCH=aarch64; \
-      export CROSS_COMPILE="aarch64-none-elf-"; \
     elif [ "$ARCH" = "arm" ]; then \
       export BUSYBOX_ARCH=arm; \
-      export CROSS_COMPILE="arm-none-eabi-"; \
     else \
       echo "Unsupported architecture: $ARCH"; \
       exit 1; \
@@ -33,12 +32,9 @@ RUN if [ "$ARCH" = "x86_64" ]; then \
     python3 /build/merge_config.py .config /build/busybox.config .config && \
     # Accept defaults for any new options \
     yes "" | make oldconfig || true && \
-    # Build busybox statically \
-    make -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE CONFIG_STATIC=y
+    # Build busybox with our cross compiler \
+    make -j$(nproc) CC=$CC CONFIG_STATIC=y
 
-# Create output directory structure matching the outputs.txt
-# This path should match exactly what's in outputs.txt
+# Create output directory and copy
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
-
-# Copy busybox to output location
 RUN cp -v /build/busybox-1.36.1/busybox /outputs/guests/linux-6.11/rootfs/${ARCH}/bin/

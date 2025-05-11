@@ -1,3 +1,4 @@
+# guests/linux-6.11/socat/Dockerfile
 ARG ARCH=x86_64
 FROM qemount-common-compiler-${ARCH}
 ARG ARCH
@@ -15,18 +16,20 @@ RUN tar -xzf socat-1.7.4.4.tar.gz
 
 WORKDIR /build/socat-1.7.4.4
 
-# Configure for static build
+# Configure for static build with our cross compiler
 RUN ./configure \
+    --host=${ARCH}-linux-musl \
     --enable-static \
     --disable-shared \
-    CFLAGS="-static" \
-    LDFLAGS="-static"
+    CC=$CC \
+    CFLAGS="$CFLAGS" \
+    LDFLAGS="$LDFLAGS"
 
 # Build socat
 RUN make -j$(nproc)
 
 # Strip the binary
-RUN strip socat
+RUN ${CC%-gcc}-strip socat || true
 
 # Create output directory and copy binary
 RUN mkdir -p /outputs/guests/linux-6.11/rootfs/${ARCH}/bin
