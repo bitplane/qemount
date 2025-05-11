@@ -26,16 +26,14 @@ COPY *.config /build/linux-6.11/
 
 WORKDIR /build/linux-6.11
 
-RUN CONF_TO_USE="kernel.$KERNEL_ARCH.config"; \
-    if [ ! -f "$CONF_TO_USE" ]; then \
-      CONF_TO_USE="kernel.config"; \
-    fi; \
-    echo "Using config file: $CONF_TO_USE"; \
-    make defconfig && \
-    ./scripts/kconfig/merge_config.sh -m .config $CONF_TO_USE && \
-    ./scripts/kconfig/merge_config.sh -m .config filesystems.config && \
-    yes "" | make oldconfig && \
-    make -j$(nproc)
+
+RUN set -x; \
+    KERNEL_ARCH=$ARCH; \
+    [ "$ARCH" = "aarch64" ] && KERNEL_ARCH=arm64; \
+    make ARCH=$KERNEL_ARCH defconfig && \
+    ./scripts/kconfig/merge_config.sh -m .config kernel.config filesystems.config && \
+    yes "" | make ARCH=$KERNEL_ARCH oldconfig && \
+    make ARCH=$KERNEL_ARCH -j$(nproc)
 
 # Create output directory
 RUN mkdir -p /outputs/guests/linux-6.11-${ARCH}
