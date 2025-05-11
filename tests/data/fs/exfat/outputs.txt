@@ -1,1 +1,1 @@
-# Empty for now since we can't build exFAT without privileges
+tests/data/images/basic.exfat
