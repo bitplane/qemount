@@ -230,11 +230,20 @@ class QemountBuildSystem:
         lines.append("")
         
         # Add include statements for all component Makefiles
+        lines.append("# Include component makefiles")
         for component in self.components:
             component_makefile = f"$(BUILD_DIR)/builder/{component['path']}/Makefile"
-            lines.append(f"include {component_makefile}")
+            # Use -include to ignore missing files
+            lines.append(f"-include {component_makefile}")
+        lines.append("")
         
-        # Add clean targets - split into categories
+        # Add auto-regeneration rule
+        lines.append("# Auto-regenerate makefiles if missing")
+        lines.append(f"$(BUILD_DIR)/builder/%/Makefile: $(ROOT_DIR)/common/scripts/generate_makefiles.py")
+        lines.append("\t@$(ROOT_DIR)/common/scripts/generate_makefiles.py")
+        lines.append("")
+        
+        # Add clean targets
         lines.append("clean: clean-outputs")
         lines.append("")
         
