@@ -7,26 +7,42 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 * Run ancient Linux kernels that still had write access to now read-only filesystems
 * Run old operating systems (Amiga, Acorn) with any CPU arch, and read/write their
   filesystems
-* Make a generic driver for Windows that mounts any filesystem
-* Docker image that turns any filesystem into a tar
 * ... basically a clutch between any image/block device, URL, file and anything else,
   the UNIX way - everything is a file.
 
 ## STATUS
 
-0. planning/proof of concept
+0. unstable / pre-alpha
 
 ### plan
 
+#### 1 Prove it works
+
 - [x] prove it can be done and actually works
 - [x] make a build system that isn't shit
-- [ ] get a working guest
+- [x] get a working guest
   - [x] kernel + busybox image
-  - [ ] 9p server
-  - [ ] ssh server
+  - [x] 9p server
 - [ ] make FUSE reference client
   - [x] 9p client
   - [ ] wrapper script
+
+#### 2 Make it go
+
+- [ ] backend
+  - [ ] mount read only by default
+  - [ ] break out 9p server to separate project with tests
+  - [ ]
+- [ ] bugs
+  - [ ] spam in file browser
+  - [ ] block size wrong for `du`
+- [ ] build pipeline
+  - [ ] cross compile for arm
+  - [ ] touch dockerfiles when deps change
+  - [ ] don't build targets unless they're needed
+
+#### 3 Polish the turd
+
 
 ## Project Structure
 ```
@@ -66,7 +82,9 @@ qemount/
 
 ## Research / notes
 
-### Linux / BSD
+### Guests
+
+#### Linux / BSD
 
 | Filesystem      | Linux 6.11       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
 | --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
@@ -77,23 +95,58 @@ qemount/
 | **exFAT**       | 🏆               | ❌          | 💩 (FUSE)        | 💩 (FUSE)        | Linux has native driver         |
 | **NTFS**        | 🏆 (`ntfs3`)     | 💩 (`ntfs`) | 💩 (`ntfs`/FUSE) | 💩 (`ntfs`/FUSE) | Write support best in Linux     |
 | **UFS1**        | 💩               | ❌          | ✅               | ✅               | FreeBSD best, Linux very broken |
-| **UFS2**        | ❌               | ❌          | 🏆               | ✅               | Only FreeBSD has full support   |
 | **ZFS**         | ✅               | ❌          | 🏆               | ✅ (module)      | All can do it, FreeBSD wins     |
 | **Btrfs**       | 🏆               | ❌          | ❌               | ❌               | Linux-only, good for COW        |
 | **XFS**         | 🏆               | ✅          | ❌               | ❌               | Linux-only                      |
-| **ReiserFS**    | 💩 (deprecated)  | ✅          | ❌               | ❌               | Historical only                 |
 | **F2FS**        | ✅               | ❌          | ❌               | ❌               | Android/Linux FS                |
 | **JFS**         | ✅               | ✅          | ❌               | ❌               | IBM FS, Linux-only              |
 | **ISO9660**     | ✅               | ✅          | 🏆               | ✅               | FreeBSD supports weird hybrids  |
 | **UDF**         | ✅               | 💩          | ✅               | ✅               | CD/DVD/BR support               |
-| **HFS**         | 💩 (HFS+)        | 💩          | ✅ (RO)          | ✅ (RO)          | Apple FS, write is weak         |
-| **APFS**        | 💩 (FUSE)        | ❌          | ❌               | ❌               | Reverse engineered FUSE only    |
-| **CHFS**        | ❌               | ❌          | ❌               | 🏆               | NetBSD-only, for NAND flash     |
-| **LFS**         | ❌               | ❌          | ❌               | 🏆               | NetBSD log-structured           |
 | **MinixFS**     | ✅               | ✅          | ✅ (RO)          | ✅               | Niche use                       |
 | **SquashFS**    | ✅               | ❌          | ✅ (module)      | ❌               | Read-only compressed            |
 | **OverlayFS**   | 🏆               | ❌          | 💩 (UnionFS)     | 💩 (Union)       | Linux OverlayFS > BSD Union     |
 | **TMPFS**       | ✅               | ✅          | ✅               | ✅               | All good                        |
 | **DevFS**       | ✅               | ✅          | ✅               | ✅               | Basic virtual FS                |
-| **ProcFS**      | ✅               | ✅          | ✅               | ✅               | Universally supported           |
+| **ReiserFS**    | 💩 (deprecated)  | ✅          | ❌               | ❌               | Historical only                 |
+| **UFS2**        | ❌               | ❌          | 🏆               | ✅               | Only FreeBSD has full support   |
+| **APFS**        | 💩 (FUSE)        | ❌          | ❌               | ❌               | Reverse engineered FUSE only    |
+| **CHFS**        | ❌               | ❌          | ❌               | 🏆               | NetBSD-only, for NAND flash     |
+| **LFS**         | ❌               | ❌          | ❌               | 🏆               | NetBSD log-structured           |
+| **HFS**         | 💩 (HFS+)        | 💩          | ✅ (RO)          | ✅ (RO)          | Apple FS, write is weak         |
+
+
+#### 💡 Unorthodox Guest ideas
+
+| Guest    | Notes                                                             |
+| -------- | ----------------------------------------------------------------- |
+| WinACE   | PeaZip doesn't support ACE archives because security, but we can  |
+| rsrc     | Open Windows EXE resource forks and browse icons etc inside them  |
+
+
+### Hosts
+
+#### 💡 Host ideas
+
+There's a ton of ways we can use this
+
+| Host           |  | Notes                                               |
+| -------------- |--| --------------------------------------------------- |
+| 7zip           |📦| 7zip supports plugins                               |
+| PeaZip         |📦| |
+| Gnome          |🪟| Gnome Desktop Virtual Filesystem                    |
+| KDE            |🪟| KDE has its own VFS too                             |
+| Windows Driver |🪟| |
+| Web-based      |🌍| QEMU+WASM+guests = browse files on the web          |
+| Python         |🤖| Python pathlib support                              |
+
+
+### Project
+
+| Feature        | Notes                                                               |
+| -------------- | ------------------------------------------------------------------- | 
+| Docker         | Guests as containers = free hosting + download management by Docker |
+| Detection      | We can use the catalogue as a heuristic source to guess formats     |
+
+
+
 
