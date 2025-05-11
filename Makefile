@@ -4,6 +4,7 @@
 # Default architecture if not set
 ARCH ?= $(shell ./common/scripts/canonical_arch.sh)
 PLATFORM ?= $(shell ./common/scripts/arch_to_platform.sh $(ARCH))
+REGISTRY ?= localhost
 export ARCH
 export PLATFORM
 

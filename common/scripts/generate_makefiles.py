@@ -118,7 +118,7 @@ class QemountBuildSystem:
 
             lines.append(f"\t@mkdir -p $(dir $@)")
             lines.append(f"\t@echo \"Building container {container_name} for ARCH=$(ARCH)...\"")
-            lines.append(f"\t@podman build --platform=$(PLATFORM) --build-arg ARCH=$(ARCH) -t {container_name} $(ROOT_DIR)/{component['path']}")
+            lines.append(f"\t@podman build --platform=$(PLATFORM) --build-arg ARCH=$(ARCH) -t $(REGISTRY)/{container_name} $(ROOT_DIR)/{component['path']}")
             lines.append(f"\t@touch $@")
             lines.append("")
         
@@ -161,7 +161,7 @@ class QemountBuildSystem:
                 
                 # Use Docker with explicit copy command for each output
                 lines.append(f"\t@echo \"Extracting {output} from container {container_name}...\"")
-                lines.append(f"\t@podman run --platform=$(PLATFORM) --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) {container_name} {output}")
+                lines.append(f"\t@podman run --platform=$(PLATFORM) --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) $(REGISTRY)/{container_name} {output}")
                 
                 lines.append("")
         else:
