@@ -28,4 +28,4 @@ RUN meson setup build \
 # Strip and copy the binary to outputs
 RUN mkdir -p /outputs/clients/linux-fuse/${ARCH}/bin && \
     cp -v build/9pfuse /outputs/clients/linux-fuse/${ARCH}/bin/ && \
-    strip /outputs/clients/linux-fuse/${ARCH}/bin/9pfuse
+    ${STRIP} /outputs/clients/linux-fuse/${ARCH}/bin/9pfuse

@@ -16,7 +16,7 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 
 ### plan
 
-#### 1 Prove it works
+#### 0 Prove it works
 
 - [x] prove it can be done and actually works
 - [x] make a build system that isn't shit
@@ -27,22 +27,39 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
   - [x] 9p client
   - [ ] wrapper script
 
-#### 2 Make it go
+#### 1 make it go
 
-- [ ] backend
+- [ ] untangle it
+  - [x] fix testdata structure
+  - [x] 9p server -> separate project
+  - [ ] builder -> pypi package
+  - [ ] rename clients to hosts
+- [ ] build it
+  - [ ] get it building on aarch64
+  - [ ] cross compiling back and forth
+- [ ] install it
+  - [ ] write an installer
+  - [ ] xdg launcher
+
+#### 2 polish the turd
+
+- [ ] safety
   - [ ] mount read only by default
-  - [ ] break out 9p server to separate project with tests
-  - [ ]
-- [ ] bugs
-  - [ ] spam in file browser
-  - [ ] block size wrong for `du`
-- [ ] build pipeline
-  - [ ] cross compile for arm
-  - [ ] touch dockerfiles when deps change
-  - [ ] don't build targets unless they're needed
+  - [ ] make a test framework
+  - [ ] data for every supported filesystem
+- [ ] fix bugs
+  - [ ] simple9p
+    - [ ] spam in file browser
+  - [ ] fuse
+    - [ ] block size wrong for `du`
+  - [ ] build
+    - [ ] touch dockerfiles when deps change
+    - [ ] don't build targets unless they're needed
 
-#### 3 Polish the turd
+### 3 go forth and multiply
 
+- [ ] sshfs option
+- ... add stuff that looks interesting 
 
 ## Project Structure
 ```

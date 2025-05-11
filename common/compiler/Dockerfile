@@ -70,6 +70,7 @@ ENV NM=target-nm
 ENV CFLAGS="-static"
 ENV CXXFLAGS="-static"
 ENV LDFLAGS="-static"
+ENV CROSS_COMPILE=${ARCH}-linux-musl${ARCH_VARIANT}-
 
 # Create standard directories
 RUN mkdir -p /build /outputs /host/build
