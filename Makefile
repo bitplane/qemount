@@ -7,6 +7,7 @@ PLATFORM ?= $(shell ./common/scripts/arch_to_platform.sh $(ARCH))
 REGISTRY ?= localhost
 export ARCH
 export PLATFORM
+export REGISTRY
 
 all: build/Makefile
 	@$(MAKE) -C build all
