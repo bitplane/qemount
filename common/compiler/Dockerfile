@@ -42,17 +42,32 @@ RUN BUILD_ARCH=$(uname -m) && \
     if [ "$BUILD_ARCH" = "$ARCH" ] && [ -z "$ARCH_VARIANT" ]; then \
         echo "Native compilation" && \
         ln -s /usr/bin/gcc /usr/bin/target-gcc && \
-        ln -s /usr/bin/g++ /usr/bin/target-g++; \
+        ln -s /usr/bin/g++ /usr/bin/target-g++ && \
+        ln -s /usr/bin/ld /usr/bin/target-ld && \
+        ln -s /usr/bin/ar /usr/bin/target-ar && \
+        ln -s /usr/bin/strip /usr/bin/target-strip && \
+        ln -s /usr/bin/objcopy /usr/bin/target-objcopy && \
+        ln -s /usr/bin/nm /usr/bin/target-nm; \
     else \
         echo "Cross compilation for $TARGET_TRIPLE" && \
         wget -qO- "https://musl.cc/${TARGET_TRIPLE}-cross.tgz" | tar -xz -C /opt/ && \
         ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-gcc" /usr/bin/target-gcc && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-g++" /usr/bin/target-g++; \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-g++" /usr/bin/target-g++ && \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-ld" /usr/bin/target-ld && \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-ar" /usr/bin/target-ar && \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-strip" /usr/bin/target-strip && \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-objcopy" /usr/bin/target-objcopy && \
+        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-nm" /usr/bin/target-nm; \
     fi
 
 # Set up standard environment
 ENV CC=target-gcc
 ENV CXX=target-g++
+ENV LD=target-ld
+ENV AR=target-ar
+ENV STRIP=target-strip
+ENV OBJCOPY=target-objcopy
+ENV NM=target-nm
 ENV CFLAGS="-static"
 ENV CXXFLAGS="-static"
 ENV LDFLAGS="-static"
