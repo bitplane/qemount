@@ -34,30 +34,14 @@ RUN apk update && apk add --no-cache \
     patch \
     findutils
 
-# Set up compiler for target architecture  
-RUN BUILD_ARCH=$(uname -m) && \
-    TARGET_TRIPLE="${ARCH}-linux-musl${ARCH_VARIANT}" && \
-    echo "Build arch: $BUILD_ARCH" && \
-    echo "Target triple: $TARGET_TRIPLE" && \
-    if [ "$BUILD_ARCH" = "$ARCH" ] && [ -z "$ARCH_VARIANT" ]; then \
-        echo "Native compilation" && \
-        ln -s /usr/bin/gcc /usr/bin/target-gcc && \
-        ln -s /usr/bin/g++ /usr/bin/target-g++ && \
-        ln -s /usr/bin/ld /usr/bin/target-ld && \
-        ln -s /usr/bin/ar /usr/bin/target-ar && \
-        ln -s /usr/bin/strip /usr/bin/target-strip && \
-        ln -s /usr/bin/objcopy /usr/bin/target-objcopy && \
-        ln -s /usr/bin/nm /usr/bin/target-nm; \
+
+COPY setup-native.sh setup-cross.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/setup-*.sh
+
+RUN if [ "$(uname -m)" = "$ARCH" ]; then \
+        /usr/local/bin/setup-native.sh; \
     else \
-        echo "Cross compilation for $TARGET_TRIPLE" && \
-        wget -qO- "https://musl.cc/${TARGET_TRIPLE}-cross.tgz" | tar -xz -C /opt/ && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-gcc" /usr/bin/target-gcc && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-g++" /usr/bin/target-g++ && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-ld" /usr/bin/target-ld && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-ar" /usr/bin/target-ar && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-strip" /usr/bin/target-strip && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-objcopy" /usr/bin/target-objcopy && \
-        ln -s "/opt/${TARGET_TRIPLE}-cross/bin/${TARGET_TRIPLE}-nm" /usr/bin/target-nm; \
+        /usr/local/bin/setup-cross.sh "$ARCH" "$TARGET_TRIPLE"; \
     fi
 
 # Set up standard environment
