@@ -16,7 +16,8 @@ WORKDIR /build/strace-6.7
 RUN ./configure \
     --enable-static \
     --disable-shared \
-    --disable-mpers 
+    --disable-mpers \
+    --enable-bundled=yes 
 
 RUN make -j$(nproc)
 
