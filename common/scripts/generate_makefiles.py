@@ -231,16 +231,22 @@ class QemountBuildSystem:
         lines.append("")
         
         # Add clean targets
-        lines.append("clean: clean-outputs")
+        lines.append("clean: clean-outputs clean-locks")
         lines.append("")
-        
+
         lines.append("clean-outputs:")
+        lines.append("\t@echo \"Removing build outputs...\"")
         # Clean all outputs
         for component in self.components:
             for output in component["outputs"]:
-                lines.append(f"\trm -f $(BUILD_DIR)/{output}")
+                lines.append(f"\t@rm -f $(BUILD_DIR)/{output}")
         lines.append("")
-        
+
+        lines.append("clean-locks:")
+        lines.append("\t@echo \"Removing stale lock files...\"")
+        lines.append("\t@find $(BUILD_DIR)/builder -name '.*.lock' -delete")
+        lines.append("")
+
         lines.append("clean-containers:")
         lines.append("\t@echo \"Removing container images...\"")
         lines.append("\t@for container in $$(podman images --format '{{.Repository}}' | grep '^qemount-'); do \\")
@@ -248,14 +254,13 @@ class QemountBuildSystem:
         lines.append("\t    podman rmi -f $$container 2>/dev/null || true; \\")
         lines.append("\tdone")
         lines.append("")
-        
+
         lines.append("clean-makefiles:")
         lines.append("\t@echo \"Removing generated makefiles...\"")
         lines.append("\t@find $(BUILD_DIR)/builder -name 'Makefile' -delete")
-        lines.append("\t@find $(BUILD_DIR)/builder -name '.*.lock' -delete")
         lines.append("")
-        
-        lines.append("clean-all: clean-outputs clean-containers clean-makefiles")
+
+        lines.append("clean-all: clean-outputs clean-locks clean-containers clean-makefiles")
         lines.append("\t@echo \"Clean complete\"")
         lines.append("")
         
