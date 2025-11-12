@@ -14,6 +14,12 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 
 0. unstable / pre-alpha
 
+## Usage
+
+Currently only Fuse is working, and there's no package management or install.
+Use `make all` to build a Linux 2.6 guest OS and 9p client. Then use the
+script in common to run it, and the 9p client to connect to it.
+
 ### plan
 
 #### 0 Prove it works
@@ -32,7 +38,7 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 - [x] untangle it
   - [x] fix testdata structure
   - [x] 9p server -> separate project
-- [ ] install it
+- [ ] build and install scripts
   - [ ] write an installer
   - [ ] xdg launcher
 
