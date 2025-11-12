@@ -34,9 +34,6 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
   - [x] 9p server -> separate project
   - [ ] builder -> pypi package
   - [ ] rename clients to hosts
-- [ ] build it
-  - [ ] get it building on aarch64
-  - [ ] cross compiling back and forth
 - [ ] install it
   - [ ] write an installer
   - [ ] xdg launcher

@@ -1,6 +1,7 @@
 ARG ARCH
 FROM localhost/qemount-common-compiler-${ARCH}
 ARG ARCH
+ENV BUSYBOX_ARCH=$ARCH
 
 RUN apk add python3
 

@@ -95,6 +95,8 @@ class QemountBuildSystem:
             f"BUILD_DIR := {self.build_dir}",
             f"COMPONENT_DIR := {self.project_root}/{component['path']}",
             "ARCH ?= $(shell uname -m)",
+            "PLATFORM ?= $(shell $(ROOT_DIR)/common/scripts/arch_to_platform.sh $(ARCH))",
+            "REGISTRY ?= localhost",
             "",
             ".PHONY: all",
             ""
@@ -105,7 +107,7 @@ class QemountBuildSystem:
             lines.append(f"# Container build lock file for caching")
             lines.append(f"{lock_file}: $(ROOT_DIR)/{component['path']}/Dockerfile")
     
-            # Add ALL files in the component directory as dependencies (Docker-like behavior)
+            # Add ALL files in the component directory as dependencies (container-like behavior)
             lines.append(f"{lock_file}: $(shell find $(ROOT_DIR)/{component['path']} -type f)")
     
             # Process explicit inputs for component dependencies
@@ -159,7 +161,7 @@ class QemountBuildSystem:
                 # Create output directory
                 lines.append(f"\t@mkdir -p $(dir $@)")
                 
-                # Use Docker with explicit copy command for each output
+                # Use podman to extract output from container
                 lines.append(f"\t@echo \"Extracting {output} from container {container_name}...\"")
                 lines.append(f"\t@podman run --platform=$(PLATFORM) --rm -v $(BUILD_DIR):/host/build -e ARCH=$(ARCH) $(REGISTRY)/{container_name} {output}")
                 

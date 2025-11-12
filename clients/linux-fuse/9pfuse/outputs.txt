@@ -1,1 +1,1 @@
-clients/linux-fuse/${ARCH}/bin/9pfuse
+clients/linux-fuse/$(ARCH)/bin/9pfuse
