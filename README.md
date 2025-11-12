@@ -29,11 +29,9 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 
 #### 1 make it go
 
-- [ ] untangle it
+- [x] untangle it
   - [x] fix testdata structure
   - [x] 9p server -> separate project
-  - [ ] builder -> pypi package
-  - [ ] rename clients to hosts
 - [ ] install it
   - [ ] write an installer
   - [ ] xdg launcher
