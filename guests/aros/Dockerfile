@@ -44,11 +44,15 @@ WORKDIR /build/AROS
 # ============================================================================
 
 # --- PHASE 1: Build Crosstools ---
-# Configure to build crosstools (without --with-aros-toolchain=yes)
+# Configure to build crosstools WITH tiny variant settings
+# (toolchain must be built with same config as final build)
 RUN ./configure --target=pc-i386 \
     --with-aros-toolchain-install=/build/toolchain \
     --with-portssources=/build/portssources \
-    --enable-ccache
+    --enable-ccache \
+    --enable-build-type=nightly \
+    --enable-target-variant=tiny \
+    --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4"
 
 # Build crosstools (installs to /build/toolchain)
 RUN make -j$(nproc) crosstools
@@ -71,8 +75,11 @@ RUN ./configure --target=pc-i386 \
     --with-portssources=/build/portssources \
     --enable-ccache
 
+# Build AROS core system first (populates binaries and triggers all fetches)
+# RUN make -j$(nproc)
+
 # Build boot floppy and system floppy images
-# RUN make bootdisk systemdisk
+# RUN make -j$(nproc) bootdisk systemdisk
 
 # Copy output images to /outputs
 # RUN mkdir -p /outputs/guests/aros-i386 && \
