@@ -12,6 +12,7 @@ import sys
 import glob
 import hashlib
 import logging
+import argparse
 from pathlib import Path
 
 # Set up logging
@@ -24,12 +25,26 @@ class QemountBuildSystem:
         self.build_dir = self.project_root / "build"
         self.builder_dir = self.build_dir / "builder"
         self.component_dirs = ["guests", "clients", "common", "tests"]
-        
+        self.stamp_file = self.build_dir / ".makefile-stamp"
+
         # Ensure directories exist
         self.builder_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Storage for components
         self.components = []
+
+    @staticmethod
+    def write_file_if_changed(filepath, content):
+        """Write file only if content has changed. Returns True if written."""
+        filepath = Path(filepath)
+        if filepath.exists():
+            with open(filepath, "r") as f:
+                if f.read() == content:
+                    return False
+
+        with open(filepath, "w") as f:
+            f.write(content)
+        return True
     
     def find_components(self):
         """Find all components in the project."""
@@ -177,19 +192,9 @@ class QemountBuildSystem:
                 lines.append(f"\t@echo \"Component {component['path']} has no Dockerfile\"")
                 lines.append("")
         
-        # Write makefile if it's new or changed
+        # Write makefile only if changed
         new_content = "\n".join(lines)
-        write_makefile = True
-        
-        if makefile_path.exists():
-            with open(makefile_path, "r") as f:
-                current_content = f.read()
-                if current_content == new_content:
-                    write_makefile = False
-        
-        if write_makefile:
-            with open(makefile_path, "w") as f:
-                f.write(new_content)
+        if self.write_file_if_changed(makefile_path, new_content):
             log.info(f"Generated Makefile for {component['path']}")
     
     def generate_root_makefile(self):
@@ -223,13 +228,7 @@ class QemountBuildSystem:
             # Use -include to ignore missing files
             lines.append(f"-include {component_makefile}")
         lines.append("")
-        
-        # Add auto-regeneration rule
-        lines.append("# Auto-regenerate makefiles if missing")
-        lines.append(f"$(BUILD_DIR)/builder/%/Makefile: $(ROOT_DIR)/common/scripts/generate_makefiles.py")
-        lines.append("\t@$(ROOT_DIR)/common/scripts/generate_makefiles.py")
-        lines.append("")
-        
+
         # Add clean targets
         lines.append("clean: clean-outputs clean-locks")
         lines.append("")
@@ -282,38 +281,101 @@ class QemountBuildSystem:
                 lines.append(f"\t@echo \"    (no defined outputs)\"")
         lines.append("")
         
-        # Write the makefile
-        with open(makefile_path, "w") as f:
-            f.write("\n".join(lines))
-        
-        log.info("Generated root Makefile")
+        # Write the makefile only if changed
+        if self.write_file_if_changed(makefile_path, "\n".join(lines)):
+            log.info("Generated root Makefile")
     
-    def generate_all_makefiles(self):
+    def get_dependency_files(self):
+        """Get list of files that affect makefile generation."""
+        dep_files = []
+
+        # The generator script itself
+        dep_files.append(Path(__file__))
+
+        # All inputs.txt and outputs.txt files
+        for base_dir in [self.project_root / d for d in self.component_dirs]:
+            if not base_dir.exists():
+                continue
+            dep_files.extend(base_dir.glob("**/inputs.txt"))
+            dep_files.extend(base_dir.glob("**/outputs.txt"))
+
+        return dep_files
+
+    def should_regenerate(self):
+        """Check if makefiles need regeneration based on stamp file."""
+        if not self.stamp_file.exists():
+            return True
+
+        # Read existing stamp
+        with open(self.stamp_file, "r") as f:
+            old_stamps = dict(line.strip().split(":", 1) for line in f if ":" in line)
+
+        # Get current dependency files and their timestamps
+        dep_files = self.get_dependency_files()
+        for dep_file in dep_files:
+            if not dep_file.exists():
+                continue
+
+            mtime = str(dep_file.stat().st_mtime)
+            old_mtime = old_stamps.get(str(dep_file))
+
+            if old_mtime != mtime:
+                return True
+
+        return False
+
+    def write_stamp_file(self):
+        """Write stamp file with current dependency timestamps."""
+        dep_files = self.get_dependency_files()
+        lines = []
+
+        for dep_file in sorted(dep_files):
+            if dep_file.exists():
+                mtime = dep_file.stat().st_mtime
+                lines.append(f"{dep_file}:{mtime}")
+
+        self.write_file_if_changed(self.stamp_file, "\n".join(lines) + "\n")
+
+    def generate_all_makefiles(self, verbose=False, force=False):
         """Generate all Makefiles."""
+        if not force and not self.should_regenerate():
+            if verbose:
+                log.info("Makefiles are up to date")
+            return
+
         log.info("Discovering components...")
         component_paths = self.find_components()
-        
+
         log.info(f"Found {len(component_paths)} components")
-        
+
         self.components = []
         for path in component_paths:
             component = self.load_component_metadata(path)
             self.components.append(component)
-            log.info(f"Loaded metadata for {path} ({len(component['inputs'])} inputs, {len(component['outputs'])} outputs)")
-        
-        log.info("Generating component Makefiles...")
+            if verbose:
+                log.info(f"Loaded metadata for {path} ({len(component['inputs'])} inputs, {len(component['outputs'])} outputs)")
+
+        if verbose:
+            log.info("Generating component Makefiles...")
         for component in self.components:
             self.generate_component_makefile(component)
-        
+
         log.info("Generating root Makefile...")
         self.generate_root_makefile()
-        
+
+        self.write_stamp_file()
+
         log.info("Done! To build, run: make")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate Makefiles for qemount build system')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Show detailed output')
+    parser.add_argument('-f', '--force', action='store_true', help='Force regeneration even if up to date')
+    args = parser.parse_args()
+
     # Use current directory as project root by default
     project_root = os.getcwd()
-    
+
     # Create and run build system
     build_system = QemountBuildSystem(project_root)
-    build_system.generate_all_makefiles()
+    build_system.generate_all_makefiles(verbose=args.verbose, force=args.force)
