@@ -1,14 +1,15 @@
 FROM docker.io/debian:bookworm-slim
 
-# Install AROS build dependencies (from Azure CI build requirements)
+# Install AROS build dependencies (from Azure CI + GPT research)
 RUN apt-get update && apt-get install -y \
-    gcc g++ gcc-multilib make gawk bison flex \
-    git wget curl bzip2 xz-utils \
-    netpbm automake cmake autoconf genisoimage sshpass \
-    libpng-dev zlib1g-dev libxcursor-dev libgl1-mesa-dev libasound2-dev \
+    gcc g++ gcc-multilib make gawk bison flex byacc \
+    git wget curl ca-certificates bzip2 xz-utils unzip \
+    netpbm automake cmake autoconf genisoimage sshpass libtool \
+    libpng-dev zlib1g-dev libjpeg-dev liblzo2-dev \
+    libxcursor-dev libgl1-mesa-dev libasound2-dev \
+    libsdl1.2-dev libx11-dev libxext-dev libxxf86vm-dev libc6-dev \
     python3 python3-mako python3-distutils-extra \
-    ccache \
-    texinfo \
+    ccache texinfo \
     libswitch-perl gperf \
     libgmp-dev libmpfr-dev libmpc-dev \
     liblzma-dev mtools xorriso nasm
@@ -74,9 +75,6 @@ RUN ./configure --target=pc-i386 \
     --with-bootloader=grub \
     --with-portssources=/build/portssources \
     --enable-ccache
-
-# Build AROS core system first (populates binaries and triggers all fetches)
-# RUN make -j$(nproc)
 
 # Build boot floppy and system floppy images
 # RUN make -j$(nproc) bootdisk systemdisk
