@@ -1,0 +1,3 @@
+guests/aros-i386/aros-pc-i386.img
+guests/aros-i386/system-pc-i386.img
+guests/aros-i386/meta.conf

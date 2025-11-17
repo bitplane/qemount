@@ -26,6 +26,7 @@ WORKDIR /build
 
 # Clone AROS source from bitplane fork (qemount branch) + make backup
 WORKDIR /build
+ADD https://api.github.com/repos/bitplane/AROS/git/refs/heads/qemount /tmp/version.json
 RUN git clone https://github.com/bitplane/AROS.git && \
     cd AROS && \
     git checkout qemount && \
@@ -87,3 +88,8 @@ RUN mkdir -p /outputs/guests/aros-i386 && \
     cp distfiles/aros-pc-i386.img /outputs/guests/aros-i386/ && \
     cp distfiles/system-pc-i386.img /outputs/guests/aros-i386/ && \
     echo "arch=i386" > /outputs/guests/aros-i386/meta.conf
+
+# Add deploy script and entrypoint
+COPY --from=localhost/qemount-common-compiler-x86_64 /usr/local/bin/deploy.sh /usr/local/bin/deploy.sh
+RUN chmod +x /usr/local/bin/deploy.sh
+ENTRYPOINT ["/usr/local/bin/deploy.sh"]
