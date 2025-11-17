@@ -24,11 +24,11 @@ RUN chmod +x /bin/tar
 
 WORKDIR /build
 
-# Clone AROS source at specific commit + make backup
+# Clone AROS source from bitplane fork (qemount branch) + make backup
 WORKDIR /build
-RUN git clone https://github.com/aros-development-team/AROS.git && \
+RUN git clone https://github.com/bitplane/AROS.git && \
     cd AROS && \
-    git checkout 819271b6 && \
+    git checkout qemount && \
     git submodule update --init && \
     cp -r /build/AROS /build/AROS.bak
 
@@ -77,10 +77,13 @@ RUN ./configure --target=pc-i386 \
     --enable-ccache
 
 # Build boot floppy and system floppy images
-# RUN make -j$(nproc) bootdisk systemdisk
+# First run make to build core system and fetch dependencies (like grub)
+RUN make -j2
+# Then build the floppy disk images
+RUN make bootdisk systemdisk
 
 # Copy output images to /outputs
-# RUN mkdir -p /outputs/guests/aros-i386 && \
-#     cp distfiles/aros-pc-i386.img /outputs/guests/aros-i386/ && \
-#     cp distfiles/system-pc-i386.img /outputs/guests/aros-i386/ && \
-#     echo "arch=i386" > /outputs/guests/aros-i386/meta.conf
+RUN mkdir -p /outputs/guests/aros-i386 && \
+    cp distfiles/aros-pc-i386.img /outputs/guests/aros-i386/ && \
+    cp distfiles/system-pc-i386.img /outputs/guests/aros-i386/ && \
+    echo "arch=i386" > /outputs/guests/aros-i386/meta.conf
