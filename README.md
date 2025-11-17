@@ -17,7 +17,7 @@ transport. Spin up a tiny VM that provides access to an image, one instance per 
 ## Usage
 
 Currently only Fuse is working, and there's no package management or install.
-Use `make all` to build a Linux 2.6 guest OS and 9p client. Then use the
+Use `make all` to build a Linux 6.11 guest OS and 9p client. Then use the
 script in common to run it, and the 9p client to connect to it.
 
 ### plan
