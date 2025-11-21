@@ -8,7 +8,19 @@ RUN apk add --no-cache \
     linux-headers \
     bash \
     git \
-    findutils
+    findutils \
+    python3 \
+    py3-pip \
+    automake \
+    autoconf \
+    bison \
+    flex \
+    texinfo \
+    libpng-dev \
+    curl \
+    gmp-dev \
+    mpfr-dev \
+    mpc1-dev
 
 # Set compiler variables explicitly
 ENV CC=gcc
