@@ -22,32 +22,43 @@ script in common to run it, and the 9p client to connect to it.
 
 ### plan
 
-#### 0 Prove it works
+#### 0. Prove it works
 
 - [x] prove it can be done and actually works
 - [x] make a build system that isn't shit
 - [x] get a working guest
   - [x] kernel + busybox image
   - [x] 9p server
-- [ ] make FUSE reference client
+- [x] make it go
   - [x] 9p client
-  - [ ] wrapper script
+  - [x] qemu wrapper script
 
-#### 1 make it go
+#### 1. Flesh it out
 
 - [x] untangle it
   - [x] fix testdata structure
   - [x] 9p server -> separate project
+- [ ] more guests
+  - [ ] AROS
+  - [ ] Linux 2.6
 - [ ] build and install scripts
   - [ ] write an installer
   - [ ] xdg launcher
 
-#### 2 polish the turd
+#### 2. Link it in
+
+- [ ] client library
+  - [ ] filesystem detector
+  - [ ] qemu lib
+  - [ ] filesystem catalogue
+- [ ] clients
+  - [ ] 
+
+#### 3. Polish the turd
 
 - [ ] safety
   - [ ] mount read only by default
   - [ ] make a test framework
-  - [ ] data for every supported filesystem
 - [ ] fix bugs
   - [ ] simple9p
     - [ ] spam in file browser
@@ -55,12 +66,7 @@ script in common to run it, and the 9p client to connect to it.
     - [ ] block size wrong for `du`
   - [ ] build
     - [ ] touch dockerfiles when deps change
-    - [ ] don't build targets unless they're needed
-
-### 3 go forth and multiply
-
-- [ ] sshfs option
-- ... add stuff that looks interesting 
+    - [x] don't build targets unless they're needed
 
 ## Project Structure
 ```
