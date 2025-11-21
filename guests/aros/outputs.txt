@@ -1,3 +1,2 @@
-guests/aros-i386/aros-pc-i386.img
-guests/aros-i386/system-pc-i386.img
+guests/aros-i386/aros-tiny-pc-i386.iso
 guests/aros-i386/meta.conf

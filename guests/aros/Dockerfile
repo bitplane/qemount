@@ -73,20 +73,19 @@ RUN ./configure --target=pc-i386 \
     --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4" \
     --with-theme=AmigaOS3.x \
     --with-iconset=Mason \
-    --with-bootloader=grub \
+    --with-bootloader=grub2 \
     --with-portssources=/build/portssources \
     --enable-ccache
 
-# Build boot floppy and system floppy images
+# Build boot ISO image
 # First run make to build core system and fetch dependencies (like grub)
 RUN make -j2
-# Then build the floppy disk images
-RUN make bootdisk systemdisk
+# Then build the boot ISO
+RUN make bootiso-pc-i386
 
-# Copy output images to /outputs
+# Copy output ISO to /outputs
 RUN mkdir -p /outputs/guests/aros-i386 && \
-    cp distfiles/aros-pc-i386.img /outputs/guests/aros-i386/ && \
-    cp distfiles/system-pc-i386.img /outputs/guests/aros-i386/ && \
+    cp distfiles/aros-tiny-pc-i386.iso /outputs/guests/aros-i386/ && \
     echo "arch=i386" > /outputs/guests/aros-i386/meta.conf
 
 # Add deploy script and entrypoint
