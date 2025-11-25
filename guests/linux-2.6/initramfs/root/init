@@ -1,0 +1,63 @@
+#!/bin/sh
+set -eu
+
+on_exit() {
+    poweroff -f
+    sleep infinity
+}
+trap on_exit EXIT
+
+TARGET_DEV=${mountq_target:-/dev/vda}
+FALLBACK_DEV=${mountq_fallback:-/dev/sr0}
+MOUNT_POINT=/mnt
+PORT_PATH=/dev/vport0p1
+
+mkdir -p /dev /proc/ /sys
+mount -t devtmpfs devtmpfs /dev
+mount -t proc none /proc
+mount -t sysfs none /sys
+mkdir -p "$MOUNT_POINT"
+
+# run mdev to detect serial
+mdev -sS
+
+# Try to detect available device
+if [ -b "$TARGET_DEV" ]; then
+  DEVICE_TO_MOUNT="$TARGET_DEV"
+elif [ -b "$FALLBACK_DEV" ]; then
+  DEVICE_TO_MOUNT="$FALLBACK_DEV"
+else
+  echo "Error: Neither $TARGET_DEV nor $FALLBACK_DEV block device found!"
+  DEVICE_TO_MOUNT=""
+fi
+
+# Attempt to mount
+if [ -n "$DEVICE_TO_MOUNT" ]; then
+  if mount -t auto "$DEVICE_TO_MOUNT" "$MOUNT_POINT"; then
+    MOUNT_SUCCESS=1
+  else
+    echo "Failed to mount $DEVICE_TO_MOUNT automatically"
+    MOUNT_SUCCESS=0
+  fi
+else
+  echo "No target device found to mount."
+  MOUNT_SUCCESS=0
+fi
+
+export MOUNT_SUCCESS="$MOUNT_SUCCESS"
+export MOUNT_POINT="$MOUNT_POINT"
+export PORT_PATH="$PORT_PATH"
+
+MODE=$(sed -n 's/.*mode=\([^ ]*\).*/\1/p' /proc/cmdline)
+SCRIPT="/init.${MODE:-sh}" 
+
+echo "root:password" | chpasswd
+
+echo "[INIT] Dispatching to: $SCRIPT"
+"$SCRIPT" || echo "Failed" "$?"
+
+/bin/sh
+
+# keep trying every way we can to stop this from spinlocking
+poweroff -f &
+sleep infinity
