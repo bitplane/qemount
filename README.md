@@ -1,24 +1,46 @@
 # qemount
 
 Let's mount everything/anything using qemu, by exposing it over 9p or other
-transport. Spin up a tiny VM that provides access to an image, one instance per mount.
+transport. Spin up a tiny VM that provides access to an image, one instance
+per mount.
 
 * Have the ability to use kernel mounts in FUSE
-* Run ancient Linux kernels that still had write access to now read-only filesystems
-* Run old operating systems (Amiga, Acorn) with any CPU arch, and read/write their
+* Run ancient Linux kernels that still had write access to now read-only
   filesystems
-* ... basically a clutch between any image/block device, URL, file and anything else,
-  the UNIX way - everything is a file.
+* Run old operating systems (Amiga, Acorn) with any CPU arch, and read/write
+  their filesystems
+* ... basically a clutch between any image/block device, URL, file and anything
+  else, the UNIX way - everything is a file.
 
 ## STATUS
 
-0. unstable / pre-alpha
+0: unstable / pre-alpha
 
 ## Usage
 
-Currently only Fuse is working, and there's no package management or install.
-Use `make all` to build a Linux 6.11 guest OS and 9p client. Then use the
-script in common to run it, and the 9p client to connect to it.
+Currently there's:
+
+* no filesystem catalogue
+* no safety settings, everything is read/write even if it'll destroy disks
+* no client library for cross platform access
+* no packaging / install scripts
+
+But there is:
+
+* A FUSE client
+* Linux 2.6 and 6.11 guests
+
+To use it:
+
+1. Install `podman`, `fuse`, `make` and `qemu`
+2. Type `make` to build the Linux 2.6 and 6.11 guests.
+3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
+   and `-9p` to run the 9p init script.
+4. Once it's started and is grumbling about not having a connection (not
+   before), connect to it with the 9p FUSE client using:
+   `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
+
+If the stars align, you'll be able to mangle the files in your given disk image.
 
 ### plan
 
@@ -40,7 +62,7 @@ script in common to run it, and the 9p client to connect to it.
   - [x] 9p server -> separate project
 - [ ] more guests
   - [ ] AROS
-  - [ ] Linux 2.6
+  - [x] Linux 2.6
 - [ ] build and install scripts
   - [ ] write an installer
   - [ ] xdg launcher
@@ -52,7 +74,9 @@ script in common to run it, and the 9p client to connect to it.
   - [ ] qemu lib
   - [ ] filesystem catalogue
 - [ ] clients
-  - [ ] 
+  - [x] FUSE
+  - [ ] 7zip
+  - [ ] extractor
 
 #### 3. Polish the turd
 
@@ -62,13 +86,26 @@ script in common to run it, and the 9p client to connect to it.
 - [ ] fix bugs
   - [ ] simple9p
     - [ ] spam in file browser
-  - [ ] fuse
+  - [ ] FUSE
     - [ ] block size wrong for `du`
   - [ ] build
     - [ ] touch dockerfiles when deps change
     - [x] don't build targets unless they're needed
 
-## Project Structure
+## Hacking
+
+The project uses `podman` to build targets in builder images. There's a
+`Dockerfile`, an `inputs.txt` and an `outputs.txt` in a bunch of dirs. A Python
+script builds a bunch of `Makefile`s which use podman to do the build, and the
+outputs go to the `./build` dir. The builder containers take a file name in
+their entrypoint and write it to their `/outputs/` dir which is mapped to the
+build dir.
+
+This pattern is a bit convoluted and has a disk space cost, but it keeps things
+isolated and will scale well in the short to medium term.
+
+The filesystem layout looks like this:
+
 ```
 qemount/
 ├── guests/                    # Building these gives us filesystem back-ends
@@ -76,7 +113,7 @@ qemount/
 │   │   ├── inputs.txt         #   it depends on these things
 │   │   ├── outputs.txt        #   ... and generates these
 │   │   └── Dockerfile         #   by using this Dockerfile
-│   └── ...                    # Haiku, Amiga, Mac, Acorn, WinCE etc
+│   └── ...                    # todo: Haiku, AROS, Acorn, WinCE, Symbian etc
 │
 ├── build/                     # Outputs of the build process live here
 │
@@ -108,7 +145,7 @@ qemount/
 
 ### Guests
 
-#### Linux / BSD
+#### Unices
 
 | Filesystem      | Linux 6.11       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
 | --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
