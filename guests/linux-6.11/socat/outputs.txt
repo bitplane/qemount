@@ -1,1 +1,0 @@
-guests/linux-6.11/rootfs/$(ARCH)/bin/socat

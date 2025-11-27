@@ -1,0 +1,13 @@
+guests/linux/rootfs/$(ARCH)/bin/busybox
+guests/linux/rootfs/$(ARCH)/bin/sh
+guests/linux/rootfs/$(ARCH)/bin/poweroff
+guests/linux/rootfs/$(ARCH)/bin/sleep
+guests/linux/rootfs/$(ARCH)/bin/mkdir
+guests/linux/rootfs/$(ARCH)/bin/mount
+guests/linux/rootfs/$(ARCH)/bin/mdev
+guests/linux/rootfs/$(ARCH)/bin/[
+guests/linux/rootfs/$(ARCH)/bin/test
+guests/linux/rootfs/$(ARCH)/bin/echo
+guests/linux/rootfs/$(ARCH)/bin/sed
+guests/linux/rootfs/$(ARCH)/bin/chpasswd
+guests/linux/rootfs/$(ARCH)/bin/ifconfig
