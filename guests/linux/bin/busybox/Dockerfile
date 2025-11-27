@@ -1,5 +1,5 @@
 ARG ARCH
-FROM localhost/qemount-common-compiler-${ARCH}
+FROM localhost/qemount-common-compiler-linux-6-${ARCH}
 ARG ARCH
 ENV BUSYBOX_ARCH=$ARCH
 

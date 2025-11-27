@@ -14,4 +14,4 @@ guests/linux/rootfs/$(ARCH)/bin/echo
 guests/linux/rootfs/$(ARCH)/bin/sed
 guests/linux/rootfs/$(ARCH)/bin/chpasswd
 guests/linux/rootfs/$(ARCH)/bin/ifconfig
-common/compiler
+common/compiler/linux/6

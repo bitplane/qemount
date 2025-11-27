@@ -1,1 +1,1 @@
-guests/linux/2.6/compiler
+common/compiler/linux/2

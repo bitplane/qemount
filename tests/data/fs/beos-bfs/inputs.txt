@@ -1,2 +1,2 @@
 tests/data/templates/basic.tar
-common/haiku-buildtools
+common/compiler/haiku

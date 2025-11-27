@@ -1,11 +1,7 @@
-# Download kernel source using modern image with working TLS
-FROM alpine:latest AS downloader
-RUN apk add --no-cache wget
-RUN wget -O /linux.tar.xz https://cdn.kernel.org/pub/linux/kernel/v2.6/linux-2.6.39.4.tar.xz
-
 # Ubuntu Lucid-based compiler for Linux 2.6 kernel
 # Lucid (10.04) has GCC 4.4 which is compatible with 2.6.39
 FROM ubuntu:10.04
+ARG ARCH
 
 # Configure archive repositories (lucid is EOL)
 RUN sed -i 's|archive.ubuntu.com|old-releases.ubuntu.com|g' /etc/apt/sources.list && \
@@ -31,9 +27,8 @@ RUN apt-get update && apt-get install -y \
 ENV CC=gcc
 ENV CXX=g++
 
-# Create directories and copy pre-downloaded kernel source
+# Create directories
 RUN mkdir -p /build /outputs /host/build
-COPY --from=downloader /linux.tar.xz /build/
 WORKDIR /build
 
 # Copy deployment script

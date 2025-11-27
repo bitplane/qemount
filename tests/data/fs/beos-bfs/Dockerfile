@@ -1,5 +1,5 @@
 ARG ARCH
-FROM localhost/qemount-common-haiku-buildtools-${ARCH}
+FROM localhost/qemount-common-compiler-haiku-${ARCH}
 ARG ARCH
 
 WORKDIR /src/haiku/generated

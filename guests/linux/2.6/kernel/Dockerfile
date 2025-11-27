@@ -1,9 +1,17 @@
 ARG ARCH
-FROM localhost/qemount-guests-linux-2.6-compiler-${ARCH}
+
+# Download kernel source using modern image with working TLS
+FROM alpine:latest AS downloader
+RUN apk add --no-cache wget
+RUN wget -O /linux.tar.xz https://cdn.kernel.org/pub/linux/kernel/v2.6/linux-2.6.39.4.tar.xz
+
+ARG ARCH
+FROM localhost/qemount-common-compiler-linux-2-${ARCH}
 ARG ARCH
 
-# Extract pre-downloaded Linux kernel 2.6.39.4 (final 2.6 release)
+# Copy and extract Linux kernel 2.6.39.4 (final 2.6 release)
 WORKDIR /build
+COPY --from=downloader /linux.tar.xz /build/
 RUN tar -xf linux.tar.xz
 
 # Copy config files
