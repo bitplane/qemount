@@ -1,0 +1,11 @@
+ARG ARCH
+FROM localhost/qemount-guests-linux-2.6-compiler-${ARCH}
+ARG ARCH
+
+# Copy the init scripts and build script
+COPY root /build/root
+COPY --chmod=755 build-initramfs.sh /usr/local/bin/build-initramfs.sh
+
+WORKDIR /build
+
+ENTRYPOINT ["/usr/local/bin/build-initramfs.sh"]

@@ -1,0 +1,1 @@
+guests/linux-2.6-$(ARCH)/initramfs.cpio.gz
