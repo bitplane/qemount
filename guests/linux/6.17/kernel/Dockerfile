@@ -18,13 +18,13 @@ RUN apk add --no-cache \
 
 # Download and extract Linux kernel
 WORKDIR /build
-RUN wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.11.tar.xz
-RUN tar -xf linux-6.11.tar.xz
+RUN wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.tar.xz
+RUN tar -xf linux-6.17.tar.xz
 
 # Copy config files
-COPY *.config /build/linux-6.11/
+COPY *.config /build/linux-6.17/
 
-WORKDIR /build/linux-6.11
+WORKDIR /build/linux-6.17
 
 
 RUN set -x; \
@@ -36,19 +36,19 @@ RUN set -x; \
     make ARCH=$KERNEL_ARCH -j$(nproc)
 
 # Create output directory
-RUN mkdir -p /outputs/guests/linux/6.11/${ARCH}
+RUN mkdir -p /outputs/guests/linux/6.17/${ARCH}
 
 # Copy kernel image to output
 RUN if [ "$ARCH" = "x86_64" ]; then \
-      cp -v arch/x86_64/boot/bzImage /outputs/guests/linux/6.11/${ARCH}/kernel; \
+      cp -v arch/x86_64/boot/bzImage /outputs/guests/linux/6.17/${ARCH}/kernel; \
     elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-      cp -v arch/arm64/boot/Image.gz /outputs/guests/linux/6.11/${ARCH}/kernel; \
+      cp -v arch/arm64/boot/Image.gz /outputs/guests/linux/6.17/${ARCH}/kernel; \
     elif [ "$ARCH" = "arm" ]; then \
-      cp -v arch/arm/boot/zImage /outputs/guests/linux/6.11/${ARCH}/kernel; \
+      cp -v arch/arm/boot/zImage /outputs/guests/linux/6.17/${ARCH}/kernel; \
     else \
       echo "Unsupported architecture: $ARCH"; \
       exit 1; \
     fi
 
 # Copy metadata
-RUN touch /outputs/guests/linux/6.11/${ARCH}/meta.conf
+RUN touch /outputs/guests/linux/6.17/${ARCH}/meta.conf
