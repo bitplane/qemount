@@ -1,0 +1,3 @@
+guests/linux/6.17/$(ARCH)/kernel
+guests/linux/6.17/$(ARCH)/meta.conf
+guests/linux/initramfs/$(ARCH)/initramfs.cpio.gz

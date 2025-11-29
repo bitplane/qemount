@@ -24,12 +24,12 @@ Currently there's:
 But there is:
 
 * A FUSE client
-* Linux 2.6 and 6.11 guests
+* Linux 2.6 and 6.17 guests
 
 To use it:
 
 1. Install `podman`, `fuse`, `make` and `qemu`
-2. Type `make` to build the Linux 2.6 and 6.11 guests.
+2. Type `make` to build the Linux 2.6 and 6.17 guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
    and `-m 9p` to run the 9p init script.
 4. Once it's started and is grumbling about not having a connection (not
@@ -65,7 +65,7 @@ If the stars align, you'll be able to mangle the files in your given disk image.
   - [ ] mount read only by default
   - [ ] make a test framework
     - [x] data builder system
-    - [ ] 
+    - [ ] test runner
 - [ ] fix bugs
   - [ ] simple9p
     - [ ] spam in file browser
@@ -99,10 +99,9 @@ The filesystem layout looks like this:
 ```
 qemount/
 ├── guests/                    # Building these gives us filesystem back-ends
-│   ├── linux-6.11/            # Linux kernel 6.11 guest
-│   │   ├── inputs.txt         #   it depends on these things
-│   │   ├── outputs.txt        #   ... and generates these
-│   │   └── Dockerfile         #   by using this Dockerfile
+│   ├── linux/                 # Linux guests (shared bin/, initramfs/, versioned kernels)
+│   │   ├── 6.17/              #   Linux kernel 6.17 guest
+│   │   └── 2.6/               #   Linux kernel 2.6 guest (legacy filesystems)
 │   └── ...                    # todo: Haiku, AROS, Acorn, WinCE, Symbian etc
 │
 ├── build/                     # Outputs of the build process live here
@@ -137,7 +136,7 @@ qemount/
 
 #### Unices (to move to catalogue)
 
-| Filesystem      | Linux 6.11       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
+| Filesystem      | Linux 6.17       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
 | --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
 | **ext2**        | ✅               | ✅          | ✅               | ✅               | Solid everywhere                |
 | **ext3**        | ✅               | ✅          | 💩               | 💩               | BSDs ignore journal             |
@@ -158,7 +157,7 @@ qemount/
 | **OverlayFS**   | 🏆               | ❌          | 💩 (UnionFS)     | 💩 (Union)       | Linux OverlayFS > BSD Union     |
 | **TMPFS**       | ✅               | ✅          | ✅               | ✅               | All good                        |
 | **DevFS**       | ✅               | ✅          | ✅               | ✅               | Basic virtual FS                |
-| **ReiserFS**    | 💩 (deprecated)  | ✅          | ❌               | ❌               | Historical only                 |
+| **ReiserFS**    | ❌ (removed 6.13)| ✅          | ❌               | ❌               | Historical only                 |
 | **UFS2**        | ❌               | ❌          | 🏆               | ✅               | Only FreeBSD has full support   |
 | **APFS**        | 💩 (FUSE)        | ❌          | ❌               | ❌               | Reverse engineered FUSE only    |
 | **CHFS**        | ❌               | ❌          | ❌               | 🏆               | NetBSD-only, for NAND flash     |

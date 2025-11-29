@@ -1,2 +1,0 @@
-guests/linux-2.6-$(ARCH)/kernel
-guests/linux-2.6-$(ARCH)/meta.conf
