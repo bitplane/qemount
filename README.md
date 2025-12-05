@@ -64,7 +64,7 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 - [ ] safety
   - [ ] mount read only by default
   - [ ] make a test framework
-    - [x] data builder system
+    - [x] data builder system (18 formats)
     - [ ] test runner
 - [ ] fix bugs
   - [ ] simple9p
@@ -99,31 +99,28 @@ The filesystem layout looks like this:
 ```
 qemount/
 ├── guests/                    # Building these gives us filesystem back-ends
-│   ├── linux/                 # Linux guests (shared bin/, initramfs/, versioned kernels)
+│   ├── linux/                 # Linux guests
+│   │   ├── bin/               #   Shared binaries (busybox, socat, simple9p)
+│   │   ├── initramfs/         #   Shared initramfs builder
 │   │   ├── 6.17/              #   Linux kernel 6.17 guest
 │   │   └── 2.6/               #   Linux kernel 2.6 guest (legacy filesystems)
-│   └── ...                    # todo: Haiku, AROS, Acorn, WinCE, Symbian etc
+│   └── ...                    # todo: Haiku, AROS, NetBSD etc
 │
-├── build/                     # Outputs of the build process live here
+├── common/                    # Shared build infrastructure
+│   ├── compiler/              # Compiler images (linux/2, linux/6, haiku)
+│   ├── run/                   # Runtime scripts (qemu launcher)
+│   └── scripts/               # Build system scripts
 │
-├── clients/                   # Building these gives us ways to talk to them
-│   ├── linux-fuse/            # Linux FUSE client
-│   ├── windows-driver/        # Windows client (e.g., Dokan driver)
-│   └── .../                   # any and all plugins here
+├── clients/                   # Building these gives us ways to talk to guests
+│   └── linux-fuse/            # Linux FUSE 9p client
 │
-├── scripts/                   # Build scripts needed by the main makefile
+├── tests/                     # Test infrastructure
+│   └── data/
+│       ├── templates/         # Source file templates for test images
+│       ├── fs/                # Per-filesystem image builders
+│       └── images/            # Generated test images (in build/)
 │
-├── testdata/                  # Source definitions, scripts & Makefile for test data
-│   ├── Makefile               # Builds images into testdata/images/
-│   ├── scripts/               # Helper scripts for generation/download
-│   │   └── ...                # e.g., ext4.sh
-│   ├── template/              # Source file structure templates
-│   │   └── basic/             # A basic set of test files/dirs
-│   │       ├── hello.txt
-│   │       └── ...
-│   └── images/                # Generated test images (gitignored)
-│       ├── basic.iso9660
-│       └── ...
+├── build/                     # Outputs of the build process
 │
 ├── Makefile                   # Root Makefile for orchestration
 ├── README.md                  # This file
