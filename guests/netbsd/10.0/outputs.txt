@@ -1,0 +1,1 @@
+guests/netbsd/10.0/$(ARCH)/netbsd

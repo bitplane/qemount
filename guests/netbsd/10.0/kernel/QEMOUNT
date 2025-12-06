@@ -1,0 +1,17 @@
+#
+# QEMOUNT - NetBSD kernel config for qemount guest
+#
+# Based on GENERIC with memory disk root support for ramdisk boot
+#
+
+include "arch/amd64/conf/GENERIC"
+
+ident		"QEMOUNT"
+
+# Memory disk (md) for ramdisk root - md device already in GENERIC
+options 	MEMORY_DISK_IS_ROOT
+options 	MEMORY_DISK_ROOT_SIZE=16384	# 8MB in 512-byte sectors
+options 	MEMORY_DISK_RBFLAGS=RB_SINGLE	# Boot single-user
+
+# UDF filesystem (not in GENERIC by default)
+file-system	UDF		# UDF
