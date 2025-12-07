@@ -1,14 +1,24 @@
 #!/bin/sh
 export PATH=/bin:/sbin
 
+on_exit() {
+    echo "[INIT] Shutting down..."
+    # exec replaces the process so we never return
+    exec halt -p
+}
+trap on_exit EXIT
+
 # Mount tmpfs at /dev so we can create device nodes
 mount -t tmpfs tmpfs /dev
 
 # Create device nodes
 # console=0,0  tty00/com0=8,0  null=2,2
+# wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)
 mknod /dev/console c 0 0
 mknod /dev/tty00 c 8 0
 mknod /dev/null c 2 2
+mknod /dev/wd0a b 0 0
+mknod /dev/wd1a b 0 8
 
 # Redirect to serial console
 exec >/dev/tty00 2>&1 </dev/tty00
@@ -19,10 +29,43 @@ echo "  NetBSD qemount guest starting"
 echo "==================================="
 echo ""
 
-# Interactive shell - restart if it exits
-while :; do
-    echo "Starting shell..."
+# Mount point for user's image
+MOUNT_POINT=/mnt
+TARGET_DEV=/dev/wd1a
+
+# Try to mount the target image
+if [ -b "$TARGET_DEV" ]; then
+    echo "[INIT] Mounting $TARGET_DEV to $MOUNT_POINT..."
+    if mount "$TARGET_DEV" "$MOUNT_POINT"; then
+        MOUNT_SUCCESS=1
+        echo "[INIT] Mount successful"
+    else
+        MOUNT_SUCCESS=0
+        echo "[INIT] Mount failed"
+    fi
+else
+    MOUNT_SUCCESS=0
+    echo "[INIT] No target device at $TARGET_DEV"
+fi
+
+export MOUNT_SUCCESS
+export MOUNT_POINT
+
+# Detect mode - check for virtio serial device
+if [ -c /dev/vport0p1 ]; then
+    MODE="9p"
+else
+    MODE="sh"
+fi
+
+SCRIPT="/init.${MODE}"
+
+echo "[INIT] Dispatching to: $SCRIPT"
+if [ -x "$SCRIPT" ]; then
+    "$SCRIPT" || echo "[INIT] Script failed: $?"
+else
+    echo "[INIT] Mode script not found: $SCRIPT"
     /bin/sh -i
-    echo "Shell exited, restarting..."
-    sleep 1
-done
+fi
+
+# Script exited - trap will handle shutdown
