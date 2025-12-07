@@ -103,10 +103,16 @@ COPY ramdisk/etc/group /ramdisk/etc/group
 RUN /usr/tools/bin/nbmakefs -s 12m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Embed ramdisk into kernel using mdsetimage
-# Use netbsd.gdb (unstripped) - keeps symbols, runs fine, easier to debug
+# Must use unstripped kernel (netbsd.gdb) for mdsetimage to find symbols
 RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
     KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
     /usr/obj/tools/mdsetimage/mdsetimage -v $KERNEL /ramdisk.fs
+
+# Strip the kernel after embedding ramdisk (reduces ~180MB to ~20MB)
+RUN NBARCH=$(cat /tmp/nbarch) && \
+    NBKERNARCH=$(cat /tmp/nbkernarch) && \
+    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
+    /usr/tools/bin/${NBARCH}--netbsd-strip -o /netbsd.stripped $KERNEL
 
 # Copy boot config files from source
 COPY boot.cfg /tmp/boot.cfg
@@ -115,15 +121,13 @@ COPY disklabel.proto /disklabel.proto
 # Create a bootable disk image manually
 # mkimage has a bug where it looks for /usr/mdec/boot instead of $DESTDIR/usr/mdec/boot
 RUN NBARCH=$(cat /tmp/nbarch) && \
-    NBKERNARCH=$(cat /tmp/nbkernarch) && \
     DESTDIR=/usr/obj/destdir.$NBARCH && \
-    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
     TOOLDIR=/usr/tools && \
     mkdir -p /bootfs && \
-    cp $KERNEL /bootfs/netbsd && \
+    cp /netbsd.stripped /bootfs/netbsd && \
     cp $DESTDIR/usr/mdec/boot /bootfs/boot && \
     cp /tmp/boot.cfg /bootfs/boot.cfg && \
-    $TOOLDIR/bin/nbmakefs -s 256m -t ffs -o version=1 /boot.img /bootfs && \
+    $TOOLDIR/bin/nbmakefs -s 48m -t ffs -o version=1 /boot.img /bootfs && \
     $TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /boot.img /disklabel.proto && \
     $TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
 
@@ -131,10 +135,8 @@ RUN NBARCH=$(cat /tmp/nbarch) && \
 RUN mkdir -p /outputs/guests/netbsd/10.0/${ARCH}
 RUN cp /boot.img /outputs/guests/netbsd/10.0/${ARCH}/boot.img
 
-# Also copy the raw kernel for reference
-RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
-    cp /usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb \
-       /outputs/guests/netbsd/10.0/${ARCH}/netbsd
+# Also copy the stripped kernel
+RUN cp /netbsd.stripped /outputs/guests/netbsd/10.0/${ARCH}/netbsd
 
 # Copy deploy script from common pattern
 COPY --chmod=755 deploy.sh /usr/local/bin/deploy.sh

@@ -5,10 +5,10 @@ bytes/sector: 512
 sectors/track: 32
 tracks/cylinder: 64
 sectors/cylinder: 2048
-cylinders: 256
-total sectors: 524288
+cylinders: 48
+total sectors: 98304
 
 8 partitions:
- a:   524288 0       4.2BSD  8192  65536 0
- c:   524288 0       unused  0     0
- d:   524288 0       unused  0     0
+ a:   98304 0       4.2BSD  8192  65536 0
+ c:   98304 0       unused  0     0
+ d:   98304 0       unused  0     0
