@@ -86,35 +86,21 @@ RUN NBARCH=$(cat /tmp/nbarch) && \
 RUN NBARCH=$(cat /tmp/nbarch) && \
     ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m $NBARCH distribution
 
-# Create ramdisk with essential binaries
-# Note: avoid bash brace expansion - Debian uses dash which doesn't support it
-RUN mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc /ramdisk/mnt /ramdisk/tmp /ramdisk/proc /ramdisk/kern
-
-# Copy essential binaries from the built distribution
+# Build ramdisk with statically-linked rescue binaries
+COPY --chmod=755 ramdisk/build.sh /tmp/build-ramdisk.sh
 RUN NBARCH=$(cat /tmp/nbarch) && \
-    DESTDIR=/usr/obj/destdir.$NBARCH && \
-    cp $DESTDIR/bin/sh /ramdisk/bin/ && \
-    cp $DESTDIR/bin/ls /ramdisk/bin/ && \
-    cp $DESTDIR/bin/cat /ramdisk/bin/ && \
-    cp $DESTDIR/bin/echo /ramdisk/bin/ && \
-    cp $DESTDIR/bin/mkdir /ramdisk/bin/ && \
-    cp $DESTDIR/bin/sleep /ramdisk/bin/ && \
-    cp $DESTDIR/sbin/mount /ramdisk/sbin/ && \
-    cp $DESTDIR/sbin/umount /ramdisk/sbin/ && \
-    cp $DESTDIR/sbin/halt /ramdisk/sbin/ && \
-    cp $DESTDIR/sbin/init /ramdisk/sbin/init.real || true
+    /tmp/build-ramdisk.sh /usr/obj/destdir.$NBARCH /ramdisk
 
-# Copy init scripts and etc files from source
+# Copy init scripts and etc files
 COPY --chmod=755 ramdisk/sbin/init /ramdisk/sbin/init
 COPY --chmod=755 ramdisk/init.sh /ramdisk/init.sh
 COPY --chmod=755 ramdisk/init.9p /ramdisk/init.9p
 COPY ramdisk/etc/passwd /ramdisk/etc/passwd
 COPY ramdisk/etc/group /ramdisk/etc/group
 
-# Create ramdisk filesystem image (8MB)
-# nbmakefs is the cross-tool built by build.sh
+# Create ramdisk filesystem image (12MB for rescue binary)
 # Use FFS v1 for compatibility with memory disk boot
-RUN /usr/tools/bin/nbmakefs -s 8m -t ffs -o version=1 /ramdisk.fs /ramdisk
+RUN /usr/tools/bin/nbmakefs -s 12m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Embed ramdisk into kernel using mdsetimage
 # Use netbsd.gdb (unstripped) - keeps symbols, runs fine, easier to debug
