@@ -24,12 +24,12 @@ Currently there's:
 But there is:
 
 * A FUSE client
-* Linux 2.6 and 6.17 guests
+* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
 
 To use it:
 
 1. Install `podman`, `fuse`, `make` and `qemu`
-2. Type `make` to build the Linux 2.6 and 6.17 guests.
+2. Type `make` to build the guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
    and `-m 9p` to run the 9p init script.
 4. Once it's started and is grumbling about not having a connection (not
@@ -44,6 +44,7 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 
 - [x] more guests
   - [x] Linux 2.6
+  - [ ] NetBSD 10
 
 #### 2. Link it in
 
@@ -71,16 +72,13 @@ If the stars align, you'll be able to mangle the files in your given disk image.
     - [ ] spam in file browser
   - [ ] FUSE
     - [ ] block size wrong for `du`
-  - [ ] build
-    - [ ] touch dockerfiles when deps change
-    - [x] don't build targets unless they're needed
 
 #### 4. Embrace, Extend, Exaggerate 
 
 - [ ] add more guests
   - [ ] AROS
   - [ ] Haiku
-  - [ ] BSD
+  - [ ] Atari ST (STEEM?)
 
 ## 🪓 Hacking
 
@@ -104,7 +102,7 @@ qemount/
 │   │   ├── initramfs/         #   Shared initramfs builder
 │   │   ├── 6.17/              #   Linux kernel 6.17 guest
 │   │   └── 2.6/               #   Linux kernel 2.6 guest (legacy filesystems)
-│   └── ...                    # todo: Haiku, AROS, NetBSD etc
+│   └── ...                    # todo: Haiku, AROS etc
 │
 ├── common/                    # Shared build infrastructure
 │   ├── compiler/              # Compiler images (linux/2, linux/6, haiku)
@@ -184,4 +182,14 @@ There's a ton of ways we can use this
 | Windows Driver |🪟|                                                     |
 | Web-based      |🌍| QEMU+WASM+guests = browse files on the web          |
 | Python         |🤖| Python pathlib support                              |
+| Node           |🤖| | 
+
+### More catalogue stuff
+
+We can mine these for detection rules
+
+* `file`     - detects lots of filesystems
+* `disktype` - better detection for more types and
+  [samples](https://github.com/kamwoods/disktype/tree/master/misc/file-system-sampler)
+* `amitools` - Amiga filesystems
 
