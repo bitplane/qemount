@@ -14,11 +14,15 @@ mount -t tmpfs tmpfs /dev
 # Create device nodes
 # console=0,0  tty00/com0=8,0  null=2,2
 # wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)
+# sd*=4,*  (SCSI/virtio: sd0a=4,0)
+# ld*=19,* (virtio-blk: ld0a=19,0)
 mknod /dev/console c 0 0
 mknod /dev/tty00 c 8 0
 mknod /dev/null c 2 2
 mknod /dev/wd0a b 0 0
 mknod /dev/wd1a b 0 8
+mknod /dev/sd0a b 4 0
+mknod /dev/ld0a b 19 0
 
 # Redirect to serial console
 exec >/dev/tty00 2>&1 </dev/tty00
@@ -31,21 +35,20 @@ echo ""
 
 # Mount point for user's image
 MOUNT_POINT=/mnt
-TARGET_DEV=/dev/wd1a
+MOUNT_SUCCESS=0
 
-# Try to mount the target image
-if [ -b "$TARGET_DEV" ]; then
-    echo "[INIT] Mounting $TARGET_DEV to $MOUNT_POINT..."
-    if mount "$TARGET_DEV" "$MOUNT_POINT"; then
+# Try different possible devices for the user's image
+for TARGET_DEV in /dev/ld0a /dev/sd0a /dev/wd1a; do
+    echo "[INIT] Trying $TARGET_DEV..."
+    if mount "$TARGET_DEV" "$MOUNT_POINT" 2>/dev/null; then
         MOUNT_SUCCESS=1
-        echo "[INIT] Mount successful"
-    else
-        MOUNT_SUCCESS=0
-        echo "[INIT] Mount failed"
+        echo "[INIT] Mounted $TARGET_DEV to $MOUNT_POINT"
+        break
     fi
-else
-    MOUNT_SUCCESS=0
-    echo "[INIT] No target device at $TARGET_DEV"
+done
+
+if [ "$MOUNT_SUCCESS" = "0" ]; then
+    echo "[INIT] No mountable image found"
 fi
 
 export MOUNT_SUCCESS
