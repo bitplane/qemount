@@ -57,15 +57,19 @@ WORKDIR /usr/src
 # Map architecture names
 # ARCH comes in as x86_64, NetBSD uses amd64
 # Also store the kernel arch directory name (different for some archs)
+# GNU triple prefix is used for cross tools (x86_64--netbsd-strip, etc)
 RUN if [ "$ARCH" = "x86_64" ]; then \
         echo "amd64" > /tmp/nbarch; \
         echo "amd64" > /tmp/nbkernarch; \
+        echo "x86_64" > /tmp/nbgnutriple; \
     elif [ "$ARCH" = "aarch64" ]; then \
         echo "evbarm" > /tmp/nbarch; \
         echo "evbarm" > /tmp/nbkernarch; \
+        echo "aarch64" > /tmp/nbgnutriple; \
     else \
         echo "$ARCH" > /tmp/nbarch; \
         echo "$ARCH" > /tmp/nbkernarch; \
+        echo "$ARCH" > /tmp/nbgnutriple; \
     fi
 
 # Build cross-compilation toolchain
@@ -109,10 +113,10 @@ RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
     /usr/obj/tools/mdsetimage/mdsetimage -v $KERNEL /ramdisk.fs
 
 # Strip the kernel after embedding ramdisk (reduces ~180MB to ~20MB)
-RUN NBARCH=$(cat /tmp/nbarch) && \
+RUN NBGNUTRIPLE=$(cat /tmp/nbgnutriple) && \
     NBKERNARCH=$(cat /tmp/nbkernarch) && \
     KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
-    /usr/tools/bin/${NBARCH}--netbsd-strip -o /netbsd.stripped $KERNEL
+    /usr/tools/bin/${NBGNUTRIPLE}--netbsd-strip -o /netbsd.stripped $KERNEL
 
 # Copy boot config files from source
 COPY boot.cfg /tmp/boot.cfg
