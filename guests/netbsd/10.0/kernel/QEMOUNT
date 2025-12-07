@@ -14,7 +14,7 @@ ident		"QEMOUNT"
 no options 	MEMORY_DISK_DYNAMIC
 options 	MEMORY_DISK_HOOKS		# enable md_root_image symbol for mdsetimage
 options 	MEMORY_DISK_IS_ROOT
-options 	MEMORY_DISK_ROOT_SIZE=24576	# 12MB in 512-byte sectors
+options 	MEMORY_DISK_ROOT_SIZE=32768	# 16MB in 512-byte sectors
 options 	MEMORY_DISK_RBFLAGS=RB_SINGLE	# Boot single-user
 
 # Serial console for QEMU - handled via boot.cfg consdev=com0
