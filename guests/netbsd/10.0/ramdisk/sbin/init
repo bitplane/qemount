@@ -4,7 +4,8 @@ export PATH=/bin:/sbin
 on_exit() {
     echo "[INIT] Shutting down..."
     # exec replaces the process so we never return
-    exec halt -p
+    # -q = quick (don't wait for processes, but still syncs)
+    exec halt -pq
 }
 trap on_exit EXIT
 
