@@ -1,42 +1,28 @@
 #!/bin/sh
-# NetBSD qemount init dispatcher
-set -eu
-
-on_exit() {
-    /sbin/halt -p
-    sleep infinity
-}
-trap on_exit EXIT
-
 export PATH=/bin:/sbin
 
-echo "NetBSD qemount guest starting..."
+# Mount tmpfs at /dev so we can create device nodes
+mount -t tmpfs tmpfs /dev
 
-# Mount essential filesystems
-mkdir -p /dev /proc /kern
-mount -t ptyfs ptyfs /dev
-mount -t procfs procfs /proc
-mount -t kernfs kernfs /kern
+# Create device nodes
+# console=0,0  tty00/com0=8,0  null=2,2
+mknod /dev/console c 0 0
+mknod /dev/tty00 c 8 0
+mknod /dev/null c 2 2
 
-# Create mount point for user images
-mkdir -p /mnt
+# Redirect to serial console
+exec >/dev/tty00 2>&1 </dev/tty00
 
-# Detect mode by checking for virtio serial device
-# Runner only adds virtio-serial in 9p mode
-if [ -c /dev/ttyVI00 ]; then
-    MODE="9p"
-else
-    MODE="sh"
-fi
+echo ""
+echo "==================================="
+echo "  NetBSD qemount guest starting"
+echo "==================================="
+echo ""
 
-SCRIPT="/init.${MODE}"
-
-echo "[INIT] Dispatching to: $SCRIPT"
-if [ -x "$SCRIPT" ]; then
-    "$SCRIPT" || echo "Script failed: $?"
-else
-    echo "Mode script not found: $SCRIPT"
-fi
-
-# Fallback to shell
-exec /bin/sh
+# Interactive shell - restart if it exits
+while :; do
+    echo "Starting shell..."
+    /bin/sh -i
+    echo "Shell exited, restarting..."
+    sleep 1
+done

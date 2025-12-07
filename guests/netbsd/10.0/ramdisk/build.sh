@@ -8,21 +8,26 @@ RAMDISK="$2"
 mkdir -p "$RAMDISK/bin" "$RAMDISK/sbin" "$RAMDISK/dev" "$RAMDISK/etc" \
          "$RAMDISK/mnt" "$RAMDISK/tmp" "$RAMDISK/proc" "$RAMDISK/kern"
 
-# Copy rescue binary (statically linked crunchgen)
-cp "$DESTDIR/rescue/sh" "$RAMDISK/bin/sh"
+# Copy rescue binary (statically linked crunchgen multicall)
+# All commands are hard-linked to this one binary - it uses argv[0] to dispatch
+RESCUE="$RAMDISK/.rescue"
+cp "$DESTDIR/rescue/sh" "$RESCUE"
 
-# Hard link all the commands we need to the same binary
-for cmd in ls cat echo mkdir sleep test "["; do
-    ln "$RAMDISK/bin/sh" "$RAMDISK/bin/$cmd"
+# Hard link all the commands we need
+for cmd in sh ls cat echo mkdir sleep test "[" mknod; do
+    ln "$RESCUE" "$RAMDISK/bin/$cmd"
 done
 
 for cmd in mount mount_ffs mount_cd9660 mount_msdos mount_ext2fs \
-           mount_kernfs mount_procfs mount_ptyfs \
+           mount_kernfs mount_procfs mount_ptyfs mount_tmpfs mount_mfs \
            umount halt reboot init; do
-    ln "$RAMDISK/bin/sh" "$RAMDISK/sbin/$cmd"
+    ln "$RESCUE" "$RAMDISK/sbin/$cmd"
 done
 
 # Rename real init so our script can call it if needed
 mv "$RAMDISK/sbin/init" "$RAMDISK/sbin/init.real"
+
+# Remove the base rescue copy (all links remain valid)
+rm "$RESCUE"
 
 echo "Ramdisk built: $(du -sh "$RAMDISK" | cut -f1)"
