@@ -117,9 +117,9 @@ COPY ramdisk/etc/group /ramdisk/etc/group
 RUN /usr/tools/bin/nbmakefs -s 8m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Embed ramdisk into kernel using mdsetimage
-# Note: mdsetimage is built in obj/tools/, not tools/bin/
+# Use netbsd.gdb (unstripped) - keeps symbols, runs fine, easier to debug
 RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
-    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
+    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
     /usr/obj/tools/mdsetimage/mdsetimage -v $KERNEL /ramdisk.fs
 
 # Copy boot config files from source
@@ -131,13 +131,13 @@ COPY disklabel.proto /disklabel.proto
 RUN NBARCH=$(cat /tmp/nbarch) && \
     NBKERNARCH=$(cat /tmp/nbkernarch) && \
     DESTDIR=/usr/obj/destdir.$NBARCH && \
-    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
+    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb && \
     TOOLDIR=/usr/tools && \
     mkdir -p /bootfs && \
     cp $KERNEL /bootfs/netbsd && \
     cp $DESTDIR/usr/mdec/boot /bootfs/boot && \
     cp /tmp/boot.cfg /bootfs/boot.cfg && \
-    $TOOLDIR/bin/nbmakefs -s 64m -t ffs -o version=1 /boot.img /bootfs && \
+    $TOOLDIR/bin/nbmakefs -s 256m -t ffs -o version=1 /boot.img /bootfs && \
     $TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /boot.img /disklabel.proto && \
     $TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
 
@@ -147,7 +147,7 @@ RUN cp /boot.img /outputs/guests/netbsd/10.0/${ARCH}/boot.img
 
 # Also copy the raw kernel for reference
 RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
-    cp /usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd \
+    cp /usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb \
        /outputs/guests/netbsd/10.0/${ARCH}/netbsd
 
 # Copy deploy script from common pattern

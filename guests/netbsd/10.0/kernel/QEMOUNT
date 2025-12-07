@@ -9,6 +9,9 @@ include "arch/amd64/conf/GENERIC"
 ident		"QEMOUNT"
 
 # Memory disk (md) for ramdisk root - md device already in GENERIC
+# GENERIC sets MEMORY_DISK_DYNAMIC which makes md_root_image a pointer, not an array
+# We need to unset it so mdsetimage can embed a ramdisk into the static array
+no options 	MEMORY_DISK_DYNAMIC
 options 	MEMORY_DISK_HOOKS		# enable md_root_image symbol for mdsetimage
 options 	MEMORY_DISK_IS_ROOT
 options 	MEMORY_DISK_ROOT_SIZE=16384	# 8MB in 512-byte sectors
