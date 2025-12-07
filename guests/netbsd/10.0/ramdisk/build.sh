@@ -19,7 +19,9 @@ for cmd in sh ls cat echo mkdir sleep test "[" mknod; do
 done
 
 for cmd in mount mount_ffs mount_cd9660 mount_msdos mount_ext2fs \
+           mount_ados mount_efs mount_filecore mount_lfs mount_ntfs \
            mount_kernfs mount_procfs mount_ptyfs mount_tmpfs mount_mfs \
+           mount_null mount_overlay mount_umap mount_union \
            umount halt reboot init; do
     ln "$RESCUE" "$RAMDISK/sbin/$cmd"
 done

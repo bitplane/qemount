@@ -19,5 +19,9 @@ options 	MEMORY_DISK_RBFLAGS=RB_SINGLE	# Boot single-user
 
 # Serial console for QEMU - handled via boot.cfg consdev=com0
 
-# UDF filesystem (not in GENERIC by default)
-file-system	UDF		# UDF
+# Additional filesystems (not in GENERIC by default)
+file-system	UDF		# UDF (DVD/Blu-ray)
+file-system	ADOSFS		# AmigaDOS
+file-system	HFS		# Apple HFS+ (read-only)
+file-system	V7FS		# 7th Edition Unix
+file-system	FILECORE	# Acorn RISC OS
