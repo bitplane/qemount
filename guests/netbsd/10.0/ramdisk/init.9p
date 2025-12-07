@@ -1,0 +1,5 @@
+#!/bin/sh
+# 9P server mode - placeholder for future implementation
+echo "9P mode not yet implemented"
+echo "Falling back to shell"
+exec /bin/sh

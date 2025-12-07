@@ -1,0 +1,42 @@
+#!/bin/sh
+# NetBSD qemount init dispatcher
+set -eu
+
+on_exit() {
+    /sbin/halt -p
+    sleep infinity
+}
+trap on_exit EXIT
+
+export PATH=/bin:/sbin
+
+echo "NetBSD qemount guest starting..."
+
+# Mount essential filesystems
+mkdir -p /dev /proc /kern
+mount -t ptyfs ptyfs /dev
+mount -t procfs procfs /proc
+mount -t kernfs kernfs /kern
+
+# Create mount point for user images
+mkdir -p /mnt
+
+# Detect mode by checking for virtio serial device
+# Runner only adds virtio-serial in 9p mode
+if [ -c /dev/ttyVI00 ]; then
+    MODE="9p"
+else
+    MODE="sh"
+fi
+
+SCRIPT="/init.${MODE}"
+
+echo "[INIT] Dispatching to: $SCRIPT"
+if [ -x "$SCRIPT" ]; then
+    "$SCRIPT" || echo "Script failed: $?"
+else
+    echo "Mode script not found: $SCRIPT"
+fi
+
+# Fallback to shell
+exec /bin/sh

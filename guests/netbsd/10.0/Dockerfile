@@ -88,7 +88,7 @@ RUN NBARCH=$(cat /tmp/nbarch) && \
 
 # Create ramdisk with essential binaries
 # Note: avoid bash brace expansion - Debian uses dash which doesn't support it
-RUN mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc /ramdisk/mnt /ramdisk/tmp /ramdisk/proc
+RUN mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc /ramdisk/mnt /ramdisk/tmp /ramdisk/proc /ramdisk/kern
 
 # Copy essential binaries from the built distribution
 RUN NBARCH=$(cat /tmp/nbarch) && \
@@ -101,28 +101,30 @@ RUN NBARCH=$(cat /tmp/nbarch) && \
     cp $DESTDIR/bin/sleep /ramdisk/bin/ && \
     cp $DESTDIR/sbin/mount /ramdisk/sbin/ && \
     cp $DESTDIR/sbin/umount /ramdisk/sbin/ && \
+    cp $DESTDIR/sbin/halt /ramdisk/sbin/ && \
     cp $DESTDIR/sbin/init /ramdisk/sbin/init.real || true
 
-# Create a simple init script
-RUN echo '#!/bin/sh' > /ramdisk/sbin/init && \
-    echo 'export PATH=/bin:/sbin' >> /ramdisk/sbin/init && \
-    echo 'echo "NetBSD qemount guest starting..."' >> /ramdisk/sbin/init && \
-    echo 'exec /bin/sh' >> /ramdisk/sbin/init && \
-    chmod +x /ramdisk/sbin/init
-
-# Create minimal /etc files
-RUN echo 'root:x:0:0:root:/:/bin/sh' > /ramdisk/etc/passwd && \
-    echo 'root:x:0:' > /ramdisk/etc/group
+# Copy init scripts and etc files from source
+COPY --chmod=755 ramdisk/sbin/init /ramdisk/sbin/init
+COPY --chmod=755 ramdisk/init.sh /ramdisk/init.sh
+COPY --chmod=755 ramdisk/init.9p /ramdisk/init.9p
+COPY ramdisk/etc/passwd /ramdisk/etc/passwd
+COPY ramdisk/etc/group /ramdisk/etc/group
 
 # Create ramdisk filesystem image (8MB)
 # nbmakefs is the cross-tool built by build.sh
-RUN /usr/tools/bin/nbmakefs -s 8m -t ffs /ramdisk.fs /ramdisk
+# Use FFS v1 for compatibility with memory disk boot
+RUN /usr/tools/bin/nbmakefs -s 8m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Embed ramdisk into kernel using mdsetimage
 # Note: mdsetimage is built in obj/tools/, not tools/bin/
 RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
     KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
     /usr/obj/tools/mdsetimage/mdsetimage -v $KERNEL /ramdisk.fs
+
+# Copy boot config files from source
+COPY boot.cfg /tmp/boot.cfg
+COPY disklabel.proto /disklabel.proto
 
 # Create a bootable disk image manually
 # mkimage has a bug where it looks for /usr/mdec/boot instead of $DESTDIR/usr/mdec/boot
@@ -131,31 +133,12 @@ RUN NBARCH=$(cat /tmp/nbarch) && \
     DESTDIR=/usr/obj/destdir.$NBARCH && \
     KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
     TOOLDIR=/usr/tools && \
-    # Create a directory for boot filesystem contents
     mkdir -p /bootfs && \
     cp $KERNEL /bootfs/netbsd && \
     cp $DESTDIR/usr/mdec/boot /bootfs/boot && \
-    echo 'timeout=0' > /bootfs/boot.cfg && \
-    # Create disklabel proto file (64MB = 131072 sectors)
-    echo 'type: SCSI' > /disklabel.proto && \
-    echo 'disk: QEMOUNT' >> /disklabel.proto && \
-    echo 'label: qemount' >> /disklabel.proto && \
-    echo 'bytes/sector: 512' >> /disklabel.proto && \
-    echo 'sectors/track: 32' >> /disklabel.proto && \
-    echo 'tracks/cylinder: 64' >> /disklabel.proto && \
-    echo 'sectors/cylinder: 2048' >> /disklabel.proto && \
-    echo 'cylinders: 64' >> /disklabel.proto && \
-    echo 'total sectors: 131072' >> /disklabel.proto && \
-    echo '' >> /disklabel.proto && \
-    echo '8 partitions:' >> /disklabel.proto && \
-    echo ' a:   131072 0       4.2BSD  8192  65536 0' >> /disklabel.proto && \
-    echo ' c:   131072 0       unused  0     0' >> /disklabel.proto && \
-    echo ' d:   131072 0       unused  0     0' >> /disklabel.proto && \
-    # Create 64MB FFS image
+    cp /tmp/boot.cfg /bootfs/boot.cfg && \
     $TOOLDIR/bin/nbmakefs -s 64m -t ffs -o version=1 /boot.img /bootfs && \
-    # Write disklabel to image
     $TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /boot.img /disklabel.proto && \
-    # Install boot blocks with zero timeout
     $TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
 
 # Create output directory and copy boot image

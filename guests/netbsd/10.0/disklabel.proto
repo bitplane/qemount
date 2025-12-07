@@ -1,0 +1,14 @@
+type: SCSI
+disk: QEMOUNT
+label: qemount
+bytes/sector: 512
+sectors/track: 32
+tracks/cylinder: 64
+sectors/cylinder: 2048
+cylinders: 64
+total sectors: 131072
+
+8 partitions:
+ a:   131072 0       4.2BSD  8192  65536 0
+ c:   131072 0       unused  0     0
+ d:   131072 0       unused  0     0
