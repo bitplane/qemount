@@ -124,8 +124,45 @@ RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
     KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
     /usr/obj/tools/mdsetimage/mdsetimage -v $KERNEL /ramdisk.fs
 
-# Create output directory and copy kernel
+# Create a bootable disk image manually
+# mkimage has a bug where it looks for /usr/mdec/boot instead of $DESTDIR/usr/mdec/boot
+RUN NBARCH=$(cat /tmp/nbarch) && \
+    NBKERNARCH=$(cat /tmp/nbkernarch) && \
+    DESTDIR=/usr/obj/destdir.$NBARCH && \
+    KERNEL=/usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd && \
+    TOOLDIR=/usr/tools && \
+    # Create a directory for boot filesystem contents
+    mkdir -p /bootfs && \
+    cp $KERNEL /bootfs/netbsd && \
+    cp $DESTDIR/usr/mdec/boot /bootfs/boot && \
+    echo 'timeout=0' > /bootfs/boot.cfg && \
+    # Create disklabel proto file (64MB = 131072 sectors)
+    echo 'type: SCSI' > /disklabel.proto && \
+    echo 'disk: QEMOUNT' >> /disklabel.proto && \
+    echo 'label: qemount' >> /disklabel.proto && \
+    echo 'bytes/sector: 512' >> /disklabel.proto && \
+    echo 'sectors/track: 32' >> /disklabel.proto && \
+    echo 'tracks/cylinder: 64' >> /disklabel.proto && \
+    echo 'sectors/cylinder: 2048' >> /disklabel.proto && \
+    echo 'cylinders: 64' >> /disklabel.proto && \
+    echo 'total sectors: 131072' >> /disklabel.proto && \
+    echo '' >> /disklabel.proto && \
+    echo '8 partitions:' >> /disklabel.proto && \
+    echo ' a:   131072 0       4.2BSD  8192  65536 0' >> /disklabel.proto && \
+    echo ' c:   131072 0       unused  0     0' >> /disklabel.proto && \
+    echo ' d:   131072 0       unused  0     0' >> /disklabel.proto && \
+    # Create 64MB FFS image
+    $TOOLDIR/bin/nbmakefs -s 64m -t ffs -o version=1 /boot.img /bootfs && \
+    # Write disklabel to image
+    $TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /boot.img /disklabel.proto && \
+    # Install boot blocks with zero timeout
+    $TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
+
+# Create output directory and copy boot image
 RUN mkdir -p /outputs/guests/netbsd/10.0/${ARCH}
+RUN cp /boot.img /outputs/guests/netbsd/10.0/${ARCH}/boot.img
+
+# Also copy the raw kernel for reference
 RUN NBKERNARCH=$(cat /tmp/nbkernarch) && \
     cp /usr/obj/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd \
        /outputs/guests/netbsd/10.0/${ARCH}/netbsd

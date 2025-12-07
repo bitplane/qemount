@@ -1,1 +1,2 @@
 guests/netbsd/10.0/$(ARCH)/netbsd
+guests/netbsd/10.0/$(ARCH)/boot.img

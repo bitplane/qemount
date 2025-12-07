@@ -2,26 +2,26 @@
 set -euo pipefail
 
 # NetBSD QEMU runner script
-# Usage: run-netbsd.sh <arch> <kernel> [options]
+# Usage: run-netbsd.sh <arch> <boot-image> [options]
 # Options:
-#   -i <image>    Add a disk image
+#   -i <image>    Add a disk image (mounted as second drive)
 #   -m <mode>     Boot mode (9p, sshd, sh)
 #   -s <socket>   9P socket path (default: /tmp/9p.sock)
 #   -n            Enable networking
 
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <arch> <kernel> [options] [-- extra_qemu_args]"
+    echo "Usage: $0 <arch> <boot-image> [options] [-- extra_qemu_args]"
     echo "Options:"
-    echo "  -i <image>    Add a disk image"
+    echo "  -i <image>    Add a disk image (mounted as second drive)"
     echo "  -m <mode>     Boot mode (9p, sshd, sh) - default: sh"
     echo "  -s <socket>   9P socket path (default: /tmp/9p.sock)"
     echo "  -n            Enable networking"
-    echo "Example: $0 x86_64 netbsd -i test.img -m 9p -n"
+    echo "Example: $0 x86_64 boot.img -i test.img -m 9p -n"
     exit 1
 fi
 
 ARCH="$1"
-KERNEL="$2"
+BOOT_IMAGE="$2"
 shift 2
 
 # Default values
@@ -74,22 +74,16 @@ case "$ARCH" in
 esac
 
 # Build QEMU command
-# NetBSD kernel has embedded ramdisk (md0), no initrd needed
+# NetBSD boots from disk image with embedded bootloader
+# The kernel has an embedded md0 ramdisk for root
 QEMU_ARGS=(
-    -kernel "$KERNEL"
+    -drive "file=$BOOT_IMAGE,format=raw,if=ide,index=0,media=disk"
     -nographic
     -m 256
+    -serial mon:stdio
 )
 
-# Add kernel command line for NetBSD
-# console=com0 for serial, mode= passed via environment or kernel arg
-APPEND="console=com0 -s"
-if [ -n "$MODE" ]; then
-    APPEND="$APPEND boot.mode=$MODE"
-fi
-QEMU_ARGS+=(-append "$APPEND")
-
-# Add disk image if specified
+# Add user disk image if specified (as second drive for mounting)
 if [ -n "$IMAGE" ]; then
     QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
 fi
