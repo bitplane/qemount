@@ -78,9 +78,8 @@ esac
 # The kernel has an embedded md0 ramdisk for root
 QEMU_ARGS=(
     -drive "file=$BOOT_IMAGE,format=raw,if=ide,index=0,media=disk"
-    -nographic
     -m 256
-    -serial mon:stdio
+    -fw_cfg name=opt/qemount/mode,string=$MODE
 )
 
 # Add user disk image if specified (as second drive for mounting)
@@ -96,17 +95,19 @@ if [ -n "$ENABLE_NET" ]; then
     )
 fi
 
-# Add 9P support if requested
-if [ "$MODE" = "9p" ]; then
-    # Clean up any existing socket
-    rm -f "$SOCKET_PATH"
+# Set up serial ports - same config regardless of mode
+# com0 = console on stdio (via -nographic)
+# com1 = 9P channel on socket (always present, used in 9p mode)
+rm -f "$SOCKET_PATH"
 
-    QEMU_ARGS+=(
-        -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
-        -device virtio-serial
-        -device virtserialport,chardev=p9channel,name=9pport
-    )
-    echo "9P server will be available at: $SOCKET_PATH"
+QEMU_ARGS+=(
+    -nographic
+    -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
+    -device pci-serial,chardev=p9channel
+)
+
+echo "9P socket: $SOCKET_PATH"
+if [ "$MODE" = "9p" ]; then
     echo "Connect with: 9pfuse $SOCKET_PATH <mountpoint>"
 fi
 

@@ -13,12 +13,13 @@ trap on_exit EXIT
 mount -t tmpfs tmpfs /dev
 
 # Create device nodes
-# console=0,0  tty00/com0=8,0  null=2,2
+# console=0,0  tty00/com0=8,0  tty01/com1=8,1  null=2,2
 # wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)
 # sd*=4,*  (SCSI/virtio: sd0a=4,0)
 # ld*=19,* (virtio-blk: ld0a=19,0)
 mknod /dev/console c 0 0
 mknod /dev/tty00 c 8 0
+mknod /dev/tty01 c 8 1
 mknod /dev/null c 2 2
 mknod /dev/wd0a b 0 0
 mknod /dev/wd1a b 0 8
@@ -55,12 +56,10 @@ fi
 export MOUNT_SUCCESS
 export MOUNT_POINT
 
-# Detect mode - check for virtio serial device
-if [ -c /dev/vport0p1 ]; then
-    MODE="9p"
-else
-    MODE="sh"
-fi
+# Detect mode from QEMU fw_cfg
+# QEMU passes mode via: -fw_cfg name=opt/qemount/mode,string=<mode>
+# Try to read from sysctl first, fall back to sh
+MODE=$(sysctl -n hw.qemufwcfg.opt.qemount.mode 2>/dev/null || echo "sh")
 
 SCRIPT="/init.${MODE}"
 
