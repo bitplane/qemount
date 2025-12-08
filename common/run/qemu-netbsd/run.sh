@@ -77,7 +77,7 @@ esac
 # NetBSD boots from disk image with embedded bootloader
 # The kernel has an embedded md0 ramdisk for root
 QEMU_ARGS=(
-    -drive "file=$BOOT_IMAGE,format=raw,if=ide,index=0,media=disk"
+    -drive "file=$BOOT_IMAGE,format=raw,if=virtio"
     -m 256
     -fw_cfg name=opt/qemount/mode,string=$MODE
 )

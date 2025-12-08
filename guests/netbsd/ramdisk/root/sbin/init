@@ -21,13 +21,22 @@ mknod /dev/console c 0 0
 mknod /dev/tty00 c 8 0
 mknod /dev/tty01 c 8 1
 mknod /dev/null c 2 2
+# MAXPARTITIONS=16 on amd64: minor = unit*16 + partition
 mknod /dev/wd0a b 0 0
-mknod /dev/wd1a b 0 8
+mknod /dev/wd1a b 0 16
 mknod /dev/sd0a b 4 0
+mknod /dev/sd1a b 4 16
+# ld devices: major=19, minor = unit*16 + partition (MAXPARTITIONS=16 on amd64)
 mknod /dev/ld0a b 19 0
+mknod /dev/ld1a b 19 16
+mknod /dev/ld1d b 19 19
 
 # Redirect to serial console
 exec >/dev/tty00 2>&1 </dev/tty00
+
+# Set up terminal
+export TERM=vt100
+stty sane 2>/dev/null || true
 
 echo ""
 echo "==================================="
@@ -40,7 +49,9 @@ MOUNT_POINT=/mnt
 MOUNT_SUCCESS=0
 
 # Try different possible devices for the user's image
-for TARGET_DEV in /dev/ld0a /dev/sd0a /dev/wd1a; do
+# ld1 = second virtio disk (user image), ld0 = boot disk
+# Try ld1d (raw) first for images without disklabel, then ld1a (partition a)
+for TARGET_DEV in /dev/ld1d /dev/ld1a /dev/sd0a /dev/wd1a; do
     echo "[INIT] Trying $TARGET_DEV..."
     if mount "$TARGET_DEV" "$MOUNT_POINT" 2>/dev/null; then
         MOUNT_SUCCESS=1
