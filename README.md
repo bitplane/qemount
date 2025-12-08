@@ -72,6 +72,8 @@ If the stars align, you'll be able to mangle the files in your given disk image.
     - [ ] spam in file browser
   - [ ] FUSE
     - [ ] block size wrong for `du`
+  - [ ] Linux runner
+    - [ ] change virtserialport to virtconsole for consistency with NetBSD
 
 #### 4. Embrace, Extend, Exaggerate 
 

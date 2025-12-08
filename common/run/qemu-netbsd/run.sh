@@ -102,7 +102,7 @@ QEMU_ARGS+=(
     -nographic
     -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
     -device virtio-serial
-    -device virtserialport,chardev=p9channel,name=9pport
+    -device virtconsole,chardev=p9channel,name=9pport
 )
 
 echo "9P socket: $SOCKET_PATH"
