@@ -1,32 +1,32 @@
 #!/bin/sh
 set -eu
 
-echo "[INFO] Starting 9P server mode..."
-echo "[INFO] MOUNT_POINT=$MOUNT_POINT"
+echo "[9P] Starting 9P server mode..."
+echo "[9P] MOUNT_POINT=$MOUNT_POINT"
 
-# Second serial port (com1/tty01) is connected to host socket
-PORT_PATH=/dev/tty01
-echo "[INFO] PORT_PATH=$PORT_PATH"
+# Virtio console port (viocon) is connected to host socket
+PORT_PATH=/dev/ttyVI00
+echo "[9P] PORT_PATH=$PORT_PATH"
 
 # Bring up loopback for TCP
 ifconfig lo0 127.0.0.1 up
 
 # Start 9P server listening on TCP
-echo "[INFO] Starting 9P server on tcp!*!5640..."
-/bin/simple9p -p "tcp!*!5640" "$MOUNT_POINT" &
+echo "[9P] Starting 9P server on tcp!127.0.0.1!5640..."
+/bin/simple9p -p "tcp!127.0.0.1!5640" "$MOUNT_POINT" &
 SERVER_PID=$!
 
 # Kill the server on exit
 trap "kill $SERVER_PID 2>/dev/null || true" EXIT
 
 # Give server time to start
-sleep 2
+sleep 1
 
-# Bridge serial port to 9P server
-echo "[INFO] Starting bridge loop..."
+# Bridge virtio-serial port to 9P server
+echo "[9P] Starting bridge loop..."
 while true; do
-    echo "[INFO] Bridging $PORT_PATH to 9P server..."
+    echo "[9P] Bridging $PORT_PATH to 9P server..."
     /bin/socat FILE:$PORT_PATH,raw,echo=0 TCP:127.0.0.1:5640
-    echo "[INFO] Bridge disconnected, retrying..."
+    echo "[9P] Bridge disconnected, retrying..."
     sleep 1
 done

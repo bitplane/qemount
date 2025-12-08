@@ -95,15 +95,14 @@ if [ -n "$ENABLE_NET" ]; then
     )
 fi
 
-# Set up serial ports - same config regardless of mode
-# com0 = console on stdio (via -nographic)
-# com1 = 9P channel on socket (always present, used in 9p mode)
+# Set up console and 9P channel (same hardware config regardless of mode)
 rm -f "$SOCKET_PATH"
 
 QEMU_ARGS+=(
     -nographic
     -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
-    -device pci-serial,chardev=p9channel
+    -device virtio-serial
+    -device virtserialport,chardev=p9channel,name=9pport
 )
 
 echo "9P socket: $SOCKET_PATH"

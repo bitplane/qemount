@@ -1,4 +1,7 @@
 #!/bin/sh
+# Bring up loopback for networking
+ifconfig lo0 127.0.0.1 up
+
 echo "[SH] Shell mode"
 echo "[SH] MOUNT_POINT=$MOUNT_POINT"
 echo "[SH] MOUNT_SUCCESS=$MOUNT_SUCCESS"

@@ -1037,6 +1037,7 @@ vioif*		at virtio?		# Virtio network
 viomb*		at virtio?		# Virtio memory balloon
 viornd*		at virtio?		# Virtio entropy
 vioscsi*	at virtio?		# Virtio SCSI
+viocon*		at virtio?		# Virtio console (serial)
 
 # Hyper-V devices
 vmbus*		at acpi?		# Hyper-V VMBus

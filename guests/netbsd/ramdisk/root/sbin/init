@@ -30,6 +30,8 @@ mknod /dev/sd1a b 4 16
 mknod /dev/ld0a b 19 0
 mknod /dev/ld1a b 19 16
 mknod /dev/ld1d b 19 19
+# viocon (virtio console/serial): major=364, minor=16*unit+port
+mknod /dev/ttyVI00 c 364 0
 
 # Redirect to serial console
 exec >/dev/tty00 2>&1 </dev/tty00
