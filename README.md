@@ -74,6 +74,9 @@ If the stars align, you'll be able to mangle the files in your given disk image.
     - [ ] block size wrong for `du`
   - [ ] Linux runner
     - [ ] change virtserialport to virtconsole for consistency with NetBSD
+  - [ ] Build system
+    - [ ] Download + cache system with automatic cache blowing
+    - [ ] Export builder images for long term archival (archive.org)
 
 #### 4. Embrace, Extend, Exaggerate 
 
@@ -168,6 +171,8 @@ qemount/
 | -------- | ----------------------------------------------------------------- |
 | WinACE   | PeaZip doesn't support ACE archives because security, but we can  |
 | rsrc     | Open Windows EXE resource forks and browse icons etc inside them  |
+| p2p      | Access IPFS, Tor, i2p and chummers                                |
+| Irrlicht | Expose Irrlicht's VFS and open game formats as filesystems        |
 
 ### Hosts
 

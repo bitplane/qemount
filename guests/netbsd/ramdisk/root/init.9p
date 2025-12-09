@@ -8,29 +8,13 @@ echo "[9P] MOUNT_POINT=$MOUNT_POINT"
 PORT_PATH=/dev/ttyVI00
 echo "[9P] PORT_PATH=$PORT_PATH"
 
-# Bring up loopback for TCP
-ifconfig lo0 127.0.0.1 up
-
-# Start 9P server listening on TCP
-echo "[9P] Starting 9P server on tcp!127.0.0.1!5640..."
-/bin/simple9p -d -p "tcp!127.0.0.1!5640" "$MOUNT_POINT" &
-SERVER_PID=$!
-
-# Kill the server on exit
-trap "kill $SERVER_PID 2>/dev/null || true" EXIT
-
-# Give server time to start
-sleep 1
-
-# Bridge virtio-serial port to 9P server
-echo "[9P] Starting bridge loop..."
+# Run 9P server directly on the virtio console device
+# Using stdio mode with bidirectional redirect to the device
+# The server will restart if the connection drops
+echo "[9P] Starting 9P server loop..."
 while true; do
-    # Set raw mode, no echo on virtio port (must be done each time)
-    stty -f $PORT_PATH raw -echo -echoe -echoke -echoctl
-    echo "[9P] Bridging $PORT_PATH to 9P server..."
-    ktrace -f /tmp/socat.kt -i /bin/socat -v GOPEN:$PORT_PATH TCP:127.0.0.1:5640
-    echo "[9P] Bridge disconnected, retrying..."
-    echo "[9P] Trace output:"
-    kdump -f /tmp/socat.kt | tail -50
+    echo "[9P] Serving 9P on $PORT_PATH..."
+    /bin/simple9p -d -p - "$MOUNT_POINT" <> "$PORT_PATH"
+    echo "[9P] Server exited, restarting..."
     sleep 1
 done
