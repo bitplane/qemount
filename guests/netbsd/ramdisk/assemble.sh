@@ -34,10 +34,6 @@ if [ -f /host/build/guests/netbsd/rootfs/${ARCH}/bin/socat ]; then
     chmod 755 /ramdisk/bin/socat
 fi
 
-# Show ramdisk contents
-echo "Ramdisk contents:"
-ls -la /ramdisk/bin/ /ramdisk/sbin/ || true
-
 # Create ramdisk filesystem image (16MB for rescue binary + extras)
 # Use FFS v1 for compatibility with memory disk boot
 /usr/tools/bin/nbmakefs -s 16m -t ffs -o version=1 /ramdisk.fs /ramdisk

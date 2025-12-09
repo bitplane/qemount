@@ -12,6 +12,12 @@ trap on_exit EXIT
 # Mount tmpfs at /dev so we can create device nodes
 mount -t tmpfs tmpfs /dev
 
+# Mount tmpfs at /tmp for scratch space
+mount -t tmpfs tmpfs /tmp
+
+# Mount procfs for debugging
+mount -t procfs procfs /proc
+
 # Create device nodes
 # console=0,0  tty00/com0=8,0  tty01/com1=8,1  null=2,2
 # wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)

@@ -13,7 +13,7 @@ ifconfig lo0 127.0.0.1 up
 
 # Start 9P server listening on TCP
 echo "[9P] Starting 9P server on tcp!127.0.0.1!5640..."
-/bin/simple9p -p "tcp!127.0.0.1!5640" "$MOUNT_POINT" &
+/bin/simple9p -d -p "tcp!127.0.0.1!5640" "$MOUNT_POINT" &
 SERVER_PID=$!
 
 # Kill the server on exit
@@ -25,8 +25,12 @@ sleep 1
 # Bridge virtio-serial port to 9P server
 echo "[9P] Starting bridge loop..."
 while true; do
+    # Set raw mode, no echo on virtio port (must be done each time)
+    stty -f $PORT_PATH raw -echo -echoe -echoke -echoctl
     echo "[9P] Bridging $PORT_PATH to 9P server..."
-    /bin/socat FILE:$PORT_PATH,raw,echo=0 TCP:127.0.0.1:5640
+    ktrace -f /tmp/socat.kt -i /bin/socat -v GOPEN:$PORT_PATH TCP:127.0.0.1:5640
     echo "[9P] Bridge disconnected, retrying..."
+    echo "[9P] Trace output:"
+    kdump -f /tmp/socat.kt | tail -50
     sleep 1
 done
