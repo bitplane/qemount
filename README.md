@@ -10,28 +10,35 @@ tiny VM that provides access to an image, one instance per mount.
 
 ## ✅ STATUS
 
-0: unstable / pre-alpha
+⚠️  unstable / pre-alpha / experimental ⚠️
 
-## ⚙️ Usage
+## 🛑 STOP! 🛑
+
+MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS EXPERIMENTAL TOOL.
 
 Currently there's:
 
-* no filesystem catalogue
+* no filesystem catalogue saying which filesystem loaders will work
+* no users battle testing it in production
 * no safety settings, everything is read/write even if it'll destroy disks
 * no client library for cross platform access
 * no packaging / install scripts
 
 But there is:
 
-* A FUSE client
-* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
+* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests with 9p transport and a shell
+* Scripts to start a FUSE client
+* A collection of filesystems to play with
+* A build system that isolates everything and has some promise
+* A vibe coded libixp-based 9p server that lacks the test suite it deserves
 
 To use it:
 
 1. Install `podman`, `fuse`, `make` and `qemu`
 2. Type `make` to build the guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
-   and `-m 9p` to run the 9p init script.
+   and `-m 9p` to run the 9p init script. (BSD needs manual execution at present;
+   run ./init.9p from the shell)
 4. Once it's started and is grumbling about not having a connection (not
    before), connect to it with the 9p FUSE client using:
    `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
@@ -44,7 +51,8 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 
 - [x] more guests
   - [x] Linux 2.6
-  - [ ] NetBSD 10
+  - [x] NetBSD 10
+- [ ] a common interface 
 
 #### 2. Link it in
 
@@ -84,6 +92,7 @@ If the stars align, you'll be able to mangle the files in your given disk image.
   - [ ] AROS
   - [ ] Haiku
   - [ ] Atari ST (STEEM?)
+  - [ ] Darwin
 
 ## 🪓 Hacking
 
@@ -95,7 +104,7 @@ their entrypoint and write it to their `/outputs/` dir which is mapped to the
 build dir.
 
 This pattern is a bit convoluted and has a disk space cost, but it keeps things
-isolated and will scale well in the short to medium term.
+isolated, deterministic and will scale well in the short to medium term.
 
 The filesystem layout looks like this:
 
@@ -167,12 +176,16 @@ qemount/
 
 #### 💡 Unorthodox Guest ideas
 
+You know the drill. It's exciting to have anything as a filesystem, but scary to
+have the code to do it in your operating system.
+
 | Guest    | Notes                                                             |
 | -------- | ----------------------------------------------------------------- |
 | WinACE   | PeaZip doesn't support ACE archives because security, but we can  |
 | rsrc     | Open Windows EXE resource forks and browse icons etc inside them  |
-| p2p      | Access IPFS, Tor, i2p and chummers                                |
-| Irrlicht | Expose Irrlicht's VFS and open game formats as filesystems        |
+| p2p      | Access IPFS, Tor, i2p and chummers without services               |
+| Irrlicht | Expose Irrlicht's VFS, open game formats in your pwd              |
+| Python   | pypi is a trove, we're one interface away from world domination   |
 
 ### Hosts
 
@@ -186,10 +199,9 @@ There's a ton of ways we can use this
 | PeaZip         |📦|                                                     |
 | Gnome          |🪟| Gnome Desktop Virtual Filesystem                    |
 | KDE            |🪟| KDE has its own VFS too                             |
-| Windows Driver |🪟|                                                     |
+| Windows Driver |🪟| We can crash a whole operating system with these    |
 | Web-based      |🌍| QEMU+WASM+guests = browse files on the web          |
 | Python         |🤖| Python pathlib support                              |
-| Node           |🤖| | 
 
 ### More catalogue stuff
 
@@ -199,4 +211,18 @@ We can mine these for detection rules
 * `disktype` - better detection for more types and
   [samples](https://github.com/kamwoods/disktype/tree/master/misc/file-system-sampler)
 * `amitools` - Amiga filesystems
+
+
+
+
+### Python research notes
+
+We can run Python 2 stuff too, since we're isolated. 
+
+* [SAM Coupe](https://pypi.org/project/mgtdisklib/) / MGT + D
+* [FATtools](https://pypi.org/project/FATtools/) - FAT12/16/32, exFAT, MBR + GPT
+* [bcachefs](https://pypi.org/project/bcachefs/)
+* [BBC Micro](https://pypi.org/project/pymmb/) - python 2, project page dead
+* C64 [1](https://pypi.org/project/d64py/) [2](https://pypi.org/project/d64/)
+* [AppleII](https://pypi.org/project/diskii/)
 
