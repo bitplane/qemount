@@ -11,7 +11,7 @@ on_exit() {
 }
 trap on_exit EXIT
 
-PORT_PATH=/dev/vport0p1
+PORT_PATH=/dev/hvc0
 
 mkdir -p /dev /proc/ /sys
 mount -t devtmpfs devtmpfs /dev
@@ -21,6 +21,13 @@ mkdir -p /mnt
 
 # run mdev to detect devices
 mdev -sS
+
+# Hold fd open so stty options persist - device resets to echo mode on close
+# May fail on older kernels without virtio-serial, so don't abort
+if [ -e "$PORT_PATH" ]; then
+    exec 3<>"$PORT_PATH" 2>/dev/null || true
+    stty -F "$PORT_PATH" raw -echo -echoe -echok -echoctl 2>/dev/null || true
+fi
 
 echo ""
 echo "==================================="

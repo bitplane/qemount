@@ -4,19 +4,29 @@ set -eu
 echo "[9P] Starting 9P server mode..."
 echo "[9P] PORT_PATH=$PORT_PATH"
 echo "[9P] MOUNT_POINT=$MOUNT_POINT"
+echo "[9P] MOUNT_SUCCESS=$MOUNT_SUCCESS"
 
 # Wait for the device to appear
+echo "[9P] Waiting for $PORT_PATH..."
 while [ ! -e "$PORT_PATH" ]; do
     sleep 0.1
 done
 
 echo "[9P] Device found at $PORT_PATH"
+ls -la "$PORT_PATH"
+
+echo "[9P] Testing simple9p binary..."
+/bin/simple9p -h 2>&1 || true
+
+echo "[9P] Contents of MOUNT_POINT:"
+ls -la "$MOUNT_POINT" 2>&1 || echo "[9P] Failed to list $MOUNT_POINT"
 
 # Run 9P server directly on virtio-serial (no socat needed)
 echo "[9P] Starting 9P server loop..."
 while true; do
-    echo "[9P] Serving 9P on $PORT_PATH..."
-    /bin/simple9p -p - "$MOUNT_POINT" <> "$PORT_PATH"
-    echo "[9P] Server exited, restarting..."
+    echo "[9P] Serving 9P on $PORT_PATH with -d flag..."
+    /bin/simple9p -d -p - "$MOUNT_POINT" <> "$PORT_PATH" 2>&1
+    RET=$?
+    echo "[9P] Server exited with code $RET, restarting..."
     sleep 1
 done

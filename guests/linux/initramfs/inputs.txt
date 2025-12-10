@@ -17,4 +17,5 @@ guests/linux/rootfs/$(ARCH)/bin/sed
 guests/linux/rootfs/$(ARCH)/bin/chpasswd
 guests/linux/rootfs/$(ARCH)/bin/ln
 guests/linux/rootfs/$(ARCH)/bin/ls
+guests/linux/rootfs/$(ARCH)/bin/stty
 common/compiler/linux/6
