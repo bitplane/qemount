@@ -72,7 +72,9 @@ case "$ARCH" in
 esac
 
 # Build QEMU command
+# TODO: reduce RAM once we switch from initramfs to ext2 rootfs
 QEMU_ARGS=(
+    -m 256
     -kernel "$KERNEL"
     -initrd "$INITRAMFS"
     -nographic

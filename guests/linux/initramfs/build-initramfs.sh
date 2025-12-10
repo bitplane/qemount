@@ -12,7 +12,7 @@ mkdir -p "$(dirname "/outputs/${OUTPUT_PATH}")"
 
 # Build the initramfs
 cd /build/root
-find . | cpio -o --format=newc | gzip -9 > /outputs/${OUTPUT_PATH}
+find . | cpio -o --format=newc > /outputs/${OUTPUT_PATH}
 
 # Deploy it using the standard deploy script
 /usr/local/bin/deploy.sh ${OUTPUT_PATH}
