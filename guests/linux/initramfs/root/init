@@ -29,6 +29,8 @@ if [ -e "$PORT_PATH" ]; then
     stty -F "$PORT_PATH" raw -echo -echoe -echok -echoctl 2>/dev/null || true
 fi
 
+printf '\e[?7h'  # re-enable line wrap (disabled by seabios)
+
 echo ""
 echo "==================================="
 echo "  Linux qemount guest starting"
