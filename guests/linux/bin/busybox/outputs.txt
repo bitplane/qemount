@@ -4,6 +4,8 @@ guests/linux/rootfs/$(ARCH)/bin/poweroff
 guests/linux/rootfs/$(ARCH)/bin/sleep
 guests/linux/rootfs/$(ARCH)/bin/mkdir
 guests/linux/rootfs/$(ARCH)/bin/mount
+guests/linux/rootfs/$(ARCH)/bin/umount
+guests/linux/rootfs/$(ARCH)/bin/sync
 guests/linux/rootfs/$(ARCH)/bin/mountpoint
 guests/linux/rootfs/$(ARCH)/bin/mdev
 guests/linux/rootfs/$(ARCH)/bin/[

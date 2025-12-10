@@ -3,8 +3,9 @@ export PATH=/bin:/sbin
 
 on_exit() {
     echo "[INIT] Shutting down..."
-    # exec replaces the process so we never return
-    # -q = quick (don't wait for processes, but still syncs)
+    sync
+    umount -a 2>/dev/null
+    sync
     exec halt -pq
 }
 trap on_exit EXIT
