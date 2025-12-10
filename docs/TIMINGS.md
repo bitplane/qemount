@@ -27,7 +27,12 @@ This didn't work. It ran out of RAM?
 2.6:  [    2.542068] mount used greatest stack depth: 5784 bytes left
 6.17: [    5.905531] mkdir (74) used greatest stack depth: 13472 bytes left
 
-# 6. 
+# 6. remove components we don't care about
+
+2.6:  [    2.282071] mount used greatest stack depth: 5784 bytes left
+6.17: [    5.433873] mkdir (63) used greatest stack depth: 13472 bytes left
+
+# 7. more aggressive removal
 
 
 
