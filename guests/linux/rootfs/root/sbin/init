@@ -13,11 +13,13 @@ trap on_exit EXIT
 
 PORT_PATH=/dev/hvc0
 
-mkdir -p /dev /proc/ /sys
-mount -t devtmpfs devtmpfs /dev
-mount -t proc none /proc
-mount -t sysfs none /sys
-mkdir -p /mnt
+mountpoint -q /dev  || mount -t devtmpfs devtmpfs /dev
+mountpoint -q /proc || mount -t proc none /proc
+mountpoint -q /sys  || mount -t sysfs none /sys
+mount -t tmpfs tmpfs /tmp
+cp -a /etc /tmp/etc
+mount -t tmpfs tmpfs /etc
+mv /tmp/etc/* /etc/
 
 # run mdev to detect devices
 mdev -sS
@@ -48,9 +50,9 @@ try_mount() {
     return 1
 }
 
-# Find the disk image device (vda or sr0)
-if [ -b /dev/vda ]; then
-    DISK_DEV=/dev/vda
+# Find the disk image device (vdb for user disk, vda is our rootfs)
+if [ -b /dev/vdb ]; then
+    DISK_DEV=/dev/vdb
 elif [ -b /dev/sr0 ]; then
     DISK_DEV=/dev/sr0
 else
@@ -111,7 +113,7 @@ export MOUNT_POINT="$MOUNT_POINT"
 export PORT_PATH="$PORT_PATH"
 
 MODE=$(sed -n 's/.*mode=\([^ ]*\).*/\1/p' /proc/cmdline)
-SCRIPT="/init.${MODE:-sh}" 
+SCRIPT="/sbin/init.${MODE:-sh}" 
 
 echo "root:password" | chpasswd
 

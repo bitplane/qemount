@@ -112,8 +112,8 @@ The filesystem layout looks like this:
 qemount/
 ├── guests/                    # Building these gives us filesystem back-ends
 │   ├── linux/                 # Linux guests
-│   │   ├── bin/               #   Shared binaries (busybox, socat, simple9p)
-│   │   ├── initramfs/         #   Shared initramfs builder
+│   │   ├── bin/               #   Shared binaries (busybox, simple9p)
+│   │   ├── rootfs/            #   Shared ext2 rootfs builder
 │   │   ├── 6.17/              #   Linux kernel 6.17 guest
 │   │   └── 2.6/               #   Linux kernel 2.6 guest (legacy filesystems)
 │   └── ...                    # todo: Haiku, AROS etc

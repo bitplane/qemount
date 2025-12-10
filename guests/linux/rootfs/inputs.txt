@@ -1,4 +1,3 @@
-guests/linux/rootfs/$(ARCH)/bin/strace
 guests/linux/rootfs/$(ARCH)/bin/busybox
 guests/linux/rootfs/$(ARCH)/bin/simple9p
 guests/linux/rootfs/$(ARCH)/bin/sh

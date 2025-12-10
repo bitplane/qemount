@@ -43,11 +43,9 @@ etc
 2.6:  [    1.774308] Switching to clocksource tsc
 6.17: [    2.759441] mkdir (60) used greatest stack depth: 13488 bytes left
 
+# 8. drop initramfs approach entirely - boot into an ext2 image
+
+2.6:  [    1.688289] mount used greatest stack depth: 4296 bytes left
+6.17: [    2.355254] mount (63) used greatest stack depth: 12400 bytes left
 
 
-
-
-
-future:
-
-* drop initramfs approach entirely - boot into an ext2 image

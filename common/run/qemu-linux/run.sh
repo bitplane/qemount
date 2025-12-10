@@ -2,27 +2,27 @@
 set -euo pipefail
 
 # QEMU runner script for Linux guests
-# Usage: run-linux.sh <arch> <kernel> <initramfs> [options]
+# Usage: run-linux.sh <arch> <kernel> <boot_img> [options]
 # Options:
-#   -i <image>    Add a disk image
+#   -i <image>    Add a disk image (user's filesystem to mount)
 #   -m <mode>     Guest mode (passed via kernel cmdline, default: sh)
 #   -s <socket>   9P socket path (default: /tmp/9p.sock)
 #   -n            Enable networking
 
 if [ $# -lt 3 ]; then
-    echo "Usage: $0 <arch> <kernel> <initramfs> [options] [-- extra_qemu_args]"
+    echo "Usage: $0 <arch> <kernel> <boot_img> [options] [-- extra_qemu_args]"
     echo "Options:"
-    echo "  -i <image>    Add a disk image"
+    echo "  -i <image>    Add a disk image (user's filesystem)"
     echo "  -m <mode>     Guest mode (default: sh)"
     echo "  -s <socket>   9P socket path (default: /tmp/9p.sock)"
     echo "  -n            Enable networking"
-    echo "Example: $0 x86_64 kernel initramfs.cpio.gz -i test.img -m 9p -n"
+    echo "Example: $0 x86_64 kernel boot.img -i test.ext2 -m 9p -n"
     exit 1
 fi
 
 ARCH="$1"
 KERNEL="$2"
-INITRAMFS="$3"
+BOOT_IMG="$3"
 shift 3
 
 # Default values
@@ -72,18 +72,18 @@ case "$ARCH" in
 esac
 
 # Build QEMU command
-# TODO: reduce RAM once we switch from initramfs to ext2 rootfs
 QEMU_ARGS=(
-    -m 256
+    -m 128
     -kernel "$KERNEL"
-    -initrd "$INITRAMFS"
+    -drive "file=$BOOT_IMG,format=raw,if=virtio,readonly=on"
     -nographic
 )
 
 # Add kernel command line (mode is always passed to guest)
-QEMU_ARGS+=(-append "console=ttyS0 mode=$MODE")
+# root=/dev/vda = our boot.img, user disk will be vdb
+QEMU_ARGS+=(-append "root=/dev/vda ro console=ttyS0 mode=$MODE")
 
-# Add disk image if specified
+# Add user's disk image if specified (becomes vdb)
 if [ -n "$IMAGE" ]; then
     QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
 fi
