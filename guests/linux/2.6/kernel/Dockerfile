@@ -1,7 +1,7 @@
 ARG ARCH
 
 # Download kernel source using modern image with working TLS
-FROM alpine:latest AS downloader
+FROM docker.io/library/alpine:latest AS downloader
 RUN apk add --no-cache wget
 RUN wget -O /linux.tar.xz https://cdn.kernel.org/pub/linux/kernel/v2.6/linux-2.6.39.4.tar.xz
 

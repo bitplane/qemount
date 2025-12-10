@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM docker.io/library/alpine:latest
 
 # Install tar
 RUN apk add --no-cache tar

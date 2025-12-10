@@ -3,7 +3,8 @@ FROM localhost/qemount-common-compiler-netbsd-10.0-${ARCH}
 ARG ARCH
 
 # Install wget for downloading
-RUN apt-get update && apt-get install -y --no-install-recommends wget && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget && \
     rm -rf /var/lib/apt/lists/*
 
 # Download and extract socat

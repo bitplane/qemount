@@ -10,7 +10,7 @@ RUN apk add --no-cache \
 
 # Download and extract dropbear
 WORKDIR /build
-RUN wget https://matt.ucc.asn.au/dropbear/releases/dropbear-2025.87.tar.bz2
+RUN wget https://mirror.dropbear.nl/mirror/releases/dropbear-2025.88.tar.bz2
 RUN tar -xf dropbear-2025.87.tar.bz2
 
 WORKDIR /build/dropbear-2025.87
