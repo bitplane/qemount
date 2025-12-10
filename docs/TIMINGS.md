@@ -32,12 +32,22 @@ This didn't work. It ran out of RAM?
 2.6:  [    2.282071] mount used greatest stack depth: 5784 bytes left
 6.17: [    5.433873] mkdir (63) used greatest stack depth: 13472 bytes left
 
-# 7. more aggressive removal
+# 7. more aggressive removals
+```
+./build/common/run/qemu-linux/run-linux.sh x86_64 build/guests/linux/2.6/x86_64/kernel build/guests/linux/initramfs/x86_64/initramfs.cpio -i build/tests/data/images/basic.ext2 | tee 2.timing.log
+
+grep -E 'after [0-9]+ usecs' /home/gaz/src/qemount/2.timing.log | sed 's/.*after \([0-9]*\) usecs.*/\1/' | paste -d' ' - <(grep -E 'after [0-9]+ usecs' /home/gaz/src/qemount/2.timing.log) | sort -rn | head -30
+```
+etc
+
+2.6:  [    1.774308] Switching to clocksource tsc
+6.17: [    2.759441] mkdir (60) used greatest stack depth: 13488 bytes left
 
 
 
 
 
-to try:
+
+future:
 
 * drop initramfs approach entirely - boot into an ext2 image
