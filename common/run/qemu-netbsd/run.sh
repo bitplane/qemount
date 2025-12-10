@@ -1,29 +1,28 @@
 #!/bin/bash
 set -euo pipefail
 
-# QEMU runner script for Linux guests
-# Usage: run-linux.sh <arch> <kernel> <boot_img> [options]
+# NetBSD QEMU runner script
+# Usage: run-netbsd.sh <arch> <boot-image> [options]
 # Options:
-#   -i <image>    Add a disk image (user's filesystem to mount)
-#   -m <mode>     Guest mode (passed via kernel cmdline, default: sh)
+#   -i <image>    Add a disk image (mounted as second drive)
+#   -m <mode>     Boot mode (9p, sshd, sh)
 #   -s <socket>   9P socket path (default: /tmp/9p.sock)
 #   -n            Enable networking
 
-if [ $# -lt 3 ]; then
-    echo "Usage: $0 <arch> <kernel> <boot_img> [options] [-- extra_qemu_args]"
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <arch> <boot-image> [options] [-- extra_qemu_args]"
     echo "Options:"
-    echo "  -i <image>    Add a disk image (user's filesystem)"
-    echo "  -m <mode>     Guest mode (default: sh)"
+    echo "  -i <image>    Add a disk image (mounted as second drive)"
+    echo "  -m <mode>     Boot mode (9p, sshd, sh) - default: sh"
     echo "  -s <socket>   9P socket path (default: /tmp/9p.sock)"
     echo "  -n            Enable networking"
-    echo "Example: $0 x86_64 kernel boot.img -i test.ext2 -m 9p -n"
+    echo "Example: $0 x86_64 boot.img -i test.img -m 9p -n"
     exit 1
 fi
 
 ARCH="$1"
-KERNEL="$2"
-BOOT_IMG="$3"
-shift 3
+BOOT_IMAGE="$2"
+shift 2
 
 # Default values
 IMAGE=""
@@ -42,6 +41,10 @@ while [[ $# -gt 0 ]]; do
         -m)
             MODE="$2"
             shift 2
+            ;;
+        -9p)
+            MODE="9p"
+            shift
             ;;
         -s)
             SOCKET_PATH="$2"
@@ -67,23 +70,19 @@ done
 case "$ARCH" in
     x86_64) QEMU_BIN="qemu-system-x86_64" ;;
     aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-    arm) QEMU_BIN="qemu-system-arm" ;;
     *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
 # Build QEMU command
+# NetBSD boots from disk image with embedded bootloader
+# The kernel has an embedded md0 ramdisk for root
 QEMU_ARGS=(
-    -m 128
-    -kernel "$KERNEL"
-    -drive "file=$BOOT_IMG,format=raw,if=virtio,readonly=on"
-    -nographic
+    -drive "file=$BOOT_IMAGE,format=raw,if=virtio"
+    -m 256
+    -fw_cfg name=opt/qemount/mode,string=$MODE
 )
 
-# Add kernel command line (mode is always passed to guest)
-# root=/dev/vda = our boot.img, user disk will be vdb
-QEMU_ARGS+=(-append "root=/dev/vda ro console=ttyS0 mode=$MODE")
-
-# Add user's disk image if specified (becomes vdb)
+# Add user disk image if specified (as second drive for mounting)
 if [ -n "$IMAGE" ]; then
     QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
 fi
@@ -96,18 +95,24 @@ if [ -n "$ENABLE_NET" ]; then
     )
 fi
 
-# Clean up any existing socket and add virtio-serial for 9P communication
+# Set up console and 9P channel (same hardware config regardless of mode)
 rm -f "$SOCKET_PATH"
+
 QEMU_ARGS+=(
+    -nographic
     -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
     -device virtio-serial
     -device virtconsole,chardev=p9channel,name=9pport
 )
+
 echo "9P socket: $SOCKET_PATH"
+if [ "$MODE" = "9p" ]; then
+    echo "Connect with: 9pfuse $SOCKET_PATH <mountpoint>"
+fi
 
 # Add any extra arguments
 QEMU_ARGS+=("${EXTRA_ARGS[@]}")
 
 # Run QEMU
-echo "Starting QEMU..."
+echo "Starting NetBSD QEMU..."
 exec "$QEMU_BIN" "${QEMU_ARGS[@]}"

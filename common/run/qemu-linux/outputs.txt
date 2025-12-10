@@ -1,1 +1,1 @@
-common/run/qemu-linux/run-qemu.sh
+common/run/qemu-linux/run-linux.sh

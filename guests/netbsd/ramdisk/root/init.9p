@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+echo "[9P] Starting 9P server mode..."
+echo "[9P] MOUNT_POINT=$MOUNT_POINT"
+
+# Virtio console port (viocon) is connected to host socket
+PORT_PATH=/dev/ttyVI00
+echo "[9P] PORT_PATH=$PORT_PATH"
+
+# Run 9P server directly on the virtio console device
+# Using stdio mode with bidirectional redirect to the device
+# The server will restart if the connection drops
+echo "[9P] Starting 9P server loop..."
+while true; do
+    echo "[9P] Serving 9P on $PORT_PATH..."
+    /bin/simple9p -d -p - "$MOUNT_POINT" <> "$PORT_PATH"
+    echo "[9P] Server exited, restarting..."
+    sleep 1
+done

@@ -1,5 +1,3 @@
-guests/linux/rootfs/$(ARCH)/bin/socat
-guests/linux/rootfs/$(ARCH)/bin/strace
 guests/linux/rootfs/$(ARCH)/bin/busybox
 guests/linux/rootfs/$(ARCH)/bin/simple9p
 guests/linux/rootfs/$(ARCH)/bin/sh
@@ -7,11 +5,16 @@ guests/linux/rootfs/$(ARCH)/bin/poweroff
 guests/linux/rootfs/$(ARCH)/bin/sleep
 guests/linux/rootfs/$(ARCH)/bin/mkdir
 guests/linux/rootfs/$(ARCH)/bin/mount
+guests/linux/rootfs/$(ARCH)/bin/umount
+guests/linux/rootfs/$(ARCH)/bin/sync
+guests/linux/rootfs/$(ARCH)/bin/mountpoint
 guests/linux/rootfs/$(ARCH)/bin/mdev
 guests/linux/rootfs/$(ARCH)/bin/[
 guests/linux/rootfs/$(ARCH)/bin/test
 guests/linux/rootfs/$(ARCH)/bin/echo
 guests/linux/rootfs/$(ARCH)/bin/sed
 guests/linux/rootfs/$(ARCH)/bin/chpasswd
-guests/linux/rootfs/$(ARCH)/bin/ifconfig
+guests/linux/rootfs/$(ARCH)/bin/ln
+guests/linux/rootfs/$(ARCH)/bin/ls
+guests/linux/rootfs/$(ARCH)/bin/stty
 common/compiler/linux/6

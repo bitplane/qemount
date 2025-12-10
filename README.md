@@ -10,28 +10,35 @@ tiny VM that provides access to an image, one instance per mount.
 
 ## ✅ STATUS
 
-0: unstable / pre-alpha
+⚠️  unstable / pre-alpha / experimental ⚠️
 
-## ⚙️ Usage
+## 🛑 STOP! 🛑
+
+MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS EXPERIMENTAL TOOL.
 
 Currently there's:
 
-* no filesystem catalogue
+* no filesystem catalogue saying which filesystem loaders will work
+* no users battle testing it in production
 * no safety settings, everything is read/write even if it'll destroy disks
 * no client library for cross platform access
 * no packaging / install scripts
 
 But there is:
 
-* A FUSE client
-* Linux 2.6 and 6.17 guests
+* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests with 9p transport and a shell
+* Scripts to start a FUSE client
+* A collection of filesystems to play with
+* A build system that isolates everything and has some promise
+* A vibe coded libixp-based 9p server that lacks the test suite it deserves
 
 To use it:
 
 1. Install `podman`, `fuse`, `make` and `qemu`
-2. Type `make` to build the Linux 2.6 and 6.17 guests.
+2. Type `make` to build the guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
-   and `-m 9p` to run the 9p init script.
+   and `-m 9p` to run the 9p init script. (BSD needs manual execution at present;
+   run ./init.9p from the shell)
 4. Once it's started and is grumbling about not having a connection (not
    before), connect to it with the 9p FUSE client using:
    `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
@@ -44,6 +51,8 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 
 - [x] more guests
   - [x] Linux 2.6
+  - [x] NetBSD 10
+- [ ] a common interface 
 
 #### 2. Link it in
 
@@ -64,23 +73,26 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 - [ ] safety
   - [ ] mount read only by default
   - [ ] make a test framework
-    - [x] data builder system
+    - [x] data builder system (18 formats)
     - [ ] test runner
 - [ ] fix bugs
   - [ ] simple9p
     - [ ] spam in file browser
   - [ ] FUSE
     - [ ] block size wrong for `du`
-  - [ ] build
-    - [ ] touch dockerfiles when deps change
-    - [x] don't build targets unless they're needed
+  - [ ] Linux runner
+    - [ ] change virtserialport to virtconsole for consistency with NetBSD
+  - [ ] Build system
+    - [ ] Download + cache system with automatic cache blowing
+    - [ ] Export builder images for long term archival (archive.org)
 
 #### 4. Embrace, Extend, Exaggerate 
 
 - [ ] add more guests
   - [ ] AROS
   - [ ] Haiku
-  - [ ] BSD
+  - [ ] Atari ST (STEEM?)
+  - [ ] Darwin
 
 ## 🪓 Hacking
 
@@ -92,38 +104,35 @@ their entrypoint and write it to their `/outputs/` dir which is mapped to the
 build dir.
 
 This pattern is a bit convoluted and has a disk space cost, but it keeps things
-isolated and will scale well in the short to medium term.
+isolated, deterministic and will scale well in the short to medium term.
 
 The filesystem layout looks like this:
 
 ```
 qemount/
 ├── guests/                    # Building these gives us filesystem back-ends
-│   ├── linux/                 # Linux guests (shared bin/, initramfs/, versioned kernels)
+│   ├── linux/                 # Linux guests
+│   │   ├── bin/               #   Shared binaries (busybox, simple9p)
+│   │   ├── rootfs/            #   Shared ext2 rootfs builder
 │   │   ├── 6.17/              #   Linux kernel 6.17 guest
 │   │   └── 2.6/               #   Linux kernel 2.6 guest (legacy filesystems)
-│   └── ...                    # todo: Haiku, AROS, Acorn, WinCE, Symbian etc
+│   └── ...                    # todo: Haiku, AROS etc
 │
-├── build/                     # Outputs of the build process live here
+├── common/                    # Shared build infrastructure
+│   ├── compiler/              # Compiler images (linux/2, linux/6, haiku)
+│   ├── run/                   # Runtime scripts (qemu launcher)
+│   └── scripts/               # Build system scripts
 │
-├── clients/                   # Building these gives us ways to talk to them
-│   ├── linux-fuse/            # Linux FUSE client
-│   ├── windows-driver/        # Windows client (e.g., Dokan driver)
-│   └── .../                   # any and all plugins here
+├── clients/                   # Building these gives us ways to talk to guests
+│   └── linux-fuse/            # Linux FUSE 9p client
 │
-├── scripts/                   # Build scripts needed by the main makefile
+├── tests/                     # Test infrastructure
+│   └── data/
+│       ├── templates/         # Source file templates for test images
+│       ├── fs/                # Per-filesystem image builders
+│       └── images/            # Generated test images (in build/)
 │
-├── testdata/                  # Source definitions, scripts & Makefile for test data
-│   ├── Makefile               # Builds images into testdata/images/
-│   ├── scripts/               # Helper scripts for generation/download
-│   │   └── ...                # e.g., ext4.sh
-│   ├── template/              # Source file structure templates
-│   │   └── basic/             # A basic set of test files/dirs
-│   │       ├── hello.txt
-│   │       └── ...
-│   └── images/                # Generated test images (gitignored)
-│       ├── basic.iso9660
-│       └── ...
+├── build/                     # Outputs of the build process
 │
 ├── Makefile                   # Root Makefile for orchestration
 ├── README.md                  # This file
@@ -167,10 +176,16 @@ qemount/
 
 #### 💡 Unorthodox Guest ideas
 
+You know the drill. It's exciting to have anything as a filesystem, but scary to
+have the code to do it in your operating system.
+
 | Guest    | Notes                                                             |
 | -------- | ----------------------------------------------------------------- |
 | WinACE   | PeaZip doesn't support ACE archives because security, but we can  |
 | rsrc     | Open Windows EXE resource forks and browse icons etc inside them  |
+| p2p      | Access IPFS, Tor, i2p and chummers without services               |
+| Irrlicht | Expose Irrlicht's VFS, open game formats in your pwd              |
+| Python   | pypi is a trove, we're one interface away from world domination   |
 
 ### Hosts
 
@@ -184,7 +199,30 @@ There's a ton of ways we can use this
 | PeaZip         |📦|                                                     |
 | Gnome          |🪟| Gnome Desktop Virtual Filesystem                    |
 | KDE            |🪟| KDE has its own VFS too                             |
-| Windows Driver |🪟|                                                     |
+| Windows Driver |🪟| We can crash a whole operating system with these    |
 | Web-based      |🌍| QEMU+WASM+guests = browse files on the web          |
 | Python         |🤖| Python pathlib support                              |
+
+### More catalogue stuff
+
+We can mine these for detection rules
+
+* `file`     - detects lots of filesystems
+* `disktype` - better detection for more types and
+  [samples](https://github.com/kamwoods/disktype/tree/master/misc/file-system-sampler)
+* `amitools` - Amiga filesystems
+
+
+
+
+### Python research notes
+
+We can run Python 2 stuff too, since we're isolated. 
+
+* [SAM Coupe](https://pypi.org/project/mgtdisklib/) / MGT + D
+* [FATtools](https://pypi.org/project/FATtools/) - FAT12/16/32, exFAT, MBR + GPT
+* [bcachefs](https://pypi.org/project/bcachefs/)
+* [BBC Micro](https://pypi.org/project/pymmb/) - python 2, project page dead
+* C64 [1](https://pypi.org/project/d64py/) [2](https://pypi.org/project/d64/)
+* [AppleII](https://pypi.org/project/diskii/)
 

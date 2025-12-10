@@ -1,0 +1,151 @@
+#!/bin/sh
+export PATH=/bin:/sbin
+
+on_exit() {
+    echo "[INIT] Shutting down..."
+    sync
+    umount -a 2>/dev/null
+    sync
+    exec halt -pq
+}
+trap on_exit EXIT
+
+# Mount tmpfs at /dev so we can create device nodes
+mount -t tmpfs tmpfs /dev
+
+# Mount tmpfs at /tmp for scratch space
+mount -t tmpfs tmpfs /tmp
+
+# Mount procfs for debugging
+mount -t procfs procfs /proc
+
+# Create device nodes
+# console=0,0  tty00/com0=8,0  tty01/com1=8,1  null=2,2
+# wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)
+# sd*=4,*  (SCSI/virtio: sd0a=4,0)
+# ld*=19,* (virtio-blk: ld0a=19,0)
+mknod /dev/console c 0 0
+mknod /dev/tty00 c 8 0
+mknod /dev/tty01 c 8 1
+mknod /dev/null c 2 2
+# MAXPARTITIONS=16 on amd64: minor = unit*16 + partition
+mknod /dev/wd0a b 0 0
+mknod /dev/wd1a b 0 16
+mknod /dev/sd0a b 4 0
+mknod /dev/sd1a b 4 16
+# ld devices: major=19, minor = unit*16 + partition (MAXPARTITIONS=16 on amd64)
+# ld0 = boot disk, ld1 partitions created dynamically below
+mknod /dev/ld0a b 19 0
+mknod /dev/ld1d b 19 19
+# viocon (virtio console/serial): major=364, minor=16*unit+port
+mknod /dev/ttyVI00 c 364 0
+
+# Need to hold fd open so stty options hold - device resets to echo mode on close
+exec 3<>/dev/ttyVI00
+stty -f /dev/ttyVI00 raw -echo -echoe -echoke -echoctl
+
+# Redirect to serial console
+exec >/dev/tty00 2>&1 </dev/tty00
+
+# Set up terminal
+export TERM=vt100
+printf '\e[?7h'  # re-enable line wrap (disabled by seabios)
+
+echo ""
+echo "==================================="
+echo "  NetBSD qemount guest starting"
+echo "==================================="
+echo ""
+
+# Mount point for user's image
+MOUNT_POINT=/mnt
+MOUNT_SUCCESS=0
+
+# Try to mount a device with auto-detect, then explicit fs types
+try_mount() {
+    dev="$1"
+    mnt="$2"
+    # Auto-detect (works for ffs, ufs, iso9660)
+    if mount "$dev" "$mnt" 2>/dev/null; then
+        echo "[INIT] Mounted $dev (auto-detect)"
+        return 0
+    fi
+    # Try explicit filesystem types
+    for fs in ext2fs msdos ntfs lfs efs ados filecore; do
+        if mount -t "$fs" "$dev" "$mnt" 2>/dev/null; then
+            echo "[INIT] Mounted $dev as $fs"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Create Linux-style device names (spit in BSD's face)
+# ld1 = second virtio disk (user image), ld0 = boot disk
+# Create raw device for disklabel
+mknod /dev/rld1d c 19 19
+
+# Create /dev/sda as whole disk (Linux-style)
+ln -s ld1d /dev/sda
+
+# Read disklabel and create /dev/sdaN for each partition
+echo "[INIT] Reading partition table..."
+n=1
+for letter in $(disklabel ld1 2>/dev/null | awk '/^ *[a-p]:/ && !/unused/ {print substr($1,1,1)}'); do
+    [ "$letter" = "c" ] && continue  # 'c' is BSD whole-disk overlay, not a real partition
+    idx=$(($(printf %d "'$letter") - 97))
+    mknod /dev/ld1$letter b 19 $((16+idx))
+    ln -s ld1$letter /dev/sda$n
+    echo "[INIT] Found partition: /dev/sda$n -> ld1$letter"
+    n=$((n+1))
+done
+
+# Mount logic: partitions to /mnt/N or raw disk to /mnt
+if ls /dev/sda[0-9]* >/dev/null 2>&1; then
+    # Has partitions - mount each to /mnt/N
+    echo "[INIT] Image has partitions, mounting to /mnt/N..."
+    for dev in /dev/sda[0-9]*; do
+        num=${dev#/dev/sda}
+        mkdir -p /mnt/$num
+        if try_mount "$dev" "/mnt/$num"; then
+            MOUNT_SUCCESS=1
+        fi
+    done
+    # Set MOUNT_POINT to first successful mount
+    for num in /mnt/[0-9]*; do
+        if mountpoint -q "$num" 2>/dev/null || mount | grep -q " $num "; then
+            MOUNT_POINT="$num"
+            break
+        fi
+    done
+else
+    # Raw filesystem - mount whole disk to /mnt
+    echo "[INIT] No partitions found, trying raw filesystem..."
+    if try_mount /dev/sda /mnt; then
+        MOUNT_SUCCESS=1
+    fi
+fi
+
+if [ "$MOUNT_SUCCESS" = "0" ]; then
+    echo "[INIT] No mountable image found"
+fi
+
+export MOUNT_SUCCESS
+export MOUNT_POINT
+
+# Detect mode from QEMU fw_cfg
+# QEMU passes mode via: -fw_cfg name=opt/qemount/mode,string=<mode>
+# Try to read from sysctl first, fall back to sh
+MODE=$(sysctl -n hw.qemufwcfg.opt.qemount.mode 2>/dev/null || echo "sh")
+
+SCRIPT="/init.${MODE}"
+
+echo "[INIT] Dispatching to: $SCRIPT"
+if [ -x "$SCRIPT" ]; then
+    "$SCRIPT" || echo "[INIT] Script failed: $?"
+else
+    echo "[INIT] Mode script not found: $SCRIPT"
+    /bin/sh -i
+fi
+
+# Script exited - trap will handle shutdown

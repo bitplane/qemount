@@ -1,0 +1,3 @@
+common/compiler/netbsd/10.0
+guests/netbsd/rootfs/$(ARCH)/bin/simple9p
+guests/netbsd/rootfs/$(ARCH)/bin/socat

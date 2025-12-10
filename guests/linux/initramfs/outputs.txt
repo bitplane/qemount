@@ -1,1 +1,0 @@
-guests/linux/initramfs/$(ARCH)/initramfs.cpio.gz

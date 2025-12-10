@@ -13,7 +13,8 @@ RUN wget https://github.com/strace/strace/releases/download/v6.7/strace-6.7.tar.
 WORKDIR /build/strace-6.7
 
 # Configure with static linking using our cross compiler
-RUN ./configure \
+# Disable -Wunterminated-string-initialization warning (new in GCC 15, strace uses intentional non-null-terminated arrays)
+RUN CFLAGS="-Wno-unterminated-string-initialization" ./configure \
     --enable-static \
     --disable-shared \
     --disable-mpers \
