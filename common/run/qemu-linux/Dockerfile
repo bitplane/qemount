@@ -1,7 +1,8 @@
-FROM alpine:latest
+ARG ARCH
+FROM localhost/qemount-common-compiler-linux-6-${ARCH}
+ARG ARCH
 
-# Copy the run script
-COPY run.sh /outputs/run-qemu.sh
-RUN chmod +x /outputs/run-qemu.sh
-
-ENTRYPOINT ["/bin/sh", "-c", "cp /outputs/run-qemu.sh /host/build/$1"]
+# Copy the run script to outputs
+RUN mkdir -p /outputs/common/run/qemu-linux
+COPY run.sh /outputs/common/run/qemu-linux/run-linux.sh
+RUN chmod +x /outputs/common/run/qemu-linux/run-linux.sh
