@@ -5,27 +5,40 @@ DATE=$(date +%Y%m%d)
 BUILDER_IMAGE="qemount-builder"
 ARCHIVE_IMAGE="qemount-archive"
 CONTAINER_NAME="qemount-build-$$"
-OUTPUT_FILE="qemount-archive-${DATE}.tar.xz"
 
-echo "=== Building archive environment ==="
-podman build -f .archive/Dockerfile -t "$BUILDER_IMAGE" .
+ts() {
+    while IFS= read -r line; do
+        printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$line"
+    done
+}
 
-echo "=== Running build (this may take a while) ==="
-podman run --privileged --name "$CONTAINER_NAME" "$BUILDER_IMAGE"
+log_cmd() {
+    local label="$1"
+    shift
+    echo "=== $label ===" | ts
+    time "$@" 2>&1 | ts
+    echo "=== $label complete ===" | ts
+}
 
-echo "=== Committing result ==="
-podman commit "$CONTAINER_NAME" "$ARCHIVE_IMAGE"
+log_cmd "Building archive environment" \
+    podman build -f .archive/Dockerfile -t "$BUILDER_IMAGE" .
 
-echo "=== Saving and compressing ==="
-podman save "$ARCHIVE_IMAGE" | xz -9e -T0 -v > "$OUTPUT_FILE"
+log_cmd "Running build" \
+    podman run --privileged --name "$CONTAINER_NAME" "$BUILDER_IMAGE"
 
-echo "=== Cleanup ==="
-podman rm "$CONTAINER_NAME"
+log_cmd "Committing result" \
+    podman commit "$CONTAINER_NAME" "$ARCHIVE_IMAGE"
 
-echo "=== Done ==="
-echo "Archive created: $OUTPUT_FILE"
-echo "Size: $(du -h "$OUTPUT_FILE" | cut -f1)"
-echo ""
-echo "To restore and use:"
-echo "  xzcat $OUTPUT_FILE | podman load"
-echo "  podman run -it $ARCHIVE_IMAGE /bin/bash"
+log_cmd "Cleaning up container" \
+    podman rm "$CONTAINER_NAME"
+
+log_cmd "Tagging archive" \
+    podman tag "$ARCHIVE_IMAGE" "qemount-archive:$DATE"
+
+ARCHIVE_FILE="qemount-archive-$DATE.tar.xz"
+log_cmd "Exporting archive" \
+    podman save "$ARCHIVE_IMAGE" | xz -9 -T0 > "$ARCHIVE_FILE"
+
+echo "=== Archive complete ===" | ts
+echo "Archive saved to: $ARCHIVE_FILE" | ts
+ls -lh "$ARCHIVE_FILE" | ts
