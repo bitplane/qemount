@@ -12,8 +12,8 @@ RUN apk add --no-cache \
 WORKDIR /build
 
 # Clone simple9p and libixp with the simple9p branch (has ixp_serve9conn_fd)
-RUN git clone --depth 1 https://github.com/bitplane/simple9p.git && \
-    git clone --depth 1 -b simple9p https://github.com/bitplane/libixp.git
+RUN git clone --depth 1 -b qemount-0.1 https://github.com/bitplane/simple9p.git && \
+    git clone --depth 1 -b qemount-0.1 https://github.com/bitplane/libixp.git
 
 # Build libixp
 WORKDIR /build/libixp
