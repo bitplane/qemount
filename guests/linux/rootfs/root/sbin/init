@@ -1,2 +1,127 @@
 #!/bin/sh
-echo "No mode chosen"
+set -eu
+
+on_exit() {
+    echo "[INIT] Shutting down..."
+    sync
+    umount -a 2>/dev/null
+    sync
+    poweroff -f
+    sleep infinity
+}
+trap on_exit EXIT
+
+PORT_PATH=/dev/hvc0
+
+mountpoint -q /dev  || mount -t devtmpfs devtmpfs /dev
+mountpoint -q /proc || mount -t proc none /proc
+mountpoint -q /sys  || mount -t sysfs none /sys
+mount -t tmpfs tmpfs /tmp
+cp -a /etc /tmp/etc
+mount -t tmpfs tmpfs /etc
+mv /tmp/etc/* /etc/
+
+# run mdev to detect devices
+mdev -sS
+
+# Hold fd open so stty options persist - device resets to echo mode on close
+# May fail on older kernels without virtio-serial, so don't abort
+if [ -e "$PORT_PATH" ]; then
+    exec 3<>"$PORT_PATH" 2>/dev/null || true
+    stty -F "$PORT_PATH" raw -echo -echoe -echok -echoctl 2>/dev/null || true
+fi
+
+printf '\e[?7h'  # re-enable line wrap (disabled by seabios)
+
+echo ""
+echo "==================================="
+echo "  Linux qemount guest starting"
+echo "==================================="
+echo ""
+
+# Try to mount a device with auto-detect
+try_mount() {
+    dev="$1"
+    mnt="$2"
+    if mount -t auto "$dev" "$mnt" 2>/dev/null; then
+        echo "[INIT] Mounted $dev"
+        return 0
+    fi
+    return 1
+}
+
+# Find the disk image device (vdb for user disk, vda is our rootfs)
+if [ -b /dev/vdb ]; then
+    DISK_DEV=/dev/vdb
+elif [ -b /dev/sr0 ]; then
+    DISK_DEV=/dev/sr0
+else
+    echo "[INIT] No disk image found"
+    DISK_DEV=""
+fi
+
+MOUNT_POINT=/mnt
+MOUNT_SUCCESS=0
+
+if [ -n "$DISK_DEV" ]; then
+    # Create Linux-style /dev/sda symlinks (for consistency with NetBSD guest)
+    ln -sf "${DISK_DEV##*/}" /dev/sda
+
+    # Check for partitions
+    echo "[INIT] Checking for partitions..."
+    n=1
+    for part in ${DISK_DEV}[0-9]*; do
+        [ -b "$part" ] || continue
+        ln -sf "${part##*/}" /dev/sda$n
+        echo "[INIT] Found partition: /dev/sda$n -> ${part##*/}"
+        n=$((n+1))
+    done
+
+    # Mount logic: partitions to /mnt/N or raw disk to /mnt
+    if ls /dev/sda[0-9]* >/dev/null 2>&1; then
+        # Has partitions - mount each to /mnt/N
+        echo "[INIT] Image has partitions, mounting to /mnt/N..."
+        for dev in /dev/sda[0-9]*; do
+            num=${dev#/dev/sda}
+            mkdir -p /mnt/$num
+            if try_mount "$dev" "/mnt/$num"; then
+                MOUNT_SUCCESS=1
+            fi
+        done
+        # Set MOUNT_POINT to first successful mount
+        for num in /mnt/[0-9]*; do
+            if mountpoint -q "$num" 2>/dev/null; then
+                MOUNT_POINT="$num"
+                break
+            fi
+        done
+    else
+        # Raw filesystem - mount whole disk to /mnt
+        echo "[INIT] No partitions found, trying raw filesystem..."
+        if try_mount /dev/sda /mnt; then
+            MOUNT_SUCCESS=1
+        fi
+    fi
+fi
+
+if [ "$MOUNT_SUCCESS" = "0" ]; then
+    echo "[INIT] No mountable image found"
+fi
+
+export MOUNT_SUCCESS="$MOUNT_SUCCESS"
+export MOUNT_POINT="$MOUNT_POINT"
+export PORT_PATH="$PORT_PATH"
+
+MODE=$(sed -n 's/.*mode=\([^ ]*\).*/\1/p' /proc/cmdline)
+SCRIPT="/sbin/init.${MODE:-sh}" 
+
+echo "root:password" | chpasswd
+
+echo "[INIT] Dispatching to: $SCRIPT"
+"$SCRIPT" || echo "Failed" "$?"
+
+/bin/sh
+
+# keep trying every way we can to stop this from spinlocking
+poweroff -f &
+sleep infinity
