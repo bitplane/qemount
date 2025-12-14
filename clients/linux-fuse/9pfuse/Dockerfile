@@ -14,7 +14,7 @@ RUN apk add --no-cache \
 # Clone and build 9pfuse
 RUN mkdir -p /build
 WORKDIR /build
-RUN git clone -b qemount-0.1 https://github.com/bitplane/9pfuse.git /build/9pfuse
+RUN git clone -b qemount-0.2 https://github.com/bitplane/9pfuse.git /build/9pfuse
 
 WORKDIR /build/9pfuse
 

@@ -77,9 +77,10 @@ If the stars align, you'll be able to mangle the files in your given disk image.
     - [ ] test runner
 - [ ] fix bugs
   - [ ] simple9p
-    - [ ] spam in file browser
+    - [x] .U + symlink support
   - [ ] FUSE
-    - [ ] block size wrong for `du`
+    - [x] block size wrong for `du`
+    - [ ] spam in file browser (unsupported modes)
   - [ ] Linux runner
     - [ ] change virtserialport to virtconsole for consistency with NetBSD
   - [ ] Build system
