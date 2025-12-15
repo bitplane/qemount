@@ -2,7 +2,7 @@
 export PATH=/bin:/sbin
 
 # Filesystem types to try when auto-detect fails (override via config)
-FS_TYPES="ffs cd9660 ext2fs msdos udf ntfs hfs lfs v7fs ados filecore"
+FS_TYPES="ffs cd9660 ext2fs msdos udf ntfs hfs lfs v7fs ados filecore efs"
 
 on_exit() {
     echo "[INIT] Shutting down..."

@@ -163,33 +163,49 @@ qemount/
 | **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
 
 
-| Filesystem      | Linux 6.17       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
-| --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
-| **ext2**        | ✅               | ✅          | ✅               | ✅               | Solid everywhere                |
-| **ext3**        | ✅               | ✅          | 💩               | 💩               | BSDs ignore journal             |
-| **ext4**        | 🏆               | 💩          | 💩               | ❌               | Linux-only journaling           |
-| **FAT12/16/32** | ✅               | ✅          | ✅               | ✅               | Universal                       |
-| **exFAT**       | 🏆               | ❌          | 💩 (FUSE)        | 💩 (FUSE)        | Linux has native driver         |
-| **NTFS**        | 🏆 (`ntfs3`)     | 💩 (`ntfs`) | 💩 (`ntfs`/FUSE) | 💩 (`ntfs`/FUSE) | Write support best in Linux     |
-| **UFS1**        | 💩               | ❌          | ✅               | ✅               | FreeBSD best, Linux very broken |
-| **ZFS**         | ✅               | ❌          | 🏆               | ✅ (module)      | All can do it, FreeBSD wins     |
-| **Btrfs**       | 🏆               | ❌          | ❌               | ❌               | Linux-only, good for COW        |
-| **XFS**         | 🏆               | ✅          | ❌               | ❌               | Linux-only                      |
-| **F2FS**        | ✅               | ❌          | ❌               | ❌               | Android/Linux FS                |
-| **JFS**         | ✅               | ✅          | ❌               | ❌               | IBM FS, Linux-only              |
-| **ISO9660**     | ✅               | ✅          | 🏆               | ✅               | FreeBSD supports weird hybrids  |
-| **UDF**         | ✅               | 💩          | ✅               | ✅               | CD/DVD/BR support               |
-| **MinixFS**     | ✅               | ✅          | ✅ (RO)          | ✅               | Niche use                       |
-| **SquashFS**    | ✅               | ❌          | ✅ (module)      | ❌               | Read-only compressed            |
-| **OverlayFS**   | 🏆               | ❌          | 💩 (UnionFS)     | 💩 (Union)       | Linux OverlayFS > BSD Union     |
-| **TMPFS**       | ✅               | ✅          | ✅               | ✅               | All good                        |
-| **DevFS**       | ✅               | ✅          | ✅               | ✅               | Basic virtual FS                |
-| **ReiserFS**    | ❌ (removed 6.13)| ✅          | ❌               | ❌               | Historical only                 |
-| **UFS2**        | ❌               | ❌          | 🏆               | ✅               | Only FreeBSD has full support   |
-| **APFS**        | 💩 (FUSE)        | ❌          | ❌               | ❌               | Reverse engineered FUSE only    |
-| **CHFS**        | ❌               | ❌          | ❌               | 🏆               | NetBSD-only, for NAND flash     |
-| **LFS**         | ❌               | ❌          | ❌               | 🏆               | NetBSD log-structured           |
-| **HFS**         | 💩 (HFS+)        | 💩          | ✅ (RO)          | ✅ (RO)          | Apple FS, write is weak         |
+
+| Filesystem       | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                            |
+| ---------------- | ---------- | --------- | --------- | -------------------------------- |
+| **ext2**         | ✅         | ✅        | ✅        |                                  |
+| **ext3**         | ✅         | ✅        | ✅        | NetBSD mounts as ext2            |
+| **ext4**         | ✅         | ✅        | ❌        |                                  |
+| **FAT12/16/32**  | ✅         | ✅        | ✅        | vfat/msdos                       |
+| **exFAT**        | ✅         | ❌        | ❌        |                                  |
+| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.17 has full r/w                |
+| **ISO9660**      | ✅         | ✅        | ✅        | cd9660 on BSD                    |
+| **UDF**          | ✅         | ✅        | ✅        | DVD/Blu-ray                      |
+| **HFS**          | ✅         | ✅        | ✅        | Classic Mac                      |
+| **HFS+**         | ✅         | ✅        | ❌        | hfsplus                          |
+| **UFS/FFS**      | 💩         | 💩        | ✅        | Linux UFS is limited             |
+| **LFS**          | ❌         | ❌        | ✅        | NetBSD log-structured            |
+| **XFS**          | ✅         | ✅        | ❌        |                                  |
+| **JFS**          | ✅         | ✅        | ❌        | IBM journaled                    |
+| **Btrfs**        | ✅         | ✅        | ❌        |                                  |
+| **F2FS**         | ✅         | ❌        | ❌        | Flash-friendly                   |
+| **bcachefs**     | ✅         | ❌        | ❌        |                                  |
+| **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
+| **ReiserFS**     | ❌         | ✅        | ❌        | Removed in 6.13                  |
+| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga - Linux works better       |
+| **Minix**        | ✅         | ✅        | ❌        |                                  |
+| **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
+| **SysV**         | ❌         | ✅        | ❌        | System V                         |
+| **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
+| **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
+| **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
+| **EFS**          | ✅         | ✅        | ✅        | SGI IRIX                         |
+| **BeFS**         | ✅         | ✅        | ❌        | BeOS/Haiku                       |
+| **HPFS**         | ✅         | ✅        | ❌        | OS/2                             |
+| **QNX4**         | ✅         | ✅        | ❌        |                                  |
+| **QNX6**         | ✅         | ❌        | ❌        |                                  |
+| **ADFS**         | ✅         | ✅        | ❌        | Acorn                            |
+| **Filecore**     | ❌         | ❌        | ✅        | Acorn RISC OS                    |
+| **VxFS**         | ✅         | ✅        | ❌        | Veritas                          |
+| **OMFS**         | ✅         | ✅        | ❌        | Optimized MPEG FS                |
+| **NILFS2**       | ✅         | ✅        | ❌        | Log-structured                   |
+| **GFS2**         | ✅         | ✅        | ❌        | Red Hat cluster                  |
+| **OCFS2**        | ❌         | ✅        | ❌        | Oracle cluster                   |
+| **Coda**         | ❌         | ❌        | ✅        | Distributed FS                   |
+| **BFS**          | ✅         | ✅        | ❌        | SCO Boot FS                      |
 
 
 #### 💡 Unorthodox Guest ideas
