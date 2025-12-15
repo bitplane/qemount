@@ -1,1 +1,1 @@
-tests/data/images/basic.tar.gz
+tests/data/fs/basic.tar.gz

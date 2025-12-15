@@ -1,1 +1,1 @@
-tests/data/images/basic.ext2
+tests/data/fs/basic.ext2

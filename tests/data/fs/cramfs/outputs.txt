@@ -1,1 +1,1 @@
-tests/data/images/basic.cramfs
+tests/data/fs/basic.cramfs

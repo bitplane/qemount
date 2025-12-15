@@ -1,1 +1,1 @@
-tests/data/images/basic.exfat
+tests/data/fs/basic.exfat

@@ -1,1 +1,1 @@
-tests/data/images/basic.beos-bfs
+tests/data/fs/basic.beos-bfs

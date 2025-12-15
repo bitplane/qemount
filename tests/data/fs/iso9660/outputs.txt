@@ -1,1 +1,1 @@
-tests/data/images/basic.iso9660
+tests/data/fs/basic.iso9660

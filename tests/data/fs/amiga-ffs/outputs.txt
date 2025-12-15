@@ -1,1 +1,1 @@
-tests/data/images/basic.amiga-ffs
+tests/data/fs/basic.amiga-ffs

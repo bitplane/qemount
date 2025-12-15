@@ -1,1 +1,1 @@
-tests/data/images/basic.btrfs
+tests/data/fs/basic.btrfs

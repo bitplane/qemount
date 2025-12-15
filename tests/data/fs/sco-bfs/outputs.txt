@@ -1,1 +1,1 @@
-tests/data/images/basic.sco-bfs
+tests/data/fs/basic.sco-bfs
