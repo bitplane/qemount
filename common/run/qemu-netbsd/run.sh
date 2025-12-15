@@ -25,7 +25,7 @@ BOOT_IMAGE="$2"
 shift 2
 
 # Default values
-IMAGE=""
+IMAGES=()
 MODE="sh"
 SOCKET_PATH="/tmp/9p.sock"
 ENABLE_NET=""
@@ -35,7 +35,7 @@ EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -i)
-            IMAGE="$2"
+            IMAGES+=("$2")
             shift 2
             ;;
         -m)
@@ -82,10 +82,10 @@ QEMU_ARGS=(
     -fw_cfg name=opt/qemount/mode,string=$MODE
 )
 
-# Add user disk image if specified (as second drive for mounting)
-if [ -n "$IMAGE" ]; then
-    QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
-fi
+# Add user disk images (become ld1, ld2, ld3, ...)
+for img in "${IMAGES[@]}"; do
+    QEMU_ARGS+=(-drive "file=$img,format=raw,if=virtio")
+done
 
 # Add networking if requested
 if [ -n "$ENABLE_NET" ]; then

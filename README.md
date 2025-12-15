@@ -26,11 +26,11 @@ Currently there's:
 
 But there is:
 
-* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests with 9p transport and a shell
-* Scripts to start a FUSE client
+* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
+* 9P2000.U support in both a simple9p server and 9pfuse client
+* Scripts to start the FUSE client
 * A collection of filesystems to play with
 * A build system that isolates everything and has some promise
-* A vibe coded libixp-based 9p server that lacks the test suite it deserves
 
 To use it:
 
@@ -52,12 +52,15 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 - [x] more guests
   - [x] Linux 2.6
   - [x] NetBSD 10
-- [ ] a common interface 
+- [ ] a common interface
+  - [ ] /mnt/b1 /mnt/b2 /mnt/c for partitioned disks + images
 
 #### 2. Link it in
 
 - [ ] client library
-  - [ ] filesystem detector
+  - [ ] detection
+    - [ ] partition format detection
+    - [ ] filesystem detection
   - [ ] qemu lib
   - [ ] filesystem catalogue
 - [ ] clients
