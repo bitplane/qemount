@@ -1,0 +1,30 @@
+#!/bin/sh
+# Duplicate mode: copy /mnt/b to /mnt/c if c is empty
+# Used to populate test images from a source filesystem
+
+set -eu
+
+SRC=/mnt/b
+DST=/mnt/c
+
+if [ ! -d "$SRC" ]; then
+    echo "[DUPLICATE] Source $SRC not found"
+    exit 1
+fi
+
+if [ ! -d "$DST" ]; then
+    echo "[DUPLICATE] Destination $DST not found"
+    exit 1
+fi
+
+# Check if destination is empty (ignore lost+found)
+count=$(ls -A "$DST" | grep -v '^lost+found$' | wc -l)
+if [ "$count" -gt 0 ]; then
+    echo "[DUPLICATE] Destination $DST is not empty, skipping"
+    exit 0
+fi
+
+echo "[DUPLICATE] Copying $SRC -> $DST"
+cp -av "$SRC"/. "$DST"/
+sync
+echo "[DUPLICATE] Done"

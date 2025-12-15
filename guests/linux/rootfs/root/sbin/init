@@ -4,9 +4,11 @@ set -eu
 on_exit() {
     echo "[INIT] Shutting down..."
     sync
-    umount -a 2>/dev/null
+    umount -a 2>/dev/null || true
     sync
-    poweroff -f
+    poweroff -f || true
+    sleep 1
+    poweroff -f || true
     sleep infinity
 }
 trap on_exit EXIT
@@ -100,10 +102,11 @@ SCRIPT="/sbin/init.${MODE:-sh}"
 echo "root:password" | chpasswd
 
 echo "[INIT] Dispatching to: $SCRIPT"
-"$SCRIPT" || echo "Failed" "$?"
+"$SCRIPT"
+rc=$?
+if [ "$rc" -ne 0 ]; then
+    echo "[INIT] Script failed: $rc"
+    /bin/sh
+fi
 
-/bin/sh
-
-# keep trying every way we can to stop this from spinlocking
-poweroff -f &
-sleep infinity
+# EXIT trap handles shutdown
