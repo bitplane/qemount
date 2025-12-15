@@ -149,6 +149,20 @@ qemount/
 
 #### Unices (to move to catalogue)
 
+| Partition Table  | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                          |
+| ---------------- | ---------- | --------- | --------- | ------------------------------ |
+| **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
+| **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
+| **BSD disklabel**| ✅         | ✅        | ✅        | Native BSD partitioning        |
+| **Apple APM**    | ✅         | ✅        | ✅        | Classic Mac partition map      |
+| **Amiga RDB**    | ✅         | ✅        | ✅        | Rigid Disk Block               |
+| **Atari AHDI**   | ✅         | ✅        | ✅        | Atari ST/TOS                   |
+| **Sun VTOC**     | ✅         | ✅        | ❌        | Solaris/SunOS                  |
+| **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
+| **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
+| **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
+
+
 | Filesystem      | Linux 6.17       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
 | --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |
 | **ext2**        | ✅               | ✅          | ✅               | ✅               | Solid everywhere                |
