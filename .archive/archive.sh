@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-DATE=$(date +%Y%m%d)
+DATE=$(date +%Y-%m-%d_%H-%M)
 BUILDER_IMAGE="qemount-builder"
 ARCHIVE_IMAGE="qemount-archive"
 CONTAINER_NAME="qemount-build-$$"
@@ -35,9 +35,10 @@ log_cmd "Cleaning up container" \
 log_cmd "Tagging archive" \
     podman tag "$ARCHIVE_IMAGE" "qemount-archive:$DATE"
 
-ARCHIVE_FILE="qemount-archive-$DATE.tar.xz"
+mkdir -p build/archive
+ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.gz"
 log_cmd "Exporting archive" \
-    podman save "$ARCHIVE_IMAGE" | xz -9 -T0 > "$ARCHIVE_FILE"
+    podman save "$ARCHIVE_IMAGE" | pigz > "$ARCHIVE_FILE"
 
 echo "=== Archive complete ===" | ts
 echo "Archive saved to: $ARCHIVE_FILE" | ts
