@@ -17,4 +17,6 @@ guests/linux/rootfs/$(ARCH)/bin/chpasswd
 guests/linux/rootfs/$(ARCH)/bin/ln
 guests/linux/rootfs/$(ARCH)/bin/ls
 guests/linux/rootfs/$(ARCH)/bin/stty
+guests/linux/rootfs/$(ARCH)/bin/tar
+guests/linux/rootfs/$(ARCH)/bin/cp
 common/compiler/linux/6

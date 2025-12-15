@@ -26,7 +26,7 @@ BOOT_IMG="$3"
 shift 3
 
 # Default values
-IMAGE=""
+IMAGES=()
 MODE="sh"
 SOCKET_PATH="/tmp/9p.sock"
 ENABLE_NET=""
@@ -36,7 +36,7 @@ EXTRA_ARGS=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -i)
-            IMAGE="$2"
+            IMAGES+=("$2")
             shift 2
             ;;
         -m)
@@ -83,10 +83,10 @@ QEMU_ARGS=(
 # root=/dev/vda = our boot.img, user disk will be vdb
 QEMU_ARGS+=(-append "root=/dev/vda ro console=ttyS0 mode=$MODE")
 
-# Add user's disk image if specified (becomes vdb)
-if [ -n "$IMAGE" ]; then
-    QEMU_ARGS+=(-drive "file=$IMAGE,format=raw,if=virtio")
-fi
+# Add user's disk images (become vdb, vdc, vdd, ...)
+for img in "${IMAGES[@]}"; do
+    QEMU_ARGS+=(-drive "file=$img,format=raw,if=virtio")
+done
 
 # Add networking if requested
 if [ -n "$ENABLE_NET" ]; then
