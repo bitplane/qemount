@@ -15,13 +15,13 @@ KERNEL="$BUILD/guests/linux/6.17/x86_64/kernel"
 BOOT_IMG="$BUILD/guests/linux/rootfs/x86_64/boot.img"
 RUN_SCRIPT="$BUILD/common/run/qemu-linux/run-linux.sh"
 
-# Create empty exFAT filesystem
-truncate -s 128M /tmp/output.exfat
-mkfs.exfat /tmp/output.exfat
+# Create empty NTFS filesystem
+truncate -s 32M /tmp/output.ntfs
+mkfs.ntfs -F /tmp/output.ntfs
 
-# Run qemu to duplicate ext4 → exfat
+# Run qemu to duplicate ext4 → ntfs
 "$RUN_SCRIPT" x86_64 "$KERNEL" "$BOOT_IMG" \
-    -i "$SRC_IMG" -i /tmp/output.exfat -m duplicate
+    -i "$SRC_IMG" -i /tmp/output.ntfs -m duplicate
 
 mkdir -p "$(dirname "$BUILD/$OUTPUT_PATH")"
-cp /tmp/output.exfat "$BUILD/$OUTPUT_PATH"
+cp /tmp/output.ntfs "$BUILD/$OUTPUT_PATH"

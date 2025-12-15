@@ -1,0 +1,5 @@
+FROM docker.io/library/alpine:latest
+
+# QEMU base image for building filesystems that need mount access
+# The kernel and boot.img are accessed from /host/build at runtime
+RUN apk add --no-cache qemu-system-x86_64 bash e2fsprogs-extra
