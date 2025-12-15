@@ -1,1 +1,1 @@
-tests/data/images/basic.cpio
+tests/data/fs/basic.cpio

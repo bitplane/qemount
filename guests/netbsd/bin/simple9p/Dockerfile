@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && \
 WORKDIR /build
 
 # Clone simple9p and libixp
-RUN git clone --depth 1 https://github.com/bitplane/simple9p.git && \
-    git clone --depth 1 -b simple9p https://github.com/bitplane/libixp.git
+RUN git clone --depth 1 -b qemount-0.1 https://github.com/bitplane/simple9p.git && \
+    git clone --depth 1 -b qemount-0.1 https://github.com/bitplane/libixp.git
 
 # Set up cross-compilation environment
 ENV NBARCH_FILE=/tmp/nbarch

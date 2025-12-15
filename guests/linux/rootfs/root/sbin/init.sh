@@ -1,2 +1,2 @@
 #!/bin/sh
-echo "No mode chosen"
+exec /bin/sh

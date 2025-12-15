@@ -1,1 +1,1 @@
-tests/data/images/basic.squashfs
+tests/data/fs/basic.squashfs

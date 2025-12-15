@@ -1,1 +1,1 @@
-tests/data/images/basic.fat16
+tests/data/fs/basic.fat16

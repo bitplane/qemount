@@ -1,6 +1,9 @@
 #!/bin/sh
 export PATH=/bin:/sbin
 
+# Filesystem types to try when auto-detect fails (override via config)
+FS_TYPES="ffs cd9660 ext2fs msdos udf ntfs hfs lfs v7fs ados filecore"
+
 on_exit() {
     echo "[INIT] Shutting down..."
     sync
@@ -34,9 +37,8 @@ mknod /dev/wd1a b 0 16
 mknod /dev/sd0a b 4 0
 mknod /dev/sd1a b 4 16
 # ld devices: major=19, minor = unit*16 + partition (MAXPARTITIONS=16 on amd64)
-# ld0 = boot disk, ld1 partitions created dynamically below
+# ld0 = boot disk, user disks (ld1+) created dynamically in mount loop
 mknod /dev/ld0a b 19 0
-mknod /dev/ld1d b 19 19
 # viocon (virtio console/serial): major=364, minor=16*unit+port
 mknod /dev/ttyVI00 c 364 0
 
@@ -57,77 +59,102 @@ echo "  NetBSD qemount guest starting"
 echo "==================================="
 echo ""
 
-# Mount point for user's image
+# Mount tmpfs on /mnt so we can create mount points
+mount -t tmpfs tmpfs /mnt
+
 MOUNT_POINT=/mnt
 MOUNT_SUCCESS=0
 
-# Try to mount a device with auto-detect, then explicit fs types
+# Try to mount a device, using FS_TYPES if auto-detect fails
+# Usage: try_mount /dev/ld1d b
+# Creates /mnt/$name, mounts, cleans up on failure
 try_mount() {
     dev="$1"
-    mnt="$2"
-    # Auto-detect (works for ffs, ufs, iso9660)
+    name="$2"
+    mnt="/mnt/${name}"
+    mkdir -p "$mnt"
+    # Try auto-detect first (works for ffs/ufs)
     if mount "$dev" "$mnt" 2>/dev/null; then
-        echo "[INIT] Mounted $dev (auto-detect)"
+        echo "[INIT] Mounted $dev -> $mnt"
         return 0
     fi
     # Try explicit filesystem types
-    for fs in ext2fs msdos ntfs lfs efs ados filecore; do
+    for fs in $FS_TYPES; do
         if mount -t "$fs" "$dev" "$mnt" 2>/dev/null; then
-            echo "[INIT] Mounted $dev as $fs"
+            echo "[INIT] Mounted $dev -> $mnt ($fs)"
             return 0
         fi
     done
+    rmdir "$mnt" 2>/dev/null || true
     return 1
 }
 
-# Create Linux-style device names (spit in BSD's face)
-# ld1 = second virtio disk (user image), ld0 = boot disk
-# Create raw device for disklabel
-mknod /dev/rld1d c 19 19
+echo "[INIT] Scanning for disk images..."
 
-# Create /dev/sda as whole disk (Linux-style)
-ln -s ld1d /dev/sda
+# NetBSD virtio-blk uses ld* devices
+# ld0 = boot disk, user disks start at ld1
+# Major: ld=19, dk=168
+# Minor: ld = unit*16 + partition, dk = unit number
 
-# Read disklabel and create /dev/sdaN for each partition
-echo "[INIT] Reading partition table..."
-n=1
-for letter in $(disklabel ld1 2>/dev/null | awk '/^ *[a-p]:/ && !/unused/ {print substr($1,1,1)}'); do
-    [ "$letter" = "c" ] && continue  # 'c' is BSD whole-disk overlay, not a real partition
-    idx=$(($(printf %d "'$letter") - 97))
-    mknod /dev/ld1$letter b 19 $((16+idx))
-    ln -s ld1$letter /dev/sda$n
-    echo "[INIT] Found partition: /dev/sda$n -> ld1$letter"
-    n=$((n+1))
-done
+# Map unit number to letter for mount points (1->b, 2->c, etc to match Linux)
+get_letter() {
+    case $1 in
+        1) echo b;; 2) echo c;; 3) echo d;; 4) echo e;; 5) echo f;;
+        6) echo g;; 7) echo h;; 8) echo i;; 9) echo j;; 10) echo k;;
+        11) echo l;; 12) echo m;; 13) echo n;; 14) echo o;; 15) echo p;;
+    esac
+}
 
-# Mount logic: partitions to /mnt/N or raw disk to /mnt
-if ls /dev/sda[0-9]* >/dev/null 2>&1; then
-    # Has partitions - mount each to /mnt/N
-    echo "[INIT] Image has partitions, mounting to /mnt/N..."
-    for dev in /dev/sda[0-9]*; do
-        num=${dev#/dev/sda}
-        mkdir -p /mnt/$num
-        if try_mount "$dev" "/mnt/$num"; then
+for unit in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+    base_minor=$((unit * 16))
+
+    # Create whole-disk device node (partition 'd' = index 3)
+    mknod /dev/ld${unit}d b 19 $((base_minor + 3)) 2>/dev/null || continue
+
+    letter=$(get_letter $unit)
+
+    # Use dkctl to discover wedges (partitions) for this disk
+    # Kernel auto-discovers GPT/Apple partitions via DKWEDGE_AUTODISCOVER
+    # Output format: "dk0: label, 12345 blocks at 1024, type: ffs"
+    wedge_list=$(dkctl "ld${unit}" listwedges 2>/dev/null | grep "^dk")
+
+    if [ -n "$wedge_list" ]; then
+        # Disk has partitions - extract offset and sort, then mount each
+        # Prepend offset for sorting: "1024 dk0: label, ..."
+        sorted_wedges=$(echo "$wedge_list" | while read line; do
+            # Extract offset from "at OFFSET," using expr
+            offset=$(expr "$line" : '.*at \([0-9]*\),')
+            echo "$offset $line"
+        done | sort -n)
+
+        # Mount each wedge in offset order (partition 1, 2, 3...)
+        part_num=1
+        # Use temp file to track success across subshell boundary
+        echo "$sorted_wedges" > /tmp/wedges.$$
+        while read offset line; do
+            # Extract dk device name (everything before first colon)
+            dk_name="${line%%:*}"
+            dk_unit="${dk_name#dk}"
+
+            # Create dk device node (major 168, minor = unit)
+            mknod "/dev/$dk_name" b 168 "$dk_unit" 2>/dev/null || true
+
+            if try_mount "/dev/$dk_name" "${letter}${part_num}"; then
+                MOUNT_SUCCESS=1
+            fi
+            part_num=$((part_num + 1))
+        done < /tmp/wedges.$$
+        rm -f /tmp/wedges.$$
+    else
+        # No wedges - try whole disk (raw filesystem)
+        if try_mount "/dev/ld${unit}d" "$letter"; then
             MOUNT_SUCCESS=1
         fi
-    done
-    # Set MOUNT_POINT to first successful mount
-    for num in /mnt/[0-9]*; do
-        if mountpoint -q "$num" 2>/dev/null || mount | grep -q " $num "; then
-            MOUNT_POINT="$num"
-            break
-        fi
-    done
-else
-    # Raw filesystem - mount whole disk to /mnt
-    echo "[INIT] No partitions found, trying raw filesystem..."
-    if try_mount /dev/sda /mnt; then
-        MOUNT_SUCCESS=1
     fi
-fi
+done
 
 if [ "$MOUNT_SUCCESS" = "0" ]; then
-    echo "[INIT] No mountable image found"
+    echo "[INIT] No mountable images found"
 fi
 
 export MOUNT_SUCCESS

@@ -26,11 +26,11 @@ Currently there's:
 
 But there is:
 
-* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests with 9p transport and a shell
-* Scripts to start a FUSE client
+* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
+* 9P2000.U support in both a simple9p server and 9pfuse client
+* Scripts to start the FUSE client
 * A collection of filesystems to play with
 * A build system that isolates everything and has some promise
-* A vibe coded libixp-based 9p server that lacks the test suite it deserves
 
 To use it:
 
@@ -52,12 +52,15 @@ If the stars align, you'll be able to mangle the files in your given disk image.
 - [x] more guests
   - [x] Linux 2.6
   - [x] NetBSD 10
-- [ ] a common interface 
+- [ ] a common interface
+  - [ ] /mnt/b1 /mnt/b2 /mnt/c for partitioned disks + images
 
 #### 2. Link it in
 
 - [ ] client library
-  - [ ] filesystem detector
+  - [ ] detection
+    - [ ] partition format detection
+    - [ ] filesystem detection
   - [ ] qemu lib
   - [ ] filesystem catalogue
 - [ ] clients
@@ -77,9 +80,10 @@ If the stars align, you'll be able to mangle the files in your given disk image.
     - [ ] test runner
 - [ ] fix bugs
   - [ ] simple9p
-    - [ ] spam in file browser
+    - [x] .U + symlink support
   - [ ] FUSE
-    - [ ] block size wrong for `du`
+    - [x] block size wrong for `du`
+    - [ ] spam in file browser (unsupported modes)
   - [ ] Linux runner
     - [ ] change virtserialport to virtconsole for consistency with NetBSD
   - [ ] Build system
@@ -144,6 +148,20 @@ qemount/
 ### Guests
 
 #### Unices (to move to catalogue)
+
+| Partition Table  | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                          |
+| ---------------- | ---------- | --------- | --------- | ------------------------------ |
+| **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
+| **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
+| **BSD disklabel**| ✅         | ✅        | ✅        | Native BSD partitioning        |
+| **Apple APM**    | ✅         | ✅        | ✅        | Classic Mac partition map      |
+| **Amiga RDB**    | ✅         | ✅        | ✅        | Rigid Disk Block               |
+| **Atari AHDI**   | ✅         | ✅        | ✅        | Atari ST/TOS                   |
+| **Sun VTOC**     | ✅         | ✅        | ❌        | Solaris/SunOS                  |
+| **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
+| **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
+| **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
+
 
 | Filesystem      | Linux 6.17       | Linux 2.6   | FreeBSD          | NetBSD           |  Comments                       |
 | --------------- | ---------------- | ----------- | ---------------- | ---------------- | ------------------------------- |

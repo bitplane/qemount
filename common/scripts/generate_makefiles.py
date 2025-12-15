@@ -54,8 +54,11 @@ class QemountBuildSystem:
             if not base_dir.exists():
                 continue
                 
-            # Find all Dockerfile files
+            # Find all Dockerfile files (skip dotfiles/dotdirs)
             for filepath in base_dir.glob(f"**/Dockerfile"):
+                # Skip if any path component starts with a dot
+                if any(part.startswith('.') for part in filepath.parts):
+                    continue
                 component_dir = filepath.parent
                 component_path = component_dir.relative_to(self.project_root)
                 components.append(str(component_path))

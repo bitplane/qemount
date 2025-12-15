@@ -1,1 +1,1 @@
-tests/data/images/basic.ufs2
+tests/data/fs/basic.ufs2

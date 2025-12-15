@@ -1,1 +1,1 @@
-tests/data/images/basic.fat32
+tests/data/fs/basic.fat32

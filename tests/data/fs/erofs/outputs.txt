@@ -1,1 +1,1 @@
-tests/data/images/basic.erofs
+tests/data/fs/basic.erofs
