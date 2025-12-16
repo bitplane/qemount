@@ -97,6 +97,13 @@ image.
 | **OCFS2**        | ❌         | ✅        | ❌        | Oracle cluster                   |
 | **Coda**         | ❌         | ❌        | ✅        | Distributed FS                   |
 | **BFS**          | ✅         | ✅        | ❌        | SCO Boot FS                      |
+| **ZFS**          | ❌         | ❌        | ✅        | OpenZFS (module, not in-kernel)  |
+| **APFS**         | ❌         | ❌        | ❌        | Apple macOS 10.13+               |
+| **ReFS**         | ❌         | ❌        | ❌        | Windows Resilient FS             |
+| **HAMMER2**      | ❌         | ❌        | ❌        | DragonFly BSD native             |
+| **JFFS2**        | ✅         | ✅        | ❌        | Flash journaling                 |
+| **UBIFS**        | ✅         | ❌        | ❌        | UBI Flash FS                     |
+| **High Sierra**  | ✅         | ✅        | ✅        | ISO9660 extension (Apple)        |
 
 ## 🪓 Hacking
 
