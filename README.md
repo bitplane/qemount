@@ -52,6 +52,14 @@ image.
 | **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
 | **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
 | **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
+| **UBI**          | ✅         | ✅        | ❌        | NAND flash volumes (not a PT)  |
+| **Acorn**        | ✅         | ✅        | ❌        | RISC OS partition map          |
+| **AIX**          | ✅         | ✅        | ❌        | IBM AIX PV headers             |
+| **Ultrix**       | ✅         | ✅        | ❌        | DEC Ultrix (VAX/MIPS)          |
+| **SYSV68**       | ✅         | ✅        | ❌        | Motorola 68k System V          |
+| **IBM DASD**     | ❌         | ❌        | ❌        | S/390 mainframe                |
+| **PC-98**        | ❌         | ❌        | ❌        | NEC PC-98 (Japan)              |
+| **Rio Karma**    | ✅         | ❌        | ❌        | Portable media player          |
 
 ## Filesystems
 
@@ -76,7 +84,9 @@ image.
 | **bcachefs**     | ✅         | ❌        | ❌        |                                  |
 | **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
 | **ReiserFS**     | ❌         | ✅        | ❌        | Removed in 6.13                  |
-| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga - Linux works better       |
+| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga OFS/FFS                    |
+| **SFS**          | ❌         | ❌        | ❌        | Amiga Smart FS (needs AROS)      |
+| **PFS**          | ❌         | ❌        | ❌        | Amiga Professional FS (needs AROS)|
 | **Minix**        | ✅         | ✅        | ❌        |                                  |
 | **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
 | **SysV**         | ❌         | 💩        | ❌        | System V - symlinks crash 2.6    |
