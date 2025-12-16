@@ -79,7 +79,7 @@ image.
 | **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga - Linux works better       |
 | **Minix**        | ✅         | ✅        | ❌        |                                  |
 | **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
-| **SysV**         | ❌         | ✅        | ❌        | System V                         |
+| **SysV**         | ❌         | 💩        | ❌        | System V - symlinks crash 2.6    |
 | **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
 | **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
 | **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
