@@ -1,13 +1,19 @@
 ---
 title: CramFS
-path: fs/cramfs
 related: fs/squashfs
+type: fs
+created: 1999
+detection: {magic, 0x28cd3d45, 0}
 ---
 
 # Compressed ROM Filesystem
-- Created by Linus Torvalds and Daniel Quinlan for Linux in 1999
-- Designed for embedded systems with limited ROM/flash storage
-- Read-only, compressed filesystem for boot images and rescue disks
+
+CramFS is a read-only filesystem created by Linus Torvalds and Daniel Quinlan
+in 1999 for the Linux operating system. It's designed for embedded systems that
+don't have much space, and is used for boot images and rescue disks.
+
+It's largely been replaced by [SquashFS](fs/squashfs), but is still used where
+SquashFS is overkill due to its speed and low complexity.
 
 # Characteristics
 - Read-only - no write support by design
@@ -24,16 +30,3 @@ related: fs/squashfs
 - Superblock contains root inode
 - Inodes packed tightly (12 bytes each)
 - Data blocks are zlib-compressed individually
-
-# Trivia
-- Ubiquitous in embedded Linux - routers, IoT devices, initramfs
-- Simpler than SquashFS (which largely replaced it)
-- Very low RAM overhead - only decompresses what's accessed
-- Still useful when SquashFS is overkill
-
-# Comparison to SquashFS:
-- CramFS: simpler, older, more size-limited
-- SquashFS: better compression (multiple algorithms), larger limits, more
-  features
-- CramFS lives on in legacy systems and tiny embedded targets
-
