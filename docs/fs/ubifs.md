@@ -3,6 +3,7 @@ title: UBIFS
 type: fs
 created: 2008
 related:
+  - pt/ubi
   - fs/jffs2
   - fs/f2fs
 detect:
