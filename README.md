@@ -27,8 +27,8 @@ To use it:
 1. Install `podman`, `fuse`, `make` and `qemu`. `pigz` if you're archiving
 2. Type `make` to build the guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
-   and `-m 9p` to run the 9p init script. (BSD needs manual execution at present;
-   run ./init.9p from the shell)
+   and `-m 9p` to run the 9p init script. (BSD needs manual execution at
+   present; run ./init.9p from the shell)
 4. Once it's started and is grumbling about not having a connection (not
    before), connect to it with the 9p FUSE client using:
    `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
@@ -79,7 +79,7 @@ image.
 | **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga - Linux works better       |
 | **Minix**        | ✅         | ✅        | ❌        |                                  |
 | **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
-| **SysV**         | ❌         | ✅        | ❌        | System V                         |
+| **SysV**         | ❌         | 💩        | ❌        | System V - symlinks crash 2.6    |
 | **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
 | **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
 | **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
