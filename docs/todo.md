@@ -34,7 +34,7 @@
 - [ ] safety
   - [ ] mount read only by default
   - [ ] test data + framework
-    - [ ] data builder for fileystems (26/43)
+    - [ ] data builder for fileystems (27/43)
     - [x] break archives out into a separate path
     - [ ] create some machine-like images
     - [ ] test runner and rules (architecture, design, mvp)
