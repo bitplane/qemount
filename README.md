@@ -60,6 +60,17 @@ image.
 | **IBM DASD**     | ❌         | ❌        | ❌        | S/390 mainframe                |
 | **PC-98**        | ❌         | ❌        | ❌        | NEC PC-98 (Japan)              |
 | **Rio Karma**    | ✅         | ❌        | ❌        | Portable media player          |
+| **OSF/1**        | ✅         | ✅        | ❌        | DEC Alpha / Tru64              |
+| **HP-UX LIF**    | ✅         | ✅        | ❌        | PA-RISC / Itanium              |
+| **QNX4 PT**      | ✅         | ✅        | ❌        | QNX subpartitions              |
+| **Plan 9**       | ✅         | ✅        | ❌        | ASCII partition table          |
+| **NetWare**      | ✅         | ✅        | ❌        | Novell                         |
+| **Hybrid MBR**   | ✅         | ✅        | ✅        | GPT+MBR dual boot              |
+| **Protective MBR**| ✅        | ✅        | ✅        | GPT guard                      |
+| **OpenBSD**      | ✅         | ✅        | ❌        | 16-partition disklabel         |
+| **DragonFly**    | ✅         | ❌        | ❌        | Disklabel64 variant            |
+| **NeXT**         | ❌         | ❌        | ❌        | NeXTSTEP / OPENSTEP            |
+| **CP/M-86**      | ✅         | ✅        | ❌        | Digital Research               |
 
 ## Filesystems
 
