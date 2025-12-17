@@ -1,6 +1,5 @@
 ---
 title: FAT32
-type: fs
 created: 1996
 related:
   - fs/fat12

@@ -1,6 +1,5 @@
 ---
 title: Hybrid MBR
-type: pt
 created: 2006
 related:
   - pt/mbr

@@ -1,6 +1,5 @@
 ---
 title: OpenBSD Disklabel
-type: pt
 created: 1996
 related:
   - pt/bsd-disklabel

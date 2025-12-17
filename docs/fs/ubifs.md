@@ -1,6 +1,5 @@
 ---
 title: UBIFS
-type: fs
 created: 2008
 related:
   - pt/ubi

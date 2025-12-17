@@ -1,6 +1,5 @@
 ---
 title: EROFS
-type: fs
 created: 2018
 related:
   - fs/squashfs

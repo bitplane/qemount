@@ -1,6 +1,5 @@
 ---
 title: Protective MBR
-type: pt
 created: 2000
 related:
   - pt/mbr

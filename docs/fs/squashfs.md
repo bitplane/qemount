@@ -1,6 +1,5 @@
 ---
 title: SquashFS
-type: fs
 created: 2002
 related:
   - fs/cramfs

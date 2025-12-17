@@ -1,6 +1,5 @@
 ---
 title: HP-UX LIF/VTOC
-type: pt
 created: 1984
 related:
   - pt/sun

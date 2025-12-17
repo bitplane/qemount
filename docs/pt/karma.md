@@ -1,6 +1,5 @@
 ---
 title: Rio Karma
-type: pt
 created: 2003
 related:
   - fs/omfs

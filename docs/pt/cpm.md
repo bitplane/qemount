@@ -1,6 +1,5 @@
 ---
 title: CP/M-86
-type: pt
 created: 1981
 related:
   - pt/mbr

@@ -1,6 +1,5 @@
 ---
 title: HAMMER2
-type: fs
 created: 2017
 related:
   - fs/zfs

@@ -1,6 +1,5 @@
 ---
 title: System V
-type: fs
 created: 1983
 related:
   - fs/v7

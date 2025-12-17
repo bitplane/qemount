@@ -1,6 +1,5 @@
 ---
 title: QNX4 Partition Table
-type: pt
 created: 1990
 related:
   - fs/qnx4

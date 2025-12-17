@@ -1,6 +1,5 @@
 ---
 title: NILFS2
-type: fs
 created: 2005
 related:
   - fs/btrfs

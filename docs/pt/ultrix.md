@@ -1,6 +1,5 @@
 ---
 title: Ultrix
-type: pt
 created: 1984
 related:
   - pt/bsd-disklabel

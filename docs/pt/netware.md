@@ -1,6 +1,5 @@
 ---
 title: NetWare
-type: pt
 created: 1983
 related:
   - pt/mbr

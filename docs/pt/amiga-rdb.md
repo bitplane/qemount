@@ -1,6 +1,5 @@
 ---
 title: Amiga RDB
-type: pt
 created: 1985
 related:
   - fs/amiga-ffs

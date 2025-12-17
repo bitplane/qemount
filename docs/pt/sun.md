@@ -1,6 +1,5 @@
 ---
 title: Sun VTOC
-type: pt
 created: 1983
 related:
   - fs/ufs1

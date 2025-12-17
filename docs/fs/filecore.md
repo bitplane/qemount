@@ -1,6 +1,5 @@
 ---
 title: Filecore
-type: fs
 created: 1987
 related:
   - fs/adfs

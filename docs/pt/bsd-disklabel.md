@@ -1,6 +1,5 @@
 ---
 title: BSD Disklabel
-type: pt
 created: 1982
 related:
   - fs/ufs1

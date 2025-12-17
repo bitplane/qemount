@@ -1,6 +1,5 @@
 ---
 title: JFFS2
-type: fs
 created: 2001
 related:
   - fs/ubifs

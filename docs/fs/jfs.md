@@ -1,6 +1,5 @@
 ---
 title: JFS
-type: fs
 created: 1990
 related:
   - fs/ext4

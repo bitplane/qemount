@@ -1,6 +1,5 @@
 ---
 title: AIX
-type: pt
 created: 1986
 related:
   - pt/mbr

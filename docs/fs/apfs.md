@@ -1,6 +1,5 @@
 ---
 title: APFS
-type: fs
 created: 2017
 related:
   - fs/hfsplus

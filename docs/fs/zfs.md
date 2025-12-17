@@ -1,6 +1,5 @@
 ---
 title: ZFS
-type: fs
 created: 2005
 related:
   - fs/btrfs

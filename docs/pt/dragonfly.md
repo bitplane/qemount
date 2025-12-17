@@ -1,6 +1,5 @@
 ---
 title: DragonFly BSD Disklabel
-type: pt
 created: 2003
 related:
   - pt/bsd-disklabel

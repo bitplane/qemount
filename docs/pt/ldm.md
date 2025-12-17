@@ -1,6 +1,5 @@
 ---
 title: LDM
-type: pt
 created: 2000
 related:
   - pt/gpt

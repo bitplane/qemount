@@ -1,6 +1,5 @@
 ---
 title: Btrfs
-type: fs
 created: 2007
 related:
   - fs/bcachefs

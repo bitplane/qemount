@@ -1,6 +1,5 @@
 ---
 title: DEC OSF/1 Disklabel
-type: pt
 created: 1992
 related:
   - pt/ultrix

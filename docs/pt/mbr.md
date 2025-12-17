@@ -1,6 +1,5 @@
 ---
 title: MBR/DOS
-type: pt
 created: 1983
 related:
   - pt/gpt

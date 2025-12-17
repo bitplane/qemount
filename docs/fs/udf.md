@@ -1,6 +1,5 @@
 ---
 title: UDF
-type: fs
 created: 1995
 related:
   - fs/iso9660

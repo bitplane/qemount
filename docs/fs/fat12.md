@@ -1,6 +1,5 @@
 ---
 title: FAT12
-type: fs
 created: 1977
 related:
   - fs/fat16

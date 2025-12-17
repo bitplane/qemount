@@ -1,6 +1,5 @@
 ---
 title: ADFS
-type: fs
 created: 1983
 related:
   - fs/filecore
@@ -33,15 +32,15 @@ the underlying disc handling module.
 
 ## Format Variations
 
-| Format | Capacity | Block Size | Notes |
-|--------|----------|------------|-------|
-| S | 160KB | 256 | Single density |
-| M | 320KB | 256 | Medium |
-| L | 640KB | 256 | Large |
-| D | 800KB | 1024 | Double density |
-| E | 800KB | 1024 | New map |
-| F | 1.6MB | 1024 | High density |
-| E+/F+ | Various | Various | Hard disk |
+| Format | Capacity | Block Size | Notes          |
+|--------|----------|------------|----------------|
+| S      | 160KB    | 256        | Single density |
+| M      | 320KB    | 256        | Medium         |
+| L      | 640KB    | 256        | Large          |
+| D      | 800KB    | 1024       | Double density |
+| E      | 800KB    | 1024       | New map        |
+| F      | 1.6MB    | 1024       | High density   |
+| E+/F+  | Various  | Various    | Hard disk      |
 
 ## Linux Support
 

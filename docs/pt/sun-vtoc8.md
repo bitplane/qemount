@@ -1,6 +1,5 @@
 ---
 title: Sun VTOC8/VTOC16
-type: pt
 created: 1983
 related:
   - pt/sun

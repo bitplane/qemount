@@ -1,6 +1,5 @@
 ---
 title: ext2
-type: fs
 created: 1993
 related:
   - fs/ext3

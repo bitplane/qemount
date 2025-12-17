@@ -1,6 +1,5 @@
 ---
 title: Amiga SFS
-type: fs
 created: 1998
 related:
   - fs/amiga-ffs

@@ -1,6 +1,5 @@
 ---
 title: SGI DVH
-type: pt
 created: 1988
 related:
   - fs/efs

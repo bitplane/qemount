@@ -1,6 +1,5 @@
 ---
 title: QNX6
-type: fs
 created: 2004
 related:
   - fs/qnx4

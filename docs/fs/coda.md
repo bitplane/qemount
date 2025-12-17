@@ -1,6 +1,5 @@
 ---
 title: Coda
-type: fs
 created: 1987
 related:
   - fs/nfs

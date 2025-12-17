@@ -1,6 +1,5 @@
 ---
 title: UFS2
-type: fs
 created: 2002
 related:
   - fs/ufs1

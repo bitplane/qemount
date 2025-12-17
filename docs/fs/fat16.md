@@ -1,6 +1,5 @@
 ---
 title: FAT16
-type: fs
 created: 1984
 discontinued: 2006
 related:

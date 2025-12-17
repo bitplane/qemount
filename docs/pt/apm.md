@@ -1,6 +1,5 @@
 ---
 title: Apple APM
-type: pt
 created: 1987
 related:
   - fs/hfs

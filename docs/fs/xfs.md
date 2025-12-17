@@ -1,6 +1,5 @@
 ---
 title: XFS
-type: fs
 created: 1993
 related:
   - fs/ext4

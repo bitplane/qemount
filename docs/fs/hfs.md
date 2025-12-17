@@ -1,6 +1,5 @@
 ---
 title: HFS
-type: fs
 created: 1985
 discontinued: 1998
 related:

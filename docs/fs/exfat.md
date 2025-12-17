@@ -1,6 +1,5 @@
 ---
 title: exFAT
-type: fs
 created: 2006
 related:
   - fs/fat32

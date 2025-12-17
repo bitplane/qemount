@@ -1,6 +1,5 @@
 ---
 title: Atari AHDI
-type: pt
 created: 1985
 related:
   - pt/mbr

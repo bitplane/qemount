@@ -1,6 +1,5 @@
 ---
 title: OMFS
-type: fs
 created: 2003
 related:
   - fs/udf

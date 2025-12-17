@@ -1,6 +1,5 @@
 ---
 title: Plan 9
-type: pt
 created: 1992
 related:
   - pt/mbr

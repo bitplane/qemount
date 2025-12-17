@@ -1,6 +1,5 @@
 ---
 title: Minix
-type: fs
 created: 1987
 related:
   - fs/ext2

@@ -1,6 +1,5 @@
 ---
 title: NTFS
-type: fs
 created: 1993
 related:
   - fs/exfat

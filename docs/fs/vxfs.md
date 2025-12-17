@@ -1,6 +1,5 @@
 ---
 title: VxFS
-type: fs
 created: 1991
 related:
   - fs/ext4

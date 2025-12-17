@@ -1,6 +1,5 @@
 ---
 title: IBM DASD
-type: pt
 created: 1964
 related: []
 detect:

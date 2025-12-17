@@ -1,6 +1,5 @@
 ---
 title: ReiserFS
-type: fs
 created: 2001
 discontinued: 2006
 related:

@@ -1,6 +1,5 @@
 ---
 title: OCFS2
-type: fs
 created: 2004
 related:
   - fs/gfs2

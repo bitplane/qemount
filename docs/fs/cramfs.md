@@ -1,6 +1,5 @@
 ---
 title: CramFS
-type: fs
 created: 1999
 related:
   - fs/squashfs

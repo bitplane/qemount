@@ -11,7 +11,7 @@ path: guest
 A guest operating system is a computer that runs inside [QEMU](qemu), a machine
 emulator, on your machine (the host). The guests have been [built](build-system)
 to be as small as possible, but no smaller: to have enough features to open the
-sorts of [disks](img), [filesystems](fs) and [archives](arc) that they are best
+sorts of [files](disk), [filesystems](fs) and [archives](arc) that they are best
 at dealing with.
 
 Qemount works by detecting your file's type, choosing the best guest, then

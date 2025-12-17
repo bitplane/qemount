@@ -1,6 +1,5 @@
 ---
 title: F2FS
-type: fs
 created: 2012
 related:
   - fs/ext4

@@ -1,6 +1,5 @@
 ---
 title: LFS
-type: fs
 created: 1992
 related:
   - fs/nilfs2

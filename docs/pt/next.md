@@ -1,6 +1,5 @@
 ---
 title: NeXT Disklabel
-type: pt
 created: 1988
 related:
   - pt/bsd-disklabel

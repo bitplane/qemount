@@ -1,6 +1,5 @@
 ---
 title: RomFS
-type: fs
 created: 1997
 related:
   - fs/cramfs

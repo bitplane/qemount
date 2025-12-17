@@ -1,6 +1,5 @@
 ---
 title: ext4
-type: fs
 created: 2008
 related:
   - fs/ext2

@@ -1,6 +1,5 @@
 ---
 title: bcachefs
-type: fs
 created: 2015
 related:
   - fs/btrfs

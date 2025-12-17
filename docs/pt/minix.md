@@ -1,6 +1,5 @@
 ---
 title: Minix
-type: pt
 created: 1987
 related:
   - fs/minix

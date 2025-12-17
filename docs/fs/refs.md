@@ -1,6 +1,5 @@
 ---
 title: ReFS
-type: fs
 created: 2012
 related:
   - fs/ntfs
