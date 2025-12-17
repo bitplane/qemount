@@ -2,6 +2,7 @@
 title: BeOS BFS
 type: fs
 created: 1996
+discontinued: 2001
 related:
   - fs/hfsplus
 detect:

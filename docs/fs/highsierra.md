@@ -2,6 +2,7 @@
 title: High Sierra
 type: fs
 created: 1986
+discontinued: 1988
 related:
   - fs/iso9660
   - fs/udf

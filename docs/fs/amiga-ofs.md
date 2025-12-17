@@ -2,6 +2,7 @@
 title: Amiga OFS
 type: fs
 created: 1985
+discontinued: 1988
 related:
   - fs/amiga-ffs
 detect:

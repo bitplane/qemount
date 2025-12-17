@@ -2,6 +2,7 @@
 title: HPFS
 type: fs
 created: 1989
+discontinued: 2005
 related:
   - fs/ntfs
   - fs/fat16

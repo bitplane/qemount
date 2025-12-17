@@ -2,6 +2,7 @@
 title: EFS
 type: fs
 created: 1988
+discontinued: 1994
 related:
   - fs/xfs
 detect:

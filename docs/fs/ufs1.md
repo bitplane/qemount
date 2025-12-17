@@ -2,6 +2,7 @@
 title: UFS1
 type: fs
 created: 1983
+discontinued: 2003
 related:
   - fs/ufs2
   - fs/ext2

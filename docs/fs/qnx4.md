@@ -2,6 +2,7 @@
 title: QNX4
 type: fs
 created: 1990
+discontinued: 2004
 related:
   - fs/qnx6
 detect:

@@ -2,6 +2,7 @@
 title: ReiserFS
 type: fs
 created: 2001
+discontinued: 2006
 related:
   - fs/ext3
   - fs/btrfs
@@ -16,6 +17,9 @@ detect:
     - offset: 0x10034
       type: string
       value: "ReIsEr3Fs"
+    - offset: 0x10000
+      type: string
+      value: "ReIsEr4"
 ---
 
 # ReiserFS (Reiser File System v3)
@@ -23,6 +27,10 @@ detect:
 ReiserFS was developed by Hans Reiser and Namesys, released in 2001. It was
 the first journaling filesystem included in the mainline Linux kernel (2.4.1)
 and was notable for its efficient handling of small files.
+
+Work ceased on it in 2006 when Hans was convicted of murdering his wife.
+Reiser4 was maintained as a series of out-of-tree patches but never made it
+into mainline Linux. ReiserFS v3 was removed from Linux in 6.13 (2024).
 
 ## Characteristics
 

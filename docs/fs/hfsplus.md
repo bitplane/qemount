@@ -2,6 +2,7 @@
 title: HFS+
 type: fs
 created: 1998
+discontinued: 2017
 related:
   - fs/hfs
   - fs/apfs
