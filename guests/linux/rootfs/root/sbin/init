@@ -50,10 +50,13 @@ try_mount() {
     name="$2"
     mnt="/mnt/${name}"
     mkdir -p "$mnt"
-    if mount -t auto "$dev" "$mnt" 2>/dev/null; then
-        echo "[INIT] Mounted $dev -> $mnt"
-        return 0
-    fi
+    # Try auto first, then explicit types that auto-detect doesn't always try
+    for fstype in auto sysv v7 hfs coherent xenix; do
+        if mount -t "$fstype" "$dev" "$mnt" 2>/dev/null; then
+            echo "[INIT] Mounted $dev -> $mnt ($fstype)"
+            return 0
+        fi
+    done
     rmdir "$mnt" 2>/dev/null || true
     return 1
 }

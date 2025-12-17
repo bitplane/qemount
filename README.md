@@ -3,100 +3,128 @@
 Let's mount everything/anything using qemu, by exposing it over 9p. Spin up a
 tiny VM that provides access to an image, one instance per mount.
 
-* Have the ability to use kernel mounts in FUSE
-* Proxy ancient systems with native support for crusty old filesystems
-* ... basically a clutch between any image/block device, URL, file and anything
-  else, the UNIX way - everything is a file.
-
 ## ✅ STATUS
 
 ⚠️  unstable / pre-alpha / experimental ⚠️
 
 ## 🛑 STOP! 🛑
 
-MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS EXPERIMENTAL TOOL.
+MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
 
-Currently there's:
-
-* no filesystem catalogue saying which filesystem loaders will work
-* no users battle testing it in production
-* no safety settings, everything is read/write even if it'll destroy disks
-* no client library for cross platform access
-* no packaging / install scripts
-
-But there is:
+Currently, there's:
 
 * Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
 * 9P2000.U support in both a simple9p server and 9pfuse client
 * Scripts to start the FUSE client
 * A collection of filesystems to play with
-* A build system that isolates everything and has some promise
+* A build system that isolates everything inside containers, so it actually
+  builds easily.
+* A way to archive everything, inputs, outputs and containers, so the
+  archive.org dumps will work long after the sources go offline.
 
 To use it:
 
-1. Install `podman`, `fuse`, `make` and `qemu`
+1. Install `podman`, `fuse`, `make` and `qemu`. `pigz` if you're archiving
 2. Type `make` to build the guests.
 3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
-   and `-m 9p` to run the 9p init script. (BSD needs manual execution at present;
-   run ./init.9p from the shell)
+   and `-m 9p` to run the 9p init script. (BSD needs manual execution at
+   present; run ./init.9p from the shell)
 4. Once it's started and is grumbling about not having a connection (not
    before), connect to it with the 9p FUSE client using:
    `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
 
-If the stars align, you'll be able to mangle the files in your given disk image.
+If the stars align, you'll have full access to the files in your given disk
+image.
 
-### 🗺️ Plan
+## Format support
 
-#### 1. Flesh it out
+### Partition tables
 
-- [x] more guests
-  - [x] Linux 2.6
-  - [x] NetBSD 10
-- [ ] a common interface
-  - [ ] /mnt/b1 /mnt/b2 /mnt/c for partitioned disks + images
+| Partition Table  | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                          |
+| ---------------- | ---------- | --------- | --------- | ------------------------------ |
+| **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
+| **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
+| **BSD disklabel**| ✅         | ✅        | ✅        | Native BSD partitioning        |
+| **Apple APM**    | ✅         | ✅        | ✅        | Classic Mac partition map      |
+| **Amiga RDB**    | ✅         | ✅        | ✅        | Rigid Disk Block               |
+| **Atari AHDI**   | ✅         | ✅        | ✅        | Atari ST/TOS                   |
+| **Sun VTOC**     | ✅         | ✅        | ❌        | Solaris/SunOS                  |
+| **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
+| **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
+| **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
+| **UBI**          | ✅         | ✅        | ❌        | NAND flash volumes (not a PT)  |
+| **Acorn**        | ✅         | ✅        | ❌        | RISC OS partition map          |
+| **AIX**          | ✅         | ✅        | ❌        | IBM AIX PV headers             |
+| **Ultrix**       | ✅         | ✅        | ❌        | DEC Ultrix (VAX/MIPS)          |
+| **SYSV68**       | ✅         | ✅        | ❌        | Motorola 68k System V          |
+| **IBM DASD**     | ❌         | ❌        | ❌        | S/390 mainframe                |
+| **PC-98**        | ❌         | ❌        | ❌        | NEC PC-98 (Japan)              |
+| **Rio Karma**    | ✅         | ❌        | ❌        | Portable media player          |
+| **OSF/1**        | ✅         | ✅        | ❌        | DEC Alpha / Tru64              |
+| **HP-UX LIF**    | ✅         | ✅        | ❌        | PA-RISC / Itanium              |
+| **QNX4 PT**      | ✅         | ✅        | ❌        | QNX subpartitions              |
+| **Plan 9**       | ✅         | ✅        | ❌        | ASCII partition table          |
+| **NetWare**      | ✅         | ✅        | ❌        | Novell                         |
+| **Hybrid MBR**   | ✅         | ✅        | ✅        | GPT+MBR dual boot              |
+| **Protective MBR**| ✅        | ✅        | ✅        | GPT guard                      |
+| **OpenBSD**      | ✅         | ✅        | ❌        | 16-partition disklabel         |
+| **DragonFly**    | ✅         | ❌        | ❌        | Disklabel64 variant            |
+| **NeXT**         | ❌         | ❌        | ❌        | NeXTSTEP / OPENSTEP            |
+| **CP/M-86**      | ✅         | ✅        | ❌        | Digital Research               |
 
-#### 2. Link it in
+## Filesystems
 
-- [ ] client library
-  - [ ] detection
-    - [ ] partition format detection
-    - [ ] filesystem detection
-  - [ ] qemu lib
-  - [ ] filesystem catalogue
-- [ ] clients
-  - [x] FUSE
-  - [ ] 7zip
-  - [ ] extractor
-
-#### 3. Polish the turd
-
-- [ ] build and install scripts
-  - [ ] write an installer
-  - [ ] xdg launcher
-- [ ] safety
-  - [ ] mount read only by default
-  - [ ] make a test framework
-    - [x] data builder system (18 formats)
-    - [ ] test runner
-- [ ] fix bugs
-  - [ ] simple9p
-    - [x] .U + symlink support
-  - [ ] FUSE
-    - [x] block size wrong for `du`
-    - [ ] spam in file browser (unsupported modes)
-  - [ ] Linux runner
-    - [ ] change virtserialport to virtconsole for consistency with NetBSD
-  - [ ] Build system
-    - [ ] Download + cache system with automatic cache blowing
-    - [ ] Export builder images for long term archival (archive.org)
-
-#### 4. Embrace, Extend, Exaggerate 
-
-- [ ] add more guests
-  - [ ] AROS
-  - [ ] Haiku
-  - [ ] Atari ST (STEEM?)
-  - [ ] Darwin
+| Filesystem       | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                            |
+| ---------------- | ---------- | --------- | --------- | -------------------------------- |
+| **ext2**         | ✅         | ✅        | ✅        |                                  |
+| **ext3**         | ✅         | ✅        | ✅        | NetBSD mounts as ext2            |
+| **ext4**         | ✅         | ✅        | ❌        |                                  |
+| **FAT12/16/32**  | ✅         | ✅        | ✅        | vfat/msdos                       |
+| **exFAT**        | ✅         | ❌        | ❌        |                                  |
+| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.17 has full r/w                |
+| **ISO9660**      | ✅         | ✅        | ✅        | cd9660 on BSD                    |
+| **UDF**          | ✅         | ✅        | ✅        | DVD/Blu-ray                      |
+| **HFS**          | ✅         | ✅        | ✅        | Classic Mac                      |
+| **HFS+**         | ✅         | ✅        | ❌        | hfsplus                          |
+| **UFS/FFS**      | 💩         | 💩        | ✅        | Linux UFS is limited             |
+| **LFS**          | ❌         | ❌        | ✅        | NetBSD log-structured            |
+| **XFS**          | ✅         | ✅        | ❌        |                                  |
+| **JFS**          | ✅         | ✅        | ❌        | IBM journaled                    |
+| **Btrfs**        | ✅         | ✅        | ❌        |                                  |
+| **F2FS**         | ✅         | ❌        | ❌        | Flash-friendly                   |
+| **bcachefs**     | ✅         | ❌        | ❌        |                                  |
+| **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
+| **ReiserFS**     | ❌         | ✅        | ❌        | Removed in 6.13                  |
+| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga OFS/FFS                    |
+| **SFS**          | ❌         | ❌        | ❌        | Amiga Smart FS (needs AROS)      |
+| **PFS**          | ❌         | ❌        | ❌        | Amiga Professional FS (needs AROS)|
+| **Minix**        | ✅         | ✅        | ❌        |                                  |
+| **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
+| **SysV**         | ❌         | 💩        | ❌        | System V - symlinks crash 2.6    |
+| **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
+| **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
+| **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
+| **EFS**          | ✅         | ✅        | ✅        | SGI IRIX                         |
+| **BeFS**         | ✅         | ✅        | ❌        | BeOS/Haiku                       |
+| **HPFS**         | ✅         | ✅        | ❌        | OS/2                             |
+| **QNX4**         | ✅         | ✅        | ❌        |                                  |
+| **QNX6**         | ✅         | ❌        | ❌        |                                  |
+| **ADFS**         | ✅         | ✅        | ❌        | Acorn                            |
+| **Filecore**     | ❌         | ❌        | ✅        | Acorn RISC OS                    |
+| **VxFS**         | ✅         | ✅        | ❌        | Veritas                          |
+| **OMFS**         | ✅         | ✅        | ❌        | Optimized MPEG FS                |
+| **NILFS2**       | ✅         | ✅        | ❌        | Log-structured                   |
+| **GFS2**         | ✅         | ✅        | ❌        | Red Hat cluster                  |
+| **OCFS2**        | ❌         | ✅        | ❌        | Oracle cluster                   |
+| **Coda**         | ❌         | ❌        | ✅        | Distributed FS                   |
+| **BFS**          | ✅         | ✅        | ❌        | SCO Boot FS                      |
+| **ZFS**          | ❌         | ❌        | ✅        | OpenZFS (module, not in-kernel)  |
+| **APFS**         | ❌         | ❌        | ❌        | Apple macOS 10.13+               |
+| **ReFS**         | ❌         | ❌        | ❌        | Windows Resilient FS             |
+| **HAMMER2**      | ❌         | ❌        | ❌        | DragonFly BSD native             |
+| **JFFS2**        | ✅         | ✅        | ❌        | Flash journaling                 |
+| **UBIFS**        | ✅         | ❌        | ❌        | UBI Flash FS                     |
+| **High Sierra**  | ✅         | ✅        | ✅        | ISO9660 extension (Apple)        |
 
 ## 🪓 Hacking
 
@@ -142,121 +170,4 @@ qemount/
 ├── README.md                  # This file
 └── .gitignore                 # bliss
 ```
-
-## 📔 Notes
-
-### Guests
-
-#### Unices (to move to catalogue)
-
-| Partition Table  | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                          |
-| ---------------- | ---------- | --------- | --------- | ------------------------------ |
-| **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
-| **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
-| **BSD disklabel**| ✅         | ✅        | ✅        | Native BSD partitioning        |
-| **Apple APM**    | ✅         | ✅        | ✅        | Classic Mac partition map      |
-| **Amiga RDB**    | ✅         | ✅        | ✅        | Rigid Disk Block               |
-| **Atari AHDI**   | ✅         | ✅        | ✅        | Atari ST/TOS                   |
-| **Sun VTOC**     | ✅         | ✅        | ❌        | Solaris/SunOS                  |
-| **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
-| **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
-| **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
-
-
-
-| Filesystem       | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                            |
-| ---------------- | ---------- | --------- | --------- | -------------------------------- |
-| **ext2**         | ✅         | ✅        | ✅        |                                  |
-| **ext3**         | ✅         | ✅        | ✅        | NetBSD mounts as ext2            |
-| **ext4**         | ✅         | ✅        | ❌        |                                  |
-| **FAT12/16/32**  | ✅         | ✅        | ✅        | vfat/msdos                       |
-| **exFAT**        | ✅         | ❌        | ❌        |                                  |
-| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.17 has full r/w                |
-| **ISO9660**      | ✅         | ✅        | ✅        | cd9660 on BSD                    |
-| **UDF**          | ✅         | ✅        | ✅        | DVD/Blu-ray                      |
-| **HFS**          | ✅         | ✅        | ✅        | Classic Mac                      |
-| **HFS+**         | ✅         | ✅        | ❌        | hfsplus                          |
-| **UFS/FFS**      | 💩         | 💩        | ✅        | Linux UFS is limited             |
-| **LFS**          | ❌         | ❌        | ✅        | NetBSD log-structured            |
-| **XFS**          | ✅         | ✅        | ❌        |                                  |
-| **JFS**          | ✅         | ✅        | ❌        | IBM journaled                    |
-| **Btrfs**        | ✅         | ✅        | ❌        |                                  |
-| **F2FS**         | ✅         | ❌        | ❌        | Flash-friendly                   |
-| **bcachefs**     | ✅         | ❌        | ❌        |                                  |
-| **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
-| **ReiserFS**     | ❌         | ✅        | ❌        | Removed in 6.13                  |
-| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga - Linux works better       |
-| **Minix**        | ✅         | ✅        | ❌        |                                  |
-| **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
-| **SysV**         | ❌         | ✅        | ❌        | System V                         |
-| **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
-| **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
-| **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
-| **EFS**          | ✅         | ✅        | ✅        | SGI IRIX                         |
-| **BeFS**         | ✅         | ✅        | ❌        | BeOS/Haiku                       |
-| **HPFS**         | ✅         | ✅        | ❌        | OS/2                             |
-| **QNX4**         | ✅         | ✅        | ❌        |                                  |
-| **QNX6**         | ✅         | ❌        | ❌        |                                  |
-| **ADFS**         | ✅         | ✅        | ❌        | Acorn                            |
-| **Filecore**     | ❌         | ❌        | ✅        | Acorn RISC OS                    |
-| **VxFS**         | ✅         | ✅        | ❌        | Veritas                          |
-| **OMFS**         | ✅         | ✅        | ❌        | Optimized MPEG FS                |
-| **NILFS2**       | ✅         | ✅        | ❌        | Log-structured                   |
-| **GFS2**         | ✅         | ✅        | ❌        | Red Hat cluster                  |
-| **OCFS2**        | ❌         | ✅        | ❌        | Oracle cluster                   |
-| **Coda**         | ❌         | ❌        | ✅        | Distributed FS                   |
-| **BFS**          | ✅         | ✅        | ❌        | SCO Boot FS                      |
-
-
-#### 💡 Unorthodox Guest ideas
-
-You know the drill. It's exciting to have anything as a filesystem, but scary to
-have the code to do it in your operating system.
-
-| Guest    | Notes                                                             |
-| -------- | ----------------------------------------------------------------- |
-| WinACE   | PeaZip doesn't support ACE archives because security, but we can  |
-| rsrc     | Open Windows EXE resource forks and browse icons etc inside them  |
-| p2p      | Access IPFS, Tor, i2p and chummers without services               |
-| Irrlicht | Expose Irrlicht's VFS, open game formats in your pwd              |
-| Python   | pypi is a trove, we're one interface away from world domination   |
-
-### Hosts
-
-#### 💡 Host ideas
-
-There's a ton of ways we can use this
-
-| Host           |  | Notes                                               |
-| -------------- |--| --------------------------------------------------- |
-| 7zip           |📦| 7zip supports plugins                               |
-| PeaZip         |📦|                                                     |
-| Gnome          |🪟| Gnome Desktop Virtual Filesystem                    |
-| KDE            |🪟| KDE has its own VFS too                             |
-| Windows Driver |🪟| We can crash a whole operating system with these    |
-| Web-based      |🌍| QEMU+WASM+guests = browse files on the web          |
-| Python         |🤖| Python pathlib support                              |
-
-### More catalogue stuff
-
-We can mine these for detection rules
-
-* `file`     - detects lots of filesystems
-* `disktype` - better detection for more types and
-  [samples](https://github.com/kamwoods/disktype/tree/master/misc/file-system-sampler)
-* `amitools` - Amiga filesystems
-
-
-
-
-### Python research notes
-
-We can run Python 2 stuff too, since we're isolated. 
-
-* [SAM Coupe](https://pypi.org/project/mgtdisklib/) / MGT + D
-* [FATtools](https://pypi.org/project/FATtools/) - FAT12/16/32, exFAT, MBR + GPT
-* [bcachefs](https://pypi.org/project/bcachefs/)
-* [BBC Micro](https://pypi.org/project/pymmb/) - python 2, project page dead
-* C64 [1](https://pypi.org/project/d64py/) [2](https://pypi.org/project/d64/)
-* [AppleII](https://pypi.org/project/diskii/)
 
