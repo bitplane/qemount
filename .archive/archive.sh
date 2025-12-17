@@ -3,7 +3,6 @@ set -euo pipefail
 
 DATE=$(date +%Y-%m-%d_%H-%M)
 BUILDER_IMAGE="qemount-builder"
-ARCHIVE_IMAGE="qemount-archive"
 CONTAINER_NAME="qemount-build-$$"
 
 ts() {
@@ -26,19 +25,16 @@ log_cmd "Building archive environment" \
 log_cmd "Running build" \
     podman run --privileged --name "$CONTAINER_NAME" "$BUILDER_IMAGE"
 
-log_cmd "Committing result" \
-    podman commit "$CONTAINER_NAME" "$ARCHIVE_IMAGE"
+mkdir -p build/archive
+ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.xz"
+
+# Use export instead of save - exports container filesystem directly
+# without the layer overhead that makes podman save pathologically slow
+log_cmd "Exporting archive" \
+    sh -c "podman export '$CONTAINER_NAME' | xz -9 > '$ARCHIVE_FILE'"
 
 log_cmd "Cleaning up container" \
     podman rm "$CONTAINER_NAME"
-
-log_cmd "Tagging archive" \
-    podman tag "$ARCHIVE_IMAGE" "qemount-archive:$DATE"
-
-mkdir -p build/archive
-ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.xz"
-log_cmd "Exporting archive" \
-    podman save "$ARCHIVE_IMAGE" | xz -9 > "$ARCHIVE_FILE"
 
 echo "=== Archive complete ===" | ts
 echo "Archive saved to: $ARCHIVE_FILE" | ts
