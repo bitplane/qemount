@@ -36,9 +36,9 @@ log_cmd "Tagging archive" \
     podman tag "$ARCHIVE_IMAGE" "qemount-archive:$DATE"
 
 mkdir -p build/archive
-ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.gz"
+ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.xz"
 log_cmd "Exporting archive" \
-    podman save "$ARCHIVE_IMAGE" | pigz > "$ARCHIVE_FILE"
+    podman save "$ARCHIVE_IMAGE" | xz -9 > "$ARCHIVE_FILE"
 
 echo "=== Archive complete ===" | ts
 echo "Archive saved to: $ARCHIVE_FILE" | ts

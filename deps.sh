@@ -15,7 +15,6 @@ sudo apt-get install -y \
   cpio \
   wget \
   gzip \
-  pigz \
   xz-utils \
   genisoimage \
   git \
