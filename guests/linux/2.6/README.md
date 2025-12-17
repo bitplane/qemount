@@ -12,7 +12,6 @@ support:
   - fs/fat12
   - fs/fat16
   - fs/fat32
-  - fs/exfat
   - fs/sco-bfs
   - fs/iso9660
   - fs/highsierra
@@ -30,7 +29,6 @@ support:
   - fs/amiga-ofs
   - fs/romfs
   - fs/qnx4
-  - fs/qnx6
   - fs/adfs
   - fs/udf
   - fs/omfs
@@ -39,12 +37,10 @@ support:
   - fs/nilfs2
   - fs/beos-bfs
   - fs/gfs2
-  - fs/f2fs
-  - fs/bcachefs
-  - fs/erofs
+  - fs/ocfs2
   - fs/btrfs
+  - fs/reiserfs
   - fs/jffs2
-  - fs/ubifs
   # partition tables
   - pt/mbr
   - pt/gpt
@@ -54,14 +50,12 @@ support:
   - pt/atari
   - pt/sun
   - pt/sgi
-  - pt/ldm
   - pt/minix
   - pt/ubi
   - pt/acorn
   - pt/aix
   - pt/ultrix
   - pt/sysv68
-  - pt/karma
   - pt/osf
   - pt/hpux
   - pt/qnx4
@@ -72,13 +66,35 @@ support:
   - transport/sh
 ---
 
-# Linux 6.17 Guest
+# Linux 2.6 Guest
 
-Linux kernel with busybox. Can mount any filesystems that are built in, listed
-in the front-matter above.
+Linux 2.6.39 kernel with busybox. This older kernel supports legacy filesystems
+that were removed from modern Linux, including ReiserFS and OCFS2.
 
 ## Modes
 
 * `9p`
 * `sh`
 
+## Legacy Filesystem Support
+
+This guest is useful for accessing:
+- ReiserFS (removed in Linux 6.13)
+- OCFS2 (cluster filesystem)
+- Older filesystem variants
+
+## Known Issues
+
+- `fs/sysv`: Symlink creation crashes (NULL pointer in sysv_symlink)
+- `fs/v7`: May have compatibility issues
+- `fs/ntfs`: Read-only via old ntfs driver (not ntfs3)
+
+## Not Supported
+
+Filesystems added after 2.6.39:
+- exFAT (added 5.4)
+- F2FS (added 3.8)
+- bcachefs (added 6.7)
+- EROFS (added 5.4)
+- QNX6 (added 4.3)
+- UBIFS (added 2.6.27, may work)
