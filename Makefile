@@ -1,17 +1,72 @@
-# Include the generated Makefile if it exists
--include build/Makefile
+.PHONY: help all install test dev coverage clean \
+		pre-commit update-pre-commit catalogue build archive
+
+PROJECT_NAME := qemount_build
 
 # Default architecture if not set
-ARCH ?= $(shell ./common/scripts/canonical_arch.sh)
-PLATFORM ?= $(shell ./common/scripts/arch_to_platform.sh $(ARCH))
+ARCH ?= $(shell ./scripts/canonical_arch.sh)
+PLATFORM ?= $(shell ./scripts/arch_to_platform.sh $(ARCH))
 REGISTRY ?= localhost
 export ARCH
 export PLATFORM
 export REGISTRY
 
-all: build/Makefile
+all: catalogue build  ## build catalogue, generate makefiles, run builds
+
+install: .venv/.installed  ## install the venv and project packages
+
+dev: .venv/.installed-dev pre-commit  ## prepare local repo and venv for dev
+
+test: .venv/.installed-dev  ## run the project's tests
+	scripts/test.sh $(PROJECT_NAME)
+
+coverage: .venv/.installed-dev scripts/coverage.sh  ## build the html coverage report
+	scripts/coverage.sh $(PROJECT_NAME)
+
+catalogue: .venv/.installed-dev  ## build the catalogue from docs front-matter
+	@echo "TODO: run catalogue builder"
+
+build: catalogue build/Makefile  ## build all images
 	@$(MAKE) -C build all
 
-# Auto-regenerate on metadata changes
-build/Makefile: common/scripts/generate_makefiles.py $(shell find . -name "inputs.txt" -o -name "outputs.txt" -o -name "Dockerfile" -o -name "build.sh")
-	@./common/scripts/generate_makefiles.py
+clean:  ## delete caches and the venv
+	scripts/clean.sh
+
+pre-commit: .git/hooks/pre-commit  ## install pre-commit into the git repo
+
+update-pre-commit: scripts/update-pre-commit.sh  ## autoupdate pre-commit
+	scripts/update-pre-commit.sh
+
+dist: scripts/dist.sh  ## build the distributable files
+	scripts/dist.sh $(PROJECT_NAME)
+
+release: scripts/release.sh  ## publish to pypi
+	scripts/release.sh $(PROJECT_NAME)
+
+archive: scripts/archive.sh scripts/Dockerfile.archive  ## build complete archive in container
+	scripts/archive.sh
+
+# Generated build system
+METADATA := $(shell find src -name "inputs.txt" -o \
+			               -name "outputs.txt" -o \
+						   -name "Dockerfile" -o \
+						   -name "build.sh" 2>/dev/null)
+
+build/Makefile: src/qemount_build/generate_makefiles.py $(METADATA)
+	@./src/qemount_build/generate_makefiles.py
+
+# Python project infrastructure
+.venv/.installed: pyproject.toml .venv/bin/activate scripts/install.sh $(shell find src -name '*.py')
+	scripts/install.sh $(PROJECT_NAME)
+
+.venv/.installed-dev: pyproject.toml .venv/bin/activate scripts/install-dev.sh
+	scripts/install-dev.sh $(PROJECT_NAME)
+
+.venv/bin/activate:
+	scripts/venv.sh
+
+.git/hooks/pre-commit: scripts/install-pre-commit.sh
+	scripts/install-pre-commit.sh
+
+help:  ## Show this help
+	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

@@ -1,5 +1,5 @@
 #!/bin/sh
-# common/scripts/canonical_arch.sh
+# Normalize architecture name to canonical form
 arch=${1:-$(uname -m)}
 case "$arch" in
  amd64|x64) echo x86_64;;

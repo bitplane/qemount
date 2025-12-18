@@ -20,7 +20,7 @@ log_cmd() {
 }
 
 log_cmd "Building archive environment" \
-    podman build -f .archive/Dockerfile -t "$BUILDER_IMAGE" .
+    podman build -f scripts/Dockerfile.archive -t "$BUILDER_IMAGE" .
 
 log_cmd "Running build" \
     podman run --privileged --name "$CONTAINER_NAME" "$BUILDER_IMAGE"

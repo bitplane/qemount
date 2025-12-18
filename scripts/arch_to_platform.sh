@@ -1,5 +1,5 @@
 #!/bin/sh
-# common/scripts/arch_to_platform.sh
+# Convert architecture to container platform string
 arch=${1:-$(uname -m)}
 case "$arch" in
  x86_64|amd64|x64) echo linux/amd64;;
