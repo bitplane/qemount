@@ -6,7 +6,7 @@ path: disk
 
 # Disk Images
 
-* =¿ container formats for virtual disk data
+* =ï¿½ container formats for virtual disk data
 
 Disk images are files that contain the contents of a disk drive, either as raw
 bytes or in a structured format that adds features like compression, encryption,
