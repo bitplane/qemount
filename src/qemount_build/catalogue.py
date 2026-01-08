@@ -5,6 +5,7 @@ Loads all markdown files from a directory tree, parsing YAML front-matter
 into a flat dict keyed by relative path.
 """
 
+import hashlib
 from pathlib import Path
 
 import yaml
@@ -32,19 +33,22 @@ def parse_frontmatter(text: str) -> tuple[dict, str]:
     return meta, content
 
 
-def load(root: Path) -> dict:
+def load_docs(root: Path) -> dict:
     """
     Load all markdown files from root directory into a catalogue.
 
-    Returns dict mapping relative paths to {"meta": dict, "content": str}.
+    Returns dict mapping relative paths to {"meta": dict, "content": str, "hash": str}.
+    Hash is md5 of raw file content for cache invalidation.
     """
     root = Path(root)
     docs = {}
 
     for md_file in root.rglob("*.md"):
         rel_path = str(md_file.relative_to(root))
-        text = md_file.read_text()
+        raw = md_file.read_bytes()
+        file_hash = hashlib.md5(raw).hexdigest()
+        text = raw.decode("utf-8")
         meta, content = parse_frontmatter(text)
-        docs[rel_path] = {"meta": meta, "content": content}
+        docs[rel_path] = {"meta": meta, "content": content, "hash": file_hash}
 
     return docs
