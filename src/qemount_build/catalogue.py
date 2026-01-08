@@ -52,3 +52,34 @@ def load_docs(root: Path) -> dict:
         docs[rel_path] = {"meta": meta, "content": content, "hash": file_hash}
 
     return docs
+
+
+def doc_path(file_path: str, meta: dict) -> str:
+    """
+    Convert file path to logical catalogue path.
+
+    Rules:
+    - Explicit 'path' in meta wins
+    - Strip 'docs/' prefix (web root for published docs)
+    - Strip '/index.md' or '/README.md' suffix (directory becomes path)
+    - Strip '.md' extension
+    """
+    if "path" in meta:
+        return meta["path"]
+
+    path = file_path
+
+    if path.startswith("docs/"):
+        path = path[5:]
+
+    for suffix in ("/index.md", "/README.md"):
+        if path.endswith(suffix):
+            return path[:-len(suffix)]
+
+    if path in ("index.md", "README.md"):
+        return ""
+
+    if path.endswith(".md"):
+        return path[:-3]
+
+    return path
