@@ -112,6 +112,48 @@ def normalize_list(items: list) -> dict:
     return result
 
 
+def merge_meta(parent: dict, child: dict) -> dict:
+    """
+    Merge parent metadata into child.
+
+    - Child keys extend/overwrite parent keys
+    - Keys starting with "-" delete that key from parent
+    - Lists are normalized to dicts before merging
+    - Nested dicts are merged recursively
+    """
+    result = {}
+
+    # Collect deletion markers from child
+    deletions = {k[1:] for k in child if isinstance(k, str) and k.startswith("-")}
+
+    # Copy parent keys that aren't deleted
+    for key, value in parent.items():
+        if key in deletions:
+            continue
+        result[key] = value
+
+    # Merge child keys (skip deletion markers)
+    for key, value in child.items():
+        if isinstance(key, str) and key.startswith("-"):
+            continue
+
+        parent_val = result.get(key)
+
+        # Normalize lists to dicts for merging
+        if isinstance(value, list):
+            value = normalize_list(value)
+        if isinstance(parent_val, list):
+            parent_val = normalize_list(parent_val)
+
+        # Deep merge dicts
+        if isinstance(value, dict) and isinstance(parent_val, dict):
+            result[key] = merge_meta(parent_val, value)
+        else:
+            result[key] = value
+
+    return result
+
+
 def map_paths(files: dict) -> dict:
     """
     Map file paths to logical catalogue paths.
@@ -128,6 +170,41 @@ def map_paths(files: dict) -> dict:
     return paths
 
 
+def resolve_inheritance(files: dict, paths: dict) -> dict:
+    """
+    Resolve inheritance for all paths.
+
+    Walks up parent chain, merges metadata from root to leaf.
+    Returns new paths dict with "meta" added to each path.
+    """
+    result = {}
+
+    for path, path_data in paths.items():
+        # Build parent chain (leaf to root)
+        chain = []
+        current = path
+        while True:
+            if current in paths:
+                chain.append(current)
+            if not current:
+                break
+            current = parent_path(current)
+
+        # Reverse to go root to leaf
+        chain.reverse()
+
+        # Merge metadata from root to leaf
+        merged = {}
+        for ancestor in chain:
+            source = paths[ancestor]["sources"][0]
+            meta = files[source]["meta"]
+            merged = merge_meta(merged, meta)
+
+        result[path] = {**path_data, "meta": merged}
+
+    return result
+
+
 def load(root: Path) -> dict:
     """
     Load catalogue from root directory.
@@ -136,4 +213,5 @@ def load(root: Path) -> dict:
     """
     files = load_docs(root)
     paths = map_paths(files)
+    paths = resolve_inheritance(files, paths)
     return {"files": files, "paths": paths}
