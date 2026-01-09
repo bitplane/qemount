@@ -83,3 +83,57 @@ def doc_path(file_path: str, meta: dict) -> str:
         return path[:-3]
 
     return path
+
+
+def parent_path(path: str) -> str:
+    """
+    Get parent path in the catalogue hierarchy.
+
+    Returns "" for root and top-level paths.
+    """
+    if "/" not in path:
+        return ""
+    return path.rsplit("/", 1)[0]
+
+
+def normalize_list(items: list) -> dict:
+    """
+    Convert list to dict for merging.
+
+    String items become keys with empty dict values.
+    Dict items are merged into result.
+    """
+    result = {}
+    for item in items:
+        if isinstance(item, str):
+            result[item] = {}
+        elif isinstance(item, dict):
+            result.update(item)
+    return result
+
+
+def map_paths(files: dict) -> dict:
+    """
+    Map file paths to logical catalogue paths.
+
+    Returns dict mapping logical paths to {"sources": [file_paths]}.
+    Multiple files can map to same path (conflicts resolved later).
+    """
+    paths = {}
+    for file_path, doc in files.items():
+        path = doc_path(file_path, doc["meta"])
+        if path not in paths:
+            paths[path] = {"sources": []}
+        paths[path]["sources"].append(file_path)
+    return paths
+
+
+def load(root: Path) -> dict:
+    """
+    Load catalogue from root directory.
+
+    Returns {"files": {...}, "paths": {...}}.
+    """
+    files = load_docs(root)
+    paths = map_paths(files)
+    return {"files": files, "paths": paths}
