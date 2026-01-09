@@ -2,6 +2,8 @@
 title: Linux binaries
 env:
   BUILDER: builder/compiler/linux:${HOST_ARCH}
+requires:
+  - docker:${BUILDER}
 ---
 
 # Linux binaries

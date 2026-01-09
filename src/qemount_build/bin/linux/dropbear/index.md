@@ -1,7 +1,6 @@
 ---
 title: Dropbear
 requires:
-  - docker:${BUILDER}
   - sources/dropbear-2025.88.tar.bz2
 provides:
   - bin/linux-${ARCH}/dropbear/dropbearmulti
