@@ -1,2 +1,0 @@
-common/compiler/linux/6
-tests/data/templates/basic.tar

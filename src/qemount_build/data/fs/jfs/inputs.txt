@@ -1,5 +1,0 @@
-common/qemu-builder
-tests/data/fs/basic.ext2
-guests/linux/6.17/x86_64/kernel
-guests/linux/rootfs/x86_64/boot.img
-common/run/qemu-linux/run-linux.sh

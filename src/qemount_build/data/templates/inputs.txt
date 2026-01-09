@@ -1,1 +1,0 @@
-# No external dependencies - templates are source data
