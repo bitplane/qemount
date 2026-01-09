@@ -1,5 +1,7 @@
 ---
 title: Linux binaries
+env:
+  BUILDER: builder/compiler/linux:${HOST_ARCH}
 ---
 
 # Linux binaries
