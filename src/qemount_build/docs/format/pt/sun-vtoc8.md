@@ -2,7 +2,7 @@
 title: Sun VTOC8/VTOC16
 created: 1983
 related:
-  - pt/sun
+  - format/pt/sun
 detect:
   - offset: 508
     type: be16

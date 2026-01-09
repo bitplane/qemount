@@ -2,7 +2,7 @@
 title: Atari AHDI
 created: 1985
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 0x1C6
     type: be32

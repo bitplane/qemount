@@ -2,7 +2,7 @@
 title: OMFS
 created: 2003
 related:
-  - fs/udf
+  - format/fs/udf
 detect:
   - offset: 0
     type: le32

@@ -2,7 +2,7 @@
 title: QNX6
 created: 2004
 related:
-  - fs/qnx4
+  - format/fs/qnx4
 detect:
   - offset: 0x2000
     type: le32

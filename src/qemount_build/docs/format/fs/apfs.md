@@ -2,8 +2,8 @@
 title: APFS
 created: 2017
 related:
-  - fs/hfsplus
-  - fs/zfs
+  - format/fs/hfsplus
+  - format/fs/zfs
 detect:
   - offset: 0x20
     type: string

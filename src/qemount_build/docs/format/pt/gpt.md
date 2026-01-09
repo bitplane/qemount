@@ -2,7 +2,7 @@
 title: GPT
 created: 2000
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 512
     type: string

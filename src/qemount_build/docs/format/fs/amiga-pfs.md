@@ -2,9 +2,9 @@
 title: Amiga PFS
 created: 1993
 related:
-  - fs/amiga-ffs
-  - fs/amiga-sfs
-  - pt/amiga-rdb
+  - format/fs/amiga-ffs
+  - format/fs/amiga-sfs
+  - format/pt/amiga-rdb
 detect:
   - offset: 0
     type: string

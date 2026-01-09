@@ -2,8 +2,8 @@
 title: FAT12
 created: 1977
 related:
-  - fs/fat16
-  - fs/fat32
+  - format/fs/fat16
+  - format/fs/fat32
 detect:
   # FAT detection is complex - based on BPB fields not simple magic.
   # FAT12 is determined by cluster count < 4085, but we can use heuristics.

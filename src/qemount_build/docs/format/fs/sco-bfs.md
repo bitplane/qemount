@@ -2,8 +2,8 @@
 title: SCO BFS
 created: 1989
 related:
-  - fs/sysv
-  - fs/minix
+  - format/fs/sysv
+  - format/fs/minix
 detect:
   - type: le32
     value: 0x1badface

@@ -3,8 +3,8 @@ title: HFS+
 created: 1998
 discontinued: 2017
 related:
-  - fs/hfs
-  - fs/apfs
+  - format/fs/hfs
+  - format/fs/apfs
 detect:
   any:
     - offset: 0x400

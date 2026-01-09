@@ -2,8 +2,8 @@
 title: DragonFly BSD Disklabel
 created: 2003
 related:
-  - pt/bsd-disklabel
-  - fs/hammer2
+  - format/pt/bsd-disklabel
+  - format/fs/hammer2
 detect:
   - offset: 512
     type: le32

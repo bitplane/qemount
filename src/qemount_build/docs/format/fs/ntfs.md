@@ -2,8 +2,8 @@
 title: NTFS
 created: 1993
 related:
-  - fs/exfat
-  - fs/ext4
+  - format/fs/exfat
+  - format/fs/ext4
 detect:
   - offset: 0x03
     type: string

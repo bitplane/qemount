@@ -3,8 +3,8 @@ title: FAT16
 created: 1984
 discontinued: 2006
 related:
-  - fs/fat12
-  - fs/fat32
+  - format/fs/fat12
+  - format/fs/fat32
 detect:
   - offset: 0x1FE
     type: le16

@@ -2,8 +2,8 @@
 title: ext3
 created: 2001
 related:
-  - fs/ext2
-  - fs/ext4
+  - format/fs/ext2
+  - format/fs/ext4
 detect:
   - offset: 0x438
     type: le16

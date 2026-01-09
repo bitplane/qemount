@@ -2,8 +2,8 @@
 title: bcachefs
 created: 2015
 related:
-  - fs/btrfs
-  - fs/ext4
+  - format/fs/btrfs
+  - format/fs/ext4
 detect:
   - offset: 0x1018
     type: string

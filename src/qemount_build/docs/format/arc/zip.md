@@ -2,7 +2,7 @@
 title: ZIP
 created: 1989
 related:
-  - arc/tar
+  - format/arc/tar
 detect:
   - offset: 0
     type: le32

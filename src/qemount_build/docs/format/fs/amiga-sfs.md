@@ -2,9 +2,9 @@
 title: Amiga SFS
 created: 1998
 related:
-  - fs/amiga-ffs
-  - fs/amiga-ofs
-  - pt/amiga-rdb
+  - format/fs/amiga-ffs
+  - format/fs/amiga-ofs
+  - format/pt/amiga-rdb
 detect:
   - offset: 0
     type: string

@@ -2,26 +2,26 @@
 os: netbsd
 support:
   # filesystems
-  - fs/ext2
-  - fs/fat12
-  - fs/fat16
-  - fs/fat32
-  - fs/iso9660
-  - fs/highsierra
-  - fs/ufs1
-  - fs/ufs2
-  - fs/lfs
-  - fs/efs
-  - fs/amiga-ffs
-  - fs/amiga-ofs
-  - fs/filecore
+  - format/fs/ext2
+  - format/fs/fat12
+  - format/fs/fat16
+  - format/fs/fat32
+  - format/fs/iso9660
+  - format/fs/highsierra
+  - format/fs/ufs1
+  - format/fs/ufs2
+  - format/fs/lfs
+  - format/fs/efs
+  - format/fs/amiga-ffs
+  - format/fs/amiga-ofs
+  - format/fs/filecore
   # partition tables
-  - pt/mbr
-  - pt/gpt
-  - pt/bsd-disklabel
-  - pt/apm
-  - pt/amiga-rdb
-  - pt/atari
+  - format/pt/mbr
+  - format/pt/gpt
+  - format/pt/bsd-disklabel
+  - format/pt/apm
+  - format/pt/amiga-rdb
+  - format/pt/atari
   # transports
   - transport/9p
   - transport/sh

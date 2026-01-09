@@ -2,8 +2,8 @@
 title: Sun VTOC
 created: 1983
 related:
-  - fs/ufs1
-  - fs/ufs2
+  - format/fs/ufs1
+  - format/fs/ufs2
 detect:
   - offset: 508
     type: be16

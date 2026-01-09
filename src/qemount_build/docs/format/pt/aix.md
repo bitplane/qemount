@@ -2,7 +2,7 @@
 title: AIX
 created: 1986
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 0
     type: be32

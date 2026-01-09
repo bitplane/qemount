@@ -2,7 +2,7 @@
 title: SYSV68
 created: 1985
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 0x1FE
     type: be16

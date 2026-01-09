@@ -2,9 +2,9 @@
 title: ext4
 created: 2008
 related:
-  - fs/ext2
-  - fs/ext3
-  - fs/xfs
+  - format/fs/ext2
+  - format/fs/ext3
+  - format/fs/xfs
 detect:
   - offset: 0x438
     type: le16

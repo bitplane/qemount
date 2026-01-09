@@ -2,8 +2,8 @@
 title: Apple APM
 created: 1987
 related:
-  - fs/hfs
-  - fs/hfsplus
+  - format/fs/hfs
+  - format/fs/hfsplus
 detect:
   - offset: 0
     type: be16

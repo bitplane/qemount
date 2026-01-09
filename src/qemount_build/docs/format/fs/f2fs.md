@@ -2,8 +2,8 @@
 title: F2FS
 created: 2012
 related:
-  - fs/ext4
-  - fs/btrfs
+  - format/fs/ext4
+  - format/fs/btrfs
 detect:
   - offset: 0x400
     type: le32

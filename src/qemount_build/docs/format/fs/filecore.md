@@ -2,7 +2,7 @@
 title: Filecore
 created: 1987
 related:
-  - fs/adfs
+  - format/fs/adfs
 detect:
   # Detection via disc record structure at sector 0
   # Zone-based map with checksums

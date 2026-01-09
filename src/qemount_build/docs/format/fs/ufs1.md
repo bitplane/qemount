@@ -3,8 +3,8 @@ title: UFS1
 created: 1983
 discontinued: 2003
 related:
-  - fs/ufs2
-  - fs/ext2
+  - format/fs/ufs2
+  - format/fs/ext2
 detect:
   any:
     - offset: 0x255c

@@ -2,7 +2,7 @@
 title: NetWare
 created: 1983
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 510
     type: le16

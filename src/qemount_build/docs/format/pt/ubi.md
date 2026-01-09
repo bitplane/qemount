@@ -2,8 +2,8 @@
 title: UBI
 created: 2006
 related:
-  - fs/ubifs
-  - fs/jffs2
+  - format/fs/ubifs
+  - format/fs/jffs2
 detect:
   - offset: 0
     type: be32

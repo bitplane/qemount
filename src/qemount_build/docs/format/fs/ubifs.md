@@ -2,9 +2,9 @@
 title: UBIFS
 created: 2008
 related:
-  - pt/ubi
-  - fs/jffs2
-  - fs/f2fs
+  - format/pt/ubi
+  - format/fs/jffs2
+  - format/fs/f2fs
 detect:
   - offset: 0
     type: le32

@@ -2,9 +2,9 @@
 title: System V
 created: 1983
 related:
-  - fs/v7
-  - fs/sco-bfs
-  - fs/minix
+  - format/fs/v7
+  - format/fs/sco-bfs
+  - format/fs/minix
 detect:
   - offset: 0x3f8
     type: le32

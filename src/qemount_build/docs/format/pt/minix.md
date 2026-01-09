@@ -2,8 +2,8 @@
 title: Minix
 created: 1987
 related:
-  - fs/minix
-  - pt/mbr
+  - format/fs/minix
+  - format/pt/mbr
 detect:
   - offset: 510
     type: le16

@@ -2,8 +2,8 @@
 title: exFAT
 created: 2006
 related:
-  - fs/fat32
-  - fs/ntfs
+  - format/fs/fat32
+  - format/fs/ntfs
 detect:
   - offset: 0x03
     type: string

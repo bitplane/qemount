@@ -2,8 +2,8 @@
 title: cloop
 created: 1999
 related:
-  - disk/raw
-  - fs/squashfs
+  - format/disk/raw
+  - format/fs/squashfs
 detect:
   any:
     - offset: 0

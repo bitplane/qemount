@@ -2,8 +2,8 @@
 title: SquashFS
 created: 2002
 related:
-  - fs/cramfs
-  - fs/erofs
+  - format/fs/cramfs
+  - format/fs/erofs
 detect:
   any:
     - type: string

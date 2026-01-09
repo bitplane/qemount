@@ -2,8 +2,8 @@
 title: Protective MBR
 created: 2000
 related:
-  - pt/mbr
-  - pt/gpt
+  - format/pt/mbr
+  - format/pt/gpt
 detect:
   - offset: 510
     type: le16

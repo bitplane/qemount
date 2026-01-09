@@ -2,8 +2,8 @@
 title: ReFS
 created: 2012
 related:
-  - fs/ntfs
-  - fs/btrfs
+  - format/fs/ntfs
+  - format/fs/btrfs
 detect:
   - offset: 0
     type: string

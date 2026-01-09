@@ -2,8 +2,8 @@
 title: UFS2
 created: 2002
 related:
-  - fs/ufs1
-  - fs/zfs
+  - format/fs/ufs1
+  - format/fs/zfs
 detect:
   any:
     - offset: 0xa54c

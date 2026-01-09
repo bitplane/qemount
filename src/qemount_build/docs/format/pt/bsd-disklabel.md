@@ -2,8 +2,8 @@
 title: BSD Disklabel
 created: 1982
 related:
-  - fs/ufs1
-  - fs/ufs2
+  - format/fs/ufs1
+  - format/fs/ufs2
 detect:
   - offset: 512
     type: le32

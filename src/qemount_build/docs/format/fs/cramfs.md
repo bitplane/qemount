@@ -2,8 +2,8 @@
 title: CramFS
 created: 1999
 related:
-  - fs/squashfs
-  - fs/romfs
+  - format/fs/squashfs
+  - format/fs/romfs
 detect:
   any:
     - type: le32

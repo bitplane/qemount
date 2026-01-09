@@ -2,8 +2,8 @@
 title: RomFS
 created: 1997
 related:
-  - fs/cramfs
-  - fs/squashfs
+  - format/fs/cramfs
+  - format/fs/squashfs
 detect:
   - type: string
     value: "-rom1fs-"

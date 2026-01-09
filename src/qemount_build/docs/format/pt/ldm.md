@@ -2,8 +2,8 @@
 title: LDM
 created: 2000
 related:
-  - pt/gpt
-  - pt/mbr
+  - format/pt/gpt
+  - format/pt/mbr
 detect:
   - offset: 0
     type: string

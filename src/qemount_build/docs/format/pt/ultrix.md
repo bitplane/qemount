@@ -2,7 +2,7 @@
 title: Ultrix
 created: 1984
 related:
-  - pt/bsd-disklabel
+  - format/pt/bsd-disklabel
 detect:
   - offset: 0
     type: le32

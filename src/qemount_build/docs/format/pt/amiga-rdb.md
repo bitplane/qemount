@@ -2,8 +2,8 @@
 title: Amiga RDB
 created: 1985
 related:
-  - fs/amiga-ffs
-  - fs/amiga-ofs
+  - format/fs/amiga-ffs
+  - format/fs/amiga-ofs
 detect:
   - offset: 0
     type: string

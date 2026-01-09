@@ -2,8 +2,8 @@
 title: XFS
 created: 1993
 related:
-  - fs/ext4
-  - fs/btrfs
+  - format/fs/ext4
+  - format/fs/btrfs
 detect:
   - type: be32
     value: 0x58465342

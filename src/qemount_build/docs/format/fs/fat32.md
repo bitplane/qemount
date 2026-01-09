@@ -2,9 +2,9 @@
 title: FAT32
 created: 1996
 related:
-  - fs/fat12
-  - fs/fat16
-  - fs/exfat
+  - format/fs/fat12
+  - format/fs/fat16
+  - format/fs/exfat
 detect:
   - offset: 0x1FE
     type: le16

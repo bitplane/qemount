@@ -2,8 +2,8 @@
 title: OpenBSD Disklabel
 created: 1996
 related:
-  - pt/bsd-disklabel
-  - fs/ufs1
+  - format/pt/bsd-disklabel
+  - format/fs/ufs1
 detect:
   - offset: 512
     type: le32

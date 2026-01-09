@@ -2,7 +2,7 @@
 title: cpio
 created: 1977
 related:
-  - arc/tar
+  - format/arc/tar
 detect:
   any:
     - offset: 0

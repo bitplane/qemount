@@ -2,9 +2,9 @@
 title: Btrfs
 created: 2007
 related:
-  - fs/bcachefs
-  - fs/zfs
-  - fs/ext4
+  - format/fs/bcachefs
+  - format/fs/zfs
+  - format/fs/ext4
 detect:
   - offset: 0x10040
     type: string

@@ -2,7 +2,7 @@
 title: CP/M-86
 created: 1981
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 0x1C2
     type: u8

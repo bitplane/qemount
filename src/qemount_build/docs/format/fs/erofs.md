@@ -2,8 +2,8 @@
 title: EROFS
 created: 2018
 related:
-  - fs/squashfs
-  - fs/cramfs
+  - format/fs/squashfs
+  - format/fs/cramfs
 detect:
   - offset: 0x400
     type: le32

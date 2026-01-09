@@ -2,8 +2,8 @@
 title: NILFS2
 created: 2005
 related:
-  - fs/btrfs
-  - fs/f2fs
+  - format/fs/btrfs
+  - format/fs/f2fs
 detect:
   - offset: 0x406
     type: le16

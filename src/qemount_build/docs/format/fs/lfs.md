@@ -2,8 +2,8 @@
 title: LFS
 created: 1992
 related:
-  - fs/nilfs2
-  - fs/f2fs
+  - format/fs/nilfs2
+  - format/fs/f2fs
 detect:
   - type: le32
     value: 0x00070162

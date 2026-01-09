@@ -2,8 +2,8 @@
 title: Parallels
 created: 2006
 related:
-  - disk/vmdk
-  - disk/vdi
+  - format/disk/vmdk
+  - format/disk/vdi
 detect:
   any:
     - offset: 0

@@ -2,7 +2,7 @@
 title: Plan 9
 created: 1992
 related:
-  - pt/mbr
+  - format/pt/mbr
 detect:
   - offset: 0x1BE
     type: u8

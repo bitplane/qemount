@@ -3,8 +3,8 @@ title: QED
 created: 2010
 discontinued: 2014
 related:
-  - disk/qcow2
-  - disk/qcow
+  - format/disk/qcow2
+  - format/disk/qcow
 detect:
   - offset: 0
     type: le32

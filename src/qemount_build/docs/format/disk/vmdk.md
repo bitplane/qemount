@@ -2,9 +2,9 @@
 title: VMDK
 created: 1999
 related:
-  - disk/vdi
-  - disk/vhd
-  - disk/qcow2
+  - format/disk/vdi
+  - format/disk/vhd
+  - format/disk/qcow2
 detect:
   any:
     - offset: 0

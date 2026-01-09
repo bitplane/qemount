@@ -2,7 +2,7 @@
 title: gzip
 created: 1992
 related:
-  - arc/tar
+  - format/arc/tar
 detect:
   - offset: 0
     type: le16

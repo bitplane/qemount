@@ -2,8 +2,8 @@
 title: VxFS
 created: 1991
 related:
-  - fs/ext4
-  - fs/xfs
+  - format/fs/ext4
+  - format/fs/xfs
 detect:
   - offset: 0x2000
     type: le32

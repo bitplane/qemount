@@ -3,8 +3,8 @@ title: ReiserFS
 created: 2001
 discontinued: 2006
 related:
-  - fs/ext3
-  - fs/btrfs
+  - format/fs/ext3
+  - format/fs/btrfs
 detect:
   any:
     - offset: 0x10034

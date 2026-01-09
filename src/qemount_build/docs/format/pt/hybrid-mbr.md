@@ -2,8 +2,8 @@
 title: Hybrid MBR
 created: 2006
 related:
-  - pt/mbr
-  - pt/gpt
+  - format/pt/mbr
+  - format/pt/gpt
 detect:
   - offset: 510
     type: le16

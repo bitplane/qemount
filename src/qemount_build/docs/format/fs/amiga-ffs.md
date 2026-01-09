@@ -3,7 +3,7 @@ title: Amiga FFS
 created: 1988
 discontinued: 1994
 related:
-  - fs/amiga-ofs
+  - format/fs/amiga-ofs
 detect:
   - type: string
     value: "DOS"

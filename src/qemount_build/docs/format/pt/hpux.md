@@ -2,8 +2,8 @@
 title: HP-UX LIF/VTOC
 created: 1984
 related:
-  - pt/sun
-  - pt/gpt
+  - format/pt/sun
+  - format/pt/gpt
 detect:
   - offset: 0
     type: be16

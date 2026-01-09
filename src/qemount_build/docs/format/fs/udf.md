@@ -2,7 +2,7 @@
 title: UDF
 created: 1995
 related:
-  - fs/iso9660
+  - format/fs/iso9660
 detect:
   - offset: 0x8001
     type: string

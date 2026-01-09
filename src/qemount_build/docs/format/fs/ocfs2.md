@@ -2,8 +2,8 @@
 title: OCFS2
 created: 2004
 related:
-  - fs/gfs2
-  - fs/ext4
+  - format/fs/gfs2
+  - format/fs/ext4
 detect:
   - offset: 0x2000
     type: string

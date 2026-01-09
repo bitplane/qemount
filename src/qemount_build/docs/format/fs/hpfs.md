@@ -3,8 +3,8 @@ title: HPFS
 created: 1989
 discontinued: 2005
 related:
-  - fs/ntfs
-  - fs/fat16
+  - format/fs/ntfs
+  - format/fs/fat16
 detect:
   - offset: 0x2000
     type: le32

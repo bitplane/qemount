@@ -2,8 +2,8 @@
 title: MBR/DOS
 created: 1983
 related:
-  - pt/gpt
-  - pt/minix
+  - format/pt/gpt
+  - format/pt/minix
 detect:
   - offset: 510
     type: le16

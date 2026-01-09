@@ -2,9 +2,9 @@
 title: DMG
 created: 2000
 related:
-  - disk/raw
-  - fs/hfsplus
-  - fs/apfs
+  - format/disk/raw
+  - format/fs/hfsplus
+  - format/fs/apfs
 detect:
   any:
     - offset: -512

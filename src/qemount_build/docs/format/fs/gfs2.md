@@ -2,8 +2,8 @@
 title: GFS2
 created: 2006
 related:
-  - fs/ocfs2
-  - fs/ext4
+  - format/fs/ocfs2
+  - format/fs/ext4
 detect:
   - offset: 0x10000
     type: be32

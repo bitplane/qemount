@@ -3,8 +3,8 @@ title: HFS
 created: 1985
 discontinued: 1998
 related:
-  - fs/hfsplus
-  - fs/amiga-ffs
+  - format/fs/hfsplus
+  - format/fs/amiga-ffs
 detect:
   - offset: 0x400
     type: be16

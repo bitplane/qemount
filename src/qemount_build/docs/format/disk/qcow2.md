@@ -2,9 +2,9 @@
 title: QCOW2
 created: 2008
 related:
-  - disk/qcow
-  - disk/qed
-  - disk/raw
+  - format/disk/qcow
+  - format/disk/qed
+  - format/disk/raw
 detect:
   - offset: 0
     type: be32

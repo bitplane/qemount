@@ -3,8 +3,8 @@ title: QCOW
 created: 2004
 discontinued: 2008
 related:
-  - disk/qcow2
-  - disk/raw
+  - format/disk/qcow2
+  - format/disk/raw
 detect:
   - offset: 0
     type: be32

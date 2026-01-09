@@ -2,8 +2,8 @@
 title: Acorn
 created: 1987
 related:
-  - fs/adfs
-  - fs/filecore
+  - format/fs/adfs
+  - format/fs/filecore
 detect:
   - offset: 0x1C0
     type: u8

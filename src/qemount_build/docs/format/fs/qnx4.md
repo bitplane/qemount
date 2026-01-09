@@ -3,7 +3,7 @@ title: QNX4
 created: 1990
 discontinued: 2004
 related:
-  - fs/qnx6
+  - format/fs/qnx6
 detect:
   - offset: 0
     type: le16

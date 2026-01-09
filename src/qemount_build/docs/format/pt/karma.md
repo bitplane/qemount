@@ -2,7 +2,7 @@
 title: Rio Karma
 created: 2003
 related:
-  - fs/omfs
+  - format/fs/omfs
 detect:
   - offset: 0
     type: string

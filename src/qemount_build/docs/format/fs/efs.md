@@ -3,7 +3,7 @@ title: EFS
 created: 1988
 discontinued: 1994
 related:
-  - fs/xfs
+  - format/fs/xfs
 detect:
   - offset: 0x200
     type: be32

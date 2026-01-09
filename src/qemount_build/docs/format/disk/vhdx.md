@@ -2,8 +2,8 @@
 title: VHDX
 created: 2012
 related:
-  - disk/vhd
-  - disk/vmdk
+  - format/disk/vhd
+  - format/disk/vmdk
 detect:
   - offset: 0
     type: string

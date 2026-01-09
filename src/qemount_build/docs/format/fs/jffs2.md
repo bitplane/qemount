@@ -2,8 +2,8 @@
 title: JFFS2
 created: 2001
 related:
-  - fs/ubifs
-  - fs/squashfs
+  - format/fs/ubifs
+  - format/fs/squashfs
 detect:
   - offset: 0
     type: le16

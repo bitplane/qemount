@@ -2,8 +2,8 @@
 title: Bochs
 created: 1994
 related:
-  - disk/raw
-  - disk/qcow2
+  - format/disk/raw
+  - format/disk/qcow2
 detect:
   - offset: 0
     type: string

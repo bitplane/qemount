@@ -2,8 +2,8 @@
 title: HAMMER2
 created: 2017
 related:
-  - fs/zfs
-  - fs/btrfs
+  - format/fs/zfs
+  - format/fs/btrfs
 detect:
   - offset: 0x10000
     type: string

@@ -2,8 +2,8 @@
 title: SGI DVH
 created: 1988
 related:
-  - fs/efs
-  - fs/xfs
+  - format/fs/efs
+  - format/fs/xfs
 detect:
   - offset: 0
     type: be32

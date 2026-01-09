@@ -3,7 +3,7 @@ title: BeOS BFS
 created: 1996
 discontinued: 2001
 related:
-  - fs/hfsplus
+  - format/fs/hfsplus
 detect:
   - offset: 0x20
     type: be32

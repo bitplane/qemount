@@ -2,8 +2,8 @@
 title: ZFS
 created: 2005
 related:
-  - fs/btrfs
-  - fs/bcachefs
+  - format/fs/btrfs
+  - format/fs/bcachefs
 detect:
   - offset: 0x2000
     type: le64

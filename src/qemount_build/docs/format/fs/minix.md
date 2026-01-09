@@ -2,8 +2,8 @@
 title: Minix
 created: 1987
 related:
-  - fs/ext2
-  - fs/v7
+  - format/fs/ext2
+  - format/fs/v7
 detect:
   any:
     - offset: 0x410

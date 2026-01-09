@@ -2,9 +2,9 @@
 title: VHD
 created: 2003
 related:
-  - disk/vhdx
-  - disk/vmdk
-  - disk/vdi
+  - format/disk/vhdx
+  - format/disk/vmdk
+  - format/disk/vdi
 detect:
   any:
     - offset: 0

@@ -2,9 +2,9 @@
 title: ext2
 created: 1993
 related:
-  - fs/ext3
-  - fs/ext4
-  - fs/minix
+  - format/fs/ext3
+  - format/fs/ext4
+  - format/fs/minix
 detect:
   - offset: 0x438
     type: le16

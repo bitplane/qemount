@@ -2,8 +2,8 @@
 title: QNX4 Partition Table
 created: 1990
 related:
-  - fs/qnx4
-  - fs/qnx6
+  - format/fs/qnx4
+  - format/fs/qnx6
 detect:
   - offset: 510
     type: le16

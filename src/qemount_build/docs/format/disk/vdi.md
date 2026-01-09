@@ -2,9 +2,9 @@
 title: VDI
 created: 2007
 related:
-  - disk/vmdk
-  - disk/vhd
-  - disk/qcow2
+  - format/disk/vmdk
+  - format/disk/vhd
+  - format/disk/qcow2
 detect:
   - offset: 0x40
     type: le32

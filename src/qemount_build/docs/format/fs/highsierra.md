@@ -3,8 +3,8 @@ title: High Sierra
 created: 1986
 discontinued: 1988
 related:
-  - fs/iso9660
-  - fs/udf
+  - format/fs/iso9660
+  - format/fs/udf
 detect:
   - offset: 0x8001
     type: string

@@ -2,7 +2,7 @@
 title: tar
 created: 1979
 related:
-  - arc/cpio
+  - format/arc/cpio
 detect:
   any:
     - offset: 257

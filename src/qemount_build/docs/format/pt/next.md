@@ -2,8 +2,8 @@
 title: NeXT Disklabel
 created: 1988
 related:
-  - pt/bsd-disklabel
-  - pt/apm
+  - format/pt/bsd-disklabel
+  - format/pt/apm
 detect:
   - offset: 0
     type: be32

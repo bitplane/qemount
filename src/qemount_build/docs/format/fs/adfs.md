@@ -2,7 +2,7 @@
 title: ADFS
 created: 1983
 related:
-  - fs/filecore
+  - format/fs/filecore
 detect:
   - offset: 0
     type: le16
