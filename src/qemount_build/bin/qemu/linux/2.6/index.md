@@ -1,5 +1,9 @@
 ---
-os: linux
+title: Linux 2.6 Guest
+env:
+  BUILDER: builder/compiler/linux/2:${HOST_ARCH}
+requires:
+  - docker:${BUILDER}
 support:
   # filesystems
   - format/fs/ext2
@@ -11,7 +15,6 @@ support:
   - format/fs/fat12
   - format/fs/fat16
   - format/fs/fat32
-  - format/fs/exfat
   - format/fs/sco-bfs
   - format/fs/iso9660
   - format/fs/highsierra
@@ -29,7 +32,6 @@ support:
   - format/fs/amiga-ofs
   - format/fs/romfs
   - format/fs/qnx4
-  - format/fs/qnx6
   - format/fs/adfs
   - format/fs/udf
   - format/fs/omfs
@@ -38,12 +40,10 @@ support:
   - format/fs/nilfs2
   - format/fs/beos-bfs
   - format/fs/gfs2
-  - format/fs/f2fs
-  - format/fs/bcachefs
-  - format/fs/erofs
+  - format/fs/ocfs2
   - format/fs/btrfs
+  - format/fs/reiserfs
   - format/fs/jffs2
-  - format/fs/ubifs
   # partition tables
   - format/pt/mbr
   - format/pt/gpt
@@ -53,14 +53,12 @@ support:
   - format/pt/atari
   - format/pt/sun
   - format/pt/sgi
-  - format/pt/ldm
   - format/pt/minix
   - format/pt/ubi
   - format/pt/acorn
   - format/pt/aix
   - format/pt/ultrix
   - format/pt/sysv68
-  - format/pt/karma
   - format/pt/osf
   - format/pt/hpux
   - format/pt/qnx4
@@ -71,13 +69,13 @@ support:
   - transport/sh
 ---
 
-# Linux 6.17 Guest
+# Linux 2.6 Guest
 
-Linux kernel with busybox. Can mount any filesystems that are built in, listed
-in the front-matter above.
+Linux 2.6.39 kernel with busybox. This older kernel supports legacy filesystems
+that were removed from modern Linux. Only supports x86/x86_64.
 
-## Modes
+## Known Issues
 
-* `9p`
-* `sh`
-
+- `fs/sysv`: Symlink creation crashes (NULL pointer in sysv_symlink)
+- `fs/v7`: May have compatibility issues
+- `fs/ntfs`: Read-only via old ntfs driver (not ntfs3)

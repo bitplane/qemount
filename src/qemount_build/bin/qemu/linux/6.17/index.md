@@ -1,5 +1,9 @@
 ---
-os: linux
+title: Linux 6.17 Guest
+env:
+  BUILDER: builder/compiler/linux/6:${HOST_ARCH}
+requires:
+  - docker:${BUILDER}
 support:
   # filesystems
   - format/fs/ext2
@@ -11,6 +15,7 @@ support:
   - format/fs/fat12
   - format/fs/fat16
   - format/fs/fat32
+  - format/fs/exfat
   - format/fs/sco-bfs
   - format/fs/iso9660
   - format/fs/highsierra
@@ -28,6 +33,7 @@ support:
   - format/fs/amiga-ofs
   - format/fs/romfs
   - format/fs/qnx4
+  - format/fs/qnx6
   - format/fs/adfs
   - format/fs/udf
   - format/fs/omfs
@@ -36,10 +42,12 @@ support:
   - format/fs/nilfs2
   - format/fs/beos-bfs
   - format/fs/gfs2
-  - format/fs/ocfs2
+  - format/fs/f2fs
+  - format/fs/bcachefs
+  - format/fs/erofs
   - format/fs/btrfs
-  - format/fs/reiserfs
   - format/fs/jffs2
+  - format/fs/ubifs
   # partition tables
   - format/pt/mbr
   - format/pt/gpt
@@ -49,12 +57,14 @@ support:
   - format/pt/atari
   - format/pt/sun
   - format/pt/sgi
+  - format/pt/ldm
   - format/pt/minix
   - format/pt/ubi
   - format/pt/acorn
   - format/pt/aix
   - format/pt/ultrix
   - format/pt/sysv68
+  - format/pt/karma
   - format/pt/osf
   - format/pt/hpux
   - format/pt/qnx4
@@ -65,35 +75,7 @@ support:
   - transport/sh
 ---
 
-# Linux 2.6 Guest
+# Linux 6.17 Guest
 
-Linux 2.6.39 kernel with busybox. This older kernel supports legacy filesystems
-that were removed from modern Linux, including ReiserFS and OCFS2.
-
-## Modes
-
-* `9p`
-* `sh`
-
-## Legacy Filesystem Support
-
-This guest is useful for accessing:
-- ReiserFS (removed in Linux 6.13)
-- OCFS2 (cluster filesystem)
-- Older filesystem variants
-
-## Known Issues
-
-- `fs/sysv`: Symlink creation crashes (NULL pointer in sysv_symlink)
-- `fs/v7`: May have compatibility issues
-- `fs/ntfs`: Read-only via old ntfs driver (not ntfs3)
-
-## Not Supported
-
-Filesystems added after 2.6.39:
-- exFAT (added 5.4)
-- F2FS (added 3.8)
-- bcachefs (added 6.7)
-- EROFS (added 5.4)
-- QNX6 (added 4.3)
-- UBIFS (added 2.6.27, may work)
+Modern Linux kernel with busybox. Supports latest filesystems including bcachefs,
+exFAT, F2FS, and EROFS. Supports x86_64 and aarch64.

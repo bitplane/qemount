@@ -1,2 +1,0 @@
-guests/linux/6.17/$(ARCH)/kernel
-guests/linux/6.17/$(ARCH)/meta.conf
