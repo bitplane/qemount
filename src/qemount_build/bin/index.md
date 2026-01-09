@@ -3,7 +3,9 @@ title: Binaries
 arch:
   - ${ARCH}
 env:
+  HOST_ARCH: ${HOST_ARCH}
   ARCH: ${ARCH}
+  PATH: ${PATH}
 ---
 
 # Binaries
