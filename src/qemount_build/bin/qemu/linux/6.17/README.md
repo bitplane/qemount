@@ -1,5 +1,4 @@
 ---
-type: guest
 os: linux
 support:
   # filesystems

@@ -1,7 +1,5 @@
 ---
 title: CPU Architecture
-type: category
-path: arch
 ---
 
 # CPU Architecture

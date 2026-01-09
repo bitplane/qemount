@@ -1,5 +1,4 @@
 ---
-type: testdata
 format: fs/fat12
 ---
 

@@ -1,7 +1,5 @@
 ---
 title: Disk Image Test Data
-type: category
-path: data/disk
 builder: builder/disk-tools
 ---
 

@@ -1,7 +1,5 @@
 ---
 title: Filesystems
-type: category
-path: fs
 ---
 
 # Filesystems

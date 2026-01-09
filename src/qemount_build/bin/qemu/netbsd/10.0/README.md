@@ -1,5 +1,4 @@
 ---
-type: guest
 os: netbsd
 support:
   # filesystems

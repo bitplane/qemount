@@ -1,7 +1,5 @@
 ---
 title: Archive Test Data
-type: category
-path: data/arc
 builder: builder/disk-tools
 ---
 

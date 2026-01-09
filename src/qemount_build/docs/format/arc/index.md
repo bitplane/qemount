@@ -1,7 +1,5 @@
 ---
 title: Archive Files
-type: category
-path: arc
 ---
 
 # Archives

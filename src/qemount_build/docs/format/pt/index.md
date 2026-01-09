@@ -1,7 +1,5 @@
 ---
 title: Partition Table
-type: category
-path: pt
 ---
 
 # Partition Tables

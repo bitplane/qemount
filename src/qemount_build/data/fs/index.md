@@ -1,7 +1,5 @@
 ---
 title: Filesystem Test Data
-type: category
-path: data/fs
 builder: builder/disk-tools
 ---
 

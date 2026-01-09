@@ -1,7 +1,5 @@
 ---
 title: Clients
-type: category
-path: client
 ---
 
 # Qemount Clients

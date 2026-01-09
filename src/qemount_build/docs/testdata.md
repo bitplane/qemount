@@ -1,7 +1,5 @@
 ---
 title: Test Data
-type: category
-path: testdata
 ---
 
 # Test data

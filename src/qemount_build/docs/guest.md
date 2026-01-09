@@ -1,7 +1,5 @@
 ---
 title: Guest Operating Systems
-type: category
-path: guest
 ---
 
 # Guest OSes

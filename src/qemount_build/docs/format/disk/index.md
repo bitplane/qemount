@@ -1,7 +1,5 @@
 ---
 title: Disk Images
-type: category
-path: disk
 ---
 
 # Disk Images

@@ -1,7 +1,5 @@
 ---
 title: Test Data
-type: category
-path: data
 ---
 
 # Test Data Builders
