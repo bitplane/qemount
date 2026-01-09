@@ -1,10 +1,10 @@
 # Build output
 /build
 *.log
-*.lock
 *.swp
 *.img
 
 __pycache__
 .coverage
 htmlcov
+*.json
