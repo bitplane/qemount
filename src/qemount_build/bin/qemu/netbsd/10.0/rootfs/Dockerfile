@@ -1,7 +1,7 @@
 ARG BUILDER
 FROM ${BUILDER}
 
-WORKDIR /usr/src
+WORKDIR /work
 ADD build.sh /build.sh
-ADD QEMOUNT /QEMOUNT
+ADD root /root
 RUN chmod +x /build.sh
