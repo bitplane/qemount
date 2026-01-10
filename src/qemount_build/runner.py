@@ -11,6 +11,15 @@ from pathlib import Path
 from .catalogue import resolve_path, build_graph
 
 
+def image_exists(tag: str) -> bool:
+    """Check if a container image exists."""
+    result = subprocess.run(
+        ["podman", "image", "exists", tag],
+        capture_output=True,
+    )
+    return result.returncode == 0
+
+
 def build_image(context_dir: Path, tag: str, arch: str, host_arch: str) -> bool:
     """Build a container image."""
     print(f"Building image: {tag}")
@@ -23,7 +32,12 @@ def build_image(context_dir: Path, tag: str, arch: str, host_arch: str) -> bool:
         ],
         cwd=context_dir,
     )
-    return result.returncode == 0
+    if result.returncode != 0:
+        return False
+    if not image_exists(tag):
+        print(f"Failed: image {tag} was not created")
+        return False
+    return True
 
 
 def run_container(image: str, build_dir: Path, env: dict) -> bool:
@@ -110,6 +124,10 @@ def run_build(
 
             if not run_container(image, build_dir, env):
                 print(f"Failed to run: {path}")
+                return False
+
+            if not output_path.exists():
+                print(f"Failed: {output} was not created")
                 return False
 
     print("Build complete")

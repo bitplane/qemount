@@ -2,7 +2,7 @@
 format: fs/beos-bfs
 requires:
   - data/templates/basic.tar
-  - docker:builder/compiler/haiku:${HOST_ARCH}
+  - docker:builder/disk/haiku:${HOST_ARCH}
 provides:
   - data/fs/basic.beos-bfs
 ---

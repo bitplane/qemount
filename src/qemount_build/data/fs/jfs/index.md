@@ -1,7 +1,7 @@
 ---
 format: fs/jfs
 requires:
-  - docker:builder/qemu-builder:${HOST_ARCH}
+  - docker:builder/disk/qemu:${HOST_ARCH}
   - data/fs/basic.ext2
   - bin/qemu/linux-${HOST_ARCH}/6.17/boot/kernel
   - bin/qemu/linux-${HOST_ARCH}/6.17/boot/rootfs.img
