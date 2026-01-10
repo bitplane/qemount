@@ -13,6 +13,7 @@ import platform
 from pathlib import Path
 
 from .catalogue import load, build_provides_index, build_graph
+from .runner import run_build
 
 
 def get_default_arch():
@@ -59,6 +60,23 @@ def cmd_deps(args, catalogue, context):
     return 0
 
 
+def cmd_build(args, catalogue, context):
+    """Build a target and its dependencies."""
+    pkg_dir = Path(__file__).parent
+    build_dir = Path("build").absolute()
+    build_dir.mkdir(exist_ok=True)
+
+    success = run_build(
+        args.target,
+        catalogue,
+        context,
+        build_dir,
+        pkg_dir,
+        force=args.force,
+    )
+    return 0 if success else 1
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="qemount_build",
@@ -95,6 +113,14 @@ def main():
         "--order", action="store_true", help="Print only build order, one per line"
     )
     deps_parser.set_defaults(func=cmd_deps)
+
+    # build
+    build_parser = subparsers.add_parser("build", help="Build a target")
+    build_parser.add_argument("target", help="Target output to build")
+    build_parser.add_argument(
+        "-f", "--force", action="store_true", help="Force rebuild even if exists"
+    )
+    build_parser.set_defaults(func=cmd_build)
 
     args = parser.parse_args()
 
