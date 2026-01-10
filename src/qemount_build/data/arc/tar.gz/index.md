@@ -1,9 +1,9 @@
 ---
 format: arc/tar
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/arc/basic.tar.gz
+  - data/arc/basic.tar.gz
 ---
 
 # tar.gz Test Archive

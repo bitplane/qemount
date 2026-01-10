@@ -1,9 +1,9 @@
 ---
 format: arc/cpio
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/arc/basic.cpio
+  - data/arc/basic.cpio
 ---
 
 # cpio Test Archive

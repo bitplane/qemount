@@ -1,9 +1,9 @@
 ---
 format: fs/iso9660
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.iso9660
+  - data/fs/basic.iso9660
 ---
 
 # iso9660 Test Image

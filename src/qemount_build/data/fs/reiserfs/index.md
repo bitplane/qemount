@@ -1,11 +1,11 @@
 ---
 format: fs/reiserfs
 requires:
-  - build/data/fs/basic.ext2
+  - data/fs/basic.ext2
   - bin/qemu/linux-x86_64/2.6/boot/kernel
   - bin/qemu/linux-x86_64/2.6/boot/rootfs.img
 provides:
-  - build/data/fs/basic.reiserfs
+  - data/fs/basic.reiserfs
 ---
 
 # reiserfs Test Image

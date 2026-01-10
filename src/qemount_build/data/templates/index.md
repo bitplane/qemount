@@ -1,7 +1,7 @@
 ---
 title: Test Templates
 provides:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 ---
 
 # Test Templates

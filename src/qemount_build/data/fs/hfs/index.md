@@ -1,9 +1,9 @@
 ---
 format: fs/hfs
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.hfs
+  - data/fs/basic.hfs
 ---
 
 # hfs Test Image

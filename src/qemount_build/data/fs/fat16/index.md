@@ -1,9 +1,9 @@
 ---
 format: fs/fat16
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.fat16
+  - data/fs/basic.fat16
 ---
 
 # fat16 Test Image

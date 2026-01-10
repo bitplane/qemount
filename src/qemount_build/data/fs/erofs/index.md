@@ -1,9 +1,9 @@
 ---
 format: fs/erofs
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.erofs
+  - data/fs/basic.erofs
 ---
 
 # erofs Test Image

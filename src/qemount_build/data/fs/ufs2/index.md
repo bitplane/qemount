@@ -1,9 +1,9 @@
 ---
 format: fs/ufs2
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.ufs2
+  - data/fs/basic.ufs2
 ---
 
 # ufs2 Test Image

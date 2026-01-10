@@ -116,6 +116,10 @@ def normalize_list(items: list) -> dict:
     return result
 
 
+# Keys that are NOT inherited from parent to child
+NO_INHERIT = {"provides", "requires"}
+
+
 def merge_meta(parent: dict, child: dict) -> dict:
     """
     Merge parent metadata into child.
@@ -124,15 +128,16 @@ def merge_meta(parent: dict, child: dict) -> dict:
     - Keys starting with "-" delete that key from parent
     - Lists are normalized to dicts before merging
     - Nested dicts are merged recursively
+    - Keys in NO_INHERIT are not copied from parent
     """
     result = {}
 
     # Collect deletion markers from child
     deletions = {k[1:] for k in child if isinstance(k, str) and k.startswith("-")}
 
-    # Copy parent keys that aren't deleted
+    # Copy parent keys that aren't deleted and aren't in NO_INHERIT
     for key, value in parent.items():
-        if key in deletions:
+        if key in deletions or key in NO_INHERIT:
             continue
         result[key] = value
 
@@ -298,3 +303,72 @@ def resolve_path(path: str, catalogue: dict, context: dict) -> dict:
     # Resolve all metadata values
     meta = paths[path]["meta"]
     return resolve_value(meta, ctx)
+
+
+def build_provides_index(catalogue: dict, context: dict) -> dict:
+    """
+    Build index mapping outputs to the paths that provide them.
+
+    Returns dict: {output: catalogue_path}
+    """
+    index = {}
+    for path in catalogue["paths"]:
+        meta = resolve_path(path, catalogue, context)
+        for output in meta.get("provides", {}):
+            if output in index:
+                raise ValueError(f"Duplicate provider for {output}: {index[output]} and {path}")
+            index[output] = path
+    return index
+
+
+def build_graph(target: str, catalogue: dict, context: dict) -> dict:
+    """
+    Build dependency graph for a target.
+
+    Returns dict with:
+        - nodes: {path: resolved_meta}
+        - edges: [(from_path, to_path), ...]
+        - target: the catalogue path that provides the target
+        - order: topologically sorted list of paths (dependencies first)
+    """
+    index = build_provides_index(catalogue, context)
+
+    if target not in index:
+        raise KeyError(f"No provider for target: {target}")
+
+    nodes = {}
+    edges = []
+    visited = set()
+    order = []
+
+    def visit(output: str, chain: list):
+        if output not in index:
+            raise KeyError(f"No provider for: {output} (required by {chain[-1] if chain else 'root'})")
+
+        path = index[output]
+
+        if path in chain:
+            cycle = chain[chain.index(path):] + [path]
+            raise ValueError(f"Dependency cycle: {' -> '.join(cycle)}")
+
+        if path in visited:
+            return
+
+        visited.add(path)
+        meta = resolve_path(path, catalogue, context)
+        nodes[path] = meta
+
+        for req in meta.get("requires", {}):
+            edges.append((path, index.get(req, req)))
+            visit(req, chain + [path])
+
+        order.append(path)
+
+    visit(target, [])
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "target": index[target],
+        "order": order,  # dependencies first, target last
+    }

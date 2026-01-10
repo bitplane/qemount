@@ -1,9 +1,9 @@
 ---
 format: fs/amiga-ffs
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.amiga-ffs
+  - data/fs/basic.amiga-ffs
 ---
 
 # amiga-ffs Test Image

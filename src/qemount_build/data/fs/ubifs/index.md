@@ -1,9 +1,9 @@
 ---
 format: fs/ubifs
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.ubifs
+  - data/fs/basic.ubifs
 ---
 
 # ubifs Test Image

@@ -1,9 +1,9 @@
 ---
 format: fs/squashfs
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.squashfs
+  - data/fs/basic.squashfs
 ---
 
 # squashfs Test Image

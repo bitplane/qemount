@@ -2,9 +2,9 @@
 format: fs/cramfs
 requires:
   - docker:builder/compiler/linux/6:${HOST_ARCH}
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.cramfs
+  - data/fs/basic.cramfs
 ---
 
 # cramfs Test Image

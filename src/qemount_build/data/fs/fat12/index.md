@@ -1,9 +1,9 @@
 ---
 format: fs/fat12
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.fat12
+  - data/fs/basic.fat12
 ---
 
 # fat12 Test Image

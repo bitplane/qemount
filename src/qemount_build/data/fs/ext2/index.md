@@ -1,9 +1,9 @@
 ---
 format: fs/ext2
 requires:
-  - build/data/templates/basic.tar
+  - data/templates/basic.tar
 provides:
-  - build/data/fs/basic.ext2
+  - data/fs/basic.ext2
 ---
 
 # ext2 Test Image

@@ -1,9 +1,9 @@
 ---
 format: pt/ubi
 requires:
-  - build/data/fs/basic.ubifs
+  - data/fs/basic.ubifs
 provides:
-  - build/data/disk/basic.ubi
+  - data/disk/basic.ubi
 ---
 
 # ubi Test Image
