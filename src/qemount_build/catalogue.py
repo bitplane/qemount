@@ -117,7 +117,7 @@ def normalize_list(items: list) -> dict:
 
 
 # Keys that are NOT inherited from parent to child
-NO_INHERIT = {"provides", "requires"}
+NO_INHERIT = {"provides"}
 
 
 def merge_meta(parent: dict, child: dict) -> dict:

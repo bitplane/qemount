@@ -4,6 +4,9 @@ env:
   HOST_ARCH: ${HOST_ARCH}
   ARCH: ${ARCH}
   PATH: ${PATH}
+  META: ${META}
+requires:
+  - docker:builder/downloader
 ---
 
 # Sources
