@@ -1,5 +1,5 @@
 .PHONY: help all install test dev coverage clean \
-		pre-commit update-pre-commit catalogue build archive
+		pre-commit update-pre-commit catalogue archive
 
 PROJECT_NAME := qemount_build
 
@@ -11,7 +11,7 @@ export ARCH
 export PLATFORM
 export REGISTRY
 
-all: catalogue build  ## build catalogue, generate makefiles, run builds
+all: catalogue  ## build catalogue (build system WIP)
 
 install: .venv/.installed  ## install the venv and project packages
 
@@ -25,9 +25,6 @@ coverage: .venv/.installed-dev scripts/coverage.sh  ## build the html coverage r
 
 catalogue: .venv/.installed-dev  ## build the catalogue from docs front-matter
 	@echo "TODO: run catalogue builder"
-
-build: catalogue build/Makefile  ## build all images
-	@$(MAKE) -C build all
 
 clean:  ## delete caches and the venv
 	scripts/clean.sh
@@ -45,15 +42,6 @@ release: scripts/release.sh  ## publish to pypi
 
 archive: scripts/archive.sh scripts/Dockerfile.archive  ## build complete archive in container
 	scripts/archive.sh
-
-# Generated build system
-METADATA := $(shell find src -name "inputs.txt" -o \
-			               -name "outputs.txt" -o \
-						   -name "Dockerfile" -o \
-						   -name "build.sh" 2>/dev/null)
-
-build/Makefile: src/qemount_build/generate_makefiles.py $(METADATA)
-	@./src/qemount_build/generate_makefiles.py
 
 # Python project infrastructure
 .venv/.installed: pyproject.toml .venv/bin/activate scripts/install.sh $(shell find src -name '*.py')
