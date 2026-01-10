@@ -6,9 +6,13 @@ into a flat dict keyed by relative path.
 """
 
 import hashlib
+import re
 from pathlib import Path
 
 import yaml
+
+
+VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -215,3 +219,82 @@ def load(root: Path) -> dict:
     paths = map_paths(files)
     paths = resolve_inheritance(files, paths)
     return {"files": files, "paths": paths}
+
+
+def resolve_vars(value: str, context: dict) -> str:
+    """
+    Replace ${VAR} with context values.
+
+    Unresolved variables are left as-is.
+    """
+    def replace(match):
+        var = match.group(1)
+        return str(context.get(var, match.group(0)))
+    return VAR_PATTERN.sub(replace, value)
+
+
+def resolve_value(value, context: dict):
+    """
+    Recursively resolve variables in a value.
+
+    Handles strings, lists, and dicts. Dict keys are also resolved.
+    """
+    if isinstance(value, str):
+        return resolve_vars(value, context)
+    if isinstance(value, list):
+        return [resolve_value(v, context) for v in value]
+    if isinstance(value, dict):
+        return {
+            resolve_vars(k, context) if isinstance(k, str) else k: resolve_value(v, context)
+            for k, v in value.items()
+        }
+    return value
+
+
+def resolve_env(env: dict, context: dict) -> dict:
+    """
+    Resolve env dict in definition order, accumulating into context.
+
+    Each key is resolved using current context, then added to context
+    for subsequent keys. Returns the updated context.
+    """
+    result = context.copy()
+    for key, value in env.items():
+        resolved = resolve_vars(value, result)
+        result[key] = resolved
+    return result
+
+
+def resolve_path(path: str, catalogue: dict, context: dict) -> dict:
+    """
+    Get fully resolved metadata for a path.
+
+    Walks ancestor chain resolving env at each level, then resolves
+    all metadata values using the final context.
+    """
+    paths = catalogue["paths"]
+
+    if path not in paths:
+        raise KeyError(f"Path not found: {path}")
+
+    # Build ancestor chain (root to leaf)
+    chain = []
+    current = path
+    while True:
+        if current in paths:
+            chain.append(current)
+        if not current:
+            break
+        current = parent_path(current)
+    chain.reverse()
+
+    # Walk chain, resolve env at each level
+    ctx = context.copy()
+    for ancestor in chain:
+        meta = paths[ancestor]["meta"]
+        if env := meta.get("env"):
+            ctx = resolve_env(env, ctx)
+
+    # Resolve all metadata values
+    meta = paths[path]["meta"]
+    return resolve_value(meta, ctx)
