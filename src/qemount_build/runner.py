@@ -48,6 +48,26 @@ def run_container(image: str, build_dir: Path, env: dict) -> bool:
     return result.returncode == 0
 
 
+def get_image_tag(resolved: dict) -> str | None:
+    """Extract image tag from runs_on, stripping docker: prefix."""
+    runs_on = resolved.get("runs_on")
+    if not runs_on:
+        return None
+    if not runs_on.startswith("docker:"):
+        raise ValueError(f"runs_on must start with 'docker:', got: {runs_on}")
+    return runs_on[7:]
+
+
+def get_docker_provides(provides: list) -> list:
+    """Get docker: provides, stripping prefix."""
+    return [p[7:] for p in provides if p.startswith("docker:")]
+
+
+def get_file_provides(provides: list) -> list:
+    """Get non-docker provides."""
+    return [p for p in provides if not p.startswith("docker:")]
+
+
 def run_build(
     target: str,
     catalogue: dict,
@@ -59,67 +79,68 @@ def run_build(
     """
     Build a target and all its dependencies.
 
-    Every path with provides must have a Dockerfile.
-    - docker:* provides → build image only
-    - other provides → build image, run it, verify outputs
+    Rules:
+    - docker: provides requires a Dockerfile
+    - file provides requires either Dockerfile or runs_on
+    - runs_on specifies which image to use when no Dockerfile
     """
     graph = build_graph(target, catalogue, context)
 
     for path in graph["order"]:
         path_context = {**context, "SELF": path}
-        meta = graph["nodes"][path]
-        provides = list(meta.get("provides", {}).keys())
-
-        if not provides:
-            print(f"Skipping {path}: no provides")
-            continue
-
-        # Check for Dockerfile
-        dockerfile_dir = pkg_dir / path
-        if not (dockerfile_dir / "Dockerfile").exists():
-            print(f"Error: {path} has provides but no Dockerfile")
-            return False
-
-        # Resolve path metadata to get env
         resolved = resolve_path(path, catalogue, path_context)
+        meta = graph["nodes"][path]
         env = resolved.get("env", {})
 
-        # Separate docker outputs from file outputs
-        docker_outputs = [p for p in provides if p.startswith("docker:")]
-        file_outputs = [p for p in provides if not p.startswith("docker:")]
+        provides = list(meta.get("provides", {}).keys())
+        if not provides:
+            continue
 
-        # Build the image
-        # Tag is either the docker: output or the path itself
-        if docker_outputs:
-            tag = docker_outputs[0][7:]  # strip docker: prefix
-        else:
-            tag = path
+        docker_tags = get_docker_provides(provides)
+        file_outputs = get_file_provides(provides)
+        dockerfile = pkg_dir / path / "Dockerfile"
+        runs_on_tag = get_image_tag(resolved)
 
-        if not build_image(dockerfile_dir, tag, env):
-            print(f"Failed to build image for: {path}")
+        # Validate: docker provides requires Dockerfile
+        if docker_tags and not dockerfile.exists():
+            print(f"Error: {path} provides docker image but has no Dockerfile")
             return False
 
-        # If there are file outputs, run the container to produce them
-        if file_outputs:
-            # Check if outputs already exist
-            all_exist = all(
-                (build_dir / output).exists() for output in file_outputs
-            )
-            if not force and all_exist:
-                print(f"Exists: {', '.join(file_outputs)}")
-                continue
+        # Validate: file provides requires Dockerfile or runs_on
+        if file_outputs and not dockerfile.exists() and not runs_on_tag:
+            print(f"Error: {path} provides files but has no Dockerfile or runs_on")
+            return False
 
-            env["META"] = json.dumps(meta)
-
-            if not run_container(tag, build_dir, env):
-                print(f"Failed to run: {path}")
+        # Build image if Dockerfile exists
+        if dockerfile.exists():
+            tag = docker_tags[0] if docker_tags else f"localhost/{path}"
+            if not build_image(dockerfile.parent, tag, env):
                 return False
 
-            # Verify outputs were created
-            for output in file_outputs:
-                if not (build_dir / output).exists():
-                    print(f"Failed: {output} was not created")
-                    return False
+        # Done if no file outputs
+        if not file_outputs:
+            continue
+
+        # Check if outputs already exist
+        if not force and all((build_dir / o).exists() for o in file_outputs):
+            print(f"Exists: {', '.join(file_outputs)}")
+            continue
+
+        # Use runs_on tag if no Dockerfile was built
+        if runs_on_tag:
+            tag = runs_on_tag
+
+        # Run container to produce file outputs
+        env["META"] = json.dumps(meta)
+        if not run_container(tag, build_dir, env):
+            print(f"Failed to run: {path}")
+            return False
+
+        # Verify outputs
+        for output in file_outputs:
+            if not (build_dir / output).exists():
+                print(f"Failed: {output} was not created")
+                return False
 
     print("Build complete")
     return True

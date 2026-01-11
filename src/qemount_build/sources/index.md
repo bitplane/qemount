@@ -6,6 +6,7 @@ env:
   META: ${META}
 requires:
   - docker:builder/downloader
+runs_on: docker:builder/downloader
 ---
 
 # Sources
