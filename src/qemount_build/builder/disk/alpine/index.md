@@ -1,5 +1,7 @@
 ---
 title: Alpine Disk Builder
+build_requires:
+  - sources/cramfs-tools-2.1.tar.gz
 provides:
   - docker:builder/disk/alpine
 ---

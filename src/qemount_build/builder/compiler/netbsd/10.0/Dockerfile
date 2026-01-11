@@ -8,8 +8,6 @@ ARG ARCH
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     build-essential \
-    curl \
-    ca-certificates \
     tar \
     xz-utils \
     gzip \
@@ -37,20 +35,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /build
 
-# Download NetBSD 10.0 source
-# src.tgz = base source, syssrc.tgz = kernel, sharesrc.tgz = share/mk
-# gnusrc.tgz = external/gpl3 (binutils including mdsetimage)
-RUN curl -LO https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/src.tgz && \
-    curl -LO https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/syssrc.tgz && \
-    curl -LO https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/sharesrc.tgz && \
-    curl -LO https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/gnusrc.tgz
-
-# Extract source
+# Extract source from mounted build_requires
 RUN mkdir -p /usr/src && \
-    tar -xzf src.tgz -C / && \
-    tar -xzf syssrc.tgz -C / && \
-    tar -xzf sharesrc.tgz -C / && \
-    tar -xzf gnusrc.tgz -C /
+    tar -xzf /host/build/sources/netbsd-10.0-src.tgz -C / && \
+    tar -xzf /host/build/sources/netbsd-10.0-syssrc.tgz -C / && \
+    tar -xzf /host/build/sources/netbsd-10.0-sharesrc.tgz -C / && \
+    tar -xzf /host/build/sources/netbsd-10.0-gnusrc.tgz -C /
 
 WORKDIR /usr/src
 

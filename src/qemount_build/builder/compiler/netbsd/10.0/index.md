@@ -1,5 +1,10 @@
 ---
 title: NetBSD 10.0 Compiler
+build_requires:
+  - sources/netbsd-10.0-src.tgz
+  - sources/netbsd-10.0-syssrc.tgz
+  - sources/netbsd-10.0-sharesrc.tgz
+  - sources/netbsd-10.0-gnusrc.tgz
 provides:
   - docker:builder/compiler/netbsd/10.0:${HOST_ARCH}
 ---

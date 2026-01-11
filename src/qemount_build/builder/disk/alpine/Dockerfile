@@ -26,11 +26,11 @@ RUN apk add --no-cache \
 # Amiga filesystem tools
 RUN pip3 install --no-cache-dir --break-system-packages amitools
 
-# cramfs tools (not in Alpine repos)
-RUN apk add --no-cache --virtual .cramfs-deps git make gcc musl-dev zlib-dev zlib-static \
-    && git clone --depth 1 https://github.com/npitre/cramfs-tools.git /tmp/cramfs-tools \
-    && cd /tmp/cramfs-tools && make && cp mkcramfs /usr/local/bin/ \
-    && cd / && rm -rf /tmp/cramfs-tools && apk del .cramfs-deps
+# cramfs tools (not in Alpine repos, built from mounted source)
+RUN apk add --no-cache --virtual .cramfs-deps make gcc musl-dev zlib-dev zlib-static \
+    && tar -xzf /host/build/sources/cramfs-tools-2.1.tar.gz -C /tmp \
+    && cd /tmp/cramfs-tools-2.1 && make && cp mkcramfs /usr/local/bin/ \
+    && cd / && rm -rf /tmp/cramfs-tools-2.1 && apk del .cramfs-deps
 
 WORKDIR /build
 COPY build.sh /build/build.sh
