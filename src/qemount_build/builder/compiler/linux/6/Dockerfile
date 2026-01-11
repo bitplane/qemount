@@ -39,6 +39,3 @@ ENV LDFLAGS="-static"
 RUN mkdir -p /build /outputs /host/build
 WORKDIR /build
 
-# Copy deployment script
-COPY --chmod=755 deploy.sh /usr/local/bin/deploy.sh
-ENTRYPOINT ["/usr/local/bin/deploy.sh"]
