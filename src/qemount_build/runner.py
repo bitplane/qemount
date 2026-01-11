@@ -23,10 +23,28 @@ def image_exists(tag: str) -> bool:
     return result.returncode == 0
 
 
-def build_image(context_dir: Path, tag: str, env: dict) -> bool:
-    """Build a container image."""
+def build_image(
+    context_dir: Path,
+    tag: str,
+    env: dict,
+    build_requires: list[str] | None = None,
+    build_dir: Path | None = None,
+) -> bool:
+    """Build a container image.
+
+    If build_requires is provided, mount those paths from build_dir
+    into the build context as read-only volumes.
+    """
     log.info("Building image: %s", tag)
     cmd = ["podman", "build"]
+
+    # Mount build_requires as volumes
+    if build_requires and build_dir:
+        for req in build_requires:
+            src = build_dir / req
+            dest = Path("/host/build") / req
+            cmd.extend(["--volume", f"{src.absolute()}:{dest}:ro"])
+
     for key, value in env.items():
         cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
@@ -117,7 +135,9 @@ def run_build(
         # Build image if Dockerfile exists
         if dockerfile.exists():
             tag = docker_tags[0] if docker_tags else f"localhost/{path}"
-            if not build_image(dockerfile.parent, tag, env):
+            # Extract build_requires for volume mounts
+            build_requires = list(resolved.get("build_requires", {}).keys())
+            if not build_image(dockerfile.parent, tag, env, build_requires, build_dir):
                 return False
 
         # Done if no file outputs

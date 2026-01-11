@@ -3,9 +3,8 @@ FROM docker.io/haiku/toolchain-worker:latest
 ARG ARCH
 
 WORKDIR /src
-RUN git clone https://github.com/haiku/haiku.git && \
-    cd haiku && \
-    git checkout r1beta5
+RUN tar xzf /host/build/sources/haiku-r1beta5.tar.gz && \
+    mv haiku-r1beta5 haiku
 
 WORKDIR /src/haiku
 RUN mkdir -p generated && \

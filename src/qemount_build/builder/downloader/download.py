@@ -3,13 +3,20 @@
 Source downloader entrypoint.
 
 Reads META env var, downloads from urls, writes to provides path.
+
+Supports:
+- http/https URLs: direct download
+- git+https://...#tag: clone at tag, export as tarball
 """
 
 import json
 import logging
 import os
 import shutil
+import subprocess
 import sys
+import tarfile
+import tempfile
 import urllib.request
 from pathlib import Path
 
@@ -40,6 +47,51 @@ def download_file(url: str, dest: Path) -> bool:
         return False
 
 
+def clone_repo(url: str, dest: Path) -> bool:
+    """Clone a git repo and export as tarball.
+
+    URL format: git+https://github.com/user/repo.git#tag
+    """
+    dest.parent.mkdir(parents=True, exist_ok=True)
+
+    if "#" not in url:
+        log.warning("Git URL missing #tag: %s", url)
+        return False
+
+    repo_url, ref = url[4:].split("#", 1)  # Strip "git+" prefix
+    repo_name = repo_url.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git")
+    export_name = f"{repo_name}-{ref}"  # e.g. haiku-r1beta5
+
+    log.info("Cloning: %s @ %s", repo_url, ref)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        clone_dir = Path(tmpdir) / export_name
+
+        result = subprocess.run(
+            ["git", "clone", "--depth", "1", "--branch", ref, repo_url, str(clone_dir)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            log.warning("Clone failed: %s", result.stderr.strip())
+            return False
+
+        # Create tarball (keep .git - some build systems need it)
+        log.info("Creating tarball: %s", dest)
+        with tarfile.open(dest, "w:gz") as tar:
+            tar.add(clone_dir, arcname=export_name)
+
+    log.info("OK: %s", dest)
+    return True
+
+
+def fetch(url: str, dest: Path) -> bool:
+    """Fetch from URL - dispatches to appropriate handler."""
+    if url.startswith("git+"):
+        return clone_repo(url, dest)
+    return download_file(url, dest)
+
+
 def main():
     meta_json = os.environ.get("META")
     if not meta_json:
@@ -68,7 +120,7 @@ def main():
 
     log.info("Downloading: %s", output)
     for url in urls:
-        if download_file(url, dest):
+        if fetch(url, dest):
             return 0
 
     log.error("All URLs failed for %s", output)

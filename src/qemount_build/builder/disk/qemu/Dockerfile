@@ -1,39 +1,46 @@
 FROM alpine:latest
+ARG HOST_ARCH
 
-# Runtime tools
+# Runtime tools (reiserfsprogs and bcachefs built from mounted sources below)
 RUN apk add --no-cache \
-    bash tar jq \
+    bash tar jq findutils \
     qemu-system-x86_64 qemu-system-aarch64 \
     e2fsprogs e2fsprogs-extra \
     xfsprogs jfsutils f2fs-tools hfsprogs \
     udftools nilfs-utils exfatprogs ntfs-3g-progs \
-    reiserfsprogs \
     util-linux
 
-# Build bcachefs-tools from source
-RUN apk add --no-cache --virtual .build-deps \
-    build-base git curl coreutils \
+# Build dependencies for reiserfsprogs and bcachefs-tools
+RUN apk add --no-cache \
+    build-base \
     rust cargo \
     libaio-dev keyutils-dev lz4-dev \
     linux-headers eudev-dev zlib-dev \
     zstd-dev userspace-rcu-dev libsodium-dev \
-    util-linux-dev clang-dev python3 py3-docutils \
-    && cd /tmp \
-    && curl -L https://github.com/koverstreet/bcachefs-tools/archive/refs/tags/v1.20.0.tar.gz | tar xz \
-    && cd bcachefs-tools-1.20.0 \
-    && make -j$(nproc) NO_VALGRIND=1 \
-    && make install \
-    && cd / \
-    && rm -rf /tmp/bcachefs-tools-1.20.0 \
-    && apk del .build-deps \
-    && apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
+    util-linux-dev clang-dev python3 py3-docutils
 
-# Build mkfs.sysv from source
-COPY mkfs.sysv.c /tmp/mkfs.sysv.c
-RUN apk add --no-cache --virtual .sysv-deps gcc musl-dev \
-    && gcc -o /usr/local/bin/mkfs.sysv /tmp/mkfs.sysv.c \
-    && rm /tmp/mkfs.sysv.c \
-    && apk del .sysv-deps
+# Build reiserfsprogs from mounted source
+RUN cd /tmp && \
+    tar xf /host/build/sources/reiserfsprogs-3.6.27.tar.xz && \
+    cd reiserfsprogs-3.6.27 && \
+    ./configure && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf /tmp/reiserfsprogs-3.6.27
+
+# Build bcachefs-tools from mounted source
+RUN cd /tmp && \
+    tar xzf /host/build/sources/bcachefs-tools-1.20.0.tar.gz && \
+    cd bcachefs-tools-1.20.0 && \
+    make -j$(nproc) NO_VALGRIND=1 && \
+    make install && \
+    cd / && rm -rf /tmp/bcachefs-tools-1.20.0
+
+# Copy pre-built mkfs.sysv
+RUN cp /host/build/bin/mkfs.sysv-${HOST_ARCH} /usr/local/bin/mkfs.sysv
+
+# Runtime libraries for bcachefs
+RUN apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
 
 WORKDIR /build
 COPY build.sh /build/build.sh

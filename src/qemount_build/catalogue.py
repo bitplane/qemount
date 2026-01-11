@@ -117,7 +117,7 @@ def normalize_list(items: list) -> dict:
 
 
 # Keys that are NOT inherited from parent to child
-NO_INHERIT = {"provides"}
+NO_INHERIT = {"provides", "build_requires"}
 
 
 def merge_meta(parent: dict, child: dict) -> dict:
@@ -302,7 +302,27 @@ def resolve_path(path: str, catalogue: dict, context: dict) -> dict:
 
     # Resolve all metadata values
     meta = paths[path]["meta"]
-    return resolve_value(meta, ctx)
+    resolved = resolve_value(meta, ctx)
+
+    # Merge build_requires into requires
+    if "build_requires" in resolved:
+        br = resolved["build_requires"]
+        req = resolved.get("requires", {})
+
+        # Normalize to dict format
+        if isinstance(br, list):
+            br = normalize_list(br)
+        if isinstance(req, list):
+            req = normalize_list(req)
+
+        # Merge build_requires into requires
+        for key in br:
+            if key not in req:
+                req[key] = br[key]
+
+        resolved["requires"] = req
+
+    return resolved
 
 
 def build_provides_index(catalogue: dict, context: dict) -> dict:
