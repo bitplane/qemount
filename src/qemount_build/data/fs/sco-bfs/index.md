@@ -1,6 +1,7 @@
 ---
 format: fs/sco-bfs
 requires:
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.sco-bfs

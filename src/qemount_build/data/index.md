@@ -3,7 +3,7 @@ title: Test Data
 env:
   HOST_ARCH: ${HOST_ARCH}
   ARCH: ${ARCH}
-  PATH: ${PATH}
+  SELF: ${SELF}
 ---
 
 # Test Data Builders

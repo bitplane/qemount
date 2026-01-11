@@ -1,6 +1,6 @@
 # Ubuntu Lucid-based compiler for Linux 2.6 kernel
 # Lucid (10.04) has GCC 4.4 which is compatible with 2.6.39
-FROM docker.io/library/ubuntu:10.04
+FROM ubuntu:10.04
 ARG ARCH
 
 # Configure archive repositories (lucid is EOL)

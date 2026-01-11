@@ -1,6 +1,6 @@
 ARG ARCH
 
-FROM docker.io/library/debian:bookworm-slim AS builder
+FROM debian:bookworm-slim AS builder
 ARG ARCH
 
 # Install build dependencies for NetBSD build.sh

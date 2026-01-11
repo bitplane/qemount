@@ -1,10 +1,10 @@
 ---
-title: Linux Disk Builder
+title: Alpine Disk Builder
 provides:
-  - docker:builder/disk/linux
+  - docker:builder/disk/alpine
 ---
 
-# Linux Disk Builder
+# Alpine Disk Builder
 
 Alpine-based image with filesystem tools for creating disk images that
 don't require mount access. Includes mkfs utilities for ext2/3/4, FAT,

@@ -1,6 +1,7 @@
 ---
 format: fs/ext2
 requires:
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.ext2

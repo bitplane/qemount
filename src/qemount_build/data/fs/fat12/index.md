@@ -1,6 +1,7 @@
 ---
 format: fs/fat12
 requires:
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.fat12

@@ -20,18 +20,14 @@ def image_exists(tag: str) -> bool:
     return result.returncode == 0
 
 
-def build_image(context_dir: Path, tag: str, arch: str, host_arch: str) -> bool:
+def build_image(context_dir: Path, tag: str, env: dict) -> bool:
     """Build a container image."""
     print(f"Building image: {tag}")
-    result = subprocess.run(
-        [
-            "podman", "build",
-            "--build-arg", f"ARCH={arch}",
-            "--build-arg", f"HOST_ARCH={host_arch}",
-            "-t", tag, ".",
-        ],
-        cwd=context_dir,
-    )
+    cmd = ["podman", "build"]
+    for key, value in env.items():
+        cmd.extend(["--build-arg", f"{key}={value}"])
+    cmd.extend(["-t", tag, "."])
+    result = subprocess.run(cmd, cwd=context_dir)
     if result.returncode != 0:
         return False
     if not image_exists(tag):
@@ -44,9 +40,6 @@ def run_container(image: str, build_dir: Path, env: dict) -> bool:
     """Run a container with the given environment."""
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
-        # Skip unresolved variables to avoid breaking container env
-        if "${" in str(value):
-            continue
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)
 
@@ -73,6 +66,7 @@ def run_build(
     graph = build_graph(target, catalogue, context)
 
     for path in graph["order"]:
+        path_context = {**context, "SELF": path}
         meta = graph["nodes"][path]
         provides = list(meta.get("provides", {}).keys())
 
@@ -86,6 +80,10 @@ def run_build(
             print(f"Error: {path} has provides but no Dockerfile")
             return False
 
+        # Resolve path metadata to get env
+        resolved = resolve_path(path, catalogue, path_context)
+        env = resolved.get("env", {})
+
         # Separate docker outputs from file outputs
         docker_outputs = [p for p in provides if p.startswith("docker:")]
         file_outputs = [p for p in provides if not p.startswith("docker:")]
@@ -97,12 +95,7 @@ def run_build(
         else:
             tag = path
 
-        if not build_image(
-            dockerfile_dir,
-            tag,
-            context["ARCH"],
-            context["HOST_ARCH"],
-        ):
+        if not build_image(dockerfile_dir, tag, env):
             print(f"Failed to build image for: {path}")
             return False
 
@@ -116,9 +109,6 @@ def run_build(
                 print(f"Exists: {', '.join(file_outputs)}")
                 continue
 
-            # Build env from resolved metadata
-            resolved = resolve_path(path, catalogue, context)
-            env = resolved.get("env", {})
             env["META"] = json.dumps(meta)
 
             if not run_container(tag, build_dir, env):

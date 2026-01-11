@@ -1,6 +1,7 @@
 ---
 format: fs/ubifs
 requires:
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.ubifs

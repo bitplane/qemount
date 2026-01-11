@@ -1,4 +1,4 @@
-FROM docker.io/library/debian:bookworm-slim
+FROM debian:bookworm-slim
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         gcc libc6-dev qemu-system-x86 e2fsprogs bash \

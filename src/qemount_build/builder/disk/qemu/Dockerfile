@@ -1,4 +1,4 @@
-FROM docker.io/library/alpine:latest
+FROM alpine:latest
 
 # QEMU base image for building filesystems that need mount access
 # The kernel and boot.img are accessed from /host/build at runtime

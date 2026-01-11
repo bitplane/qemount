@@ -1,6 +1,7 @@
 ---
 format: fs/iso9660
 requires:
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.iso9660
