@@ -1,7 +1,6 @@
 ---
 title: Filesystem Test Data
 requires:
-  - docker:builder/disk/linux
   - data/templates/basic.tar
 ---
 

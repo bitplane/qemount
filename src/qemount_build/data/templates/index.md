@@ -1,7 +1,5 @@
 ---
 title: Test Templates
-requires:
-  - docker:builder/templates
 provides:
   - data/templates/basic.tar
 ---

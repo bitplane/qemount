@@ -55,14 +55,6 @@ def run_container(image: str, build_dir: Path, env: dict) -> bool:
     return result.returncode == 0
 
 
-def get_dockerfile_dir(path: str, pkg_dir: Path) -> Path:
-    """Get directory containing Dockerfile for a catalogue path."""
-    candidate = pkg_dir / path
-    if (candidate / "Dockerfile").exists():
-        return candidate
-    raise FileNotFoundError(f"No Dockerfile found for {path}")
-
-
 def run_build(
     target: str,
     catalogue: dict,
@@ -74,7 +66,9 @@ def run_build(
     """
     Build a target and all its dependencies.
 
-    Returns True on success, False on failure.
+    Every path with provides must have a Dockerfile.
+    - docker:* provides → build image only
+    - other provides → build image, run it, verify outputs
     """
     graph = build_graph(target, catalogue, context)
 
@@ -86,49 +80,56 @@ def run_build(
             print(f"Skipping {path}: no provides")
             continue
 
-        output = provides[0]
+        # Check for Dockerfile
+        dockerfile_dir = pkg_dir / path
+        if not (dockerfile_dir / "Dockerfile").exists():
+            print(f"Error: {path} has provides but no Dockerfile")
+            return False
 
-        # Docker image build
-        if output.startswith("docker:"):
-            tag = output[7:]
-            dockerfile_dir = get_dockerfile_dir(path, pkg_dir)
+        # Separate docker outputs from file outputs
+        docker_outputs = [p for p in provides if p.startswith("docker:")]
+        file_outputs = [p for p in provides if not p.startswith("docker:")]
 
-            if not build_image(
-                dockerfile_dir,
-                tag,
-                context.get("ARCH", "x86_64"),
-                context.get("HOST_ARCH", "x86_64"),
-            ):
-                print(f"Failed to build: {tag}")
-                return False
-
-        # Regular build step - run container
+        # Build the image
+        # Tag is either the docker: output or the path itself
+        if docker_outputs:
+            tag = docker_outputs[0][7:]  # strip docker: prefix
         else:
-            output_path = build_dir / output
-            if not force and output_path.exists():
-                print(f"Exists: {output}")
+            tag = path
+
+        if not build_image(
+            dockerfile_dir,
+            tag,
+            context["ARCH"],
+            context["HOST_ARCH"],
+        ):
+            print(f"Failed to build image for: {path}")
+            return False
+
+        # If there are file outputs, run the container to produce them
+        if file_outputs:
+            # Check if outputs already exist
+            all_exist = all(
+                (build_dir / output).exists() for output in file_outputs
+            )
+            if not force and all_exist:
+                print(f"Exists: {', '.join(file_outputs)}")
                 continue
-
-            requires = list(meta.get("requires", {}).keys())
-            docker_req = next((r for r in requires if r.startswith("docker:")), None)
-            if not docker_req:
-                print(f"No docker requirement for {path}")
-                return False
-
-            image = docker_req[7:]
 
             # Build env from resolved metadata
             resolved = resolve_path(path, catalogue, context)
             env = resolved.get("env", {})
             env["META"] = json.dumps(meta)
 
-            if not run_container(image, build_dir, env):
+            if not run_container(tag, build_dir, env):
                 print(f"Failed to run: {path}")
                 return False
 
-            if not output_path.exists():
-                print(f"Failed: {output} was not created")
-                return False
+            # Verify outputs were created
+            for output in file_outputs:
+                if not (build_dir / output).exists():
+                    print(f"Failed: {output} was not created")
+                    return False
 
     print("Build complete")
     return True
