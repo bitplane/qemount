@@ -1,7 +1,3 @@
-ARG ARCH
-FROM localhost/qemount-common-qemu-builder-${ARCH}
-
-RUN apk add --no-cache exfatprogs
-COPY build.sh /build/
-RUN chmod +x /build/build.sh
-ENTRYPOINT ["/build/build.sh"]
+FROM localhost/builder/disk/qemu
+COPY buildfs.sh /build/buildfs.sh
+RUN chmod +x /build/buildfs.sh

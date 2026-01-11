@@ -1,8 +1,16 @@
 FROM alpine:latest
 
-# QEMU base image for building filesystems that need mount access
-# The kernel and boot.img are accessed from /host/build at runtime
 RUN apk add --no-cache \
-    qemu-system-x86_64 bash e2fsprogs-extra \
-    xfsprogs jfsutils f2fs-tools bcachefs-tools hfsprogs util-linux \
-    udftools nilfs-utils
+    bash tar jq \
+    qemu-system-x86_64 qemu-system-aarch64 \
+    e2fsprogs e2fsprogs-extra \
+    xfsprogs jfsutils f2fs-tools hfsprogs \
+    udftools nilfs-utils exfatprogs ntfs-3g-progs \
+    util-linux
+
+# bcachefs-tools not in alpine repos yet, skip for now
+
+WORKDIR /build
+COPY build.sh /build/build.sh
+RUN chmod +x /build/build.sh
+ENTRYPOINT ["/build/build.sh"]

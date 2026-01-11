@@ -1,7 +1,7 @@
 ---
 title: QEMU Disk Builder
 provides:
-  - docker:builder/disk/qemu:${ARCH}
+  - docker:builder/disk/qemu
 ---
 
 # QEMU Disk Builder

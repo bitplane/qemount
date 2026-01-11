@@ -1,8 +1,8 @@
 ---
 format: fs/bcachefs
 requires:
-  - docker:builder/disk/qemu:${HOST_ARCH}
-  - data/fs/basic.ext2
+  - docker:builder/disk/qemu
+  - data/templates/basic.tar
   - bin/qemu/linux-${HOST_ARCH}/6.17/boot/kernel
   - bin/qemu/linux-${HOST_ARCH}/6.17/boot/rootfs.img
 provides:
