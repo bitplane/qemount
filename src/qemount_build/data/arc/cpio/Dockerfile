@@ -1,5 +1,3 @@
-FROM alpine:latest
-RUN apk add --no-cache cpio tar
-COPY * /build/
-RUN chmod +x /build/build.sh
-ENTRYPOINT ["/build/build.sh"]
+FROM builder/disk/alpine
+COPY buildfs.sh /build/buildfs.sh
+RUN chmod +x /build/buildfs.sh

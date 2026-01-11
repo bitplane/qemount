@@ -1,5 +1,4 @@
-FROM alpine:latest
-RUN apk add --no-cache zip tar
-COPY * /build/
-RUN chmod +x /build/build.sh
-ENTRYPOINT ["/build/build.sh"]
+FROM builder/disk/alpine
+RUN apk add --no-cache zip
+COPY buildfs.sh /build/buildfs.sh
+RUN chmod +x /build/buildfs.sh
