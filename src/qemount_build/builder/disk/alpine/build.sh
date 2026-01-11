@@ -3,8 +3,9 @@ set -e
 
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do
-    # Extract base name (strip path and extension)
-    base_name=$(basename "$output" | sed 's/\.[^.]*$//')
+    # Extract base name (strip path and all extensions)
+    filename=$(basename "$output")
+    base_name=${filename%%.*}
     tar_path="/host/build/data/templates/${base_name}.tar"
 
     # Extract template to temp dir
