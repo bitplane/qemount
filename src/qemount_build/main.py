@@ -66,15 +66,18 @@ def cmd_build(args, catalogue, context):
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
 
-    success = run_build(
-        args.target,
-        catalogue,
-        context,
-        build_dir,
-        pkg_dir,
-        force=args.force,
-    )
-    return 0 if success else 1
+    for target in args.targets:
+        success = run_build(
+            target,
+            catalogue,
+            context,
+            build_dir,
+            pkg_dir,
+            force=args.force,
+        )
+        if not success:
+            return 1
+    return 0
 
 
 def main():
@@ -116,7 +119,7 @@ def main():
 
     # build
     build_parser = subparsers.add_parser("build", help="Build a target")
-    build_parser.add_argument("target", help="Target output to build")
+    build_parser.add_argument("targets", nargs="+", help="Target outputs to build")
     build_parser.add_argument(
         "-f", "--force", action="store_true", help="Force rebuild even if exists"
     )
