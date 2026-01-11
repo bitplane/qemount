@@ -1,7 +1,7 @@
 ---
 format: fs/cramfs
 requires:
-  - docker:builder/compiler/linux/6:${HOST_ARCH}
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
 provides:
   - data/fs/basic.cramfs

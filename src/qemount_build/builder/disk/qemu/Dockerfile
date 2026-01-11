@@ -25,7 +25,7 @@ RUN apk add --no-cache --virtual .build-deps \
     && cd / \
     && rm -rf /tmp/bcachefs-tools-1.20.0 \
     && apk del .build-deps \
-    && apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium
+    && apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
 
 WORKDIR /build
 COPY build.sh /build/build.sh
