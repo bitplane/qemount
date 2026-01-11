@@ -10,7 +10,7 @@ cd /usr/src
 cp /QEMOUNT /usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT
 
 # Build the kernel
-./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m $NBARCH kernel=QEMOUNT
+./build.sh -O /usr/obj -T /usr/tools -U -u -j${JOBS} -m $NBARCH kernel=QEMOUNT
 
 # Copy unstripped kernel (needed for mdsetimage)
 mkdir -p /host/build/bin/qemu/netbsd-${ARCH}/10.0/kernel
