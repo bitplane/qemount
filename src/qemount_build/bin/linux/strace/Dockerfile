@@ -6,3 +6,4 @@ RUN apk add --no-cache linux-headers
 WORKDIR /work
 ADD build.sh /build.sh
 RUN chmod +x /build.sh
+ENTRYPOINT ["/build.sh"]
