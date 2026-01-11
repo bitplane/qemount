@@ -1,5 +1,5 @@
-ARG ARCH
-FROM localhost/builder/compiler/netbsd/10.0 AS netbsd
+ARG HOST_ARCH
+FROM builder/compiler/netbsd/10.0:${HOST_ARCH} AS netbsd
 
 FROM debian:bookworm-slim
 

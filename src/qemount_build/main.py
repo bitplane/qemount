@@ -30,10 +30,14 @@ def get_default_arch():
 
 
 def get_jobs():
-    """Calculate parallel jobs based on RAM and CPU cores."""
+    """Calculate parallel jobs based on RAM and CPU cores.
+
+    Formula: min(RAM_GB / 2, cores, 16)
+    Capped at 16 to avoid vfork resource exhaustion on large machines.
+    """
     mem_gb = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") // (1024**3)
     cores = os.cpu_count() or 1
-    return max(1, min(mem_gb // 2, cores))
+    return max(1, min(mem_gb // 2, cores, 16))
 
 
 def cmd_dump(args, catalogue, context):
