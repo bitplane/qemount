@@ -1,5 +1,6 @@
 ARG ARCH
-FROM localhost/builder/compiler/haiku
+ARG HOST_ARCH
+FROM localhost/builder/compiler/haiku:${HOST_ARCH}
 ARG ARCH
 
 # Build bfs_shell tool

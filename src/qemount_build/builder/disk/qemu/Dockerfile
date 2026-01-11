@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     e2fsprogs e2fsprogs-extra \
     xfsprogs jfsutils f2fs-tools hfsprogs \
     udftools nilfs-utils exfatprogs ntfs-3g-progs \
+    reiserfsprogs \
     util-linux
 
 # Build bcachefs-tools from source
@@ -26,6 +27,13 @@ RUN apk add --no-cache --virtual .build-deps \
     && rm -rf /tmp/bcachefs-tools-1.20.0 \
     && apk del .build-deps \
     && apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
+
+# Build mkfs.sysv from source
+COPY mkfs.sysv.c /tmp/mkfs.sysv.c
+RUN apk add --no-cache --virtual .sysv-deps gcc musl-dev \
+    && gcc -o /usr/local/bin/mkfs.sysv /tmp/mkfs.sysv.c \
+    && rm /tmp/mkfs.sysv.c \
+    && apk del .sysv-deps
 
 WORKDIR /build
 COPY build.sh /build/build.sh

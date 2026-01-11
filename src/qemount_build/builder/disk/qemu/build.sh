@@ -5,8 +5,9 @@ set -e
 # Requires kernel and rootfs.img in /host/build
 
 HOST_ARCH="${HOST_ARCH:-x86_64}"
-KERNEL="/host/build/bin/qemu/linux-${HOST_ARCH}/6.17/boot/kernel"
-ROOTFS="/host/build/bin/qemu/linux-${HOST_ARCH}/6.17/boot/rootfs.img"
+KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.17"')
+KERNEL="/host/build/bin/qemu/linux-${HOST_ARCH}/${KERNEL_VERSION}/boot/kernel"
+ROOTFS="/host/build/bin/qemu/linux-${HOST_ARCH}/${KERNEL_VERSION}/boot/rootfs.img"
 
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do
@@ -16,20 +17,19 @@ for output in $(echo "$META" | jq -r '.provides | keys[]'); do
 
     echo "Building: $output"
 
-    # Create source ext2 from template
+    # Extract template
     rm -rf /tmp/template
     mkdir -p /tmp/template
     tar -xf "$tar_path" -C /tmp/template
 
-    # Calculate size needed (template size + padding)
+    # Create target filesystem (buildfs.sh may modify /tmp/template)
+    /build/buildfs.sh /tmp/template /tmp/target.img
+
+    # Create source ext2 from template (after buildfs.sh modifications)
     size=$(du -sm /tmp/template | cut -f1)
     img_size=$(( size + 4 ))
-
     truncate -s "${img_size}M" /tmp/source.ext2
     mke2fs -t ext2 -d /tmp/template /tmp/source.ext2
-
-    # Create target filesystem using buildfs.sh
-    /build/buildfs.sh /tmp/template /tmp/target.img
 
     # Map architecture to QEMU binary
     case "$HOST_ARCH" in
