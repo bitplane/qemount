@@ -304,18 +304,10 @@ def resolve_path(path: str, catalogue: dict, context: dict) -> dict:
     meta = paths[path]["meta"]
     resolved = resolve_value(meta, ctx)
 
-    # Merge build_requires into requires
+    # Merge build_requires into requires (already normalized to dict by merge_meta)
     if "build_requires" in resolved:
         br = resolved["build_requires"]
         req = resolved.get("requires", {})
-
-        # Normalize to dict format
-        if isinstance(br, list):
-            br = normalize_list(br)
-        if isinstance(req, list):
-            req = normalize_list(req)
-
-        # Merge build_requires into requires
         for key in br:
             if key not in req:
                 req[key] = br[key]
