@@ -11,7 +11,7 @@ RUN apk add --no-cache \
 
 # Build bcachefs-tools from source
 RUN apk add --no-cache --virtual .build-deps \
-    build-base git curl \
+    build-base git curl coreutils \
     rust cargo \
     libaio-dev keyutils-dev lz4-dev \
     linux-headers eudev-dev zlib-dev \
