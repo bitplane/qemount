@@ -1,5 +1,5 @@
 ARG ARCH
-FROM docker.io/haiku/toolchain-worker:latest
+FROM haiku/toolchain-worker:latest
 ARG ARCH
 
 WORKDIR /src
