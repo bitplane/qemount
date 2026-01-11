@@ -9,11 +9,15 @@ Usage:
 
 import argparse
 import json
+import logging
 import platform
+import sys
 from pathlib import Path
 
 from .catalogue import load, build_provides_index, build_graph
 from .runner import run_build
+
+log = logging.getLogger(__name__)
 
 
 def get_default_arch():
@@ -44,7 +48,7 @@ def cmd_deps(args, catalogue, context):
     try:
         graph = build_graph(args.target, catalogue, context)
     except KeyError as e:
-        print(f"Error: {e}")
+        log.error("%s", e)
         return 1
 
     if args.order:
@@ -95,6 +99,16 @@ def main():
         default=get_default_arch(),
         help="Host architecture (default: %(default)s)",
     )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output (debug logging)",
+    )
+    parser.add_argument(
+        "-q", "--quiet",
+        action="store_true",
+        help="Quiet output (errors only)",
+    )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -126,6 +140,20 @@ def main():
     build_parser.set_defaults(func=cmd_build)
 
     args = parser.parse_args()
+
+    # Configure logging
+    if args.quiet:
+        level = logging.ERROR
+    elif args.verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(
+        level=level,
+        format="%(levelname)s: %(message)s",
+        stream=sys.stderr,
+    )
 
     # Load catalogue
     pkg_dir = Path(__file__).parent

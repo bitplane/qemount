@@ -5,10 +5,13 @@ Executes build steps in dependency order using podman.
 """
 
 import json
+import logging
 import subprocess
 from pathlib import Path
 
 from .catalogue import resolve_path, build_graph
+
+log = logging.getLogger(__name__)
 
 
 def image_exists(tag: str) -> bool:
@@ -22,7 +25,7 @@ def image_exists(tag: str) -> bool:
 
 def build_image(context_dir: Path, tag: str, env: dict) -> bool:
     """Build a container image."""
-    print(f"Building image: {tag}")
+    log.info("Building image: %s", tag)
     cmd = ["podman", "build"]
     for key, value in env.items():
         cmd.extend(["--build-arg", f"{key}={value}"])
@@ -31,7 +34,7 @@ def build_image(context_dir: Path, tag: str, env: dict) -> bool:
     if result.returncode != 0:
         return False
     if not image_exists(tag):
-        print(f"Failed: image {tag} was not created")
+        log.error("Image was not created: %s", tag)
         return False
     return True
 
@@ -43,7 +46,7 @@ def run_container(image: str, build_dir: Path, env: dict) -> bool:
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)
 
-    print(f"Running: {image}")
+    log.info("Running: %s", image)
     result = subprocess.run(cmd)
     return result.returncode == 0
 
@@ -103,12 +106,12 @@ def run_build(
 
         # Validate: docker provides requires Dockerfile
         if docker_tags and not dockerfile.exists():
-            print(f"Error: {path} provides docker image but has no Dockerfile")
+            log.error("%s provides docker image but has no Dockerfile", path)
             return False
 
         # Validate: file provides requires Dockerfile or runs_on
         if file_outputs and not dockerfile.exists() and not runs_on_tag:
-            print(f"Error: {path} provides files but has no Dockerfile or runs_on")
+            log.error("%s provides files but has no Dockerfile or runs_on", path)
             return False
 
         # Build image if Dockerfile exists
@@ -123,7 +126,7 @@ def run_build(
 
         # Check if outputs already exist
         if not force and all((build_dir / o).exists() for o in file_outputs):
-            print(f"Exists: {', '.join(file_outputs)}")
+            log.info("Exists: %s", ", ".join(file_outputs))
             continue
 
         # Use runs_on tag if no Dockerfile was built
@@ -133,14 +136,14 @@ def run_build(
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
         if not run_container(tag, build_dir, env):
-            print(f"Failed to run: {path}")
+            log.error("Failed to run: %s", path)
             return False
 
         # Verify outputs
         for output in file_outputs:
             if not (build_dir / output).exists():
-                print(f"Failed: {output} was not created")
+                log.error("Output was not created: %s", output)
                 return False
 
-    print("Build complete")
+    log.info("Build complete")
     return True
