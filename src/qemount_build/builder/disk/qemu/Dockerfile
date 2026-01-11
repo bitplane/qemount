@@ -1,16 +1,16 @@
 FROM alpine:latest
 ARG HOST_ARCH
 
-# Runtime tools (reiserfsprogs and bcachefs built from mounted sources below)
+# Runtime tools
 RUN apk add --no-cache \
-    bash tar jq findutils \
+    bash tar xz jq findutils \
     qemu-system-x86_64 qemu-system-aarch64 \
     e2fsprogs e2fsprogs-extra \
     xfsprogs jfsutils f2fs-tools hfsprogs \
     udftools nilfs-utils exfatprogs ntfs-3g-progs \
     util-linux
 
-# Build dependencies for reiserfsprogs and bcachefs-tools
+# Build dependencies for bcachefs-tools
 RUN apk add --no-cache \
     build-base \
     rust cargo \
@@ -18,15 +18,6 @@ RUN apk add --no-cache \
     linux-headers eudev-dev zlib-dev \
     zstd-dev userspace-rcu-dev libsodium-dev \
     util-linux-dev clang-dev python3 py3-docutils
-
-# Build reiserfsprogs from mounted source
-RUN cd /tmp && \
-    tar xf /host/build/sources/reiserfsprogs-3.6.27.tar.xz && \
-    cd reiserfsprogs-3.6.27 && \
-    ./configure && \
-    make -j$(nproc) && \
-    make install && \
-    cd / && rm -rf /tmp/reiserfsprogs-3.6.27
 
 # Build bcachefs-tools from mounted source
 RUN cd /tmp && \
@@ -36,8 +27,9 @@ RUN cd /tmp && \
     make install && \
     cd / && rm -rf /tmp/bcachefs-tools-1.20.0
 
-# Copy pre-built mkfs.sysv
-RUN cp /host/build/bin/mkfs.sysv-${HOST_ARCH} /usr/local/bin/mkfs.sysv
+# Copy pre-built static binaries
+RUN cp /host/build/bin/linux-${HOST_ARCH}/mkfs.sysv/mkfs.sysv /usr/local/bin/mkfs.sysv && \
+    cp /host/build/bin/linux-${HOST_ARCH}/reiserfsprogs/mkfs.reiserfs /usr/local/bin/mkfs.reiserfs
 
 # Runtime libraries for bcachefs
 RUN apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
