@@ -16,7 +16,7 @@ KERNEL_ARCH=$ARCH
 make ARCH=$KERNEL_ARCH defconfig
 ./scripts/kconfig/merge_config.sh -m .config kernel.config filesystems.config
 yes "" | make ARCH=$KERNEL_ARCH oldconfig
-make ARCH=$KERNEL_ARCH -j$(nproc)
+make ARCH=$KERNEL_ARCH -j${JOBS}
 
 # Copy kernel image
 mkdir -p /host/build/bin/qemu/linux-${ARCH}/6.17

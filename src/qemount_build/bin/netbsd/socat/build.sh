@@ -19,7 +19,7 @@ LDFLAGS="--sysroot=$SYSROOT -static" \
     --disable-openssl \
     --disable-readline
 
-make -j$(nproc)
+make -j${JOBS}
 $STRIP socat || true
 
 mkdir -p /host/build/bin/netbsd-${ARCH}/socat

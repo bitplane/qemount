@@ -22,7 +22,7 @@ fi
 make ARCH=$KERNEL_ARCH defconfig
 cat kernel.config filesystems.config >> .config
 yes "" | make ARCH=$KERNEL_ARCH oldconfig
-make ARCH=$KERNEL_ARCH -j$(nproc)
+make ARCH=$KERNEL_ARCH -j${JOBS}
 
 # Copy kernel image
 mkdir -p /host/build/bin/qemu/linux-${ARCH}/2.6

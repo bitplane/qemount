@@ -12,7 +12,7 @@ CFLAGS="-Wno-unterminated-string-initialization" ./configure \
     --disable-mpers \
     --enable-bundled=yes
 
-make -j$(nproc)
+make -j${JOBS}
 
 mkdir -p /host/build/bin/linux-${ARCH}/strace
 cp -v src/strace /host/build/bin/linux-${ARCH}/strace/

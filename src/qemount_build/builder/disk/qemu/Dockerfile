@@ -19,12 +19,13 @@ RUN apk add --no-cache \
     zstd-dev userspace-rcu-dev libsodium-dev \
     util-linux-dev clang-dev python3 py3-docutils
 
-# Build bcachefs-tools from mounted source
+# Build bcachefs-tools from mounted source (skip make install - busybox ln incompatible)
 RUN cd /tmp && \
     tar xzf /host/build/sources/bcachefs-tools-1.20.0.tar.gz && \
     cd bcachefs-tools-1.20.0 && \
     make -j$(nproc) NO_VALGRIND=1 && \
-    make install && \
+    cp bcachefs /usr/local/bin/ && \
+    ln -s bcachefs /usr/local/bin/mkfs.bcachefs && \
     cd / && rm -rf /tmp/bcachefs-tools-1.20.0
 
 # Copy pre-built static binaries

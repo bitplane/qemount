@@ -10,6 +10,7 @@ Usage:
 import argparse
 import json
 import logging
+import os
 import platform
 import sys
 from pathlib import Path
@@ -26,6 +27,13 @@ def get_default_arch():
     return {"x86_64": "x86_64", "aarch64": "aarch64", "arm64": "aarch64"}.get(
         machine, machine
     )
+
+
+def get_jobs():
+    """Calculate parallel jobs based on RAM and CPU cores."""
+    mem_gb = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") // (1024**3)
+    cores = os.cpu_count() or 1
+    return max(1, min(mem_gb // 2, cores))
 
 
 def cmd_dump(args, catalogue, context):
@@ -160,7 +168,11 @@ def main():
     catalogue = load(pkg_dir)
 
     # Build context
-    context = {"ARCH": args.arch, "HOST_ARCH": args.host_arch}
+    context = {
+        "ARCH": args.arch,
+        "HOST_ARCH": args.host_arch,
+        "JOBS": str(get_jobs()),
+    }
 
     # Run command
     result = args.func(args, catalogue, context)
