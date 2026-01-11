@@ -1,6 +1,7 @@
 ---
 format: fs/ufs2
 requires:
+  - docker:builder/disk/debian
   - data/templates/basic.tar
 provides:
   - data/fs/basic.ufs2

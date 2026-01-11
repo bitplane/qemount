@@ -1,7 +1,7 @@
 ---
 title: NetBSD 10.0 Compiler
 provides:
-  - docker:builder/compiler/netbsd/10.0:${ARCH}
+  - docker:builder/compiler/netbsd/10.0:${HOST_ARCH}
 ---
 
 # NetBSD 10.0 Compiler

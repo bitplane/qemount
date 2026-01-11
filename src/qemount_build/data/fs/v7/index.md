@@ -1,7 +1,7 @@
 ---
 format: fs/v7
 requires:
-  - docker:builder/compiler/netbsd/10.0:${HOST_ARCH}
+  - docker:builder/disk/netbsd
   - data/templates/basic.tar
 provides:
   - data/fs/basic.v7

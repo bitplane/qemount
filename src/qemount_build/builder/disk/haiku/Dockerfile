@@ -1,17 +1,18 @@
 ARG ARCH
-FROM docker.io/haiku/toolchain-worker:latest
+FROM localhost/builder/compiler/haiku
 ARG ARCH
 
-WORKDIR /src
-RUN git clone https://github.com/haiku/haiku.git && \
-    cd haiku && \
-    git checkout r1beta5
+# Build bfs_shell tool
+WORKDIR /src/haiku/generated
+RUN jam -q '<build>bfs_shell'
 
-WORKDIR /src/haiku
-RUN mkdir -p generated && \
-    cd generated && \
-    ../configure --cross-tools-prefix /toolchains/cross-tools-${ARCH}/bin/${ARCH}-unknown-haiku-
+# Install to standard location
+RUN cp /src/haiku/generated/objects/linux/${ARCH}/release/tools/bfs_shell/bfs_shell /usr/local/bin/bfs_shell
 
-COPY deploy.sh /usr/local/bin/deploy.sh
-RUN chmod +x /usr/local/bin/deploy.sh
-ENTRYPOINT ["/usr/local/bin/deploy.sh"]
+# Install tools for build script
+RUN dnf install -y jq tar && dnf clean all
+
+WORKDIR /build
+COPY build.sh /build/build.sh
+RUN chmod +x /build/build.sh
+ENTRYPOINT ["/build/build.sh"]
