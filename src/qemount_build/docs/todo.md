@@ -21,6 +21,7 @@
   - [ ] qemu wrapper lib
 - [ ] filesystem catalogue
   - [ ] documentation as code (front-matter)
+  - [ ] site generator
 - [ ] clients
   - [x] FUSE
   - [ ] 7zip
