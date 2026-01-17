@@ -16,7 +16,6 @@ import sys
 from pathlib import Path
 
 from .catalogue import load, build_provides_index, build_graph
-from .format_compiler import compile_to_file
 from .runner import run_build
 
 log = logging.getLogger(__name__)
@@ -77,20 +76,16 @@ def cmd_deps(args, catalogue, context):
     return 0
 
 
-def cmd_compile_formats(args, catalogue, context):
-    """Compile format detection rules to msgpack."""
-    pkg_dir = Path(__file__).parent
-    output = Path(args.output)
-    count = compile_to_file(pkg_dir, output)
-    log.info("Wrote %d formats to %s", count, output)
-    return 0
-
-
 def cmd_build(args, catalogue, context):
     """Build a target and its dependencies."""
     pkg_dir = Path(__file__).parent
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
+
+    # Dump catalogue as implicit dependency for all builds
+    catalogue_file = build_dir / "catalogue.json"
+    catalogue_file.write_text(json.dumps(catalogue, indent=2))
+    log.debug("Wrote catalogue to %s", catalogue_file)
 
     for target in args.targets:
         success = run_build(
@@ -160,17 +155,6 @@ def main():
         "-f", "--force", action="store_true", help="Force rebuild even if exists"
     )
     build_parser.set_defaults(func=cmd_build)
-
-    # compile-formats
-    formats_parser = subparsers.add_parser(
-        "compile-formats", help="Compile format detection rules to msgpack"
-    )
-    formats_parser.add_argument(
-        "-o", "--output",
-        default="build/lib/format.bin",
-        help="Output file (default: %(default)s)",
-    )
-    formats_parser.set_defaults(func=cmd_compile_formats)
 
     args = parser.parse_args()
 

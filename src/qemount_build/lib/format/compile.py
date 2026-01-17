@@ -1,15 +1,17 @@
+#!/usr/bin/env python3
 """
 Format detection rules compiler.
 
-Extracts detection rules from docs/format/**/*.md frontmatter
-and compiles them to msgpack for consumption by the Rust detection library.
+Reads catalogue.json, extracts detection rules from format/* entries,
+and writes them to format.bin as msgpack.
+
+Usage: python compile.py catalogue.json format.bin
 """
 
-from pathlib import Path
+import json
+import sys
 
 import msgpack
-
-from .catalogue import parse_frontmatter
 
 
 def normalize_rule(rule: dict) -> dict:
@@ -18,7 +20,6 @@ def normalize_rule(rule: dict) -> dict:
         "offset": rule.get("offset", 0),
         "type": rule["type"],
     }
-    # value is optional for extraction-only rules (just name, no comparison)
     if "value" in rule:
         normalized["value"] = rule["value"]
     if "name" in rule:
@@ -38,46 +39,52 @@ def normalize_detect(detect) -> dict:
         return {"all": [normalize_rule(r) for r in detect]}
     if isinstance(detect, dict) and "any" in detect:
         return {"any": [normalize_rule(r) for r in detect["any"]]}
-    # Single rule without list wrapper
     if isinstance(detect, dict) and "type" in detect:
         return {"all": [normalize_rule(detect)]}
     return {"all": []}
 
 
-def compile_formats(root: Path) -> dict:
-    """Extract detection rules from docs/format/**/*.md"""
+def compile_formats(catalogue: dict) -> dict:
+    """Extract detection rules from catalogue paths under format/"""
     formats = {}
-    format_dir = root / "docs" / "format"
+    paths = catalogue.get("paths", {})
 
-    if not format_dir.exists():
-        return {"version": 1, "formats": {}}
+    for path, data in paths.items():
+        if not path.startswith("format/"):
+            continue
 
-    for md_file in format_dir.rglob("*.md"):
-        text = md_file.read_text()
-        meta, _ = parse_frontmatter(text)
-
+        meta = data.get("meta", {})
         if "detect" not in meta:
             continue
 
-        # Path relative to format/, without .md, strip /index
-        rel = md_file.relative_to(format_dir)
-        key = str(rel.with_suffix(""))
-        if key.endswith("/index"):
-            key = key[:-6]
-        if key == "index":
-            continue  # Skip root index
+        # Strip "format/" prefix for key
+        key = path[7:]
+        if not key:
+            continue
 
         try:
             formats[key] = normalize_detect(meta["detect"])
         except (KeyError, TypeError) as e:
-            raise ValueError(f"Error in {md_file}: {e}") from e
+            raise ValueError(f"Error in {path}: {e}") from e
 
     return {"version": 1, "formats": formats}
 
 
-def compile_to_file(root: Path, output: Path) -> int:
-    """Compile formats and write to output file. Returns format count."""
-    data = compile_formats(root)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_bytes(msgpack.packb(data))
-    return len(data["formats"])
+def main():
+    if len(sys.argv) != 3:
+        print(f"Usage: {sys.argv[0]} catalogue.json format.bin", file=sys.stderr)
+        sys.exit(1)
+
+    with open(sys.argv[1]) as f:
+        catalogue = json.load(f)
+
+    data = compile_formats(catalogue)
+
+    with open(sys.argv[2], "wb") as f:
+        f.write(msgpack.packb(data))
+
+    print(f"Wrote {len(data['formats'])} formats to {sys.argv[2]}")
+
+
+if __name__ == "__main__":
+    main()
