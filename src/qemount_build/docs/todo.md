@@ -8,8 +8,12 @@
 - [ ] a common interface
   - [x] `/mnt/b1` `/mnt/b2` `/mnt/c` etc for partitioned disks + images
   - [ ] `/sbin/init.$mode` executed when `-m` is passed to the command line
-    - [ ] Fix this in FreeBSD, but in a way that will actually work in future
-          maybe have a shell
+    - [ ] Fix this in FreeBSD, but in a way that will actually work in future.
+          Maybe have a shell?
+- [ ] Python build system
+  - [x] initial build
+  - [x] args and env vars
+  - [ ] carefully think about caching strategy
 
 ## 2. Link it in
 
@@ -20,7 +24,7 @@
     - [ ] file system
   - [ ] qemu wrapper lib
 - [ ] filesystem catalogue
-  - [ ] documentation as code (front-matter)
+  - [x] documentation as code (front-matter)
   - [ ] site generator
 - [ ] clients
   - [x] FUSE
@@ -29,11 +33,10 @@
 
 ## 3. Polish the turd
 
-- [ ] build and install scripts
+- [ ] install scripts
   - [ ] write an installer
   - [ ] xdg launcher
 - [ ] safety
-  - [ ] mount read only by default
   - [ ] test data + framework
     - [ ] data builder for fileystems (27/43)
     - [x] break archives out into a separate path
@@ -48,9 +51,6 @@
     - [ ] spam in file browser (unsupported modes)
   - [ ] Linux runner
     - [ ] change virtserialport to virtconsole for consistency with NetBSD
-  - [ ] Build system
-    - [ ] Download + cache system with automatic cache blowing
-    - [x] Export builder images for long term archival (archive.org)
 
 ## 4. Stretch goals
 
