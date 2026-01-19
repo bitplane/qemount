@@ -32,5 +32,5 @@ $CC --sysroot=$SYSROOT -static -I$LIBIXP/include -o simple9p simple9p.c path.c f
 $STRIP simple9p
 
 # Copy to output
-mkdir -p /host/build/bin/netbsd-${ARCH}/simple9p
-cp -v simple9p /host/build/bin/netbsd-${ARCH}/simple9p/
+mkdir -p /host/build/bin/${ARCH}-netbsd
+cp -v simple9p /host/build/bin/${ARCH}-netbsd/

@@ -3,7 +3,7 @@ title: BusyBox
 requires:
   - sources/busybox-1.36.1.tar.bz2
 provides:
-  - bin/linux-${ARCH}/busybox/busybox
+  - bin/${ARCH}-linux-${ENV}/busybox
 ---
 
 # BusyBox

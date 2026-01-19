@@ -25,9 +25,9 @@ yes "" | make ARCH=$KERNEL_ARCH oldconfig
 make ARCH=$KERNEL_ARCH -j${JOBS}
 
 # Copy kernel image
-mkdir -p /host/build/bin/qemu/linux-${ARCH}/2.6
+mkdir -p /host/build/bin/qemu/${ARCH}-linux/2.6
 if [ "$ARCH" = "x86_64" ]; then
-    cp -v arch/x86_64/boot/bzImage /host/build/bin/qemu/linux-${ARCH}/2.6/kernel
+    cp -v arch/x86_64/boot/bzImage /host/build/bin/qemu/${ARCH}-linux/2.6/kernel
 else
-    cp -v arch/x86/boot/bzImage /host/build/bin/qemu/linux-${ARCH}/2.6/kernel
+    cp -v arch/x86/boot/bzImage /host/build/bin/qemu/${ARCH}-linux/2.6/kernel
 fi

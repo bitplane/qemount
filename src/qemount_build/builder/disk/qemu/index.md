@@ -2,8 +2,8 @@
 title: QEMU Disk Builder
 build_requires:
   - sources/bcachefs-tools-1.20.0.tar.gz
-  - bin/linux-${HOST_ARCH}/mkfs.sysv/mkfs.sysv
-  - bin/linux-${HOST_ARCH}/reiserfsprogs/mkfs.reiserfs
+  - bin/${HOST_ARCH}-linux-musl/mkfs.sysv
+  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs
 provides:
   - docker:builder/disk/qemu
 ---

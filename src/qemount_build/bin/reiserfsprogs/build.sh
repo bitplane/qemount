@@ -11,5 +11,5 @@ make -j${JOBS} -C lib
 make -j${JOBS} -C reiserfscore
 make -j${JOBS} -C mkreiserfs LDFLAGS="-static -all-static"
 
-mkdir -p /host/build/bin/linux-${HOST_ARCH}/reiserfsprogs
-cp mkreiserfs/mkreiserfs /host/build/bin/linux-${HOST_ARCH}/reiserfsprogs/mkfs.reiserfs
+mkdir -p /host/build/bin/${HOST_ARCH}-linux-gnu
+cp mkreiserfs/mkreiserfs /host/build/bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs

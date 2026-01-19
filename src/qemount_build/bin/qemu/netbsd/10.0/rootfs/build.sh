@@ -56,15 +56,15 @@ chmod 755 /ramdisk/init.9p
 cp -v /root/etc/* /ramdisk/etc/
 
 # Copy qemount tools from build
-if [ -f /host/build/bin/netbsd-${ARCH}/simple9p/simple9p ]; then
+if [ -f /host/build/bin/${ARCH}-netbsd/simple9p ]; then
     echo "Adding simple9p..."
-    cp -v /host/build/bin/netbsd-${ARCH}/simple9p/simple9p /ramdisk/bin/
+    cp -v /host/build/bin/${ARCH}-netbsd/simple9p /ramdisk/bin/
     chmod 755 /ramdisk/bin/simple9p
 fi
 
-if [ -f /host/build/bin/netbsd-${ARCH}/socat/socat ]; then
+if [ -f /host/build/bin/${ARCH}-netbsd/socat ]; then
     echo "Adding socat..."
-    cp -v /host/build/bin/netbsd-${ARCH}/socat/socat /ramdisk/bin/
+    cp -v /host/build/bin/${ARCH}-netbsd/socat /ramdisk/bin/
     chmod 755 /ramdisk/bin/socat
 fi
 
@@ -72,7 +72,7 @@ fi
 /usr/tools/bin/nbmakefs -s 16m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/netbsd-${ARCH}/10.0/rootfs
-cp /ramdisk.fs /host/build/bin/qemu/netbsd-${ARCH}/10.0/rootfs/ramdisk.fs
+mkdir -p /host/build/bin/qemu/${ARCH}-netbsd/10.0/rootfs
+cp /ramdisk.fs /host/build/bin/qemu/${ARCH}-netbsd/10.0/rootfs/ramdisk.fs
 
 echo "Done! Ramdisk: $(du -sh /ramdisk | cut -f1)"

@@ -79,7 +79,7 @@ title: BusyBox
 requires:
   - sources/busybox-1.36.1.tar.bz2
 provides:
-  - bin/linux-${ARCH}/busybox/busybox
+  - bin/${ARCH}-linux-${ENV}/busybox
 ---
 ```
 
@@ -96,10 +96,10 @@ builds a container image. `requires: docker:...` means it needs that image.
 python -m qemount_build outputs
 
 # Show dependency graph for a target
-python -m qemount_build deps build/bin/linux-x86_64/busybox/busybox
+python -m qemount_build deps bin/x86_64-linux-musl/busybox
 
 # Build a target (and all dependencies)
-python -m qemount_build build bin/linux-x86_64/busybox/busybox
+python -m qemount_build build bin/x86_64-linux-musl/busybox
 ```
 
 ### Build flow
@@ -173,14 +173,27 @@ The `lib/format/compile.py` script reads these from the catalogue and generates
 Detection is recursive: detect disk image format → detect partition table →
 detect filesystem → detect archive inside → etc.
 
-## Target Naming (TODO)
+## Target Naming
 
-Current state is inconsistent:
-- `bin/linux-x86_64/busybox/busybox` - triple, then name twice
-- `bin/linux-x86_64-musl/detect` - triple includes libc, flat structure
-- `lib/linux-x86_64-gnu/libqemount.a` - triple includes libc
+Paths follow Rust target triple order: `{arch}-{os}[-{env}]`
 
-Needs alignment. See `todo.md`.
+Examples:
+- `bin/x86_64-linux-musl/busybox` - Linux static binary
+- `bin/x86_64-linux-gnu/detect` - Linux dynamic binary
+- `bin/x86_64-netbsd/simple9p` - NetBSD (no env suffix)
+- `lib/x86_64-darwin/libqemount.dylib` - macOS
+- `lib/x86_64-windows/qemount.dll` - Windows
+
+**Environment variables:**
+- `ARCH` - Target architecture (x86_64, aarch64)
+- `HOST_ARCH` - Host machine architecture
+- `ENV` - libc environment (musl, gnu) - only for Linux
+
+**ARCH vs HOST_ARCH:** Some builders can't cross-compile, so they use `HOST_ARCH`
+to indicate "we can only build for the architecture we're running on". This is a
+builder limitation, not a statement about where the binary runs. Both produce the
+same type of output (e.g., static musl binaries), the variable just reflects
+cross-compilation capability.
 
 ## Current State
 

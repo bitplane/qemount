@@ -3,7 +3,7 @@ title: socat
 requires:
   - sources/socat-1.7.4.4.tar.gz
 provides:
-  - bin/netbsd-${ARCH}/socat/socat
+  - bin/${ARCH}-netbsd/socat
 ---
 
 # socat

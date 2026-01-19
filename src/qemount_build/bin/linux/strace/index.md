@@ -3,7 +3,7 @@ title: strace
 requires:
   - sources/strace-6.7.tar.xz
 provides:
-  - bin/linux-${ARCH}/strace/strace
+  - bin/${ARCH}-linux-${ENV}/strace
 ---
 
 # strace

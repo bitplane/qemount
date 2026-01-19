@@ -1,11 +1,11 @@
 ---
 title: Linux 6.17 Boot
 requires:
-  - bin/qemu/linux-${ARCH}/6.17/kernel
-  - bin/qemu/linux-${ARCH}/rootfs/rootfs.img
+  - bin/qemu/${ARCH}-linux/6.17/kernel
+  - bin/qemu/${ARCH}-linux/rootfs/rootfs.img
 provides:
-  - bin/qemu/linux-${ARCH}/6.17/boot/kernel
-  - bin/qemu/linux-${ARCH}/6.17/boot/rootfs.img
+  - bin/qemu/${ARCH}-linux/6.17/boot/kernel
+  - bin/qemu/${ARCH}-linux/6.17/boot/rootfs.img
 support:
   # filesystems
   - format/fs/ext2

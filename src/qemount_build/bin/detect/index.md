@@ -2,22 +2,22 @@
 title: detect
 requires:
   - docker:builder/compiler/rust
-  - lib/linux-x86_64-musl/libqemount.a
-  - lib/linux-x86_64-gnu/libqemount.a
-  - lib/linux-aarch64-musl/libqemount.a
-  - lib/linux-aarch64-gnu/libqemount.a
-  - lib/windows-x86_64/qemount.lib
-  - lib/darwin-x86_64/libqemount.a
-  - lib/darwin-aarch64/libqemount.a
+  - lib/x86_64-linux-musl/libqemount.a
+  - lib/x86_64-linux-gnu/libqemount.a
+  - lib/aarch64-linux-musl/libqemount.a
+  - lib/aarch64-linux-gnu/libqemount.a
+  - lib/x86_64-windows/qemount.lib
+  - lib/x86_64-darwin/libqemount.a
+  - lib/aarch64-darwin/libqemount.a
   - lib/include/qemount.h
 provides:
-  - bin/linux-x86_64-musl/detect
-  - bin/linux-x86_64-gnu/detect
-  - bin/linux-aarch64-musl/detect
-  - bin/linux-aarch64-gnu/detect
-  - bin/windows-x86_64/detect.exe
-  - bin/darwin-x86_64/detect
-  - bin/darwin-aarch64/detect
+  - bin/x86_64-linux-musl/detect
+  - bin/x86_64-linux-gnu/detect
+  - bin/aarch64-linux-musl/detect
+  - bin/aarch64-linux-gnu/detect
+  - bin/x86_64-windows/detect.exe
+  - bin/x86_64-darwin/detect
+  - bin/aarch64-darwin/detect
 ---
 
 # detect

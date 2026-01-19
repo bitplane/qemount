@@ -4,8 +4,8 @@ kernel: "2.6"
 requires:
   - docker:builder/disk/qemu
   - data/templates/basic.tar
-  - bin/qemu/linux-${HOST_ARCH}/2.6/boot/kernel
-  - bin/qemu/linux-${HOST_ARCH}/2.6/boot/rootfs.img
+  - bin/qemu/${HOST_ARCH}-linux/2.6/boot/kernel
+  - bin/qemu/${HOST_ARCH}-linux/2.6/boot/rootfs.img
 provides:
   - data/fs/basic.sysv
 ---

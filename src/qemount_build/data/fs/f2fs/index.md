@@ -3,8 +3,8 @@ format: fs/f2fs
 requires:
   - docker:builder/disk/qemu
   - data/templates/basic.tar
-  - bin/qemu/linux-${HOST_ARCH}/6.17/boot/kernel
-  - bin/qemu/linux-${HOST_ARCH}/6.17/boot/rootfs.img
+  - bin/qemu/${HOST_ARCH}-linux/6.17/boot/kernel
+  - bin/qemu/${HOST_ARCH}-linux/6.17/boot/rootfs.img
 provides:
   - data/fs/basic.f2fs
 ---

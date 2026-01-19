@@ -6,8 +6,8 @@ set -e
 
 HOST_ARCH="${HOST_ARCH:-x86_64}"
 KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.17"')
-KERNEL="/host/build/bin/qemu/linux-${HOST_ARCH}/${KERNEL_VERSION}/boot/kernel"
-ROOTFS="/host/build/bin/qemu/linux-${HOST_ARCH}/${KERNEL_VERSION}/boot/rootfs.img"
+KERNEL="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
+ROOTFS="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
 
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do

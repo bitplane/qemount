@@ -10,8 +10,8 @@ TOOLDIR="/usr/tools"
 echo "Assembling NetBSD boot image for $ARCH..."
 
 # Copy kernel and ramdisk from build
-cp /host/build/bin/qemu/netbsd-${ARCH}/10.0/kernel/netbsd.gdb /work/netbsd.gdb
-cp /host/build/bin/qemu/netbsd-${ARCH}/10.0/rootfs/ramdisk.fs /work/ramdisk.fs
+cp /host/build/bin/qemu/${ARCH}-netbsd/10.0/kernel/netbsd.gdb /work/netbsd.gdb
+cp /host/build/bin/qemu/${ARCH}-netbsd/10.0/rootfs/ramdisk.fs /work/ramdisk.fs
 
 # Embed ramdisk into kernel
 echo "Embedding ramdisk into kernel..."
@@ -33,8 +33,8 @@ $TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /work/boot.img /disklabel.proto
 $TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /work/boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/netbsd-${ARCH}/10.0/boot
-cp /work/boot.img /host/build/bin/qemu/netbsd-${ARCH}/10.0/boot/boot.img
-cp /work/netbsd.stripped /host/build/bin/qemu/netbsd-${ARCH}/10.0/boot/netbsd
+mkdir -p /host/build/bin/qemu/${ARCH}-netbsd/10.0/boot
+cp /work/boot.img /host/build/bin/qemu/${ARCH}-netbsd/10.0/boot/boot.img
+cp /work/netbsd.stripped /host/build/bin/qemu/${ARCH}-netbsd/10.0/boot/netbsd
 
 echo "Done! Boot image: boot.img"

@@ -4,7 +4,7 @@ build_requires:
   - sources/reiserfsprogs-3.6.27.tar.xz
 requires: []
 provides:
-  - bin/linux-${HOST_ARCH}/reiserfsprogs/mkfs.reiserfs
+  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs
 ---
 
 # reiserfsprogs

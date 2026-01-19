@@ -2,6 +2,7 @@
 title: Linux binaries
 env:
   BUILDER: builder/compiler/linux/6:${HOST_ARCH}
+  ENV: musl
 requires:
   - docker:${BUILDER}
 ---

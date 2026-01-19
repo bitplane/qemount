@@ -4,18 +4,18 @@ requires:
   - docker:builder/compiler/rust
   - lib/format.bin
 provides:
-  - lib/linux-x86_64-musl/libqemount.a
-  - lib/linux-x86_64-gnu/libqemount.a
-  - lib/linux-x86_64-gnu/libqemount.so
-  - lib/linux-aarch64-musl/libqemount.a
-  - lib/linux-aarch64-gnu/libqemount.a
-  - lib/linux-aarch64-gnu/libqemount.so
-  - lib/windows-x86_64/qemount.lib
-  - lib/windows-x86_64/qemount.dll
-  - lib/darwin-x86_64/libqemount.a
-  - lib/darwin-x86_64/libqemount.dylib
-  - lib/darwin-aarch64/libqemount.a
-  - lib/darwin-aarch64/libqemount.dylib
-  - lib/wasm/qemount.wasm
+  - lib/x86_64-linux-musl/libqemount.a
+  - lib/x86_64-linux-gnu/libqemount.a
+  - lib/x86_64-linux-gnu/libqemount.so
+  - lib/aarch64-linux-musl/libqemount.a
+  - lib/aarch64-linux-gnu/libqemount.a
+  - lib/aarch64-linux-gnu/libqemount.so
+  - lib/x86_64-windows/qemount.lib
+  - lib/x86_64-windows/qemount.dll
+  - lib/x86_64-darwin/libqemount.a
+  - lib/x86_64-darwin/libqemount.dylib
+  - lib/aarch64-darwin/libqemount.a
+  - lib/aarch64-darwin/libqemount.dylib
+  - lib/wasm32/qemount.wasm
   - lib/include/qemount.h
 ---

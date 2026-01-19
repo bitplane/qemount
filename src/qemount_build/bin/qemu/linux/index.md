@@ -1,5 +1,7 @@
 ---
 title: Linux QEMU Guests
+env:
+  ENV: musl
 ---
 
 # Linux QEMU Guests

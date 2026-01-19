@@ -9,6 +9,6 @@ cd dropbear-2025.88
 
 make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 STATIC=1 -j${JOBS}
 
-mkdir -p /host/build/bin/linux-${ARCH}/dropbear
-cp -v dropbearmulti /host/build/bin/linux-${ARCH}/dropbear/
-strip /host/build/bin/linux-${ARCH}/dropbear/dropbearmulti || true
+mkdir -p /host/build/bin/${ARCH}-linux-${ENV}
+cp -v dropbearmulti /host/build/bin/${ARCH}-linux-${ENV}/
+strip /host/build/bin/${ARCH}-linux-${ENV}/dropbearmulti || true

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-BINDIR="/host/build/bin/linux-${ARCH}"
+BINDIR="/host/build/bin/${ARCH}-linux-${ENV}"
 ROOT="/work/root"
 
 # Start with overlay from image
@@ -9,10 +9,10 @@ cp -a /root "$ROOT"
 
 # Copy binaries
 mkdir -p "$ROOT/bin"
-cp -v "$BINDIR/busybox/busybox" "$ROOT/bin/"
-cp -v "$BINDIR/simple9p/simple9p" "$ROOT/bin/"
-cp -v "$BINDIR/socat/socat" "$ROOT/bin/"
-cp -v "$BINDIR/dropbear/dropbearmulti" "$ROOT/bin/"
+cp -v "$BINDIR/busybox" "$ROOT/bin/"
+cp -v "$BINDIR/simple9p" "$ROOT/bin/"
+cp -v "$BINDIR/socat" "$ROOT/bin/"
+cp -v "$BINDIR/dropbearmulti" "$ROOT/bin/"
 
 # Create busybox symlinks dynamically
 cd "$ROOT/bin"
@@ -35,5 +35,5 @@ truncate -s "$IMG_SIZE" /work/rootfs.img
 mke2fs -t ext2 -d "$ROOT" /work/rootfs.img
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/linux-${ARCH}/rootfs
-cp /work/rootfs.img /host/build/bin/qemu/linux-${ARCH}/rootfs/
+mkdir -p /host/build/bin/qemu/${ARCH}-linux/rootfs
+cp /work/rootfs.img /host/build/bin/qemu/${ARCH}-linux/rootfs/

@@ -3,7 +3,7 @@ title: Dropbear
 requires:
   - sources/dropbear-2025.88.tar.bz2
 provides:
-  - bin/linux-${ARCH}/dropbear/dropbearmulti
+  - bin/${ARCH}-linux-${ENV}/dropbearmulti
 ---
 
 # Dropbear
