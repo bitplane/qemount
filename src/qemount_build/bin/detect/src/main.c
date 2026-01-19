@@ -2,13 +2,23 @@
  * detect - Simple format detection CLI tool
  *
  * Links against libqemount.a via C to validate the C ABI.
+ * Note: Currently Unix only (uses file descriptors).
  */
 
+#ifdef _WIN32
 #include <stdio.h>
-#include <stdlib.h>
-#include "qemount.h"
+int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    fprintf(stderr, "detect: not supported on Windows yet\n");
+    return 1;
+}
+#else
 
-#define BUFFER_SIZE 131072  /* 128KB - needed for btrfs magic at 0x10040 */
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "qemount.h"
 
 static void print_format(const char *format, void *userdata) {
     int *count = (int *)userdata;
@@ -26,23 +36,16 @@ int main(int argc, char **argv) {
 
     const char *path = argv[1];
 
-    FILE *f = fopen(path, "rb");
-    if (!f) {
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
         perror(path);
         return 1;
     }
 
-    unsigned char buffer[BUFFER_SIZE];
-    size_t n = fread(buffer, 1, BUFFER_SIZE, f);
-    fclose(f);
-
-    if (n == 0) {
-        fprintf(stderr, "%s: empty file\n", path);
-        return 1;
-    }
-
     int count = 0;
-    qemount_detect_all(buffer, n, print_format, &count);
+    qemount_detect_fd(fd, print_format, &count);
+    close(fd);
 
     return count > 0 ? 0 : 1;
 }
+#endif
