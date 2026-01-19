@@ -6,18 +6,22 @@ related:
   - format/fs/zfs
 detect:
   any:
-    - offset: 0xa54c
+    - offset: 0x255c
       type: le32
       value: 0x19540119
-    - offset: 0xa54c
+      name: sb_8k_le
+    - offset: 0x255c
       type: be32
       value: 0x19540119
-    - offset: 0x1054c
+      name: sb_8k_be
+    - offset: 0x1055c
       type: le32
       value: 0x19540119
-    - offset: 0x1054c
+      name: sb_64k_le
+    - offset: 0x1055c
       type: be32
       value: 0x19540119
+      name: sb_64k_be
 ---
 
 # UFS2 (Unix File System Version 2)
