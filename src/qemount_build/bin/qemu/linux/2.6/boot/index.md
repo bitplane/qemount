@@ -77,6 +77,7 @@ Bootable Linux 2.6 guest. QEMU loads kernel and rootfs (initrd) separately.
 
 ## Known Issues
 
-- `fs/sysv`: Symlink creation crashes (NULL pointer in sysv_symlink)
+- `fs/sysv`: Symlink creation crashes (NULL pointer in sysv_symlink).
+  Write support is broken. TODO: mark as read-only.
 - `fs/v7`: May have compatibility issues
 - `fs/ntfs`: Read-only via old ntfs driver (not ntfs3)
