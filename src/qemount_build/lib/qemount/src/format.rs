@@ -37,7 +37,7 @@ pub struct Rule {
 #[serde(untagged)]
 pub enum Value {
     Int(i64),
-    Str(String),
+    Bytes(Vec<i64>),
 }
 
 /// Format database with static CStr names for C API

@@ -3,15 +3,6 @@ title: Atari AHDI
 created: 1985
 related:
   - format/pt/mbr
-detect:
-  - offset: 0x1C6
-    type: be32
-    name: partition_start
-    op: nonzero
-    then:
-      - offset: 0x1C2
-        type: string
-        name: partition_id
 ---
 
 # Atari AHDI (Atari Hard Disk Interface)

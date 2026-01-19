@@ -5,12 +5,13 @@ related:
   - format/fs/ubifs
   - format/fs/squashfs
 detect:
-  - offset: 0
-    type: le16
-    value: 0x1985
-  - offset: 0
-    type: be16
-    value: 0x1985
+  any:
+    - offset: 0
+      type: le16
+      value: 0x1985
+    - offset: 0
+      type: be16
+      value: 0x1985
 ---
 
 # JFFS2 (Journalling Flash File System 2)

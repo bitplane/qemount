@@ -45,10 +45,10 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
 
     // Handle string type specially - need expected length to read correct bytes
     if rule.typ == "string" {
-        if let Value::Str(expected_str) = expected {
-            return match_string(reader, offset, expected_str);
-        }
-        return false;
+        return match match_bytes(reader, offset, expected) {
+            Some(matched) => matched,
+            None => false,
+        };
     }
 
     // Read value at offset based on type
@@ -81,12 +81,17 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
     matches
 }
 
-fn match_string(reader: &impl Reader, offset: u64, expected: &str) -> bool {
-    let expected_bytes = expected.as_bytes();
-    let mut buf = vec![0u8; expected_bytes.len()];
+fn match_bytes(reader: &impl Reader, offset: u64, expected: &Value) -> Option<bool> {
+    let expected_bytes = match expected {
+        Value::Bytes(b) => b,
+        _ => return None,
+    };
+    // Convert i64 array to u8 for comparison
+    let expected_u8: Vec<u8> = expected_bytes.iter().map(|&x| x as u8).collect();
+    let mut buf = vec![0u8; expected_u8.len()];
     match reader.read_at(offset, &mut buf) {
-        Ok(n) if n == expected_bytes.len() => buf == expected_bytes,
-        _ => false,
+        Ok(n) if n == expected_u8.len() => Some(buf == expected_u8),
+        _ => Some(false),
     }
 }
 
@@ -156,7 +161,7 @@ fn compare(actual: &Value, expected: &Value, op: &str) -> bool {
             ">=" => a >= e,
             _ => false,
         },
-        (Value::Str(a), Value::Str(e)) => a == e,
+        (Value::Bytes(a), Value::Bytes(e)) => a == e,
         _ => false,
     }
 }

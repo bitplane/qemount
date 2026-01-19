@@ -7,8 +7,7 @@ related:
 detect:
   - offset: 0x1018
     type: string
-    length: 16
-    value: "\xc6\x85\x73\xf6\x4e\x1a\x45\xca\x82\x65\xf5\x7f\x48\xba\x6d\x81"
+    value: "\xc6\x85\x73\xf6"
 ---
 
 # bcachefs

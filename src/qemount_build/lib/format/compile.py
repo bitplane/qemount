@@ -21,7 +21,12 @@ def normalize_rule(rule: dict) -> dict:
         "type": rule["type"],
     }
     if "value" in rule:
-        normalized["value"] = rule["value"]
+        value = rule["value"]
+        # For string type, encode as list of byte values
+        # (avoids msgpack binary type issues with serde untagged enums)
+        if rule["type"] == "string" and isinstance(value, str):
+            value = list(value.encode("latin-1"))
+        normalized["value"] = value
     if "name" in rule:
         normalized["name"] = rule["name"]
     if "op" in rule:
