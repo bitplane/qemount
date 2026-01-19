@@ -5,17 +5,15 @@ discontinued: 2001
 related:
   - format/fs/hfsplus
 detect:
-  - offset: 0x20
-    type: be32
-    value: 0x42465331
-    then:
-      - offset: 0x44
-        type: be32
-        value: 0xdd121031
-        then:
-          - offset: 0x70
-            type: be32
-            value: 0x15b6830e
+  any:
+    - offset: 0x220
+      type: le32
+      value: 0x42465331
+      name: bfs1_magic_le
+    - offset: 0x220
+      type: be32
+      value: 0x42465331
+      name: bfs1_magic_be
 ---
 
 # Be File System (BFS)
