@@ -67,35 +67,45 @@ fn matches_rule(data: &[u8], rule: &Rule) -> bool {
 fn read_value(data: &[u8], offset: usize, typ: &str) -> Option<Value> {
     match typ {
         "byte" => data.get(offset).map(|&b| Value::Int(b as i64)),
-        "le16" => read_le::<2>(data, offset).map(|v| Value::Int(v as i64)),
-        "be16" => read_be::<2>(data, offset).map(|v| Value::Int(v as i64)),
-        "le32" => read_le::<4>(data, offset).map(|v| Value::Int(v as i64)),
-        "be32" => read_be::<4>(data, offset).map(|v| Value::Int(v as i64)),
-        "le64" => read_le::<8>(data, offset).map(|v| Value::Int(v as i64)),
-        "be64" => read_be::<8>(data, offset).map(|v| Value::Int(v as i64)),
+        "le16" => read_le16(data, offset).map(|v| Value::Int(v as i64)),
+        "be16" => read_be16(data, offset).map(|v| Value::Int(v as i64)),
+        "le32" => read_le32(data, offset).map(|v| Value::Int(v as i64)),
+        "be32" => read_be32(data, offset).map(|v| Value::Int(v as i64)),
+        "le64" => read_le64(data, offset).map(|v| Value::Int(v as i64)),
+        "be64" => read_be64(data, offset).map(|v| Value::Int(v as i64)),
         "string" => None, // Handled separately in compare
         _ => None,
     }
 }
 
-fn read_le<const N: usize>(data: &[u8], offset: usize) -> Option<u64> {
-    let bytes: [u8; N] = data.get(offset..offset + N)?.try_into().ok()?;
-    Some(match N {
-        2 => u16::from_le_bytes(bytes[..2].try_into().unwrap()) as u64,
-        4 => u32::from_le_bytes(bytes[..4].try_into().unwrap()) as u64,
-        8 => u64::from_le_bytes(bytes),
-        _ => return None,
-    })
+fn read_le16(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 2] = data.get(offset..offset + 2)?.try_into().ok()?;
+    Some(u16::from_le_bytes(bytes) as u64)
 }
 
-fn read_be<const N: usize>(data: &[u8], offset: usize) -> Option<u64> {
-    let bytes: [u8; N] = data.get(offset..offset + N)?.try_into().ok()?;
-    Some(match N {
-        2 => u16::from_be_bytes(bytes[..2].try_into().unwrap()) as u64,
-        4 => u32::from_be_bytes(bytes[..4].try_into().unwrap()) as u64,
-        8 => u64::from_be_bytes(bytes),
-        _ => return None,
-    })
+fn read_le32(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 4] = data.get(offset..offset + 4)?.try_into().ok()?;
+    Some(u32::from_le_bytes(bytes) as u64)
+}
+
+fn read_le64(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 8] = data.get(offset..offset + 8)?.try_into().ok()?;
+    Some(u64::from_le_bytes(bytes))
+}
+
+fn read_be16(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 2] = data.get(offset..offset + 2)?.try_into().ok()?;
+    Some(u16::from_be_bytes(bytes) as u64)
+}
+
+fn read_be32(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 4] = data.get(offset..offset + 4)?.try_into().ok()?;
+    Some(u32::from_be_bytes(bytes) as u64)
+}
+
+fn read_be64(data: &[u8], offset: usize) -> Option<u64> {
+    let bytes: [u8; 8] = data.get(offset..offset + 8)?.try_into().ok()?;
+    Some(u64::from_be_bytes(bytes))
 }
 
 fn compare(actual: &Value, expected: &Value, op: &str) -> bool {

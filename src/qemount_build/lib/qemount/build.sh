@@ -6,12 +6,11 @@ OUT=/host/build/lib
 # Embed format.bin at compile time
 export QEMOUNT_FORMAT_BIN=/host/build/lib/format.bin
 
-# Linux musl (fully static, portable)
+# Linux musl (fully static, portable - no .so, musl doesn't support cdylib)
 for arch in x86_64 aarch64; do
     cargo zigbuild --release --target ${arch}-unknown-linux-musl
     mkdir -p ${OUT}/linux-${arch}-musl
     cp target/${arch}-unknown-linux-musl/release/libqemount.a ${OUT}/linux-${arch}-musl/
-    cp target/${arch}-unknown-linux-musl/release/libqemount.so ${OUT}/linux-${arch}-musl/
 done
 
 # Linux gnu (glibc 2.17 compat)
@@ -22,13 +21,11 @@ for arch in x86_64 aarch64; do
     cp target/${arch}-unknown-linux-gnu/release/libqemount.so ${OUT}/linux-${arch}-gnu/
 done
 
-# Windows
-for arch in x86_64 aarch64; do
-    cargo zigbuild --release --target ${arch}-pc-windows-gnu
-    mkdir -p ${OUT}/windows-${arch}
-    cp target/${arch}-pc-windows-gnu/release/qemount.dll ${OUT}/windows-${arch}/
-    cp target/${arch}-pc-windows-gnu/release/libqemount.a ${OUT}/windows-${arch}/qemount.lib
-done
+# Windows (x86_64 only - aarch64-pc-windows-gnu not a supported Rust target)
+cargo zigbuild --release --target x86_64-pc-windows-gnu
+mkdir -p ${OUT}/windows-x86_64
+cp target/x86_64-pc-windows-gnu/release/qemount.dll ${OUT}/windows-x86_64/
+cp target/x86_64-pc-windows-gnu/release/libqemount.a ${OUT}/windows-x86_64/qemount.lib
 
 # macOS
 for arch in x86_64 aarch64; do
