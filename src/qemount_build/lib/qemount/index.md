@@ -1,6 +1,7 @@
 ---
 title: qemount library
 requires:
+  - docker:builder/compiler/rust
   - lib/format.bin
 provides:
   - lib/linux-x86_64-musl/libqemount.a

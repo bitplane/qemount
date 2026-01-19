@@ -3,13 +3,14 @@
 use crate::format::{Detect, Rule, Value, FORMATS};
 use std::ffi::CStr;
 
-pub fn detect(data: &[u8]) -> Option<&'static CStr> {
-    for (name, detect) in &FORMATS.formats {
-        if matches_detect(data, detect) {
-            return Some(*name);
-        }
-    }
-    None
+/// Returns all matching format names
+pub fn detect_all(data: &[u8]) -> Vec<&'static CStr> {
+    FORMATS
+        .formats
+        .iter()
+        .filter(|(_, detect)| matches_detect(data, detect))
+        .map(|(name, _)| *name)
+        .collect()
 }
 
 fn matches_detect(data: &[u8], detect: &Detect) -> bool {

@@ -8,11 +8,22 @@ extern "C" {
 #endif
 
 /**
- * Detect format from byte buffer.
- * Returns format path (e.g., "fs/ext4") or NULL if unknown.
- * Returned string is static - do not free.
+ * Callback type for qemount_detect_all.
+ * Called once for each matching format.
  */
-const char* qemount_detect(const unsigned char* data, size_t len);
+typedef void (*qemount_detect_callback)(const char* format, void* userdata);
+
+/**
+ * Detect all matching formats from byte buffer.
+ * Calls the callback for each matching format with its name.
+ * Format strings are static - do not free.
+ */
+void qemount_detect_all(
+    const unsigned char* data,
+    size_t len,
+    qemount_detect_callback callback,
+    void* userdata
+);
 
 /**
  * Get library version string.

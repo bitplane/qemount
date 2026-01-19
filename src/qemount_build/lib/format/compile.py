@@ -33,15 +33,20 @@ def normalize_rule(rule: dict) -> dict:
     return normalized
 
 
-def normalize_detect(detect) -> dict:
-    """Normalize detect block to {all: [...]} or {any: [...]} form."""
+def normalize_detect(detect) -> dict | None:
+    """Normalize detect block to {all: [...]} or {any: [...]} form.
+
+    Returns None if no valid rules (empty list, comments only, etc).
+    """
     if isinstance(detect, list):
-        return {"all": [normalize_rule(r) for r in detect]}
+        rules = [normalize_rule(r) for r in detect]
+        return {"all": rules} if rules else None
     if isinstance(detect, dict) and "any" in detect:
-        return {"any": [normalize_rule(r) for r in detect["any"]]}
+        rules = [normalize_rule(r) for r in detect["any"]]
+        return {"any": rules} if rules else None
     if isinstance(detect, dict) and "type" in detect:
         return {"all": [normalize_rule(detect)]}
-    return {"all": []}
+    return None
 
 
 def compile_formats(catalogue: dict) -> dict:
@@ -63,7 +68,9 @@ def compile_formats(catalogue: dict) -> dict:
             continue
 
         try:
-            formats[key] = normalize_detect(meta["detect"])
+            result = normalize_detect(meta["detect"])
+            if result is not None:
+                formats[key] = result
         except (KeyError, TypeError) as e:
             raise ValueError(f"Error in {path}: {e}") from e
 

@@ -3,9 +3,6 @@ title: Coda
 created: 1987
 related:
   - format/fs/nfs
-detect:
-  # Network filesystem - no on-disk magic
-  # Superblock magic 0x73757245 ("surE") used internally
 ---
 
 # Coda

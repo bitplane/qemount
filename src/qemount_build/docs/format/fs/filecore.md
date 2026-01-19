@@ -3,10 +3,6 @@ title: Filecore
 created: 1987
 related:
   - format/fs/adfs
-detect:
-  # Detection via disc record structure at sector 0
-  # Zone-based map with checksums
-  # No simple magic number - validated by structure
 ---
 
 # Filecore

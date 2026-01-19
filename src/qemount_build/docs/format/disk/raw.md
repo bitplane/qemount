@@ -3,7 +3,6 @@ title: Raw Disk Image
 created: 1980
 related:
   - format/disk/qcow2
-detect: []
 ---
 
 # Raw Disk Image
