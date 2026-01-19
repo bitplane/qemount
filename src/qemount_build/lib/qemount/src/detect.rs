@@ -45,10 +45,16 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
 
     // Handle string type specially - need expected length to read correct bytes
     if rule.typ == "string" {
-        return match match_bytes(reader, offset, expected) {
-            Some(matched) => matched,
-            None => false,
+        let matched = match match_bytes(reader, offset, expected) {
+            Some(m) => m,
+            None => return false,
         };
+        if matched {
+            if let Some(then_rules) = &rule.then_rules {
+                return then_rules.iter().all(|r| matches_rule(reader, r));
+            }
+        }
+        return matched;
     }
 
     // Read value at offset based on type
@@ -97,12 +103,12 @@ fn match_bytes(reader: &impl Reader, offset: u64, expected: &Value) -> Option<bo
 
 fn read_value(reader: &impl Reader, offset: u64, typ: &str) -> Option<Value> {
     match typ {
-        "byte" => read_byte(reader, offset).map(|b| Value::Int(b as i64)),
-        "le16" => read_le16(reader, offset).map(|v| Value::Int(v as i64)),
+        "byte" | "u8" | "i8" => read_byte(reader, offset).map(|b| Value::Int(b as i64)),
+        "le16" | "u16" | "i16" => read_le16(reader, offset).map(|v| Value::Int(v as i64)),
         "be16" => read_be16(reader, offset).map(|v| Value::Int(v as i64)),
-        "le32" => read_le32(reader, offset).map(|v| Value::Int(v as i64)),
+        "le32" | "u32" | "i32" => read_le32(reader, offset).map(|v| Value::Int(v as i64)),
         "be32" => read_be32(reader, offset).map(|v| Value::Int(v as i64)),
-        "le64" => read_le64(reader, offset).map(|v| Value::Int(v as i64)),
+        "le64" | "u64" | "i64" => read_le64(reader, offset).map(|v| Value::Int(v as i64)),
         "be64" => read_be64(reader, offset).map(|v| Value::Int(v as i64)),
         "string" => None, // Handled separately in compare
         _ => None,

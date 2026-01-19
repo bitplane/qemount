@@ -4,14 +4,10 @@ created: 1985
 related:
   - format/pt/mbr
 detect:
-  - offset: 0x1FE
-    type: be16
-    value: 0x55AA
-    name: boot_signature
-    then:
-      - offset: 0x600
-        type: string
-        name: sysv_marker
+  - offset: 0xF8
+    type: string
+    value: "MOTOROLA"
+    name: vid_mac
 ---
 
 # SYSV68 (Motorola 68k System V)
