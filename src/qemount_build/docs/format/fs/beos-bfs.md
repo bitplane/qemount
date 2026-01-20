@@ -52,6 +52,7 @@ Filesystem which is also called "bfs".
 | 0xEB | BeOS |
 | 0x2A | AtheOS/Syllable (AthFS) |
 | 0x2B | SyllableSecure (SylStor) |
+| 0xEC | SkyOS (SkyFS) |
 
 ## Variants
 
@@ -62,9 +63,10 @@ Filesystem which is also called "bfs".
 | AtheOS | Kurt Skauen's OS (dead) |
 | Syllable | AtheOS fork by Kristian van der Vliet (2002) |
 | SylStor | Syllable variant with ACLs/security |
+| SkyOS | Robert Szeleney's hobby OS (1996-2008) |
 
-AtheOS/Syllable use AthFS, which started with exactly the same data structures
-as BFS and extended it. Uses the same magic number, so detection works the same.
+AtheOS/Syllable use AthFS, SkyOS uses SkyFS - both forked from OpenBFS and
+use the same data structures and magic number, so detection works the same.
 
 ## Legacy
 

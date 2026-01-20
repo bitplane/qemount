@@ -51,6 +51,7 @@ allocation.
 | NetBSD | WAPBL journaling (optional) |
 | OpenBSD | Softdep |
 | MirOS BSD | OpenBSD fork |
+| NeXTStep | BSD 4.3 variant, Mach-based |
 
 ## MBR Partition Types
 
@@ -62,6 +63,7 @@ by the UFS magic number regardless:
 | 0x27 | MirOS BSD |
 | 0xA5 | FreeBSD |
 | 0xA6 | OpenBSD |
+| 0xA7 | NeXTStep |
 | 0xA9 | NetBSD |
 
 Note: BSD systems typically use a disklabel inside the partition for

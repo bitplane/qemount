@@ -3,6 +3,8 @@ title: Fossil
 created: 2002
 related:
   - format/pt/plan9
+  - format/fs/kfs
+  - format/fs/cwfs
 detect:
   - offset: 0
     type: be32
@@ -80,9 +82,9 @@ Venti is a companion archival storage system:
 
 | Name | Description |
 |------|-------------|
-| KFS | Older, simpler filesystem |
+| KFS | Original Ken Thompson filesystem, 6KB blocks |
 | CWFS | Cached WORM File Server, 16KB blocks |
-| 9fat | FAT for boot files |
+| 9fat | FAT partition for boot files |
 
 ## Current Status
 
