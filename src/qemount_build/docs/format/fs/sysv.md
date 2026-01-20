@@ -6,9 +6,15 @@ related:
   - format/fs/sco-bfs
   - format/fs/minix
 detect:
-  - offset: 0x3f8
-    type: le32
-    value: 0xfd187e20
+  any:
+    # SystemV: magic at offset 0x3f8 (block 1 + 0x1f8)
+    - offset: 0x3f8
+      type: le32
+      value: 0xfd187e20
+    # Xenix: magic at offset 0x5f8 (block 1 + 1016)
+    - offset: 0x5f8
+      type: le32
+      value: 0x2b5544
 ---
 
 # System V Filesystem (sysv)
