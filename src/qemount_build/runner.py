@@ -57,12 +57,25 @@ def build_image(
     return True
 
 
-def run_container(image: str, build_dir: Path, env: dict) -> bool:
-    """Run a container with the given environment."""
+def run_container(
+    image: str,
+    build_dir: Path,
+    env: dict,
+    targets: list[str] | None = None,
+) -> bool:
+    """Run a container with the given environment.
+
+    If targets is provided, they are passed as positional args to the
+    container entrypoint. Build scripts can use these to filter which
+    outputs to build.
+    """
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)
+
+    if targets:
+        cmd.extend(targets)
 
     log.info("Running: %s", image)
     result = subprocess.run(cmd)
@@ -119,6 +132,7 @@ def run_build(
 
         docker_tags = get_docker_provides(provides)
         file_outputs = get_file_provides(provides)
+        needed_outputs = get_file_provides(graph["needed"].get(path, []))
         dockerfile = pkg_dir / path / "Dockerfile"
         runs_on_tag = get_image_tag(resolved)
 
@@ -144,9 +158,9 @@ def run_build(
         if not file_outputs:
             continue
 
-        # Check if outputs already exist
-        if not force and all((build_dir / o).exists() for o in file_outputs):
-            log.info("Exists: %s", ", ".join(file_outputs))
+        # Check if needed outputs already exist
+        if not force and all((build_dir / o).exists() for o in needed_outputs):
+            log.info("Exists: %s", ", ".join(needed_outputs))
             continue
 
         # Use runs_on tag if no Dockerfile was built
@@ -155,12 +169,12 @@ def run_build(
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
-        if not run_container(tag, build_dir, env):
+        if not run_container(tag, build_dir, env, needed_outputs):
             log.error("Failed to run: %s", path)
             return False
 
-        # Verify outputs
-        for output in file_outputs:
+        # Verify needed outputs were created
+        for output in needed_outputs:
             if not (build_dir / output).exists():
                 log.error("Output was not created: %s", output)
                 return False

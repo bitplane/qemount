@@ -342,6 +342,7 @@ def build_graph(target: str, catalogue: dict, context: dict) -> dict:
         - edges: [(from_path, to_path), ...]
         - target: the catalogue path that provides the target
         - order: topologically sorted list of paths (dependencies first)
+        - needed: {path: set of outputs needed from that path}
     """
     index = build_provides_index(catalogue, context)
 
@@ -352,12 +353,18 @@ def build_graph(target: str, catalogue: dict, context: dict) -> dict:
     edges = []
     visited = set()
     order = []
+    needed = {}  # path -> set of outputs needed from that path
 
     def visit(output: str, chain: list):
         if output not in index:
             raise KeyError(f"No provider for: {output} (required by {chain[-1] if chain else 'root'})")
 
         path = index[output]
+
+        # Track which output we actually need from this path
+        if path not in needed:
+            needed[path] = set()
+        needed[path].add(output)
 
         if path in chain:
             cycle = chain[chain.index(path):] + [path]
@@ -383,4 +390,5 @@ def build_graph(target: str, catalogue: dict, context: dict) -> dict:
         "edges": edges,
         "target": index[target],
         "order": order,  # dependencies first, target last
+        "needed": needed,
     }
