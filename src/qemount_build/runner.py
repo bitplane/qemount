@@ -10,6 +10,16 @@ import subprocess
 from pathlib import Path
 
 from .catalogue import resolve_path, build_graph
+from .cache import (
+    load_cache,
+    save_cache,
+    hash_path_inputs,
+    hash_build_requires,
+    is_output_dirty,
+    is_image_dirty,
+    update_output_hash,
+    update_image_hash,
+)
 
 log = logging.getLogger(__name__)
 
@@ -23,20 +33,38 @@ def image_exists(tag: str) -> bool:
     return result.returncode == 0
 
 
+def get_image_id(tag: str) -> str | None:
+    """Get the ID of a container image."""
+    result = subprocess.run(
+        ["podman", "image", "inspect", tag, "--format", "{{.Id}}"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
+
+
 def build_image(
     context_dir: Path,
     tag: str,
     env: dict,
     build_requires: list[str] | None = None,
     build_dir: Path | None = None,
-) -> bool:
+    no_cache: bool = False,
+) -> str | None:
     """Build a container image.
 
     If build_requires is provided, mount those paths from build_dir
     into the build context as read-only volumes.
+
+    Returns the image ID on success, None on failure.
     """
-    log.info("Building image: %s", tag)
+    log.info("Building image: %s%s", tag, " (no-cache)" if no_cache else "")
     cmd = ["podman", "build"]
+
+    if no_cache:
+        cmd.append("--no-cache")
 
     # Mount build_requires as volumes
     if build_requires and build_dir:
@@ -50,11 +78,12 @@ def build_image(
     cmd.extend(["-t", tag, "."])
     result = subprocess.run(cmd, cwd=context_dir)
     if result.returncode != 0:
-        return False
-    if not image_exists(tag):
+        return None
+    image_id = get_image_id(tag)
+    if not image_id:
         log.error("Image was not created: %s", tag)
-        return False
-    return True
+        return None
+    return image_id
 
 
 def run_container(
@@ -117,8 +146,12 @@ def run_build(
     - docker: provides requires a Dockerfile
     - file provides requires either Dockerfile or runs_on
     - runs_on specifies which image to use when no Dockerfile
+
+    Uses input hashing to skip builds when inputs haven't changed.
     """
     graph = build_graph(target, catalogue, context)
+    cache = load_cache(build_dir)
+    dep_hashes = {}  # path -> computed input hash
 
     for path in graph["order"]:
         path_context = {**context, "SELF": path}
@@ -135,6 +168,11 @@ def run_build(
         needed_outputs = get_file_provides(graph["needed"].get(path, []))
         dockerfile = pkg_dir / path / "Dockerfile"
         runs_on_tag = get_image_tag(resolved)
+        build_requires = list(resolved.get("build_requires", {}).keys())
+
+        # Compute input hash for this path (Merkle tree)
+        input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes)
+        dep_hashes[path] = input_hash
 
         # Validate: docker provides requires Dockerfile
         if docker_tags and not dockerfile.exists():
@@ -149,18 +187,38 @@ def run_build(
         # Build image if Dockerfile exists
         if dockerfile.exists():
             tag = docker_tags[0] if docker_tags else f"localhost/{path}"
-            # Extract build_requires for volume mounts
-            build_requires = list(resolved.get("build_requires", {}).keys())
-            if not build_image(dockerfile.parent, tag, env, build_requires, build_dir):
+
+            # Check if build_requires changed - if so, force --no-cache
+            br_hash = hash_build_requires(build_requires, build_dir)
+            needs_no_cache = force or is_image_dirty(
+                tag, br_hash, cache, image_exists
+            )
+
+            image_id = build_image(
+                dockerfile.parent, tag, env, build_requires, build_dir,
+                no_cache=needs_no_cache,
+            )
+            if not image_id:
                 return False
+
+            # Update cache with new image state
+            update_image_hash(cache, tag, br_hash, image_id)
 
         # Done if no file outputs
         if not file_outputs:
             continue
 
-        # Check if needed outputs already exist
-        if not force and all((build_dir / o).exists() for o in needed_outputs):
-            log.info("Exists: %s", ", ".join(needed_outputs))
+        # Find dirty outputs (missing or hash changed)
+        if force:
+            dirty_outputs = needed_outputs
+        else:
+            dirty_outputs = [
+                o for o in needed_outputs
+                if is_output_dirty(o, input_hash, cache, build_dir)
+            ]
+
+        if not dirty_outputs:
+            log.info("Clean: %s", path)
             continue
 
         # Use runs_on tag if no Dockerfile was built
@@ -169,15 +227,17 @@ def run_build(
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
-        if not run_container(tag, build_dir, env, needed_outputs):
+        if not run_container(tag, build_dir, env, dirty_outputs):
             log.error("Failed to run: %s", path)
             return False
 
-        # Verify needed outputs were created
-        for output in needed_outputs:
+        # Verify dirty outputs were created and update cache
+        for output in dirty_outputs:
             if not (build_dir / output).exists():
                 log.error("Output was not created: %s", output)
                 return False
+            update_output_hash(cache, output, input_hash)
 
+    save_cache(build_dir, cache)
     log.info("Build complete")
     return True

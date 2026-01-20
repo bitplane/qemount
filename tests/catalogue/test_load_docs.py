@@ -28,17 +28,3 @@ def test_load_no_frontmatter():
     docs = load_docs(DATA_DIR / "simple")
     assert docs["text.md"]["meta"] == {}
     assert "Plain Text" in docs["text.md"]["content"]
-
-
-def test_load_includes_hash():
-    """Each doc has an md5 hash of file content."""
-    docs = load_docs(DATA_DIR / "simple")
-    for path, doc in docs.items():
-        assert "hash" in doc
-        assert len(doc["hash"]) == 32  # md5 hex length
-
-
-def test_load_hash_value():
-    """Hash matches expected value for text.md (no front-matter)."""
-    docs = load_docs(DATA_DIR / "simple")
-    assert docs["text.md"]["hash"] == "337dd4edeb087604f1c3c9e74c4b604a"
