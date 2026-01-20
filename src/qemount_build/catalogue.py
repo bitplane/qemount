@@ -329,7 +329,7 @@ def build_provides_index(catalogue: dict, context: dict) -> dict:
     return index
 
 
-def build_graph(targets: str | list[str], catalogue: dict, context: dict) -> dict:
+def build_graph(targets: str | list[str], catalogue: dict, context: dict, build_dir: "Path | None" = None) -> dict:
     """
     Build dependency graph for one or more targets.
 
@@ -339,6 +339,9 @@ def build_graph(targets: str | list[str], catalogue: dict, context: dict) -> dic
         - targets: list of catalogue paths that provide the targets
         - order: topologically sorted list of paths (dependencies first)
         - needed: {path: set of outputs needed from that path}
+
+    If build_dir is provided, file dependencies that exist there are allowed
+    even without a catalogue provider (e.g., catalogue.json).
     """
     if isinstance(targets, str):
         targets = [targets]
@@ -357,6 +360,9 @@ def build_graph(targets: str | list[str], catalogue: dict, context: dict) -> dic
 
     def visit(output: str, chain: list):
         if output not in index:
+            # Allow file dependencies that exist in build_dir
+            if build_dir and (build_dir / output).exists():
+                return
             raise KeyError(f"No provider for: {output} (required by {chain[-1] if chain else 'root'})")
 
         path = index[output]

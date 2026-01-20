@@ -5,37 +5,39 @@ related:
   - format/pt/gpt
   - format/pt/minix
 detect:
+  # MBR: boot sig + not FAT jump + at least one partition entry
   - offset: 510
     type: le16
     value: 0xAA55
-    name: boot_signature
     then:
+      # FAT uses 0xEB (short jmp) or 0xE9 (near jmp) at byte 0
       - offset: 0
         type: byte
         op: "!="
         value: 0xEB
-        name: not_fat_jump
-      - any:
-          - offset: 450
+        then:
+          - offset: 0
             type: byte
             op: "!="
-            value: 0
-            name: partition_1_type
-          - offset: 466
-            type: byte
-            op: "!="
-            value: 0
-            name: partition_2_type
-          - offset: 482
-            type: byte
-            op: "!="
-            value: 0
-            name: partition_3_type
-          - offset: 498
-            type: byte
-            op: "!="
-            value: 0
-            name: partition_4_type
+            value: 0xE9
+            then:
+              - any:
+                  - offset: 450
+                    type: byte
+                    op: "!="
+                    value: 0
+                  - offset: 466
+                    type: byte
+                    op: "!="
+                    value: 0
+                  - offset: 482
+                    type: byte
+                    op: "!="
+                    value: 0
+                  - offset: 498
+                    type: byte
+                    op: "!="
+                    value: 0
 ---
 
 # MBR (Master Boot Record)

@@ -5,16 +5,30 @@ related:
   - format/fs/fat16
   - format/fs/fat32
 detect:
-  # FAT detection is complex - based on BPB fields not simple magic.
-  # FAT12 is determined by cluster count < 4085, but we can use heuristics.
-  - offset: 0x1FE
-    type: le16
-    value: 0xAA55
+  # FAT12: jump + nop + boot sig + valid media descriptor + small volume
+  # Based on libmagic - works for pre-DOS 4.0 (no FAT12 label)
+  - offset: 0
+    type: byte
+    value: 0xEB
     then:
-      - offset: 0x36
-        type: string
-        length: 8
-        value: "FAT12   "
+      - offset: 2
+        type: byte
+        value: 0x90
+        then:
+          - offset: 0x1FE
+            type: le16
+            value: 0xAA55
+            then:
+              - offset: 0x15
+                type: byte
+                op: ">="
+                value: 0xF0
+                then:
+                  # Total sectors 16-bit, small = FAT12 (floppies, small vols)
+                  - offset: 0x13
+                    type: le16
+                    op: "<="
+                    value: 32680
 ---
 
 # FAT12

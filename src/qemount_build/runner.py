@@ -149,7 +149,7 @@ def run_build(
 
     Uses input hashing to skip builds when inputs haven't changed.
     """
-    graph = build_graph(targets, catalogue, context)
+    graph = build_graph(targets, catalogue, context, build_dir)
     cache = load_cache(build_dir)
     dep_hashes = {}  # path -> computed input hash
 
@@ -171,7 +171,7 @@ def run_build(
         build_requires = list(resolved.get("build_requires", {}).keys())
 
         # Compute input hash for this path (Merkle tree)
-        input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes)
+        input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes, build_dir)
         dep_hashes[path] = input_hash
 
         # Validate: docker provides requires Dockerfile

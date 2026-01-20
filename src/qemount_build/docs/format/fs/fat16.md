@@ -6,14 +6,35 @@ related:
   - format/fs/fat12
   - format/fs/fat32
 detect:
-  - offset: 0x1FE
-    type: le16
-    value: 0xAA55
+  # FAT16: jump + nop + boot sig + valid media + larger volume + not FAT32
+  - offset: 0
+    type: byte
+    value: 0xEB
     then:
-      - offset: 0x36
-        type: string
-        length: 8
-        value: "FAT16   "
+      - offset: 2
+        type: byte
+        value: 0x90
+        then:
+          - offset: 0x1FE
+            type: le16
+            value: 0xAA55
+            then:
+              - offset: 0x15
+                type: byte
+                op: ">="
+                value: 0xF0
+                then:
+                  # Sectors per FAT (16-bit) > 0 means not FAT32
+                  - offset: 0x16
+                    type: le16
+                    op: ">"
+                    value: 0
+                    then:
+                      # Total sectors > FAT12 threshold
+                      - offset: 0x13
+                        type: le16
+                        op: ">"
+                        value: 32680
 ---
 
 # FAT16

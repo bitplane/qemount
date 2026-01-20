@@ -1,5 +1,7 @@
 ---
 title: Format detection rules
+requires:
+  - catalogue.json
 provides:
   - lib/format.bin
 ---
