@@ -68,7 +68,7 @@ def cmd_deps(args, catalogue, context):
             print(path)
     else:
         print(f"Target: {args.target}")
-        print(f"Provider: {graph['target']}")
+        print(f"Provider: {graph['targets'][0]}")
         print(f"\nBuild order ({len(graph['order'])} steps):")
         for i, path in enumerate(graph["order"], 1):
             print(f"  {i}. {path}")
@@ -77,7 +77,7 @@ def cmd_deps(args, catalogue, context):
 
 
 def cmd_build(args, catalogue, context):
-    """Build a target and its dependencies."""
+    """Build targets and their dependencies."""
     pkg_dir = Path(__file__).parent
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
@@ -87,18 +87,15 @@ def cmd_build(args, catalogue, context):
     catalogue_file.write_text(json.dumps(catalogue, indent=2))
     log.debug("Wrote catalogue to %s", catalogue_file)
 
-    for target in args.targets:
-        success = run_build(
-            target,
-            catalogue,
-            context,
-            build_dir,
-            pkg_dir,
-            force=args.force,
-        )
-        if not success:
-            return 1
-    return 0
+    success = run_build(
+        args.targets,
+        catalogue,
+        context,
+        build_dir,
+        pkg_dir,
+        force=args.force,
+    )
+    return 0 if success else 1
 
 
 def main():

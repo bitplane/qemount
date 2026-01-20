@@ -1,6 +1,8 @@
 #ifndef QEMOUNT_H
 #define QEMOUNT_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,6 +25,35 @@ typedef void (*qemount_detect_callback)(const char* format, void* userdata);
 void qemount_detect_fd(
     int fd,
     qemount_detect_callback callback,
+    void* userdata
+);
+
+/**
+ * Callback type for qemount_detect_tree_fd.
+ * Called once for each node in the detection tree.
+ *
+ * @param format Format name (e.g., "arc/gzip", "fs/ext4")
+ * @param index Index within parent container (partition number, etc.)
+ * @param depth Nesting depth (0 for root level)
+ * @param userdata User-provided context
+ */
+typedef void (*qemount_detect_tree_callback)(
+    const char* format,
+    uint32_t index,
+    uint32_t depth,
+    void* userdata
+);
+
+/**
+ * Detect format tree from file descriptor.
+ * Recursively detects formats in containers (gzip, tar, partition tables, etc.)
+ * Calls the callback for each detected format with its position in the tree.
+ *
+ * Note: Unix only. Not available on Windows.
+ */
+void qemount_detect_tree_fd(
+    int fd,
+    qemount_detect_tree_callback callback,
     void* userdata
 );
 #endif

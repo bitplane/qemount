@@ -17,7 +17,7 @@ def test_build_graph_simple_chain():
 
     graph = build_graph("a-output", cat, ctx)
 
-    assert graph["target"] == "a"
+    assert graph["targets"] == ["a"]
     assert graph["order"] == ["", "b", "a"]  # root, b, a (deps first)
 
 

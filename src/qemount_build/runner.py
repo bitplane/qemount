@@ -132,7 +132,7 @@ def get_file_provides(provides: list) -> list:
 
 
 def run_build(
-    target: str,
+    targets: str | list[str],
     catalogue: dict,
     context: dict,
     build_dir: Path,
@@ -140,7 +140,7 @@ def run_build(
     force: bool = False,
 ) -> bool:
     """
-    Build a target and all its dependencies.
+    Build targets and all their dependencies.
 
     Rules:
     - docker: provides requires a Dockerfile
@@ -149,7 +149,7 @@ def run_build(
 
     Uses input hashing to skip builds when inputs haven't changed.
     """
-    graph = build_graph(target, catalogue, context)
+    graph = build_graph(targets, catalogue, context)
     cache = load_cache(build_dir)
     dep_hashes = {}  # path -> computed input hash
 
@@ -225,6 +225,13 @@ def run_build(
         # Use runs_on tag if no Dockerfile was built
         if runs_on_tag:
             tag = runs_on_tag
+
+        # Remove dirty outputs before rebuilding
+        for output in dirty_outputs:
+            output_path = build_dir / output
+            if output_path.exists():
+                log.info("Removing stale: %s", output)
+                output_path.unlink()
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)

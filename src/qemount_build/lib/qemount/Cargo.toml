@@ -9,6 +9,7 @@ description = "Universal filesystem detection and mounting library"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
+flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 libc = "0.2"
 rmp-serde = "1"
 serde = { version = "1", features = ["derive"] }

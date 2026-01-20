@@ -1,5 +1,6 @@
 //! qemount - Universal filesystem detection and mounting library
 
+mod container;
 mod detect;
 mod format;
 
@@ -61,4 +62,41 @@ pub extern "C" fn qemount_detect_fd(
 pub extern "C" fn qemount_version() -> *const c_char {
     static VERSION: &[u8] = b"0.1.0\0";
     VERSION.as_ptr() as *const c_char
+}
+
+/// Callback type for qemount_detect_tree_fd
+/// Called for each node in the detection tree.
+/// - format: format name (static, do not free)
+/// - index: index within parent (0 for root level)
+/// - depth: nesting depth (0 for root level)
+/// - userdata: user-provided context
+pub type DetectTreeCallback =
+    extern "C" fn(format: *const c_char, index: u32, depth: u32, userdata: *mut c_void);
+
+/// Detect format tree from file descriptor.
+/// Recursively detects formats in containers (gzip, tar, partition tables, etc.)
+/// Calls the callback for each detected format with its position in the tree.
+#[cfg(unix)]
+#[no_mangle]
+pub extern "C" fn qemount_detect_tree_fd(
+    fd: std::os::unix::io::RawFd,
+    callback: DetectTreeCallback,
+    userdata: *mut c_void,
+) {
+    let reader = FdReader { fd };
+    let tree = detect::detect_tree(&reader);
+
+    fn walk_tree(
+        nodes: &[detect::DetectNode],
+        depth: u32,
+        callback: DetectTreeCallback,
+        userdata: *mut c_void,
+    ) {
+        for node in nodes {
+            callback(node.format.as_ptr(), node.index, depth, userdata);
+            walk_tree(&node.children, depth + 1, callback, userdata);
+        }
+    }
+
+    walk_tree(&tree, 0, callback, userdata);
 }

@@ -16,12 +16,18 @@ int main(int argc, char **argv) {
 #else
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "qemount.h"
 
-static void print_format(const char *format, void *userdata) {
+static void print_format_tree(const char *format, uint32_t index,
+                              uint32_t depth, void *userdata) {
     int *count = (int *)userdata;
+    for (uint32_t i = 0; i < depth; i++)
+        printf("  ");
+    if (depth > 0)
+        printf("[%u] ", index);
     printf("%s\n", format);
     (*count)++;
 }
@@ -29,7 +35,8 @@ static void print_format(const char *format, void *userdata) {
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-        fprintf(stderr, "\nDetects all matching formats for a file using libqemount.\n");
+        fprintf(stderr, "\nDetects format tree for a file using libqemount.\n");
+        fprintf(stderr, "Recursively detects formats in containers.\n");
         fprintf(stderr, "libqemount version: %s\n", qemount_version());
         return 1;
     }
@@ -43,7 +50,7 @@ int main(int argc, char **argv) {
     }
 
     int count = 0;
-    qemount_detect_fd(fd, print_format, &count);
+    qemount_detect_tree_fd(fd, print_format_tree, &count);
     close(fd);
 
     return count > 0 ? 0 : 1;

@@ -329,21 +329,25 @@ def build_provides_index(catalogue: dict, context: dict) -> dict:
     return index
 
 
-def build_graph(target: str, catalogue: dict, context: dict) -> dict:
+def build_graph(targets: str | list[str], catalogue: dict, context: dict) -> dict:
     """
-    Build dependency graph for a target.
+    Build dependency graph for one or more targets.
 
     Returns dict with:
         - nodes: {path: resolved_meta}
         - edges: [(from_path, to_path), ...]
-        - target: the catalogue path that provides the target
+        - targets: list of catalogue paths that provide the targets
         - order: topologically sorted list of paths (dependencies first)
         - needed: {path: set of outputs needed from that path}
     """
+    if isinstance(targets, str):
+        targets = [targets]
+
     index = build_provides_index(catalogue, context)
 
-    if target not in index:
-        raise KeyError(f"No provider for target: {target}")
+    for target in targets:
+        if target not in index:
+            raise KeyError(f"No provider for target: {target}")
 
     nodes = {}
     edges = []
@@ -379,12 +383,13 @@ def build_graph(target: str, catalogue: dict, context: dict) -> dict:
 
         order.append(path)
 
-    visit(target, [])
+    for target in targets:
+        visit(target, [])
 
     return {
         "nodes": nodes,
         "edges": edges,
-        "target": index[target],
-        "order": order,  # dependencies first, target last
+        "targets": [index[t] for t in targets],
+        "order": order,  # dependencies first, targets last
         "needed": needed,
     }
