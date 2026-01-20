@@ -173,6 +173,66 @@ The `lib/format/compile.py` script reads these from the catalogue and generates
 Detection is recursive: detect disk image format → detect partition table →
 detect filesystem → detect archive inside → etc.
 
+## Format Documentation vs Guest Capabilities
+
+**Separation of concerns:** Format documentation and guest capabilities are distinct.
+
+**Format docs (`docs/format/`)** describe what formats look like:
+- Detection rules (magic bytes, offsets, structures)
+- Feature flags (ext4 with encryption, NTFS with compression)
+- Container structure (what children a format can have)
+- Pure documentation - no mention of implementations or guests
+
+**Guest manifests** declare what a guest can mount:
+- Supported formats and features
+- Resource requirements (RAM, disk)
+- Available transports (9P, SSH, NFS)
+- Architecture constraints
+
+**Selection engine** (runtime) matches detected formats to available guests:
+- Input: detection tree, available guests, client constraints
+- Output: viable mounting options, ranked
+- Handles composite mounting (different guests for different subtrees)
+
+This separation means:
+- Format docs stay pure and reusable
+- New guests just declare capabilities, don't modify format docs
+- Selection logic is centralized, not scattered
+
+## Recursive Detection and Container Readers
+
+Detection returns a tree structure:
+
+```
+{
+  format: "disk/vmdk",
+  children: [
+    {
+      index: 0,
+      format: "pt/gpt",
+      children: [
+        {index: 0, format: "fs/ext4", features: ["extent", "64bit"]},
+        {index: 1, format: "fs/ntfs", features: []},
+        {index: 0, format: "fs/swap"},  // same index = same partition, different detection
+      ]
+    }
+  ]
+}
+```
+
+**Key concepts:**
+- `index` identifies a child within its parent (partition number, track number)
+- Same index with different formats = multiple valid interpretations (ISO + Joliet + RockRidge)
+- Path through indices gives unique addressing: `/0/gpt/1/ntfs`
+- Features are detected properties that affect guest selection
+
+**Container readers** enumerate children for container formats:
+- `arc/gzip` → single decompressed stream
+- `pt/mbr`, `pt/gpt` → partition spans (offset + length)
+- `disk/qcow2` → virtual block device (needs translation)
+
+Readers register by format path, matching the catalogue structure.
+
 ## Target Naming
 
 Paths follow Rust target triple order: `{arch}-{os}[-{env}]`
