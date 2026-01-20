@@ -2,6 +2,7 @@
 title: qemount library
 env:
   CARGO_HOME: /host/build/cache/cargo
+  CARGO_TARGET_DIR: /host/build/cache/cargo-target
   ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
 requires:
   - docker:builder/compiler/rust
