@@ -49,6 +49,24 @@ allocation.
 | SunOS/Solaris | Logging UFS |
 | FreeBSD | Soft updates |
 | NetBSD | WAPBL journaling (optional) |
+| OpenBSD | Softdep |
+| MirOS BSD | OpenBSD fork |
+
+## MBR Partition Types
+
+BSD systems use their own partition types, but the filesystem is detected
+by the UFS magic number regardless:
+
+| Type | OS |
+|------|----|
+| 0x27 | MirOS BSD |
+| 0xA5 | FreeBSD |
+| 0xA6 | OpenBSD |
+| 0xA9 | NetBSD |
+
+Note: BSD systems typically use a disklabel inside the partition for
+further subdivision, so the MBR partition contains a BSD disklabel
+which then contains the actual UFS filesystem(s).
 
 ## Magic Number
 

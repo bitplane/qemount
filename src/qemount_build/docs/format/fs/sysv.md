@@ -44,11 +44,26 @@ with improvements for larger disks and better performance.
 
 The Linux kernel sysv driver supports multiple variants:
 
-| Type | Description |
-|------|-------------|
-| Xenix | Microsoft/SCO Xenix |
-| SystemV/386 | AT&T System V for x86 |
-| Coherent | Mark Williams Coherent Unix |
+| Type | Description | MBR Type |
+|------|-------------|----------|
+| Xenix | Microsoft/SCO Xenix | 0x02, 0x03 |
+| SystemV/386 | AT&T System V for x86 | 0x63 |
+| Coherent | Mark Williams Coherent Unix | 0x09 |
+| OPUS | Unisys Open Parallel Server (SVR4) | 0x0A |
+
+### Coherent
+
+Coherent was a Unix clone marketed by Mark Williams Company from 1980 to 1995.
+It sold for $99 and approximately 40,000 copies were sold. Coherent partitions
+must be primary.
+
+Unlike SystemV and Xenix, Coherent has no magic number. The Linux kernel
+detects it by checking for specific strings in the superblock:
+
+- `s_fname` field: "noname" or "xxxxx "
+- `s_fpack` field: "nopack" or "xxxxx\n"
+
+This requires heuristic detection rather than simple magic matching.
 
 ## Known Issues
 
