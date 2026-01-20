@@ -23,10 +23,12 @@ def load_cache(build_dir: Path) -> dict:
 
 
 def save_cache(build_dir: Path, cache: dict):
-    """Save hash cache to disk."""
+    """Save hash cache to disk atomically."""
     path = build_dir / CACHE_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(cache, indent=2, sort_keys=True))
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(cache, indent=2, sort_keys=True))
+    tmp.rename(path)
 
 
 def hash_files(directory: Path) -> str:

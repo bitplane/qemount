@@ -201,8 +201,9 @@ def run_build(
             if not image_id:
                 return False
 
-            # Update cache with new image state
+            # Update cache with new image state and save immediately
             update_image_hash(cache, tag, br_hash, image_id)
+            save_cache(build_dir, cache)
 
         # Done if no file outputs
         if not file_outputs:
@@ -238,6 +239,8 @@ def run_build(
                 return False
             update_output_hash(cache, output, input_hash)
 
-    save_cache(build_dir, cache)
+        # Save cache after each successful build step
+        save_cache(build_dir, cache)
+
     log.info("Build complete")
     return True
