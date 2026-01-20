@@ -23,6 +23,23 @@ JFS was developed by IBM, originally for AIX in 1990. JFS2 (the version used
 on Linux) was ported from OS/2 Warp and released as open source in 1999. It
 was merged into Linux 2.4.18 (2002).
 
+## MBR Partition Types
+
+| Type | OS |
+|------|----|
+| 0x35 | OS/2, eComStation |
+
+Note: JFS is non-bootable on OS/2, so the OS itself must be on HPFS or FAT.
+
+## Platforms
+
+| Platform | Notes |
+|----------|-------|
+| AIX | Original JFS (1990), JFS2 (2000) |
+| OS/2 | Warp Server for e-Business, Convenience Pack |
+| eComStation | OEM version of OS/2 |
+| Linux | Open sourced 1999, merged 2.4.18 (2002) |
+
 ## Characteristics
 
 - Metadata journaling (log-based)

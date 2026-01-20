@@ -3,6 +3,7 @@ title: Plan 9
 created: 1992
 related:
   - format/pt/mbr
+  - format/fs/fossil
 detect:
   - offset: 0x1BE
     type: u8

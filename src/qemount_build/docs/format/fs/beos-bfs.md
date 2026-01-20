@@ -45,9 +45,31 @@ Filesystem which is also called "bfs".
 - Endianness flag at offset 0x24 (0x42494745 = "BIGE" for big-endian)
 - Block sizes: typically 1024, 2048, or 4096 bytes
 
+## MBR Partition Types
+
+| Type | OS |
+|------|----|
+| 0xEB | BeOS |
+| 0x2A | AtheOS/Syllable (AthFS) |
+| 0x2B | SyllableSecure (SylStor) |
+
+## Variants
+
+| OS | Notes |
+|----|-------|
+| BeOS | Original (1996-2001) |
+| Haiku | Open-source BeOS successor |
+| AtheOS | Kurt Skauen's OS (dead) |
+| Syllable | AtheOS fork by Kristian van der Vliet (2002) |
+| SylStor | Syllable variant with ACLs/security |
+
+AtheOS/Syllable use AthFS, which started with exactly the same data structures
+as BFS and extended it. Uses the same magic number, so detection works the same.
+
 ## Legacy
 
 - Native filesystem for BeOS (1996-2001)
 - Used by Haiku OS (open-source BeOS successor)
 - Linux read-only support via befs module
 - Influenced modern filesystem designs with its attribute support
+- Experimental Linux driver for AthFS at sourceforge.net/projects/athfs
