@@ -1,5 +1,7 @@
 ---
 title: detect
+env:
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
 requires:
   - docker:builder/compiler/rust
   - lib/x86_64-linux-musl/libqemount.a

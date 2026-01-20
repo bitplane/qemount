@@ -1,5 +1,8 @@
 ---
 title: qemount library
+env:
+  CARGO_HOME: /host/build/cache/cargo
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
 requires:
   - docker:builder/compiler/rust
   - lib/format.bin
