@@ -16,6 +16,12 @@ import msgpack
 
 def normalize_rule(rule: dict) -> dict:
     """Normalize a detection rule to standard form with defaults."""
+    # Handle any/all blocks (not actual rules, just containers)
+    if "any" in rule:
+        return {"any": [normalize_rule(r) for r in rule["any"]]}
+    if "all" in rule:
+        return {"all": [normalize_rule(r) for r in rule["all"]]}
+
     normalized = {
         "offset": rule.get("offset", 0),
         "type": rule["type"],

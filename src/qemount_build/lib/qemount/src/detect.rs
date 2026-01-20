@@ -30,44 +30,64 @@ fn matches_detect(reader: &impl Reader, detect: &Detect) -> bool {
 }
 
 fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
-    let offset = rule.offset as u64;
+    match rule {
+        Rule::Any { any } => any.iter().any(|r| matches_rule(reader, r)),
+        Rule::All { all } => all.iter().all(|r| matches_rule(reader, r)),
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, then_rules.as_ref(), |r, rule| matches_rule(r, rule))
+        }
+    }
+}
 
+fn matches_leaf<R, F>(
+    reader: &R,
+    offset: u64,
+    typ: &str,
+    value: Option<&Value>,
+    op: Option<&str>,
+    mask: Option<u64>,
+    then_rules: Option<&Vec<Rule>>,
+    recurse: F,
+) -> bool
+where
+    R: Reader + ?Sized,
+    F: Fn(&R, &Rule) -> bool,
+{
     // If no expected value, rule is extraction-only (always matches)
-    let expected = match &rule.value {
+    let expected = match value {
         Some(v) => v,
         None => {
-            // Check nested rules if present
-            if let Some(then_rules) = &rule.then_rules {
-                return then_rules.iter().all(|r| matches_rule(reader, r));
+            if let Some(rules) = then_rules {
+                return rules.iter().all(|r| recurse(reader, r));
             }
             return true;
         }
     };
 
-    // Handle string type specially - need expected length to read correct bytes
-    if rule.typ == "string" {
-        let matched = match match_bytes(reader, offset, expected) {
+    // Handle string type specially
+    if typ == "string" {
+        let matched = match match_bytes_generic(reader, offset, expected) {
             Some(m) => m,
             None => return false,
         };
         if matched {
-            if let Some(then_rules) = &rule.then_rules {
-                return then_rules.iter().all(|r| matches_rule(reader, r));
+            if let Some(rules) = then_rules {
+                return rules.iter().all(|r| recurse(reader, r));
             }
         }
         return matched;
     }
 
     // Read value at offset based on type
-    let actual = match read_value(reader, offset, &rule.typ) {
+    let actual = match read_value_generic(reader, offset, typ) {
         Some(v) => v,
         None => return false,
     };
 
     // Apply mask if present
-    let actual = if let Some(mask) = rule.mask {
+    let actual = if let Some(m) = mask {
         match actual {
-            Value::Int(i) => Value::Int(i & mask as i64),
+            Value::Int(i) => Value::Int(i & m as i64),
             v => v,
         }
     } else {
@@ -75,25 +95,24 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
     };
 
     // Compare with operator
-    let op = rule.op.as_deref().unwrap_or("=");
+    let op = op.unwrap_or("=");
     let matches = compare(&actual, expected, op);
 
     // Check nested rules if match succeeded
     if matches {
-        if let Some(then_rules) = &rule.then_rules {
-            return then_rules.iter().all(|r| matches_rule(reader, r));
+        if let Some(rules) = then_rules {
+            return rules.iter().all(|r| recurse(reader, r));
         }
     }
 
     matches
 }
 
-fn match_bytes(reader: &impl Reader, offset: u64, expected: &Value) -> Option<bool> {
+fn match_bytes_generic<R: Reader + ?Sized>(reader: &R, offset: u64, expected: &Value) -> Option<bool> {
     let expected_bytes = match expected {
         Value::Bytes(b) => b,
         _ => return None,
     };
-    // Convert i64 array to u8 for comparison
     let expected_u8: Vec<u8> = expected_bytes.iter().map(|&x| x as u8).collect();
     let mut buf = vec![0u8; expected_u8.len()];
     match reader.read_at(offset, &mut buf) {
@@ -102,21 +121,21 @@ fn match_bytes(reader: &impl Reader, offset: u64, expected: &Value) -> Option<bo
     }
 }
 
-fn read_value(reader: &impl Reader, offset: u64, typ: &str) -> Option<Value> {
+fn read_value_generic<R: Reader + ?Sized>(reader: &R, offset: u64, typ: &str) -> Option<Value> {
     match typ {
-        "byte" | "u8" | "i8" => read_byte(reader, offset).map(|b| Value::Int(b as i64)),
-        "le16" | "u16" | "i16" => read_le16(reader, offset).map(|v| Value::Int(v as i64)),
-        "be16" => read_be16(reader, offset).map(|v| Value::Int(v as i64)),
-        "le32" | "u32" | "i32" => read_le32(reader, offset).map(|v| Value::Int(v as i64)),
-        "be32" => read_be32(reader, offset).map(|v| Value::Int(v as i64)),
-        "le64" | "u64" | "i64" => read_le64(reader, offset).map(|v| Value::Int(v as i64)),
-        "be64" => read_be64(reader, offset).map(|v| Value::Int(v as i64)),
-        "string" => None, // Handled separately in compare
+        "byte" | "u8" | "i8" => read_byte_generic(reader, offset).map(|b| Value::Int(b as i64)),
+        "le16" | "u16" | "i16" => read_le16_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "be16" => read_be16_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "le32" | "u32" | "i32" => read_le32_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "be32" => read_be32_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "le64" | "u64" | "i64" => read_le64_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "be64" => read_be64_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "string" => None,
         _ => None,
     }
 }
 
-fn read_byte(reader: &impl Reader, offset: u64) -> Option<u8> {
+fn read_byte_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u8> {
     let mut buf = [0u8; 1];
     match reader.read_at(offset, &mut buf) {
         Ok(1) => Some(buf[0]),
@@ -124,7 +143,7 @@ fn read_byte(reader: &impl Reader, offset: u64) -> Option<u8> {
     }
 }
 
-fn read_bytes<const N: usize>(reader: &impl Reader, offset: u64) -> Option<[u8; N]> {
+fn read_bytes_generic<R: Reader + ?Sized, const N: usize>(reader: &R, offset: u64) -> Option<[u8; N]> {
     let mut buf = [0u8; N];
     match reader.read_at(offset, &mut buf) {
         Ok(n) if n == N => Some(buf),
@@ -132,34 +151,35 @@ fn read_bytes<const N: usize>(reader: &impl Reader, offset: u64) -> Option<[u8; 
     }
 }
 
-fn read_le16(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<2>(reader, offset).map(|b| u16::from_le_bytes(b) as u64)
+fn read_le16_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 2>(reader, offset).map(|b| u16::from_le_bytes(b) as u64)
 }
 
-fn read_le32(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<4>(reader, offset).map(|b| u32::from_le_bytes(b) as u64)
+fn read_le32_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 4>(reader, offset).map(|b| u32::from_le_bytes(b) as u64)
 }
 
-fn read_le64(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<8>(reader, offset).map(u64::from_le_bytes)
+fn read_le64_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 8>(reader, offset).map(u64::from_le_bytes)
 }
 
-fn read_be16(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<2>(reader, offset).map(|b| u16::from_be_bytes(b) as u64)
+fn read_be16_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 2>(reader, offset).map(|b| u16::from_be_bytes(b) as u64)
 }
 
-fn read_be32(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<4>(reader, offset).map(|b| u32::from_be_bytes(b) as u64)
+fn read_be32_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 4>(reader, offset).map(|b| u32::from_be_bytes(b) as u64)
 }
 
-fn read_be64(reader: &impl Reader, offset: u64) -> Option<u64> {
-    read_bytes::<8>(reader, offset).map(u64::from_be_bytes)
+fn read_be64_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64> {
+    read_bytes_generic::<R, 8>(reader, offset).map(u64::from_be_bytes)
 }
 
 fn compare(actual: &Value, expected: &Value, op: &str) -> bool {
     match (actual, expected) {
         (Value::Int(a), Value::Int(e)) => match op {
             "=" => a == e,
+            "!=" => a != e,
             "&" => (a & e) == *e,
             "^" => (a ^ e) == 0,
             "<" => a < e,
@@ -252,120 +272,11 @@ fn matches_detect_dyn(reader: &dyn Reader, detect: &Detect) -> bool {
 }
 
 fn matches_rule_dyn(reader: &dyn Reader, rule: &Rule) -> bool {
-    let offset = rule.offset as u64;
-
-    let expected = match &rule.value {
-        Some(v) => v,
-        None => {
-            if let Some(then_rules) = &rule.then_rules {
-                return then_rules.iter().all(|r| matches_rule_dyn(reader, r));
-            }
-            return true;
-        }
-    };
-
-    if rule.typ == "string" {
-        let matched = match match_bytes_dyn(reader, offset, expected) {
-            Some(m) => m,
-            None => return false,
-        };
-        if matched {
-            if let Some(then_rules) = &rule.then_rules {
-                return then_rules.iter().all(|r| matches_rule_dyn(reader, r));
-            }
-        }
-        return matched;
-    }
-
-    let actual = match read_value_dyn(reader, offset, &rule.typ) {
-        Some(v) => v,
-        None => return false,
-    };
-
-    let actual = if let Some(mask) = rule.mask {
-        match actual {
-            Value::Int(i) => Value::Int(i & mask as i64),
-            v => v,
-        }
-    } else {
-        actual
-    };
-
-    let op = rule.op.as_deref().unwrap_or("=");
-    let matches = compare(&actual, expected, op);
-
-    if matches {
-        if let Some(then_rules) = &rule.then_rules {
-            return then_rules.iter().all(|r| matches_rule_dyn(reader, r));
+    match rule {
+        Rule::Any { any } => any.iter().any(|r| matches_rule_dyn(reader, r)),
+        Rule::All { all } => all.iter().all(|r| matches_rule_dyn(reader, r)),
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, then_rules.as_ref(), |r, rule| matches_rule_dyn(r, rule))
         }
     }
-
-    matches
-}
-
-fn match_bytes_dyn(reader: &dyn Reader, offset: u64, expected: &Value) -> Option<bool> {
-    let expected_bytes = match expected {
-        Value::Bytes(b) => b,
-        _ => return None,
-    };
-    let expected_u8: Vec<u8> = expected_bytes.iter().map(|&x| x as u8).collect();
-    let mut buf = vec![0u8; expected_u8.len()];
-    match reader.read_at(offset, &mut buf) {
-        Ok(n) if n == expected_u8.len() => Some(buf == expected_u8),
-        _ => Some(false),
-    }
-}
-
-fn read_value_dyn(reader: &dyn Reader, offset: u64, typ: &str) -> Option<Value> {
-    match typ {
-        "byte" | "u8" | "i8" => read_byte_dyn(reader, offset).map(|b| Value::Int(b as i64)),
-        "le16" | "u16" | "i16" => read_le16_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "be16" => read_be16_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "le32" | "u32" | "i32" => read_le32_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "be32" => read_be32_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "le64" | "u64" | "i64" => read_le64_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "be64" => read_be64_dyn(reader, offset).map(|v| Value::Int(v as i64)),
-        "string" => None,
-        _ => None,
-    }
-}
-
-fn read_byte_dyn(reader: &dyn Reader, offset: u64) -> Option<u8> {
-    let mut buf = [0u8; 1];
-    match reader.read_at(offset, &mut buf) {
-        Ok(1) => Some(buf[0]),
-        _ => None,
-    }
-}
-
-fn read_bytes_dyn<const N: usize>(reader: &dyn Reader, offset: u64) -> Option<[u8; N]> {
-    let mut buf = [0u8; N];
-    match reader.read_at(offset, &mut buf) {
-        Ok(n) if n == N => Some(buf),
-        _ => None,
-    }
-}
-
-fn read_le16_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<2>(reader, offset).map(|b| u16::from_le_bytes(b) as u64)
-}
-
-fn read_le32_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<4>(reader, offset).map(|b| u32::from_le_bytes(b) as u64)
-}
-
-fn read_le64_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<8>(reader, offset).map(u64::from_le_bytes)
-}
-
-fn read_be16_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<2>(reader, offset).map(|b| u16::from_be_bytes(b) as u64)
-}
-
-fn read_be32_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<4>(reader, offset).map(|b| u32::from_be_bytes(b) as u64)
-}
-
-fn read_be64_dyn(reader: &dyn Reader, offset: u64) -> Option<u64> {
-    read_bytes_dyn::<8>(reader, offset).map(u64::from_be_bytes)
 }

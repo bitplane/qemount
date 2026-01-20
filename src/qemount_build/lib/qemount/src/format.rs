@@ -21,16 +21,21 @@ pub enum Detect {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Rule {
-    pub offset: i64,
-    #[serde(rename = "type")]
-    pub typ: String,
-    pub value: Option<Value>,
-    pub op: Option<String>,
-    pub mask: Option<u64>,
-    pub name: Option<String>,
-    #[serde(rename = "then")]
-    pub then_rules: Option<Vec<Rule>>,
+#[serde(untagged)]
+pub enum Rule {
+    Any { any: Vec<Rule> },
+    All { all: Vec<Rule> },
+    Leaf {
+        offset: i64,
+        #[serde(rename = "type")]
+        typ: String,
+        value: Option<Value>,
+        op: Option<String>,
+        mask: Option<u64>,
+        name: Option<String>,
+        #[serde(rename = "then")]
+        then_rules: Option<Vec<Rule>>,
+    },
 }
 
 #[derive(Debug, Deserialize)]

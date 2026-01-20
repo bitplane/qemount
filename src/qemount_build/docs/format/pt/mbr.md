@@ -9,6 +9,33 @@ detect:
     type: le16
     value: 0xAA55
     name: boot_signature
+    then:
+      - offset: 0
+        type: byte
+        op: "!="
+        value: 0xEB
+        name: not_fat_jump
+      - any:
+          - offset: 450
+            type: byte
+            op: "!="
+            value: 0
+            name: partition_1_type
+          - offset: 466
+            type: byte
+            op: "!="
+            value: 0
+            name: partition_2_type
+          - offset: 482
+            type: byte
+            op: "!="
+            value: 0
+            name: partition_3_type
+          - offset: 498
+            type: byte
+            op: "!="
+            value: 0
+            name: partition_4_type
 ---
 
 # MBR (Master Boot Record)
