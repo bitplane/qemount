@@ -34,25 +34,35 @@ static void print_format_tree(const char *format, uint32_t index,
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-        fprintf(stderr, "\nDetects format tree for a file using libqemount.\n");
+        fprintf(stderr, "Usage: %s <file>...\n", argv[0]);
+        fprintf(stderr, "\nDetects format tree for files using libqemount.\n");
         fprintf(stderr, "Recursively detects formats in containers.\n");
         fprintf(stderr, "libqemount version: %s\n", qemount_version());
         return 1;
     }
 
-    const char *path = argv[1];
+    int total = 0;
+    for (int i = 1; i < argc; i++) {
+        const char *path = argv[i];
 
-    int fd = open(path, O_RDONLY);
-    if (fd < 0) {
-        perror(path);
-        return 1;
+        if (argc > 2)
+            printf("%s:\n", path);
+
+        int fd = open(path, O_RDONLY);
+        if (fd < 0) {
+            perror(path);
+            continue;
+        }
+
+        int count = 0;
+        qemount_detect_tree_fd(fd, print_format_tree, &count);
+        close(fd);
+        total += count;
+
+        if (argc > 2 && i < argc - 1)
+            printf("\n");
     }
 
-    int count = 0;
-    qemount_detect_tree_fd(fd, print_format_tree, &count);
-    close(fd);
-
-    return count > 0 ? 0 : 1;
+    return total > 0 ? 0 : 1;
 }
 #endif
