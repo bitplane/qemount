@@ -76,7 +76,7 @@ def build_image(
     for key, value in env.items():
         cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
-    result = subprocess.run(cmd, cwd=context_dir, capture_output=True, text=True)
+    result = subprocess.run(cmd, cwd=context_dir, capture_output=True, text=True, errors='replace')
     logger = log.error if result.returncode else log.debug
     logger("stdout: %s", result.stdout)
     logger("stderr: %s", result.stderr)
@@ -110,7 +110,7 @@ def run_container(
         cmd.extend(targets)
 
     log.info("Running: %s", image)
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, errors='replace')
     logger = log.error if result.returncode else log.debug
     logger("stdout: %s", result.stdout)
     logger("stderr: %s", result.stderr)
