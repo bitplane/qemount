@@ -9,7 +9,9 @@ use crate::detect::Reader;
 use std::io;
 use std::sync::Arc;
 
-/// Sector size (standard for MBR)
+/// Sector size for MBR is always 512 bytes (logical sector).
+/// Even on 4K physical sector drives, MBR LBAs use 512-byte units.
+/// The firmware/OS handles translation to physical sectors.
 const SECTOR_SIZE: u64 = 512;
 
 /// Partition table offset within MBR/EBR
@@ -43,14 +45,17 @@ struct PartitionEntry {
     sector_count: u32,
 }
 
+/// First logical partition index (after the 4 primary slots)
+const FIRST_LOGICAL_INDEX: u32 = 4;
+
 impl Container for MbrContainer {
     fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>> {
         let mut children = Vec::new();
-        let mut partition_index: u32 = 0;
+        let mut logical_index: u32 = FIRST_LOGICAL_INDEX;
 
         let entries = read_partition_table(&*reader, 0)?;
 
-        for entry in &entries {
+        for (slot, entry) in entries.iter().enumerate() {
             if entry.type_code == TYPE_EMPTY || entry.type_code == TYPE_GPT_PROTECTIVE {
                 continue;
             }
@@ -63,18 +68,18 @@ impl Container for MbrContainer {
                     &reader,
                     extended_start,
                     extended_size,
-                    &mut partition_index,
+                    &mut logical_index,
                 )?;
                 children.extend(logical);
             } else {
                 let offset = entry.lba_start as u64 * SECTOR_SIZE;
                 let length = entry.sector_count as u64 * SECTOR_SIZE;
                 if entry.lba_start > 0 && entry.sector_count > 0 {
+                    // Primary partitions use their slot index (0-3)
                     children.push(Child {
-                        index: partition_index,
+                        index: slot as u32,
                         reader: Arc::new(SliceReader::new(Arc::clone(&reader), offset, length)),
                     });
-                    partition_index += 1;
                 }
             }
         }
