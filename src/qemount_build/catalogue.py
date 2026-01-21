@@ -329,7 +329,7 @@ def build_provides_index(catalogue: dict, context: dict) -> dict:
     return index
 
 
-def build_graph(targets: str | list[str], catalogue: dict, context: dict, build_dir: "Path | None" = None) -> dict:
+def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: Path | None = None) -> dict:
     """
     Build dependency graph for one or more targets.
 
@@ -343,9 +343,6 @@ def build_graph(targets: str | list[str], catalogue: dict, context: dict, build_
     If build_dir is provided, file dependencies that exist there are allowed
     even without a catalogue provider (e.g., catalogue.json).
     """
-    if isinstance(targets, str):
-        targets = [targets]
-
     index = build_provides_index(catalogue, context)
 
     for target in targets:

@@ -58,7 +58,7 @@ def cmd_outputs(args, catalogue, context):
 def cmd_deps(args, catalogue, context):
     """Show dependency graph for a target."""
     try:
-        graph = build_graph(args.target, catalogue, context)
+        graph = build_graph([args.target], catalogue, context)
     except KeyError as e:
         log.error("%s", e)
         return 1

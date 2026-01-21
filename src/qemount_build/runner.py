@@ -137,7 +137,7 @@ def get_file_provides(provides: list) -> list:
 
 
 def run_build(
-    targets: str | list[str],
+    targets: list[str],
     catalogue: dict,
     context: dict,
     build_dir: Path,
