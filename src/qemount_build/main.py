@@ -2,12 +2,14 @@
 Catalogue inspection tool.
 
 Usage:
-    python -m qemount_build dump
-    python -m qemount_build outputs
-    python -m qemount_build deps build/data/fs/basic.ext2
+    qemount-build dump
+    qemount-build outputs
+    qemount-build deps "data/fs/*.ext*"
+    qemount-build build "data/pt/*"
 """
 
 import argparse
+import fnmatch
 import json
 import logging
 import os
@@ -56,9 +58,14 @@ def cmd_outputs(args, catalogue, context):
 
 
 def cmd_deps(args, catalogue, context):
-    """Show dependency graph for a target."""
+    """Show dependency graph for targets."""
+    targets = expand_targets(args.targets, catalogue, context)
+    if not targets:
+        log.error("No targets match")
+        return 1
+
     try:
-        graph = build_graph([args.target], catalogue, context)
+        graph = build_graph(targets, catalogue, context)
     except KeyError as e:
         log.error("%s", e)
         return 1
@@ -67,13 +74,43 @@ def cmd_deps(args, catalogue, context):
         for path in graph["order"]:
             print(path)
     else:
-        print(f"Target: {args.target}")
-        print(f"Provider: {graph['targets'][0]}")
+        print(f"Targets: {', '.join(targets)}")
         print(f"\nBuild order ({len(graph['order'])} steps):")
         for i, path in enumerate(graph["order"], 1):
             print(f"  {i}. {path}")
 
     return 0
+
+
+def normalize_target(target: str) -> str:
+    """Normalize a target path - strips 'build/' prefix for autocomplete convenience."""
+    if target.startswith("build/"):
+        return target[6:]
+    return target
+
+
+def expand_targets(patterns: list[str], catalogue: dict, context: dict) -> list[str]:
+    """Expand target patterns to concrete targets.
+
+    - Normalizes each target (strips 'build/' prefix)
+    - Expands globs against available outputs
+    """
+    outputs = set(build_provides_index(catalogue, context).keys())
+    targets = []
+
+    for pattern in patterns:
+        pattern = normalize_target(pattern)
+
+        # Check for glob characters
+        if any(c in pattern for c in "*?["):
+            matches = [o for o in outputs if fnmatch.fnmatch(o, pattern)]
+            if not matches:
+                log.warning("No outputs match pattern: %s", pattern)
+            targets.extend(sorted(matches))
+        else:
+            targets.append(pattern)
+
+    return targets
 
 
 def cmd_build(args, catalogue, context):
@@ -82,13 +119,19 @@ def cmd_build(args, catalogue, context):
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
 
+    # Expand patterns and strip build/ prefix
+    targets = expand_targets(args.targets, catalogue, context)
+    if not targets:
+        log.error("No targets to build")
+        return 1
+
     # Dump catalogue as implicit dependency for all builds
     catalogue_file = build_dir / "catalogue.json"
     catalogue_file.write_text(json.dumps(catalogue, indent=2))
     log.debug("Wrote catalogue to %s", catalogue_file)
 
     success = run_build(
-        args.targets,
+        targets,
         catalogue,
         context,
         build_dir,
@@ -138,8 +181,8 @@ def main():
     outputs_parser.set_defaults(func=cmd_outputs)
 
     # deps
-    deps_parser = subparsers.add_parser("deps", help="Show dependencies for a target")
-    deps_parser.add_argument("target", help="Target output to build")
+    deps_parser = subparsers.add_parser("deps", help="Show dependencies for targets")
+    deps_parser.add_argument("targets", nargs="+", help="Target outputs (supports globs)")
     deps_parser.add_argument(
         "--order", action="store_true", help="Print only build order, one per line"
     )
