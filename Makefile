@@ -1,5 +1,5 @@
 .PHONY: help all install test dev coverage clean \
-		pre-commit update-pre-commit catalogue archive
+		pre-commit update-pre-commit build archive
 
 PROJECT_NAME := qemount_build
 
@@ -11,7 +11,7 @@ export ARCH
 export PLATFORM
 export REGISTRY
 
-all: catalogue  ## build catalogue (build system WIP)
+all: build  ## build all outputs
 
 install: .venv/.installed  ## install the venv and project packages
 
@@ -23,8 +23,8 @@ test: .venv/.installed-dev  ## run the project's tests
 coverage: .venv/.installed-dev scripts/coverage.sh  ## build the html coverage report
 	scripts/coverage.sh $(PROJECT_NAME)
 
-catalogue: .venv/.installed-dev  ## build the catalogue from docs front-matter
-	@echo "TODO: run catalogue builder"
+build: .venv/.installed-dev scripts/build.sh  ## build all outputs
+	scripts/build.sh
 
 clean:  ## delete caches and the venv
 	scripts/clean.sh

@@ -5,9 +5,12 @@
 //! children and provide Reader access to each.
 
 pub mod arc;
+pub mod pt;
+pub mod slice;
 
 use crate::detect::Reader;
 use std::io;
+use std::sync::Arc;
 
 /// Maximum size for reading container contents into memory (1 GB)
 const MAX_SIZE: usize = 1024 * 1024 * 1024;
@@ -17,13 +20,13 @@ pub struct Child {
     /// Index within parent (partition number, file index, etc.)
     pub index: u32,
     /// Reader for the child's data
-    pub reader: Box<dyn Reader + Send + Sync>,
+    pub reader: Arc<dyn Reader + Send + Sync>,
 }
 
 /// Trait for container formats that hold other detectable content
 pub trait Container: Send + Sync {
     /// Enumerate children within this container
-    fn children(&self, reader: &dyn Reader) -> io::Result<Vec<Child>>;
+    fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>>;
 }
 
 /// Reader backed by in-memory bytes
@@ -81,6 +84,7 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
 pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
         "arc/gzip" => Some(&arc::gzip::GZIP),
+        "pt/mbr" => Some(&pt::mbr::MBR),
         _ => None,
     }
 }

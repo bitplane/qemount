@@ -4,6 +4,7 @@ use crate::container;
 use crate::format::{Detect, Rule, Value, FORMATS};
 use std::ffi::CStr;
 use std::io;
+use std::sync::Arc;
 
 /// Trait for reading bytes at arbitrary offsets (pread-style).
 /// Rust std has Read (sequential) and Seek (stateful) but no trait for
@@ -217,27 +218,27 @@ const MAX_DEPTH: u32 = 16;
 ///
 /// Returns a list of root-level detected formats, each with their
 /// children populated if they are container formats.
-pub fn detect_tree(reader: &dyn Reader) -> Vec<DetectNode> {
+pub fn detect_tree(reader: Arc<dyn Reader + Send + Sync>) -> Vec<DetectNode> {
     detect_tree_recursive(reader, 0, 0)
 }
 
-fn detect_tree_recursive(reader: &dyn Reader, index: u32, depth: u32) -> Vec<DetectNode> {
+fn detect_tree_recursive(reader: Arc<dyn Reader + Send + Sync>, index: u32, depth: u32) -> Vec<DetectNode> {
     if depth >= MAX_DEPTH {
         return vec![];
     }
 
-    let formats = detect_all_dyn(reader);
+    let formats = detect_all_dyn(&*reader);
 
     formats
         .into_iter()
         .map(|format| {
             let format_str = format.to_str().unwrap_or("");
             let children = match container::get_container(format_str) {
-                Some(container) => match container.children(reader) {
+                Some(container) => match container.children(Arc::clone(&reader)) {
                     Ok(kids) => kids
                         .into_iter()
                         .flat_map(|child| {
-                            detect_tree_recursive(child.reader.as_ref(), child.index, depth + 1)
+                            detect_tree_recursive(child.reader, child.index, depth + 1)
                         })
                         .collect(),
                     Err(_) => vec![],

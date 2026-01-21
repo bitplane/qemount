@@ -7,6 +7,7 @@ mod format;
 use std::ffi::c_char;
 use std::ffi::c_void;
 use std::io;
+use std::sync::Arc;
 
 use detect::Reader;
 
@@ -83,8 +84,8 @@ pub extern "C" fn qemount_detect_tree_fd(
     callback: DetectTreeCallback,
     userdata: *mut c_void,
 ) {
-    let reader = FdReader { fd };
-    let tree = detect::detect_tree(&reader);
+    let reader: Arc<dyn detect::Reader + Send + Sync> = Arc::new(FdReader { fd });
+    let tree = detect::detect_tree(reader);
 
     fn walk_tree(
         nodes: &[detect::DetectNode],
