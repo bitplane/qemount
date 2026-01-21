@@ -5,43 +5,59 @@ set -e
 OUTPUT="/host/build/$1"
 mkdir -p "$(dirname "$OUTPUT")"
 
+# Filesystem images
 FAT16=/host/build/data/fs/basic.fat16
 FAT32=/host/build/data/fs/basic.fat32
+EXT2=/host/build/data/fs/basic.ext2
+EXT3=/host/build/data/fs/basic.ext3
 EXT4=/host/build/data/fs/basic.ext4
+XFS=/host/build/data/fs/basic.xfs
 
-# Get actual sizes in bytes
-FAT16_SIZE=$(stat -c %s "$FAT16")
-FAT32_SIZE=$(stat -c %s "$FAT32")
-EXT4_SIZE=$(stat -c %s "$EXT4")
+# Get sizes in sectors (512 bytes each), rounded up
+sectors() { echo $(( ($(stat -c %s "$1") + 511) / 512 )); }
 
-# Convert to sectors (512 bytes each)
-FAT16_SECTORS=$(( (FAT16_SIZE + 511) / 512 ))
-FAT32_SECTORS=$(( (FAT32_SIZE + 511) / 512 ))
-EXT4_SECTORS=$(( (EXT4_SIZE + 511) / 512 ))
+FAT16_SECTORS=$(sectors "$FAT16")
+FAT32_SECTORS=$(sectors "$FAT32")
+EXT2_SECTORS=$(sectors "$EXT2")
+EXT3_SECTORS=$(sectors "$EXT3")
+EXT4_SECTORS=$(sectors "$EXT4")
+XFS_SECTORS=$(sectors "$XFS")
 
 # Layout:
-# - Partition 1 (primary FAT16): starts at 2048
-# - Partition 2 (extended): starts after P1, contains all logicals
-#   - Logical 5 (FAT32): starts 2048 sectors into extended (for EBR + alignment)
-#   - Logical 6 (ext4): starts after logical 5
+# - Partition 0 (primary FAT16): starts at 2048
+# - Partition 1 (extended): starts after P0, contains all logicals
+#   - Logical 4 (FAT32): 2048 sector gap for EBR
+#   - Logical 5 (ext2): 2048 sector gap for EBR
+#   - Logical 6 (ext3): 2048 sector gap for EBR
+#   - Logical 7 (ext4): 2048 sector gap for EBR
+#   - Logical 8 (xfs): 2048 sector gap for EBR
 
-P1_START=2048
-P1_SIZE=$FAT16_SECTORS
+EBR_GAP=2048
+
+P0_START=2048
+P0_SIZE=$FAT16_SECTORS
 
 # Extended partition starts after primary
-EXT_START=$(( P1_START + P1_SIZE ))
+EXT_START=$(( P0_START + P0_SIZE ))
 
-# Logical partitions need space for EBR (we use 2048 sector alignment)
-# Logical 5 data starts at EXT_START + 2048
-L5_DATA_START=$(( EXT_START + 2048 ))
-L5_SIZE=$FAT32_SECTORS
+# Logical partitions (each needs EBR gap before data)
+L4_START=$(( EXT_START + EBR_GAP ))
+L4_SIZE=$FAT32_SECTORS
 
-# Logical 6 data starts after L5 + another EBR gap
-L6_DATA_START=$(( L5_DATA_START + L5_SIZE + 2048 ))
-L6_SIZE=$EXT4_SECTORS
+L5_START=$(( L4_START + L4_SIZE + EBR_GAP ))
+L5_SIZE=$EXT2_SECTORS
+
+L6_START=$(( L5_START + L5_SIZE + EBR_GAP ))
+L6_SIZE=$EXT3_SECTORS
+
+L7_START=$(( L6_START + L6_SIZE + EBR_GAP ))
+L7_SIZE=$EXT4_SECTORS
+
+L8_START=$(( L7_START + L7_SIZE + EBR_GAP ))
+L8_SIZE=$XFS_SECTORS
 
 # Extended partition must contain all logicals
-EXT_END=$(( L6_DATA_START + L6_SIZE ))
+EXT_END=$(( L8_START + L8_SIZE ))
 EXT_SIZE=$(( EXT_END - EXT_START ))
 
 # Total disk size
@@ -53,13 +69,19 @@ truncate -s "$TOTAL_BYTES" "$OUTPUT"
 # sfdisk handles EBR creation for logical partitions automatically
 sfdisk "$OUTPUT" << EOF
 label: dos
-start=$P1_START, size=$P1_SIZE, type=6
+start=$P0_START, size=$P0_SIZE, type=6
 start=$EXT_START, size=$EXT_SIZE, type=5
-start=$L5_DATA_START, size=$L5_SIZE, type=b
-start=$L6_DATA_START, size=$L6_SIZE, type=83
+start=$L4_START, size=$L4_SIZE, type=b
+start=$L5_START, size=$L5_SIZE, type=83
+start=$L6_START, size=$L6_SIZE, type=83
+start=$L7_START, size=$L7_SIZE, type=83
+start=$L8_START, size=$L8_SIZE, type=83
 EOF
 
 # Copy filesystem images into partitions
-dd if="$FAT16" of="$OUTPUT" bs=512 seek=$P1_START conv=notrunc status=none
-dd if="$FAT32" of="$OUTPUT" bs=512 seek=$L5_DATA_START conv=notrunc status=none
-dd if="$EXT4" of="$OUTPUT" bs=512 seek=$L6_DATA_START conv=notrunc status=none
+dd if="$FAT16" of="$OUTPUT" bs=512 seek=$P0_START conv=notrunc status=none
+dd if="$FAT32" of="$OUTPUT" bs=512 seek=$L4_START conv=notrunc status=none
+dd if="$EXT2" of="$OUTPUT" bs=512 seek=$L5_START conv=notrunc status=none
+dd if="$EXT3" of="$OUTPUT" bs=512 seek=$L6_START conv=notrunc status=none
+dd if="$EXT4" of="$OUTPUT" bs=512 seek=$L7_START conv=notrunc status=none
+dd if="$XFS" of="$OUTPUT" bs=512 seek=$L8_START conv=notrunc status=none
