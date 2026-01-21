@@ -24,11 +24,16 @@ detect:
                 op: ">="
                 value: 0xF0
                 then:
-                  # Total sectors 16-bit, small = FAT12 (floppies, small vols)
+                  # Total sectors 16-bit must be >0 and small (FAT32 sets this to 0)
                   - offset: 0x13
                     type: le16
-                    op: "<="
-                    value: 32680
+                    op: ">"
+                    value: 0
+                    then:
+                      - offset: 0x13
+                        type: le16
+                        op: "<="
+                        value: 32680
 ---
 
 # FAT12
