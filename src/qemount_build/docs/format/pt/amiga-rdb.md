@@ -5,16 +5,16 @@ related:
   - format/fs/amiga-ffs
   - format/fs/amiga-ofs
 detect:
-  - offset: 0
-    type: string
-    value: "RDSK"
-    name: rigid_disk_block
-  - offset: 512
-    type: string
-    value: "RDSK"
-  - offset: 1024
-    type: string
-    value: "RDSK"
+  any:
+    - offset: 0
+      type: string
+      value: "RDSK"
+    - offset: 512
+      type: string
+      value: "RDSK"
+    - offset: 1024
+      type: string
+      value: "RDSK"
 ---
 
 # Amiga RDB (Rigid Disk Block)

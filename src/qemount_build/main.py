@@ -59,13 +59,14 @@ def cmd_outputs(args, catalogue, context):
 
 def cmd_deps(args, catalogue, context):
     """Show dependency graph for targets."""
+    build_dir = Path("build").absolute()
     targets = expand_targets(args.targets, catalogue, context)
     if not targets:
         log.error("No targets match")
         return 1
 
     try:
-        graph = build_graph(targets, catalogue, context)
+        graph = build_graph(targets, catalogue, context, build_dir)
     except KeyError as e:
         log.error("%s", e)
         return 1

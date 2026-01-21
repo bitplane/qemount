@@ -49,14 +49,14 @@ def build_image(
     context_dir: Path,
     tag: str,
     env: dict,
-    build_requires: list[str] | None = None,
-    build_dir: Path | None = None,
+    build_requires: list[str],
+    build_dir: Path,
     no_cache: bool = False,
 ) -> str | None:
     """Build a container image.
 
-    If build_requires is provided, mount those paths from build_dir
-    into the build context as read-only volumes.
+    Mounts build_requires paths from build_dir into the build context
+    as read-only volumes.
 
     Returns the image ID on success, None on failure.
     """
@@ -67,11 +67,10 @@ def build_image(
         cmd.append("--no-cache")
 
     # Mount build_requires as volumes
-    if build_requires and build_dir:
-        for req in build_requires:
-            src = build_dir / req
-            dest = Path("/host/build") / req
-            cmd.extend(["--volume", f"{src.absolute()}:{dest}:ro"])
+    for req in build_requires:
+        src = build_dir / req
+        dest = Path("/host/build") / req
+        cmd.extend(["--volume", f"{src.absolute()}:{dest}:ro"])
 
     for key, value in env.items():
         cmd.extend(["--build-arg", f"{key}={value}"])
@@ -93,21 +92,18 @@ def run_container(
     image: str,
     build_dir: Path,
     env: dict,
-    targets: list[str] | None = None,
+    targets: list[str],
 ) -> bool:
     """Run a container with the given environment.
 
-    If targets is provided, they are passed as positional args to the
-    container entrypoint. Build scripts can use these to filter which
-    outputs to build.
+    Targets are passed as positional args to the container entrypoint.
+    Build scripts use these to filter which outputs to build.
     """
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)
-
-    if targets:
-        cmd.extend(targets)
+    cmd.extend(targets)
 
     log.info("Running: %s", image)
     result = subprocess.run(cmd, capture_output=True, text=True, errors='replace')
