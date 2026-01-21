@@ -85,6 +85,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
         "arc/gzip" => Some(&arc::gzip::GZIP),
         "pt/amiga-rdb" => Some(&pt::rdb::RDB),
+        "pt/bsd-disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
         _ => None,
