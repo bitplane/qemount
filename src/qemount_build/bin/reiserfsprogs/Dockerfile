@@ -6,6 +6,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
-COPY build.sh /build.sh
-RUN chmod +x /build.sh
+COPY --chmod=755 build.sh /build.sh
 ENTRYPOINT ["/build.sh"]

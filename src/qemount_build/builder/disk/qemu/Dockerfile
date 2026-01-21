@@ -36,6 +36,5 @@ RUN cp /host/build/bin/${HOST_ARCH}-linux-musl/mkfs.sysv /usr/bin/mkfs.sysv && \
 RUN apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
 
 WORKDIR /build
-COPY build.sh /build/build.sh
-RUN chmod +x /build/build.sh
+COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]

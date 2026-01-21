@@ -12,6 +12,5 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
-COPY build.sh /build/build.sh
-RUN chmod +x /build/build.sh
+COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]

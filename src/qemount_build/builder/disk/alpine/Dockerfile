@@ -33,6 +33,5 @@ RUN apk add --no-cache --virtual .cramfs-deps make gcc musl-dev zlib-dev zlib-st
     && cd / && rm -rf /tmp/cramfs-tools-2.1 && apk del .cramfs-deps
 
 WORKDIR /build
-COPY build.sh /build/build.sh
-RUN chmod +x /build/build.sh
+COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]

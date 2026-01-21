@@ -15,8 +15,7 @@ RUN apk add --no-cache \
     bash
 
 WORKDIR /work
-ADD build.sh /build.sh
-ADD kernel.config /kernel.config
-ADD filesystems.config /filesystems.config
-RUN chmod +x /build.sh
+COPY --chmod=755 build.sh /build.sh
+COPY kernel.config /kernel.config
+COPY filesystems.config /filesystems.config
 ENTRYPOINT ["/build.sh"]

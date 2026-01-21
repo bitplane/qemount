@@ -14,6 +14,5 @@ RUN cp /src/haiku/generated/objects/linux/${ARCH}/release/tools/bfs_shell/bfs_sh
 RUN dnf install -y jq tar && dnf clean all
 
 WORKDIR /build
-COPY build.sh /build/build.sh
-RUN chmod +x /build/build.sh
+COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]

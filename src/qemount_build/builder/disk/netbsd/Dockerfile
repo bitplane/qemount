@@ -11,6 +11,5 @@ RUN apt-get update && \
 COPY --from=netbsd /usr/obj/tools/makefs/makefs /usr/local/bin/makefs
 
 WORKDIR /build
-COPY build.sh /build/build.sh
-RUN chmod +x /build/build.sh
+COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]
