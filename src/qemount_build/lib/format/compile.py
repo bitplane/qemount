@@ -85,7 +85,8 @@ def compile_formats(catalogue: dict) -> dict:
         except (KeyError, TypeError) as e:
             raise ValueError(f"Error in {path}: {e}") from e
 
-    return {"version": 1, "formats": formats}
+    # Sort for deterministic output
+    return {"version": 1, "formats": dict(sorted(formats.items()))}
 
 
 def main():
