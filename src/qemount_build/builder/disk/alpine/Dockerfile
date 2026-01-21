@@ -16,6 +16,7 @@ RUN apk add --no-cache \
     mtd-utils-ubi \
     btrfs-progs \
     util-linux \
+    gptfdisk \
     cpio \
     xz \
     gzip \
