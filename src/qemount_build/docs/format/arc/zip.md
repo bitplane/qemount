@@ -40,25 +40,25 @@ Java JARs, Office documents, and Android APKs.
 
 ## Signatures
 
-| Signature | Hex | Meaning |
-|-----------|-----|---------|
-| PK\x03\x04 | 0x04034b50 | Local file header |
-| PK\x01\x02 | 0x02014b50 | Central directory |
+| Signature  | Hex        | Meaning            |
+|------------|------------|--------------------|
+| PK\x03\x04 | 0x04034b50 | Local file header  |
+| PK\x01\x02 | 0x02014b50 | Central directory  |
 | PK\x05\x06 | 0x06054b50 | End of central dir |
-| PK\x06\x06 | 0x06064b50 | ZIP64 end |
-| PK\x07\x08 | 0x08074b50 | Data descriptor |
+| PK\x06\x06 | 0x06064b50 | ZIP64 end          |
+| PK\x07\x08 | 0x08074b50 | Data descriptor    |
 
 ## Compression Methods
 
-| ID | Method |
-|----|--------|
-| 0 | Store (none) |
-| 8 | Deflate |
-| 9 | Deflate64 |
-| 12 | BZIP2 |
-| 14 | LZMA |
-| 93 | Zstandard |
-| 95 | XZ |
+| ID | Method       |
+|----|--------------|
+| 0  | Store (none) |
+| 8  | Deflate      |
+| 9  | Deflate64    |
+| 12 | BZIP2        |
+| 14 | LZMA         |
+| 93 | Zstandard    |
+| 95 | XZ           |
 
 ## ZIP-based Formats
 

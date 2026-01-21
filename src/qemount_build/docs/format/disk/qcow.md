@@ -39,18 +39,18 @@ superseded by QCOW2 and is considered legacy.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 4 | Magic (0x514649fb) |
-| 0x04 | 4 | Version (1) |
-| 0x08 | 8 | Backing file offset |
-| 0x10 | 4 | Backing file size |
-| 0x14 | 4 | Mtime |
-| 0x18 | 8 | Virtual size |
-| 0x20 | 1 | Cluster bits |
-| 0x21 | 1 | L2 bits |
-| 0x24 | 4 | Crypt method |
-| 0x28 | 8 | L1 table offset |
+| Offset | Size | Field               |
+|--------|------|---------------------|
+| 0x00   | 4    | Magic (0x514649fb)  |
+| 0x04   | 4    | Version (1)         |
+| 0x08   | 8    | Backing file offset |
+| 0x10   | 4    | Backing file size   |
+| 0x14   | 4    | Mtime               |
+| 0x18   | 8    | Virtual size        |
+| 0x20   | 1    | Cluster bits        |
+| 0x21   | 1    | L2 bits             |
+| 0x24   | 4    | Crypt method        |
+| 0x28   | 8    | L1 table offset     |
 
 ## Detection
 

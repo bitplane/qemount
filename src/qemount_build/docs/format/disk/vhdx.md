@@ -48,10 +48,10 @@ VHDX is the successor to VHD, introduced with Windows Server 2012 and Hyper-V
 
 ## Header
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 8 | Signature ("vhdxfile") |
-| 0x08 | 504 | Creator (UTF-16) |
+| Offset | Size | Field                  |
+|--------|------|------------------------|
+| 0x00   | 8    | Signature ("vhdxfile") |
+| 0x08   | 504  | Creator (UTF-16)       |
 
 ## Detection
 

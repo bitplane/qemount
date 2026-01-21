@@ -1,5 +1,6 @@
 ---
 title: Partition Table
+priority: 500
 ---
 
 # Partition Tables

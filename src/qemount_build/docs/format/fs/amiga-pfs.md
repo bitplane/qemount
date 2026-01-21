@@ -41,12 +41,12 @@ improvements over FFS, particularly for large directories.
 
 ## Versions
 
-| Version | Magic | Features |
-|---------|-------|----------|
-| PFS1 | "PFS\x01" | Original |
-| PFS2 | "PFS\x02" | Improved |
-| PFS3 | "PFS\x03" | Large disk support |
-| muFS | "muPF" | Multi-user variant |
+| Version | Magic     | Features           |
+|---------|-----------|--------------------|
+| PFS1    | "PFS\x01" | Original           |
+| PFS2    | "PFS\x02" | Improved           |
+| PFS3    | "PFS\x03" | Large disk support |
+| muFS    | "muPF"    | Multi-user variant |
 
 ## Structure
 

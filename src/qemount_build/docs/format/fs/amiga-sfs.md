@@ -42,9 +42,9 @@ Amiga era and is still used in AROS and MorphOS.
 
 ## Versions
 
-| Version | Features |
-|---------|----------|
-| SFS 1.x | Original release |
+| Version | Features                     |
+|---------|------------------------------|
+| SFS 1.x | Original release             |
 | SFS 2.x | 64-bit support, larger files |
 
 ## Key Features

@@ -54,19 +54,19 @@ It has evolved through several versions and sub-formats.
 
 ## Header Fields (Sparse)
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 4 | Magic (KDMV) |
-| 0x04 | 4 | Version |
-| 0x08 | 4 | Flags |
-| 0x0C | 8 | Capacity (sectors) |
-| 0x14 | 8 | Grain size (sectors) |
-| 0x1C | 8 | Descriptor offset |
-| 0x24 | 8 | Descriptor size |
-| 0x2C | 4 | Num grain table entries |
-| 0x30 | 8 | Rgd offset |
-| 0x38 | 8 | Gd offset |
-| 0x40 | 8 | Overhead |
+| Offset | Size | Field                   |
+|--------|------|-------------------------|
+| 0x00   | 4    | Magic (KDMV)            |
+| 0x04   | 4    | Version                 |
+| 0x08   | 4    | Flags                   |
+| 0x0C   | 8    | Capacity (sectors)      |
+| 0x14   | 8    | Grain size (sectors)    |
+| 0x1C   | 8    | Descriptor offset       |
+| 0x24   | 8    | Descriptor size         |
+| 0x2C   | 4    | Num grain table entries |
+| 0x30   | 8    | Rgd offset              |
+| 0x38   | 8    | Gd offset               |
+| 0x40   | 8    | Overhead                |
 
 ## Descriptor File
 

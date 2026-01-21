@@ -42,12 +42,12 @@ Linux initramfs, RPM packages, and some backup systems.
 
 ## Formats
 
-| Format | Magic | Notes |
-|--------|-------|-------|
-| Binary (old) | 0x71c7 | Original, obsolete |
-| odc | "070707" | POSIX.1 portable |
-| newc | "070701" | SVR4, most common |
-| newc+crc | "070702" | With CRC checksum |
+| Format       | Magic    | Notes              |
+|--------------|----------|--------------------|
+| Binary (old) | 0x71c7   | Original, obsolete |
+| odc          | "070707" | POSIX.1 portable   |
+| newc         | "070701" | SVR4, most common  |
+| newc+crc     | "070702" | With CRC checksum  |
 
 ## Structure (newc format)
 

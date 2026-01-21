@@ -43,19 +43,19 @@ versatile. The QEMU project recommends using QCOW2 for all new deployments.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 4 | Magic (QED\0) |
-| 0x04 | 4 | Cluster size |
-| 0x08 | 4 | Table size |
-| 0x0C | 4 | Header size |
-| 0x10 | 8 | Features |
-| 0x18 | 8 | Compat features |
-| 0x20 | 8 | Autoclear features |
-| 0x28 | 8 | L1 table offset |
-| 0x30 | 8 | Image size |
-| 0x38 | 4 | Backing file offset |
-| 0x3C | 4 | Backing file size |
+| Offset | Size | Field                |
+|--------|------|----------------------|
+| 0x00   | 4    | Magic (QED\0)        |
+| 0x04   | 4    | Cluster size         |
+| 0x08   | 4    | Table size           |
+| 0x0C   | 4    | Header size          |
+| 0x10   | 8    | Features             |
+| 0x18   | 8    | Compat features      |
+| 0x20   | 8    | Autoclear features   |
+| 0x28   | 8    | L1 table offset      |
+| 0x30   | 8    | Image size           |
+| 0x38   | 4    | Backing file offset  |
+| 0x3C   | 4    | Backing file size    |
 
 ## Detection
 

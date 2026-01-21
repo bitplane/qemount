@@ -30,12 +30,12 @@ the standard archive format for Unix/Linux systems.
 
 ## Formats
 
-| Format | Magic | Features |
-|--------|-------|----------|
-| V7 | (none) | Original, 100-char paths |
+| Format      | Magic     | Features                     |
+|-------------|-----------|------------------------------|
+| V7          | (none)    | Original, 100-char paths     |
 | POSIX ustar | "ustar\0" | 256-char paths, device files |
-| GNU tar | "ustar " | Long paths, sparse files |
-| pax | "ustar\0" | Extended headers, unlimited |
+| GNU tar     | "ustar "  | Long paths, sparse files     |
+| pax         | "ustar\0" | Extended headers, unlimited  |
 
 ## Structure
 
@@ -62,15 +62,15 @@ Offset  Size  Field
 
 ## Type Flags
 
-| Flag | Type |
-|------|------|
-| '0' or '\0' | Regular file |
-| '1' | Hard link |
-| '2' | Symbolic link |
-| '3' | Character device |
-| '4' | Block device |
-| '5' | Directory |
-| '6' | FIFO |
+| Flag        | Type             |
+|-------------|------------------|
+| '0' or '\0' | Regular file     |
+| '1'         | Hard link        |
+| '2'         | Symbolic link    |
+| '3'         | Character device |
+| '4'         | Block device     |
+| '5'         | Directory        |
+| '6'         | FIFO             |
 
 ## Common Compression
 

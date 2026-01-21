@@ -38,12 +38,12 @@ signature in the boot block.
 
 ## Variants
 
-| ID   | Name | Description |
-|------|------|-------------|
-| DOS1 | FFS | Fast File System |
-| DOS3 | FFS-INTL | International (non-ASCII) filenames |
-| DOS5 | FFS-DC | Directory cache for faster listings |
-| DOS7 | FFS-INTL-DC | International + directory cache |
+| ID   | Name        | Description                         |
+|------|-------------|-------------------------------------|
+| DOS1 | FFS         | Fast File System                    |
+| DOS3 | FFS-INTL    | International (non-ASCII) filenames |
+| DOS5 | FFS-DC      | Directory cache for faster listings |
+| DOS7 | FFS-INTL-DC | International + directory cache     |
 
 ## Improvements over OFS
 

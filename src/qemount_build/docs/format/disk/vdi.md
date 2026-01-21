@@ -36,19 +36,19 @@ VirtualBox was created by Innotek in 2007.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 64 | File info (text description) |
-| 0x40 | 4 | Magic (0xbeda107f) |
-| 0x44 | 4 | Version (major.minor) |
-| 0x48 | 4 | Header size |
-| 0x4C | 4 | Image type (1=dynamic, 2=fixed) |
-| 0x50 | 4 | Image flags |
-| 0x150 | 8 | Disk size |
-| 0x158 | 4 | Block size |
-| 0x15C | 4 | Block extra data |
-| 0x160 | 4 | Blocks in HDD |
-| 0x164 | 4 | Blocks allocated |
+| Offset | Size | Field                           |
+|--------|------|---------------------------------|
+| 0x00   | 64   | File info (text description)    |
+| 0x40   | 4    | Magic (0xbeda107f)              |
+| 0x44   | 4    | Version (major.minor)           |
+| 0x48   | 4    | Header size                     |
+| 0x4C   | 4    | Image type (1=dynamic, 2=fixed) |
+| 0x50   | 4    | Image flags                     |
+| 0x150  | 8    | Disk size                       |
+| 0x158  | 4    | Block size                      |
+| 0x15C  | 4    | Block extra data                |
+| 0x160  | 4    | Blocks in HDD                   |
+| 0x164  | 4    | Blocks allocated                |
 
 ## Image Types
 

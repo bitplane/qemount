@@ -46,12 +46,12 @@ Version 2 includes a shell script header for self-extraction.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 128 | Optional script header |
-| 0x80 | 4 | Block size |
-| 0x84 | 4 | Number of blocks |
-| 0x88 | ... | Block offset table |
+| Offset | Size | Field                  |
+|--------|------|------------------------|
+| 0x00   | 128  | Optional script header |
+| 0x80   | 4    | Block size             |
+| 0x84   | 4    | Number of blocks       |
+| 0x88   | ...  | Block offset table     |
 
 ## Detection
 

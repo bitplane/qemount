@@ -49,25 +49,25 @@ UDIF format:
 
 ## Koly Trailer
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 4 | Signature ("koly") |
-| 0x04 | 4 | Version |
-| 0x08 | 4 | Header size |
-| 0x0C | 4 | Flags |
-| 0x10 | 8 | Running data fork offset |
-| 0x18 | 8 | Data fork offset |
-| 0x20 | 8 | Data fork length |
-| 0x28 | 8 | Rsrc fork offset |
-| 0x30 | 8 | Rsrc fork length |
-| 0x38 | 4 | Segment number |
-| 0x3C | 4 | Segment count |
-| 0x40 | 16 | Segment ID |
-| 0x50 | 4 | Data checksum type |
-| 0x54 | 4 | Data checksum size |
-| 0x58 | 128 | Data checksum |
-| 0xD8 | 8 | XML offset |
-| 0xE0 | 8 | XML length |
+| Offset | Size | Field                    |
+|--------|------|--------------------------|
+| 0x00   | 4    | Signature ("koly")       |
+| 0x04   | 4    | Version                  |
+| 0x08   | 4    | Header size              |
+| 0x0C   | 4    | Flags                    |
+| 0x10   | 8    | Running data fork offset |
+| 0x18   | 8    | Data fork offset         |
+| 0x20   | 8    | Data fork length         |
+| 0x28   | 8    | Rsrc fork offset         |
+| 0x30   | 8    | Rsrc fork length         |
+| 0x38   | 4    | Segment number           |
+| 0x3C   | 4    | Segment count            |
+| 0x40   | 16   | Segment ID               |
+| 0x50   | 4    | Data checksum type       |
+| 0x54   | 4    | Data checksum size       |
+| 0x58   | 128  | Data checksum            |
+| 0xD8   | 8    | XML offset               |
+| 0xE0   | 8    | XML length               |
 
 ## Detection
 

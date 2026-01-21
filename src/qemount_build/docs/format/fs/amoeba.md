@@ -38,10 +38,10 @@ The Amoeba filesystem was designed for distributed access:
 
 ## MBR Partition Types
 
-| Type | Name | Notes |
-|------|------|-------|
-| 0x90 | Amoeba | Filesystem partition |
-| 0x91 | Amoeba BBT | Bad Block Table (disk metadata) |
+| Type | Name         | Notes                           |
+|------|--------------|---------------------------------|
+| 0x90 | Amoeba       | Filesystem partition            |
+| 0x91 | Amoeba BBT   | Bad Block Table (disk metadata) |
 
 ## History
 

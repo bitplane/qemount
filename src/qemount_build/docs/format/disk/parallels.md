@@ -44,16 +44,16 @@ running on macOS.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 16 | Signature |
-| 0x10 | 4 | Version |
-| 0x14 | 4 | Heads |
-| 0x18 | 4 | Cylinders |
-| 0x1C | 4 | Tracks |
-| 0x20 | 4 | Sectors |
-| 0x24 | 4 | Block size |
-| 0x28 | 8 | Disk size (sectors) |
+| Offset | Size | Field               |
+|--------|------|---------------------|
+| 0x00   | 16   | Signature           |
+| 0x10   | 4    | Version             |
+| 0x14   | 4    | Heads               |
+| 0x18   | 4    | Cylinders           |
+| 0x1C   | 4    | Tracks              |
+| 0x20   | 4    | Sectors             |
+| 0x24   | 4    | Block size          |
+| 0x28   | 8    | Disk size (sectors) |
 
 ## Detection
 

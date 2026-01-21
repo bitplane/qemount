@@ -34,13 +34,13 @@ and designed for the emulator's needs.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 32 | Signature ("Bochs Virtual HD Image") |
-| 0x20 | 16 | Version string |
-| 0x30 | 4 | Header size |
-| 0x34 | 4 | Version |
-| 0x38 | 8 | Disk size (sectors) |
+| Offset | Size | Field                                |
+|--------|------|--------------------------------------|
+| 0x00   | 32   | Signature ("Bochs Virtual HD Image") |
+| 0x20   | 16   | Version string                       |
+| 0x30   | 4    | Header size                          |
+| 0x34   | 4    | Version                              |
+| 0x38   | 8    | Disk size (sectors)                  |
 
 ## Detection
 

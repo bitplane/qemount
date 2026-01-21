@@ -1,5 +1,6 @@
 ---
 title: Filesystems
+priority: 250
 ---
 
 # Filesystems

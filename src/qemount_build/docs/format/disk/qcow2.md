@@ -44,18 +44,18 @@ machines.
 
 ## Header Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x00 | 4 | Magic (0x514649fb) |
-| 0x04 | 4 | Version (2 or 3) |
-| 0x08 | 8 | Backing file offset |
-| 0x10 | 4 | Backing file size |
-| 0x14 | 4 | Cluster bits (log2) |
-| 0x18 | 8 | Virtual size |
-| 0x20 | 4 | Crypt method |
-| 0x24 | 4 | L1 size |
-| 0x28 | 8 | L1 table offset |
-| 0x30 | 8 | Refcount table offset |
+| Offset | Size | Field                 |
+|--------|------|-----------------------|
+| 0x00   | 4    | Magic (0x514649fb)    |
+| 0x04   | 4    | Version (2 or 3)      |
+| 0x08   | 8    | Backing file offset   |
+| 0x10   | 4    | Backing file size     |
+| 0x14   | 4    | Cluster bits (log2)   |
+| 0x18   | 8    | Virtual size          |
+| 0x20   | 4    | Crypt method          |
+| 0x24   | 4    | L1 size               |
+| 0x28   | 8    | L1 table offset       |
+| 0x30   | 8    | Refcount table offset |
 
 ## Detection
 

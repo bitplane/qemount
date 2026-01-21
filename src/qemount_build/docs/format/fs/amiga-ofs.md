@@ -38,12 +38,12 @@ floppy disks and is identified by the "DOS\0" signature in the boot block.
 
 ## Variants
 
-| ID   | Name | Description |
-|------|------|-------------|
-| DOS0 | OFS | Original File System |
-| DOS2 | OFS-INTL | International (non-ASCII) filenames |
-| DOS4 | OFS-DC | Directory cache for faster listings |
-| DOS6 | OFS-INTL-DC | International + directory cache |
+| ID   | Name        | Description                         |
+|------|-------------|-------------------------------------|
+| DOS0 | OFS         | Original File System                |
+| DOS2 | OFS-INTL    | International (non-ASCII) filenames |
+| DOS4 | OFS-DC      | Directory cache for faster listings |
+| DOS6 | OFS-INTL-DC | International + directory cache     |
 
 ## Limitations
 

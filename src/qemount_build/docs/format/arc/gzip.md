@@ -18,7 +18,7 @@ format, not an archive - it compresses a single stream.
 
 ## Characteristics
 
-- Single file compression (not an archive)
+- Single file compression
 - DEFLATE algorithm (LZ77 + Huffman)
 - CRC32 integrity check
 - Original filename/timestamp preserved
@@ -38,13 +38,13 @@ Offset  Size  Field
 ```
 
 **Flags (byte 3):**
-| Bit | Meaning |
-|-----|---------|
-| 0 | FTEXT - ASCII text |
-| 1 | FHCRC - Header CRC16 |
-| 2 | FEXTRA - Extra field |
-| 3 | FNAME - Original filename |
-| 4 | FCOMMENT - Comment |
+| Bit | Meaning                   |
+|-----|---------------------------|
+| 0   | FTEXT - ASCII text        |
+| 1   | FHCRC - Header CRC16      |
+| 2   | FEXTRA - Extra field      |
+| 3   | FNAME - Original filename |
+| 4   | FCOMMENT - Comment        |
 
 **Footer (8 bytes):**
 ```
@@ -55,13 +55,13 @@ Offset  Size  Field
 
 ## OS Values
 
-| Value | OS |
-|-------|-----|
-| 0 | FAT (DOS/Windows) |
-| 3 | Unix |
-| 7 | Macintosh |
-| 11 | NTFS |
-| 255 | Unknown |
+| Value | OS                |
+|-------|-------------------|
+| 0     | FAT (DOS/Windows) |
+| 3     | Unix              |
+| 7     | Macintosh         |
+| 11    | NTFS              |
+| 255   | Unknown           |
 
 ## Related Formats
 

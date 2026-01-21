@@ -1,5 +1,6 @@
 ---
 title: Archive Files
+priority: 1000
 ---
 
 # Archives

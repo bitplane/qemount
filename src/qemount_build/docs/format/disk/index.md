@@ -1,5 +1,6 @@
 ---
 title: Disk Images
+priority: 750
 ---
 
 # Disk Images
