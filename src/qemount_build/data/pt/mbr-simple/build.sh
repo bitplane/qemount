@@ -1,7 +1,9 @@
 #!/bin/sh
-# $1 = input directory (unused for partition tables)
-# $2 = output file
+# $1 = output file (relative path, e.g. data/pt/basic.mbr)
 set -e
+
+OUTPUT="/host/build/$1"
+mkdir -p "$(dirname "$OUTPUT")"
 
 FAT16=/host/build/data/fs/basic.fat16
 FAT32=/host/build/data/fs/basic.fat32
@@ -26,14 +28,14 @@ P2_SIZE=$FAT32_SECTORS
 TOTAL_SECTORS=$(( P2_START + P2_SIZE + 2048 ))
 TOTAL_BYTES=$(( TOTAL_SECTORS * 512 ))
 
-truncate -s "$TOTAL_BYTES" "$2"
+truncate -s "$TOTAL_BYTES" "$OUTPUT"
 
-sfdisk "$2" << EOF
+sfdisk "$OUTPUT" << EOF
 label: dos
 start=$P1_START, size=$P1_SIZE, type=6
 start=$P2_START, size=$P2_SIZE, type=b
 EOF
 
 # Copy filesystem images into partitions
-dd if="$FAT16" of="$2" bs=512 seek=$P1_START conv=notrunc status=none
-dd if="$FAT32" of="$2" bs=512 seek=$P2_START conv=notrunc status=none
+dd if="$FAT16" of="$OUTPUT" bs=512 seek=$P1_START conv=notrunc status=none
+dd if="$FAT32" of="$OUTPUT" bs=512 seek=$P2_START conv=notrunc status=none

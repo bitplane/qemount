@@ -1,7 +1,9 @@
 #!/bin/sh
-# $1 = input directory (unused for partition tables)
-# $2 = output file
+# $1 = output file (relative path, e.g. data/pt/extended.mbr)
 set -e
+
+OUTPUT="/host/build/$1"
+mkdir -p "$(dirname "$OUTPUT")"
 
 FAT16=/host/build/data/fs/basic.fat16
 FAT32=/host/build/data/fs/basic.fat32
@@ -46,10 +48,10 @@ EXT_SIZE=$(( EXT_END - EXT_START ))
 TOTAL_SECTORS=$(( EXT_END + 2048 ))
 TOTAL_BYTES=$(( TOTAL_SECTORS * 512 ))
 
-truncate -s "$TOTAL_BYTES" "$2"
+truncate -s "$TOTAL_BYTES" "$OUTPUT"
 
 # sfdisk handles EBR creation for logical partitions automatically
-sfdisk "$2" << EOF
+sfdisk "$OUTPUT" << EOF
 label: dos
 start=$P1_START, size=$P1_SIZE, type=6
 start=$EXT_START, size=$EXT_SIZE, type=5
@@ -58,6 +60,6 @@ start=$L6_DATA_START, size=$L6_SIZE, type=83
 EOF
 
 # Copy filesystem images into partitions
-dd if="$FAT16" of="$2" bs=512 seek=$P1_START conv=notrunc status=none
-dd if="$FAT32" of="$2" bs=512 seek=$L5_DATA_START conv=notrunc status=none
-dd if="$EXT4" of="$2" bs=512 seek=$L6_DATA_START conv=notrunc status=none
+dd if="$FAT16" of="$OUTPUT" bs=512 seek=$P1_START conv=notrunc status=none
+dd if="$FAT32" of="$OUTPUT" bs=512 seek=$L5_DATA_START conv=notrunc status=none
+dd if="$EXT4" of="$OUTPUT" bs=512 seek=$L6_DATA_START conv=notrunc status=none
