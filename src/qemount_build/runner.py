@@ -7,7 +7,6 @@ Executes build steps in dependency order using podman.
 import json
 import logging
 import subprocess
-import sys
 from pathlib import Path
 
 from .catalogue import resolve_path, build_graph
@@ -78,11 +77,10 @@ def build_image(
         cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
     result = subprocess.run(cmd, cwd=context_dir, capture_output=True, text=True)
+    logger = log.error if result.returncode else log.debug
+    logger("stdout: %s", result.stdout)
+    logger("stderr: %s", result.stderr)
     if result.returncode != 0:
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(result.stderr, file=sys.stderr)
         return None
     image_id = get_image_id(tag)
     if not image_id:
@@ -112,7 +110,10 @@ def run_container(
         cmd.extend(targets)
 
     log.info("Running: %s", image)
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    logger = log.error if result.returncode else log.debug
+    logger("stdout: %s", result.stdout)
+    logger("stderr: %s", result.stderr)
     return result.returncode == 0
 
 
