@@ -150,3 +150,121 @@ def test_update_image_hash():
         "build_requires_hash": "br_hash",
         "image_id": "sha256:abc",
     }
+
+
+def test_hash_files_nonexistent():
+    """Hashing non-existent directory returns consistent empty hash."""
+    h1 = hash_files(Path("/nonexistent/path/that/does/not/exist"))
+    h2 = hash_files(Path("/another/nonexistent/path"))
+    assert h1 == h2  # Both return hash of empty content
+
+
+def test_hash_build_requires_file():
+    """hash_build_requires includes file content."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "data").mkdir()
+        (build_dir / "data/file.bin").write_bytes(b"content")
+
+        h1 = hash_build_requires(["data/file.bin"], build_dir)
+
+        (build_dir / "data/file.bin").write_bytes(b"different")
+        h2 = hash_build_requires(["data/file.bin"], build_dir)
+
+        assert h1 != h2
+
+
+def test_hash_build_requires_dir():
+    """hash_build_requires includes directory contents."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "data/subdir").mkdir(parents=True)
+        (build_dir / "data/subdir/a.txt").write_text("hello")
+
+        h1 = hash_build_requires(["data/subdir"], build_dir)
+
+        (build_dir / "data/subdir/a.txt").write_text("world")
+        h2 = hash_build_requires(["data/subdir"], build_dir)
+
+        assert h1 != h2
+
+
+def test_hash_build_requires_missing():
+    """hash_build_requires handles missing files gracefully."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        # Should not raise, just skip missing
+        h = hash_build_requires(["does/not/exist"], build_dir)
+        assert isinstance(h, str)
+
+
+def test_hash_path_inputs_context():
+    """hash_path_inputs includes context dir files."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+
+        (pkg_dir / "mypath").mkdir()
+        (pkg_dir / "mypath/Dockerfile").write_text("FROM alpine")
+
+        resolved = {"env": {"FOO": "bar"}}
+        dep_hashes = {}
+
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir)
+
+        (pkg_dir / "mypath/Dockerfile").write_text("FROM debian")
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir)
+
+        assert h1 != h2
+
+
+def test_hash_path_inputs_env():
+    """hash_path_inputs includes env vars."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+        (pkg_dir / "mypath").mkdir()
+
+        h1 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "1"}}, {}, build_dir)
+        h2 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "2"}}, {}, build_dir)
+
+        assert h1 != h2
+
+
+def test_hash_path_inputs_requires():
+    """hash_path_inputs includes dependency hashes."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+        (pkg_dir / "mypath").mkdir()
+
+        resolved = {"requires": {"dep1": {}}}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_a"}, build_dir)
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_b"}, build_dir)
+
+        assert h1 != h2
+
+
+def test_hash_path_inputs_file_dep():
+    """hash_path_inputs includes file deps from build_dir."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+        (pkg_dir / "mypath").mkdir()
+        (build_dir / "catalogue.json").write_text('{"version": 1}')
+
+        resolved = {"requires": {"catalogue.json": {}}}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir)
+
+        (build_dir / "catalogue.json").write_text('{"version": 2}')
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir)
+
+        assert h1 != h2
