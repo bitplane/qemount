@@ -61,3 +61,31 @@ def test_sources_preserved():
     assert "sources" in resolved[""]
     assert "sources" in resolved["child"]
     assert "sources" in resolved["child/leaf"]
+
+
+def test_no_merge_prevents_detect_merge():
+    """Child detect completely replaces parent when no_merge includes detect."""
+    files = load_docs(DATA_DIR / "no_merge")
+    paths = map_paths(files)
+    resolved = resolve_inheritance(files, paths)
+
+    # Root has its own detect
+    root_detect = resolved[""]["meta"]["detect"]
+    assert root_detect == [{"offset": 0, "type": "byte", "value": 0xAA}]
+
+    # Child detect should completely replace parent, not merge
+    child_detect = resolved["child"]["meta"]["detect"]
+    assert child_detect == [{"offset": 512, "type": "string", "value": "EFI PART"}]
+    # Should NOT have parent's offset: 0 rule
+    assert len(child_detect) == 1
+
+
+def test_no_merge_setting_inherited():
+    """no_merge setting itself is inherited to children."""
+    files = load_docs(DATA_DIR / "no_merge")
+    paths = map_paths(files)
+    resolved = resolve_inheritance(files, paths)
+
+    # Both root and child should have no_merge in their merged meta
+    assert "no_merge" in resolved[""]["meta"]
+    assert "no_merge" in resolved["child"]["meta"]

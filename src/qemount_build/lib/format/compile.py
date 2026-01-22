@@ -14,13 +14,21 @@ import sys
 import msgpack
 
 
-def normalize_rule(rule: dict) -> dict:
+def normalize_rule(rule, path: list[str] | None = None) -> dict:
     """Normalize a detection rule to standard form with defaults."""
+    path = path or []
+
+    if not isinstance(rule, dict):
+        raise TypeError(f"Expected dict, got {type(rule).__name__}: {rule!r} at {'/'.join(path) or 'root'}")
+
     # Handle any/all blocks (not actual rules, just containers)
     if "any" in rule:
-        return {"any": [normalize_rule(r) for r in rule["any"]]}
+        return {"any": [normalize_rule(r, path + [f"any[{i}]"]) for i, r in enumerate(rule["any"])]}
     if "all" in rule:
-        return {"all": [normalize_rule(r) for r in rule["all"]]}
+        return {"all": [normalize_rule(r, path + [f"all[{i}]"]) for i, r in enumerate(rule["all"])]}
+
+    if "type" not in rule:
+        raise KeyError(f"Missing 'type' in rule at {'/'.join(path) or 'root'}: {rule!r}")
 
     normalized = {
         "offset": rule.get("offset", 0),
@@ -40,7 +48,7 @@ def normalize_rule(rule: dict) -> dict:
     if "mask" in rule:
         normalized["mask"] = rule["mask"]
     if "then" in rule:
-        normalized["then"] = [normalize_rule(r) for r in rule["then"]]
+        normalized["then"] = [normalize_rule(r, path + [f"then[{i}]"]) for i, r in enumerate(rule["then"])]
     return normalized
 
 
@@ -50,13 +58,13 @@ def normalize_detect(detect) -> dict | None:
     Returns None if no valid rules (empty list, comments only, etc).
     """
     if isinstance(detect, list):
-        rules = [normalize_rule(r) for r in detect]
+        rules = [normalize_rule(r, [f"detect[{i}]"]) for i, r in enumerate(detect)]
         return {"all": rules} if rules else None
     if isinstance(detect, dict) and "any" in detect:
-        rules = [normalize_rule(r) for r in detect["any"]]
+        rules = [normalize_rule(r, [f"detect/any[{i}]"]) for i, r in enumerate(detect["any"])]
         return {"any": rules} if rules else None
     if isinstance(detect, dict) and "type" in detect:
-        return {"all": [normalize_rule(detect)]}
+        return {"all": [normalize_rule(detect, ["detect"])]}
     return None
 
 

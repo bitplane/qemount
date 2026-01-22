@@ -112,34 +112,38 @@ def normalize_list(items: list) -> dict:
     return result
 
 
-# Keys that are NOT inherited from parent to child
-NO_INHERIT = {"provides", "build_requires"}
-
-
-def merge_meta(parent: dict, child: dict) -> dict:
+def merge_meta(parent: dict, child: dict, no_inherit: set = None, no_merge: set = None) -> dict:
     """
     Merge parent metadata into child.
 
     - Child keys extend/overwrite parent keys
     - Keys starting with "-" delete that key from parent
     - Lists are normalized to dicts before merging
-    - Nested dicts are merged recursively
-    - Keys in NO_INHERIT are not copied from parent
+    - Nested dicts are merged recursively (unless in no_merge)
+    - Keys in no_inherit are not copied from parent
+    - Keys in no_merge override parent entirely (no deep merge)
     """
+    no_inherit = no_inherit or set()
+    no_merge = no_merge or set()
     result = {}
 
     # Collect deletion markers from child
     deletions = {k[1:] for k in child if isinstance(k, str) and k.startswith("-")}
 
-    # Copy parent keys that aren't deleted and aren't in NO_INHERIT
+    # Copy parent keys that aren't deleted and aren't in no_inherit
     for key, value in parent.items():
-        if key in deletions or key in NO_INHERIT:
+        if key in deletions or key in no_inherit:
             continue
         result[key] = value
 
     # Merge child keys (skip deletion markers)
     for key, value in child.items():
         if isinstance(key, str) and key.startswith("-"):
+            continue
+
+        # Keys in no_merge override entirely - skip deep merge
+        if key in no_merge:
+            result[key] = value
             continue
 
         parent_val = result.get(key)
@@ -152,7 +156,7 @@ def merge_meta(parent: dict, child: dict) -> dict:
 
         # Deep merge dicts
         if isinstance(value, dict) and isinstance(parent_val, dict):
-            result[key] = merge_meta(parent_val, value)
+            result[key] = merge_meta(parent_val, value, no_inherit, no_merge)
         else:
             result[key] = value
 
@@ -181,6 +185,8 @@ def resolve_inheritance(files: dict, paths: dict) -> dict:
 
     Walks up parent chain, merges metadata from root to leaf.
     Returns new paths dict with "meta" added to each path.
+
+    Collects no_inherit and no_merge from each ancestor as we walk down.
     """
     result = {}
 
@@ -198,12 +204,17 @@ def resolve_inheritance(files: dict, paths: dict) -> dict:
         # Reverse to go root to leaf
         chain.reverse()
 
-        # Merge metadata from root to leaf
+        # Merge metadata from root to leaf, collecting settings as we go
         merged = {}
+        no_inherit = set()
+        no_merge = set()
         for ancestor in chain:
             source = paths[ancestor]["sources"][0]
             meta = files[source]["meta"]
-            merged = merge_meta(merged, meta)
+            # Collect settings from this level (before merge removes them)
+            no_inherit.update(meta.get("no_inherit", []))
+            no_merge.update(meta.get("no_merge", []))
+            merged = merge_meta(merged, meta, no_inherit, no_merge)
 
         result[path] = {**path_data, "meta": merged}
 
