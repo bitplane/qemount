@@ -94,6 +94,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "disk/vdi" => Some(&disk::vdi::VDI),
         "disk/vhd" => Some(&disk::vhd::VHD),
         "disk/vhdx" => Some(&disk::vhdx::VHDX),
+        "disk/vmdk" => Some(&disk::vmdk::VMDK),
         "pt/apm" => Some(&pt::apm::APM),
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),

@@ -10,3 +10,4 @@ pub mod qed;
 pub mod vdi;
 pub mod vhd;
 pub mod vhdx;
+pub mod vmdk;
