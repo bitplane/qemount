@@ -86,7 +86,9 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
 /// Get container reader for a format, if it's a container
 pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
+        "arc/bzip2" => Some(&arc::bzip2::BZIP2),
         "arc/gzip" => Some(&arc::gzip::GZIP),
+        "arc/xz" => Some(&arc::xz::XZ),
         "disk/bochs" => Some(&disk::bochs::BOCHS),
         "disk/cloop" => Some(&disk::cloop::CLOOP),
         "disk/dmg" => Some(&disk::dmg::DMG),
