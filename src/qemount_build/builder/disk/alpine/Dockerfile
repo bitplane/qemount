@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.23
 
 # Linux disk tools for creating filesystem images without mount access
 RUN apk add --no-cache \
