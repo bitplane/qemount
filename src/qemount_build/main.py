@@ -19,6 +19,7 @@ from pathlib import Path
 
 from .catalogue import load, build_provides_index, build_graph
 from .runner import run_build
+from . import log as logsetup
 
 log = logging.getLogger(__name__)
 
@@ -158,14 +159,10 @@ def main():
         help="Host architecture (default: %(default)s)",
     )
     parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Verbose output (debug logging)",
-    )
-    parser.add_argument(
-        "-q", "--quiet",
-        action="store_true",
-        help="Quiet output (errors only)",
+        "--log-level",
+        choices=list(logsetup.LEVELS.keys()),
+        default="info",
+        help="Log level (default: info)",
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -200,18 +197,7 @@ def main():
     args = parser.parse_args()
 
     # Configure logging
-    if args.quiet:
-        level = logging.ERROR
-    elif args.verbose:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    logging.basicConfig(
-        level=level,
-        format="%(levelname)s: %(message)s",
-        stream=sys.stderr,
-    )
+    logsetup.setup(args.log_level)
 
     # Load catalogue
     pkg_dir = Path(__file__).parent

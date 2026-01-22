@@ -10,6 +10,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from .log import timed
+
 
 CACHE_FILE = "cache/hashes.json"
 
@@ -31,6 +33,7 @@ def save_cache(build_dir: Path, cache: dict):
     tmp.rename(path)
 
 
+@timed
 def hash_files(directory: Path) -> str:
     """Hash all files in a directory recursively."""
     h = hashlib.md5()
@@ -47,6 +50,7 @@ def hash_files(directory: Path) -> str:
     return h.hexdigest()
 
 
+@timed
 def hash_path_inputs(
     path: str,
     pkg_dir: Path,
