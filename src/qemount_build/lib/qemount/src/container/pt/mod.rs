@@ -1,5 +1,6 @@
 //! Partition table container readers
 
+pub mod acorn;
 pub mod apm;
 pub mod atari;
 pub mod disklabel;
