@@ -35,6 +35,9 @@ RUN apk add --no-cache --virtual .cramfs-deps make gcc musl-dev zlib-dev zlib-st
     && cd /tmp/cramfs-tools-2.1 && make && cp mkcramfs /usr/local/bin/ \
     && cd / && rm -rf /tmp/cramfs-tools-2.1 && apk del .cramfs-deps
 
+# Stub udevadm - called by mkfs tools but not needed in container
+RUN ln -s /bin/true /usr/sbin/udevadm
+
 WORKDIR /build
 COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]
