@@ -50,15 +50,15 @@ Offset  Size  Description
 
 ## Partition Types
 
-| ID | Description |
-|----|-------------|
+| ID  | Description               |
+|-----|---------------------------|
 | GEM | GEM/TOS partition (<16MB) |
-| BGM | Big GEM (>16MB) |
-| XGM | Extended partition |
-| RAW | Raw partition |
-| LNX | Linux |
-| SWP | Linux swap |
-| MIX | Minix |
+| BGM | Big GEM (>16MB)           |
+| XGM | Extended partition        |
+| RAW | Raw partition             |
+| LNX | Linux                     |
+| SWP | Linux swap                |
+| MIX | Minix                     |
 
 ## Detection Notes
 

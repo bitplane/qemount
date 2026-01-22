@@ -51,12 +51,12 @@ development for Linux, FreeBSD, and other platforms.
 
 ## RAID Levels
 
-| Level | Parity | Min Disks |
-|-------|--------|-----------|
-| RAID-Z1 | Single | 3 |
-| RAID-Z2 | Double | 4 |
-| RAID-Z3 | Triple | 5 |
-| Mirror | N-way | 2+ |
+| Level   | Parity | Min Disks |
+|---------|--------|-----------|
+| RAID-Z1 | Single | 3         |
+| RAID-Z2 | Double | 4         |
+| RAID-Z3 | Triple | 5         |
+| Mirror  | N-way  | 2+        |
 
 ## Platform Support
 

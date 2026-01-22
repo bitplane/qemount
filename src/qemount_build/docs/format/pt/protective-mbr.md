@@ -55,12 +55,12 @@ Offset  Size  Description
 
 ## vs Hybrid MBR
 
-| Feature | Protective | Hybrid |
-|---------|------------|--------|
-| MBR entries | 1 (0xEE) | Multiple real |
-| BIOS bootable | No | Yes |
-| Purpose | Protection | Compatibility |
-| GPT spec | Required | Deviation |
+| Feature       | Protective | Hybrid        |
+|---------------|------------|---------------|
+| MBR entries   | 1 (0xEE)   | Multiple real |
+| BIOS bootable | No         | Yes           |
+| Purpose       | Protection | Compatibility |
+| GPT spec      | Required   | Deviation     |
 
 ## Detection
 

@@ -25,11 +25,11 @@ the partition type.
 
 Each 4096-byte block contains:
 
-| Offset | Size | Purpose |
-|--------|------|---------|
-| 0 | 2000 | Source screen (80×25 characters) |
-| 2000 | 2000 | Shadow screen (comments/docs) |
-| 4000 | 96 | Filesystem metadata |
+| Offset | Size | Purpose                          |
+|--------|------|----------------------------------|
+| 0      | 2000 | Source screen (80×25 characters) |
+| 2000   | 2000 | Shadow screen (comments/docs)    |
+| 4000   | 96   | Filesystem metadata              |
 
 ## Allocation
 

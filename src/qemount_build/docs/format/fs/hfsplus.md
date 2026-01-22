@@ -54,10 +54,10 @@ APFS replaced it in 2017, and is still used for some purposes.
 
 ## Variants
 
-| Signature | Name | Description |
-|-----------|------|-------------|
-| 0x482B | HFS+ | Standard, case-insensitive |
-| 0x4858 | HFSX | Case-sensitive variant |
+| Signature | Name | Description                |
+|-----------|------|----------------------------|
+| 0x482B    | HFS+ | Standard, case-insensitive |
+| 0x4858    | HFSX | Case-sensitive variant     |
 
 ## Journaling
 

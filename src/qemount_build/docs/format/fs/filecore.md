@@ -29,12 +29,12 @@ built on top of Filecore.
 
 ## Formats Using Filecore
 
-| Format | Description |
-|--------|-------------|
-| ADFS | Main Acorn filesystem |
-| DOSFS | FAT access via Filecore |
-| CDFS | CD-ROM access |
-| Various | Third-party formats |
+| Format  | Description             |
+|---------|-------------------------|
+| ADFS    | Main Acorn filesystem   |
+| DOSFS   | FAT access via Filecore |
+| CDFS    | CD-ROM access           |
+| Various | Third-party formats     |
 
 ## Zone Map
 

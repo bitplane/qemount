@@ -65,13 +65,13 @@ UBIFS sits on top of UBI, which provides:
 
 ## vs JFFS2
 
-| Feature | UBIFS | JFFS2 |
-|---------|-------|-------|
-| Mount time | O(1) | O(n) |
-| RAM usage | Constant | Proportional |
-| Write-back | Yes | No |
-| Compression | Better | Good |
-| Bad blocks | UBI handles | Internal |
+| Feature     | UBIFS       | JFFS2        |
+|-------------|-------------|--------------|
+| Mount time  | O(1)        | O(n)         |
+| RAM usage   | Constant    | Proportional |
+| Write-back  | Yes         | No           |
+| Compression | Better      | Good         |
+| Bad blocks  | UBI handles | Internal     |
 
 ## Linux Support
 

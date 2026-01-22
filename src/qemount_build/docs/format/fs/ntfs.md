@@ -47,29 +47,29 @@ Windows system drives.
 
 ## Key Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x03 | 8 | OEM name ("NTFS    ") |
-| 0x0B | 2 | Bytes per sector |
-| 0x0D | 1 | Sectors per cluster |
-| 0x28 | 8 | Total sectors |
-| 0x30 | 8 | MFT cluster number |
-| 0x38 | 8 | MFT mirror cluster |
-| 0x40 | 1 | Clusters per MFT record |
+| Offset | Size | Field                   |
+|--------|------|-------------------------|
+| 0x03   | 8    | OEM name ("NTFS    ")   |
+| 0x0B   | 2    | Bytes per sector        |
+| 0x0D   | 1    | Sectors per cluster     |
+| 0x28   | 8    | Total sectors           |
+| 0x30   | 8    | MFT cluster number      |
+| 0x38   | 8    | MFT mirror cluster      |
+| 0x40   | 1    | Clusters per MFT record |
 
 ## Special Files ($MFT)
 
-| Entry | Name | Purpose |
-|-------|------|---------|
-| 0 | $MFT | Master File Table itself |
-| 1 | $MFTMirr | Backup of first 4 MFT entries |
-| 2 | $LogFile | Transaction journal |
-| 3 | $Volume | Volume information |
-| 4 | $AttrDef | Attribute definitions |
-| 5 | . | Root directory |
-| 6 | $Bitmap | Cluster allocation bitmap |
-| 7 | $Boot | Boot sector |
-| 8 | $BadClus | Bad cluster list |
+| Entry | Name     | Purpose                       |
+|-------|----------|-------------------------------|
+| 0     | $MFT     | Master File Table itself      |
+| 1     | $MFTMirr | Backup of first 4 MFT entries |
+| 2     | $LogFile | Transaction journal           |
+| 3     | $Volume  | Volume information            |
+| 4     | $AttrDef | Attribute definitions         |
+| 5     | .        | Root directory                |
+| 6     | $Bitmap  | Cluster allocation bitmap     |
+| 7     | $Boot    | Boot sector                   |
+| 8     | $BadClus | Bad cluster list              |
 
 ## Linux Support
 

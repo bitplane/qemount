@@ -37,10 +37,10 @@ Offset  Size  Description
 
 Typical Rio Karma layout:
 
-| Partition | Description |
-|-----------|-------------|
-| 1 | System/firmware |
-| 2 | Music storage (OMFS) |
+| Partition | Description          |
+|-----------|----------------------|
+| 1         | System/firmware      |
+| 2         | Music storage (OMFS) |
 
 ## Historical Note
 

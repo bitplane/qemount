@@ -25,20 +25,20 @@ was merged into Linux 2.4.18 (2002).
 
 ## MBR Partition Types
 
-| Type | OS |
-|------|----|
+| Type | OS                |
+|------|-------------------|
 | 0x35 | OS/2, eComStation |
 
 Note: JFS is non-bootable on OS/2, so the OS itself must be on HPFS or FAT.
 
 ## Platforms
 
-| Platform | Notes |
-|----------|-------|
-| AIX | Original JFS (1990), JFS2 (2000) |
-| OS/2 | Warp Server for e-Business, Convenience Pack |
-| eComStation | OEM version of OS/2 |
-| Linux | Open sourced 1999, merged 2.4.18 (2002) |
+| Platform    | Notes                                        |
+|-------------|----------------------------------------------|
+| AIX         | Original JFS (1990), JFS2 (2000)             |
+| OS/2        | Warp Server for e-Business, Convenience Pack |
+| eComStation | OEM version of OS/2                          |
+| Linux       | Open sourced 1999, merged 2.4.18 (2002)      |
 
 ## Characteristics
 
@@ -77,12 +77,12 @@ JFS uses a write-ahead log for metadata:
 
 ## Comparison
 
-| Feature | JFS | ext4 | XFS |
-|---------|-----|------|-----|
-| Extents | Yes | Yes | Yes |
-| B+ trees | Yes | H-tree | Yes |
-| Dynamic inodes | Yes | No | Yes |
-| Reflink | No | Yes | Yes |
+| Feature        | JFS | ext4   | XFS |
+|----------------|-----|--------|-----|
+| Extents        | Yes | Yes    | Yes |
+| B+ trees       | Yes | H-tree | Yes |
+| Dynamic inodes | Yes | No     | Yes |
+| Reflink        | No  | Yes    | Yes |
 
 ## Use Cases
 

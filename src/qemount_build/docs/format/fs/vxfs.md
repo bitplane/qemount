@@ -44,12 +44,12 @@ use, often bundled with Veritas Volume Manager (VxVM).
 
 ## Disk Layout Versions
 
-| Version | Features |
-|---------|----------|
-| 6 | Basic VxFS |
-| 7 | Large file support |
-| 8 | Extended features |
-| 9-12 | Modern enhancements |
+| Version | Features            |
+|---------|---------------------|
+| 6       | Basic VxFS          |
+| 7       | Large file support  |
+| 8       | Extended features   |
+| 9-12    | Modern enhancements |
 
 ## Platforms
 

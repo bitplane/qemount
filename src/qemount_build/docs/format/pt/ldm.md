@@ -68,13 +68,13 @@ Offset  Size  Description
 
 ## Volume Types
 
-| Type | Description |
-|------|-------------|
-| Simple | Single partition span |
-| Spanned | Multiple partitions concatenated |
-| Striped | RAID-0 |
-| Mirrored | RAID-1 |
-| RAID-5 | Parity striping |
+| Type     | Description                      |
+|----------|----------------------------------|
+| Simple   | Single partition span            |
+| Spanned  | Multiple partitions concatenated |
+| Striped  | RAID-0                           |
+| Mirrored | RAID-1                           |
+| RAID-5   | Parity striping                  |
 
 ## Linux Support
 

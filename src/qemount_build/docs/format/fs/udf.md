@@ -37,14 +37,14 @@ Blu-ray discs, and modern optical media, but also works on hard disks.
 
 ## Versions
 
-| Version | Year | Features |
-|---------|------|----------|
-| 1.02 | 1996 | DVD-ROM |
-| 1.50 | 1997 | DVD-RAM, VAT for CD-R |
-| 2.00 | 1998 | Streaming, DVD-RW |
-| 2.01 | 2000 | Large files (>1GB) |
-| 2.50 | 2003 | Metadata partition |
-| 2.60 | 2005 | Pseudo-overwritable |
+| Version | Year | Features              |
+|---------|------|-----------------------|
+| 1.02    | 1996 | DVD-ROM               |
+| 1.50    | 1997 | DVD-RAM, VAT for CD-R |
+| 2.00    | 1998 | Streaming, DVD-RW     |
+| 2.01    | 2000 | Large files (>1GB)    |
+| 2.50    | 2003 | Metadata partition    |
+| 2.60    | 2005 | Pseudo-overwritable   |
 
 ## Use Cases
 

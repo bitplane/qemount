@@ -74,9 +74,9 @@ Offset  Size  Description
 
 ## Common Type GUIDs
 
-| GUID | Type |
-|------|------|
-| C12A7328-F81F-11D2-BA4B-00A0C93EC93B | EFI System |
+| GUID                                 | Type                 |
+|--------------------------------------|----------------------|
+| C12A7328-F81F-11D2-BA4B-00A0C93EC93B | EFI System           |
 | EBD0A0A2-B9E5-4433-87C0-68B6B72699C7 | Microsoft Basic Data |
-| 0FC63DAF-8483-4772-8E79-3D69D8477DE4 | Linux filesystem |
-| E6D6D379-F507-44C2-A23C-238F2A3DF928 | Linux LVM |
+| 0FC63DAF-8483-4772-8E79-3D69D8477DE4 | Linux filesystem     |
+| E6D6D379-F507-44C2-A23C-238F2A3DF928 | Linux LVM            |

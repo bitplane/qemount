@@ -36,12 +36,12 @@ particularly for Android system partitions and container images.
 
 ## Compression Modes
 
-| Mode | Algorithm | Notes |
-|------|-----------|-------|
-| 0 | None | Uncompressed |
-| 1 | LZ4 | Fast decompression |
-| 2 | LZMA | High ratio |
-| 3 | DEFLATE | zlib compatible |
+| Mode | Algorithm | Notes              |
+|------|-----------|--------------------|
+| 0    | None      | Uncompressed       |
+| 1    | LZ4       | Fast decompression |
+| 2    | LZMA      | High ratio         |
+| 3    | DEFLATE   | zlib compatible    |
 
 ## Advantages over SquashFS
 

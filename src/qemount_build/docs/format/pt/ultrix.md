@@ -39,13 +39,13 @@ Offset  Size  Description
 
 Like BSD, Ultrix uses lettered partitions (a-h):
 
-| Partition | Typical Use |
-|-----------|-------------|
-| a | Root filesystem |
-| b | Swap |
-| c | Whole disk |
-| d | User data |
-| e-h | Additional filesystems |
+| Partition | Typical Use            |
+|-----------|------------------------|
+| a         | Root filesystem        |
+| b         | Swap                   |
+| c         | Whole disk             |
+| d         | User data              |
+| e-h       | Additional filesystems |
 
 ## Platforms
 

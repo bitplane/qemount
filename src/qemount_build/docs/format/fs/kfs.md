@@ -33,19 +33,19 @@ Each block is 6144 bytes:
 
 ### Directory Entry (Dentry)
 
-| Field | Size | Description |
-|-------|------|-------------|
-| name | 28 | Filename |
-| uid | 2 | User ID |
-| gid | 2 | Group ID |
-| mode | 2 | Protection mode |
-| qid | 8 | Unique identifier |
-| size | 4 | File size in bytes |
-| dblock | 24 | 6 direct block pointers |
-| iblock | 4 | Single indirect pointer |
-| diblock | 4 | Double indirect pointer |
-| atime | 4 | Access time |
-| mtime | 4 | Modification time |
+| Field   | Size | Description             |
+|---------|------|-------------------------|
+| name    | 28   | Filename                |
+| uid     | 2    | User ID                 |
+| gid     | 2    | Group ID                |
+| mode    | 2    | Protection mode         |
+| qid     | 8    | Unique identifier       |
+| size    | 4    | File size in bytes      |
+| dblock  | 24   | 6 direct block pointers |
+| iblock  | 4    | Single indirect pointer |
+| diblock | 4    | Double indirect pointer |
+| atime   | 4    | Access time             |
+| mtime   | 4    | Modification time       |
 
 88 directory entries fit per block.
 

@@ -48,14 +48,14 @@ Sectors are in units of the disk's sector size.
 
 ## Common Partitions
 
-| Name | Purpose |
-|------|---------|
-| 9fat | FAT boot partition |
-| nvram | NVRAM storage |
-| fossil | Fossil filesystem |
-| venti | Venti archive |
-| swap | Swap space |
-| other | Data partitions |
+| Name   | Purpose            |
+|--------|--------------------|
+| 9fat   | FAT boot partition |
+| nvram  | NVRAM storage      |
+| fossil | Fossil filesystem  |
+| venti  | Venti archive      |
+| swap   | Swap space         |
+| other  | Data partitions    |
 
 ## Detection
 

@@ -69,14 +69,14 @@ FAT type is determined by cluster count:
 
 ## Key Fields (BPB)
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x0B | 2 | Bytes per sector |
-| 0x0D | 1 | Sectors per cluster |
-| 0x0E | 2 | Reserved sectors |
-| 0x10 | 1 | Number of FATs |
-| 0x11 | 2 | Root directory entries |
-| 0x16 | 2 | Sectors per FAT |
+| Offset | Size | Field                  |
+|--------|------|------------------------|
+| 0x0B   | 2    | Bytes per sector       |
+| 0x0D   | 1    | Sectors per cluster    |
+| 0x0E   | 2    | Reserved sectors       |
+| 0x10   | 1    | Number of FATs         |
+| 0x11   | 2    | Root directory entries |
+| 0x16   | 2    | Sectors per FAT        |
 
 ## Legacy
 

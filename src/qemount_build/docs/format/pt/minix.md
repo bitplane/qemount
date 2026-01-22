@@ -51,9 +51,9 @@ Offset  Size  Description
 
 ## Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0x81 | Minix (old, <32MB) |
+| Type | Description         |
+|------|---------------------|
+| 0x81 | Minix (old, <32MB)  |
 | 0x81 | Minix / early Linux |
 
 ## Historical Note

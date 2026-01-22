@@ -30,11 +30,11 @@ OpenBSD uses its own variant of BSD disklabel with 16 partitions
 
 ## vs FreeBSD/NetBSD
 
-| Feature | OpenBSD | FreeBSD | NetBSD |
-|---------|---------|---------|--------|
+| Feature    | OpenBSD  | FreeBSD | NetBSD   |
+|------------|----------|---------|----------|
 | Partitions | 16 (a-p) | 8 (a-h) | 16 (a-p) |
-| DUID | Yes | No | No |
-| Endian | Little | Little | Varies |
+| DUID       | Yes      | No      | No       |
+| Endian     | Little   | Little  | Varies   |
 
 ## DUID (Disk UID)
 
@@ -62,12 +62,12 @@ Offset  Size  Description
 
 ## Partition Conventions
 
-| Letter | OpenBSD Use |
-|--------|-------------|
-| a | Root (/) |
-| b | Swap |
-| c | Whole disk (raw) |
-| d-p | User partitions |
+| Letter | OpenBSD Use      |
+|--------|------------------|
+| a      | Root (/)         |
+| b      | Swap             |
+| c      | Whole disk (raw) |
+| d-p    | User partitions  |
 
 ## Linux Support
 

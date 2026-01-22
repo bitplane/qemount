@@ -32,22 +32,22 @@ own filesystem (NWFS, later NSS) but used standard MBR for partitioning.
 
 ## Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0x64 | NetWare 286 |
+| Type | Description        |
+|------|--------------------|
+| 0x64 | NetWare 286        |
 | 0x65 | NetWare 386 / NWFS |
-| 0x66 | NetWare 386 (alt) |
-| 0x67 | NetWare (Novell) |
-| 0x68 | NetWare (Novell) |
-| 0x69 | NetWare 5+ / NSS |
+| 0x66 | NetWare 386 (alt)  |
+| 0x67 | NetWare (Novell)   |
+| 0x68 | NetWare (Novell)   |
+| 0x69 | NetWare 5+ / NSS   |
 
 ## Filesystems
 
-| Filesystem | Era | Features |
-|------------|-----|----------|
-| NetWare 286 | 1985 | Basic |
-| NWFS (Traditional) | 1989 | NetWare 3.x/4.x |
-| NSS | 1998 | NetWare 5+, 64-bit |
+| Filesystem         | Era  | Features           |
+|--------------------|------|--------------------|
+| NetWare 286        | 1985 | Basic              |
+| NWFS (Traditional) | 1989 | NetWare 3.x/4.x    |
+| NSS                | 1998 | NetWare 5+, 64-bit |
 
 ## Structure
 

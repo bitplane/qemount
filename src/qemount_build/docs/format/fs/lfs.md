@@ -50,12 +50,12 @@ All writes append to log:
 
 ## Implementations
 
-| System | Notes |
-|--------|-------|
-| BSD/LFS | Original implementation |
-| NetBSD | Maintained LFS support |
-| Sprite LFS | Research OS version |
-| NILFS2 | Linux successor |
+| System     | Notes                   |
+|------------|-------------------------|
+| BSD/LFS    | Original implementation |
+| NetBSD     | Maintained LFS support  |
+| Sprite LFS | Research OS version     |
+| NILFS2     | Linux successor         |
 
 ## Influence
 

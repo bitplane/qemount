@@ -66,14 +66,14 @@ Offset  Size  Description
 
 | Type | Description |
 |------|-------------|
-| 0 | Unused |
-| 1 | Swap |
-| 7 | 4.2BSD FFS |
-| 8 | MSDOS |
-| 9 | 4.4LFS |
-| 11 | ext2 |
-| 15 | Vinum |
-| 17 | RAID |
+| 0    | Unused      |
+| 1    | Swap        |
+| 7    | 4.2BSD FFS  |
+| 8    | MSDOS       |
+| 9    | 4.4LFS      |
+| 11   | ext2        |
+| 15   | Vinum       |
+| 17   | RAID        |
 
 ## Variants
 

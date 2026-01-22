@@ -31,30 +31,30 @@ capabilities and integrates with Venti for permanent storage.
 
 ### Header Block (offset 0)
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 4 | magic (0x3776ae89) |
-| 4 | 2 | version |
-| 6 | 2 | blockSize |
-| 8 | 4 | super (block offset) |
-| 12 | 4 | label (block offset) |
-| 16 | 4 | data (block offset) |
-| 20 | 4 | end (block offset) |
+| Offset | Size | Field                |
+|--------|------|----------------------|
+| 0      | 4    | magic (0x3776ae89)   |
+| 4      | 2    | version              |
+| 6      | 2    | blockSize            |
+| 8      | 4    | super (block offset) |
+| 12     | 4    | label (block offset) |
+| 16     | 4    | data (block offset)  |
+| 20     | 4    | end (block offset)   |
 
 ### Superblock
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 4 | magic (0x2340a3b1) |
-| 4 | 2 | version |
-| 6 | 4 | epochLow |
-| 10 | 4 | epochHigh |
-| 14 | 8 | qid (next to allocate) |
-| 22 | 4 | active (root block) |
-| 26 | 4 | next |
-| 30 | 4 | current |
-| 34 | 20 | last (Venti score) |
-| 54 | 128 | name |
+| Offset | Size | Field                  |
+|--------|------|------------------------|
+| 0      | 4    | magic (0x2340a3b1)     |
+| 4      | 2    | version                |
+| 6      | 4    | epochLow               |
+| 10     | 4    | epochHigh              |
+| 14     | 8    | qid (next to allocate) |
+| 22     | 4    | active (root block)    |
+| 26     | 4    | next                   |
+| 30     | 4    | current                |
+| 34     | 20   | last (Venti score)     |
+| 54     | 128  | name                   |
 
 ## MBR Partition Type
 
@@ -80,11 +80,11 @@ Venti is a companion archival storage system:
 
 ## Other Plan 9 Filesystems
 
-| Name | Description |
-|------|-------------|
-| KFS | Original Ken Thompson filesystem, 6KB blocks |
-| CWFS | Cached WORM File Server, 16KB blocks |
-| 9fat | FAT partition for boot files |
+| Name | Description                                  |
+|------|----------------------------------------------|
+| KFS  | Original Ken Thompson filesystem, 6KB blocks |
+| CWFS | Cached WORM File Server, 16KB blocks         |
+| 9fat | FAT partition for boot files                 |
 
 ## Current Status
 

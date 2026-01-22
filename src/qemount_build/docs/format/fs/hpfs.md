@@ -45,12 +45,12 @@ for the OS/2 operating system.
 
 ## Comparison with FAT
 
-| Feature | HPFS | FAT16 |
-|---------|------|-------|
-| Filenames | 254 chars | 8.3 |
-| Max file | 2 GB | 2 GB |
-| Directories | B-tree | Linear |
-| Fragmentation | Minimal | Common |
+| Feature       | HPFS      | FAT16  |
+|---------------|-----------|--------|
+| Filenames     | 254 chars | 8.3    |
+| Max file      | 2 GB      | 2 GB   |
+| Directories   | B-tree    | Linear |
+| Fragmentation | Minimal   | Common |
 
 ## Current Status
 

@@ -31,12 +31,12 @@ count and platform (SPARC vs x86).
 
 ## SPARC vs x86
 
-| Feature | SPARC | x86 |
-|---------|-------|-----|
-| Endian | Big | Little |
-| Partitions | 8 | 16 |
-| Boot | Direct from VTOC | MBR then VTOC |
-| Location | Sector 0 | Inside partition |
+| Feature    | SPARC            | x86              |
+|------------|------------------|------------------|
+| Endian     | Big              | Little           |
+| Partitions | 8                | 16               |
+| Boot       | Direct from VTOC | MBR then VTOC    |
+| Location   | Sector 0         | Inside partition |
 
 ## Structure
 

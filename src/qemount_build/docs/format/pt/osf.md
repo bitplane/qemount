@@ -44,12 +44,12 @@ Offset  Size  Description
 
 ## vs Ultrix
 
-| Feature | Ultrix | OSF/1 |
-|---------|--------|-------|
-| Platform | VAX, MIPS | Alpha |
-| Endian | Little | Little |
-| Magic | 0x00032957 | 0x82564557 |
-| Era | 1984-1995 | 1992-2012 |
+| Feature  | Ultrix     | OSF/1      |
+|----------|------------|------------|
+| Platform | VAX, MIPS  | Alpha      |
+| Endian   | Little     | Little     |
+| Magic    | 0x00032957 | 0x82564557 |
+| Era      | 1984-1995  | 1992-2012  |
 
 ## vs BSD Disklabel
 

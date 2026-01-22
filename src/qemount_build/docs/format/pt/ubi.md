@@ -66,12 +66,12 @@ abstraction.
 
 ## vs Raw MTD
 
-| Feature | Raw MTD | UBI |
-|---------|---------|-----|
-| Wear leveling | No | Yes |
-| Bad blocks | Manual | Automatic |
-| Volumes | No | Yes |
-| Overhead | None | ~1-2% |
+| Feature       | Raw MTD | UBI       |
+|---------------|---------|-----------|
+| Wear leveling | No      | Yes       |
+| Bad blocks    | Manual  | Automatic |
+| Volumes       | No      | Yes       |
+| Overhead      | None    | ~1-2%     |
 
 ## Stack
 

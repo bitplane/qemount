@@ -50,16 +50,16 @@ maintaining simplicity and broad compatibility.
 
 ## Key Fields
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x03 | 8 | OEM name ("EXFAT   ") |
-| 0x40 | 8 | Partition offset |
-| 0x48 | 8 | Volume length (sectors) |
-| 0x58 | 4 | Cluster count |
-| 0x68 | 1 | Version major |
-| 0x69 | 1 | Version minor |
-| 0x6C | 1 | Bytes per sector (power of 2) |
-| 0x6D | 1 | Sectors per cluster (power of 2) |
+| Offset | Size | Field                            |
+|--------|------|----------------------------------|
+| 0x03   | 8    | OEM name ("EXFAT   ")            |
+| 0x40   | 8    | Partition offset                 |
+| 0x48   | 8    | Volume length (sectors)          |
+| 0x58   | 4    | Cluster count                    |
+| 0x68   | 1    | Version major                    |
+| 0x69   | 1    | Version minor                    |
+| 0x6C   | 1    | Bytes per sector (power of 2)    |
+| 0x6D   | 1    | Sectors per cluster (power of 2) |
 
 ## Adoption
 

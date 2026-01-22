@@ -52,14 +52,14 @@ filesystem for FreeBSD.
 
 ## Key Improvements over UFS1
 
-| Feature | UFS1 | UFS2 |
-|---------|------|------|
-| Block addresses | 32-bit | 64-bit |
-| Max file size | 4 GB | 8 ZB |
-| Inode size | 128 bytes | 256 bytes |
-| Extended attrs | No | Yes |
-| Snapshots | No | Yes |
-| Timestamps | Second | Nanosecond |
+| Feature         | UFS1      | UFS2       |
+|-----------------|-----------|------------|
+| Block addresses | 32-bit    | 64-bit     |
+| Max file size   | 4 GB      | 8 ZB       |
+| Inode size      | 128 bytes | 256 bytes  |
+| Extended attrs  | No        | Yes        |
+| Snapshots       | No        | Yes        |
+| Timestamps      | Second    | Nanosecond |
 
 ## Soft Updates Journaling (SUJ)
 

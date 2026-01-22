@@ -43,11 +43,11 @@ allocation for efficient large file handling.
 
 ## Comparison with XFS
 
-| Feature | EFS | XFS |
-|---------|-----|-----|
-| Max file | 8 GB | 8 EB |
-| Max volume | 8 GB | 8 EB |
-| Journaling | No | Yes |
+| Feature    | EFS     | XFS     |
+|------------|---------|---------|
+| Max file   | 8 GB    | 8 EB    |
+| Max volume | 8 GB    | 8 EB    |
+| Journaling | No      | Yes     |
 | Allocation | Extents | Extents |
 
 ## Current Status

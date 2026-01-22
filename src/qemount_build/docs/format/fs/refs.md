@@ -49,11 +49,11 @@ while maintaining compatibility with Windows storage APIs.
 
 ## Versions
 
-| Version | Windows | Features |
-|---------|---------|----------|
-| 1.x | Server 2012 | Basic ReFS |
-| 2.x | Server 2016 | Block clone, tiering |
-| 3.x | Server 2019+ | Improved performance |
+| Version | Windows      | Features             |
+|---------|--------------|----------------------|
+| 1.x     | Server 2012  | Basic ReFS           |
+| 2.x     | Server 2016  | Block clone, tiering |
+| 3.x     | Server 2019+ | Improved performance |
 
 ## Limitations vs NTFS
 

@@ -67,17 +67,17 @@ Offset  Size  Description
 
 ## Partition Tags
 
-| Tag | Description |
-|-----|-------------|
-| 0 | Unassigned |
-| 1 | Boot |
-| 2 | Root |
-| 3 | Swap |
-| 4 | /usr |
-| 5 | Whole disk (backup) |
-| 6 | Stand |
-| 7 | /var |
-| 8 | /home |
+| Tag | Description         |
+|-----|---------------------|
+| 0   | Unassigned          |
+| 1   | Boot                |
+| 2   | Root                |
+| 3   | Swap                |
+| 4   | /usr                |
+| 5   | Whole disk (backup) |
+| 6   | Stand               |
+| 7   | /var                |
+| 8   | /home               |
 
 ## Detection Notes
 

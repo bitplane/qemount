@@ -51,13 +51,13 @@ original HAMMER filesystem with modern features.
 
 ## vs HAMMER1
 
-| Feature | HAMMER1 | HAMMER2 |
-|---------|---------|---------|
-| Max file | 1 EB | 1 EB |
-| Dedup | Post-process | Inline |
-| Clustering | No | Yes |
-| Design | B-tree | B-tree+ |
-| Recovery | Fsck | None |
+| Feature    | HAMMER1      | HAMMER2 |
+|------------|--------------|---------|
+| Max file   | 1 EB         | 1 EB    |
+| Dedup      | Post-process | Inline  |
+| Clustering | No           | Yes     |
+| Design     | B-tree       | B-tree+ |
+| Recovery   | Fsck         | None    |
 
 ## Multi-Volume
 

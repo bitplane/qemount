@@ -74,10 +74,10 @@ Offset  Size  Description
 
 | Type | Description |
 |------|-------------|
-| 0 | Empty |
-| 1 | ADFS |
-| 2 | FileCore |
-| 9 | Linux |
+| 0    | Empty       |
+| 1    | ADFS        |
+| 2    | FileCore    |
+| 9    | Linux       |
 
 ## Linux Support
 

@@ -38,13 +38,13 @@ influenced ext2's design.
 
 ## Versions
 
-| Magic | Version | Names | Notes |
-|-------|---------|-------|-------|
-| 0x137f | V1 | 14 char | Original |
-| 0x138f | V1 | 30 char | Extended names |
-| 0x2468 | V2 | 14 char | 30-bit blocks |
-| 0x2478 | V2 | 30 char | 30-bit + long names |
-| 0x4D5A | V3 | 60 char | Big files (MINIX 3) |
+| Magic  | Version | Names   | Notes               |
+|--------|---------|---------|---------------------|
+| 0x137f | V1      | 14 char | Original            |
+| 0x138f | V1      | 30 char | Extended names      |
+| 0x2468 | V2      | 14 char | 30-bit blocks       |
+| 0x2478 | V2      | 30 char | 30-bit + long names |
+| 0x4D5A | V3      | 60 char | Big files (MINIX 3) |
 
 ## Structure
 

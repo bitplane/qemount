@@ -60,11 +60,11 @@ into mainline Linux. ReiserFS v3 was removed from Linux in 6.13 (2024).
 
 ## Version History
 
-| Version | Magic | Features |
-|---------|-------|----------|
-| 3.5 | ReIsErFs | Original |
-| 3.6 | ReIsEr2Fs | Large file support |
-| 3.6.19 | ReIsEr3Fs | Extended attributes |
+| Version | Magic     | Features            |
+|---------|-----------|---------------------|
+| 3.5     | ReIsErFs  | Original            |
+| 3.6     | ReIsEr2Fs | Large file support  |
+| 3.6.19  | ReIsEr3Fs | Extended attributes |
 
 ## Current Status
 

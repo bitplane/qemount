@@ -43,28 +43,28 @@ allocation.
 
 ## BSD Variants
 
-| OS | Notes |
-|----|-------|
-| 4.2BSD | Original FFS |
-| SunOS/Solaris | Logging UFS |
-| FreeBSD | Soft updates |
-| NetBSD | WAPBL journaling (optional) |
-| OpenBSD | Softdep |
-| MirOS BSD | OpenBSD fork |
-| NeXTStep | BSD 4.3 variant, Mach-based |
+| OS            | Notes                       |
+|---------------|-----------------------------|
+| 4.2BSD        | Original FFS                |
+| SunOS/Solaris | Logging UFS                 |
+| FreeBSD       | Soft updates                |
+| NetBSD        | WAPBL journaling (optional) |
+| OpenBSD       | Softdep                     |
+| MirOS BSD     | OpenBSD fork                |
+| NeXTStep      | BSD 4.3 variant, Mach-based |
 
 ## MBR Partition Types
 
 BSD systems use their own partition types, but the filesystem is detected
 by the UFS magic number regardless:
 
-| Type | OS |
-|------|----|
+| Type | OS        |
+|------|-----------|
 | 0x27 | MirOS BSD |
-| 0xA5 | FreeBSD |
-| 0xA6 | OpenBSD |
-| 0xA7 | NeXTStep |
-| 0xA9 | NetBSD |
+| 0xA5 | FreeBSD   |
+| 0xA6 | OpenBSD   |
+| 0xA7 | NeXTStep  |
+| 0xA9 | NetBSD    |
 
 Note: BSD systems typically use a disklabel inside the partition for
 further subdivision, so the MBR partition contains a BSD disklabel

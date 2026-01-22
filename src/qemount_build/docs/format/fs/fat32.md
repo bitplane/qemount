@@ -56,12 +56,12 @@ Identified by:
 
 ## Key Fields (Extended BPB)
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0x24 | 4 | Sectors per FAT (32-bit) |
-| 0x2C | 4 | Root directory cluster |
-| 0x30 | 2 | FS Info sector |
-| 0x32 | 2 | Backup boot sector |
+| Offset | Size | Field                    |
+|--------|------|--------------------------|
+| 0x24   | 4    | Sectors per FAT (32-bit) |
+| 0x2C   | 4    | Root directory cluster   |
+| 0x30   | 2    | FS Info sector           |
+| 0x32   | 2    | Backup boot sector       |
 
 ## Use Cases
 

@@ -26,8 +26,8 @@ processors. It used specific MBR partition types.
 
 | Type | Description |
 |------|-------------|
-| 0x52 | CP/M-86 |
-| 0x53 | Ontrack DM6 (sometimes confused) |
+| 0x52 | CP/M-86     |
+| 0x53 | Ontrack DM6 |
 
 ## Historical Context
 

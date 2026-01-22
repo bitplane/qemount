@@ -44,12 +44,12 @@ with improvements for larger disks and better performance.
 
 The Linux kernel sysv driver supports multiple variants:
 
-| Type | Description | MBR Type |
-|------|-------------|----------|
-| Xenix | Microsoft/SCO Xenix | 0x02, 0x03 |
-| SystemV/386 | AT&T System V for x86 | 0x63 |
-| Coherent | Mark Williams Coherent Unix | 0x09 |
-| OPUS | Unisys Open Parallel Server (SVR4) | 0x0A |
+| Type        | Description                        | MBR Type   |
+|-------------|------------------------------------|------------|
+| Xenix       | Microsoft/SCO Xenix                | 0x02, 0x03 |
+| SystemV/386 | AT&T System V for x86              | 0x63       |
+| Coherent    | Mark Williams Coherent Unix        | 0x09       |
+| OPUS        | Unisys Open Parallel Server (SVR4) | 0x0A       |
 
 ### Coherent
 

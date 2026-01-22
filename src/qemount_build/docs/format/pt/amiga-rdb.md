@@ -75,13 +75,13 @@ Offset  Size  Description
 
 ## Block IDs
 
-| ID | Description |
-|----|-------------|
-| RDSK | Rigid Disk Block |
-| PART | Partition Block |
+| ID   | Description       |
+|------|-------------------|
+| RDSK | Rigid Disk Block  |
+| PART | Partition Block   |
 | FSHD | Filesystem Header |
-| LSEG | LoadSeg Block |
-| BADB | Bad Block List |
+| LSEG | LoadSeg Block     |
+| BADB | Bad Block List    |
 
 ## Detection Notes
 

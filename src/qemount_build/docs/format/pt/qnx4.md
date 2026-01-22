@@ -37,17 +37,17 @@ MBR partition table. Common in embedded and industrial systems.
 
 ## Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0x4D | QNX4.x |
+| Type | Description          |
+|------|----------------------|
+| 0x4D | QNX4.x               |
 | 0x4E | QNX4.x 2nd partition |
 | 0x4F | QNX4.x 3rd partition |
-| 0x77 | QNX4.x (old) |
-| 0x78 | QNX4.x (old) |
-| 0x79 | QNX4.x (old) |
-| 0xB1 | QNX6 |
-| 0xB2 | QNX6 |
-| 0xB3 | QNX6 |
+| 0x77 | QNX4.x (old)         |
+| 0x78 | QNX4.x (old)         |
+| 0x79 | QNX4.x (old)         |
+| 0xB1 | QNX6                 |
+| 0xB2 | QNX6                 |
+| 0xB3 | QNX6                 |
 
 ## QNX Subpartitions
 

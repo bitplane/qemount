@@ -43,27 +43,27 @@ the simplest Linux filesystems.
 
 ## File Header Format
 
-| Offset | Size | Field |
-|--------|------|-------|
-| 0 | 4 | Next file header (aligned) + type nibble |
-| 4 | 4 | Spec.info (hardlink/device/size) |
-| 8 | 4 | Size (for regular files) |
-| 12 | 4 | Checksum |
-| 16 | var | Filename (null-terminated, padded to 16 bytes) |
-| - | var | File data (padded to 16 bytes) |
+| Offset | Size | Field                                          |
+|--------|------|------------------------------------------------|
+| 0      | 4    | Next file header (aligned) + type nibble       |
+| 4      | 4    | Spec.info (hardlink/device/size)               |
+| 8      | 4    | Size (for regular files)                       |
+| 12     | 4    | Checksum                                       |
+| 16     | var  | Filename (null-terminated, padded to 16 bytes) |
+| -      | var  | File data (padded to 16 bytes)                 |
 
 ## File Types
 
-| Type | Value | Description |
-|------|-------|-------------|
-| 0 | hardlink | Link to another file |
-| 1 | directory | Contains file entries |
-| 2 | regular | Normal file |
-| 3 | symlink | Symbolic link |
-| 4 | block dev | Block device |
-| 5 | char dev | Character device |
-| 6 | socket | Unix socket |
-| 7 | fifo | Named pipe |
+| Type | Value     | Description           |
+|------|-----------|-----------------------|
+| 0    | hardlink  | Link to another file  |
+| 1    | directory | Contains file entries |
+| 2    | regular   | Normal file           |
+| 3    | symlink   | Symbolic link         |
+| 4    | block dev | Block device          |
+| 5    | char dev  | Character device      |
+| 6    | socket    | Unix socket           |
+| 7    | fifo      | Named pipe            |
 
 ## Use Cases
 

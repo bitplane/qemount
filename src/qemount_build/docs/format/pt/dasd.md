@@ -53,11 +53,11 @@ Contains dataset (file) allocation information.
 
 ## Formats
 
-| Type | Description |
-|------|-------------|
-| LDL | Linux disk layout |
-| CDL | Compatible disk layout |
-| CMS | CMS-formatted minidisks |
+| Type | Description             |
+|------|-------------------------|
+| LDL  | Linux disk layout       |
+| CDL  | Compatible disk layout  |
+| CMS  | CMS-formatted minidisks |
 
 ## Linux Support
 

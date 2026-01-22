@@ -13,13 +13,13 @@ permissions.
 
 ## MBR Partition Types
 
-| Type | Name | Notes |
-|------|------|-------|
-| 0x64 | NetWare 286 | v2.x, 16-bit, simpler structure |
-| 0x65 | NetWare 386 | v3.x+, 32-bit, more advanced |
-| 0x67 | Novell | Unknown specific use |
-| 0x68 | Novell | Unknown specific use |
-| 0x69 | Novell | Unknown specific use |
+| Type | Name         | Notes                           |
+|------|--------------|---------------------------------|
+| 0x64 | NetWare 286  | v2.x, 16-bit, simpler structure |
+| 0x65 | NetWare 386  | v3.x+, 32-bit, more advanced    |
+| 0x67 | Novell       | Unknown specific use            |
+| 0x68 | Novell       | Unknown specific use            |
+| 0x69 | Novell       | Unknown specific use            |
 
 Multiple partition types were allocated to Novell, possibly for different
 volume types (system, data) or product versions. NSS (Novell Storage

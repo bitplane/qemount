@@ -41,14 +41,14 @@ wear leveling and power-fail safety.
 
 ## Node Types
 
-| Type | Purpose |
-|------|---------|
-| DIRENT | Directory entry |
-| INODE | File data/metadata |
-| CLEAN | Erase block is clean |
-| PADDING | Fill unused space |
-| SUMMARY | Speed up mount |
-| XATTR | Extended attributes |
+| Type    | Purpose              |
+|---------|----------------------|
+| DIRENT  | Directory entry      |
+| INODE   | File data/metadata   |
+| CLEAN   | Erase block is clean |
+| PADDING | Fill unused space    |
+| SUMMARY | Speed up mount       |
+| XATTR   | Extended attributes  |
 
 ## Key Features
 
@@ -67,13 +67,13 @@ wear leveling and power-fail safety.
 
 ## vs UBIFS
 
-| Feature | JFFS2 | UBIFS |
-|---------|-------|-------|
-| Flash type | NOR/NAND | NAND (UBI) |
-| Mount speed | Slow | Fast |
-| RAM usage | High | Constant |
-| Write-back | No | Yes |
-| Best for | Small NOR | Large NAND |
+| Feature     | JFFS2     | UBIFS      |
+|-------------|-----------|------------|
+| Flash type  | NOR/NAND  | NAND (UBI) |
+| Mount speed | Slow      | Fast       |
+| RAM usage   | High      | Constant   |
+| Write-back  | No        | Yes        |
+| Best for    | Small NOR | Large NAND |
 
 ## Linux Support
 

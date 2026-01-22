@@ -30,9 +30,9 @@ microcomputer OS. The name "THEOS" comes from Greek for "God".
 
 ## MBR Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0x38 | THEOS |
+| Type | Description                    |
+|------|--------------------------------|
+| 0x38 | THEOS                          |
 | 0x3B | THEOS ver 4 extended partition |
 
 ## Features

@@ -12,10 +12,10 @@ and MicroVAXes.
 
 ## MBR Partition Types
 
-| Type | Description |
-|------|-------------|
+| Type | Description       |
+|------|-------------------|
 | 0xAE | ShagOS filesystem |
-| 0xAF | ShagOS swap |
+| 0xAF | ShagOS swap       |
 
 ## Components
 

@@ -58,15 +58,15 @@ Offset  Size  Description
 
 ## Partition Types
 
-| Type | Description |
-|------|-------------|
+| Type                | Description              |
+|---------------------|--------------------------|
 | Apple_partition_map | The partition map itself |
-| Apple_Driver | Device driver |
-| Apple_Driver43 | SCSI driver |
-| Apple_HFS | HFS filesystem |
-| Apple_HFSX | HFS+ or HFSX |
-| Apple_Unix_SVR2 | A/UX |
-| Apple_Free | Free space |
+| Apple_Driver        | Device driver            |
+| Apple_Driver43      | SCSI driver              |
+| Apple_HFS           | HFS filesystem           |
+| Apple_HFSX          | HFS+ or HFSX             |
+| Apple_Unix_SVR2     | A/UX                     |
+| Apple_Free          | Free space               |
 
 ## Detection Notes
 

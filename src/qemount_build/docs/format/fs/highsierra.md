@@ -39,12 +39,12 @@ filesystems.
 
 ## vs ISO 9660
 
-| Feature | High Sierra | ISO 9660 |
-|---------|-------------|----------|
-| Year | 1986 | 1988 |
-| Signature | "CDROM" | "CD001" |
-| Standard | De facto | ISO |
-| Extensions | Limited | Rock Ridge, Joliet |
+| Feature    | High Sierra | ISO 9660           |
+|------------|-------------|--------------------|
+| Year       | 1986        | 1988               |
+| Signature  | "CDROM"     | "CD001"            |
+| Standard   | De facto    | ISO                |
+| Extensions | Limited     | Rock Ridge, Joliet |
 
 High Sierra was standardized as ISO 9660 with minor modifications.
 The formats are nearly identical, and most systems handle both.

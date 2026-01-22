@@ -48,23 +48,23 @@ read-only filesystem widely used for live CDs, embedded systems, and containers.
 
 ## Compression Algorithms
 
-| ID | Algorithm | Notes |
-|----|-----------|-------|
-| 1 | gzip | Default, good balance |
-| 2 | lzma | High compression |
-| 3 | lzo | Fast decompression |
-| 4 | xz | Best compression |
-| 5 | lz4 | Fastest decompression |
-| 6 | zstd | Modern, configurable |
+| ID | Algorithm | Notes                 |
+|----|-----------|-----------------------|
+| 1  | gzip      | Default, good balance |
+| 2  | lzma      | High compression      |
+| 3  | lzo       | Fast decompression    |
+| 4  | xz        | Best compression      |
+| 5  | lz4       | Fastest decompression |
+| 6  | zstd      | Modern, configurable  |
 
 ## Version History
 
-| Version | Changes |
-|---------|---------|
-| 1.0 | Original |
-| 2.0 | Improved compression |
-| 3.0 | 64-bit support, fragments |
-| 4.0 | xattrs, compression options |
+| Version | Changes                     |
+|---------|-----------------------------|
+| 1.0     | Original                    |
+| 2.0     | Improved compression        |
+| 3.0     | 64-bit support, fragments   |
+| 4.0     | xattrs, compression options |
 
 ## Use Cases
 

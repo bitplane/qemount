@@ -80,19 +80,19 @@ Offset  Size  Description
 
 ## Common Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0x00 | Empty |
-| 0x01 | FAT12 |
-| 0x04 | FAT16 <32MB |
-| 0x05 | Extended |
-| 0x06 | FAT16 |
-| 0x07 | NTFS/exFAT |
-| 0x0B | FAT32 (CHS) |
-| 0x0C | FAT32 (LBA) |
+| Type | Description    |
+|------|----------------|
+| 0x00 | Empty          |
+| 0x01 | FAT12          |
+| 0x04 | FAT16 <32MB    |
+| 0x05 | Extended       |
+| 0x06 | FAT16          |
+| 0x07 | NTFS/exFAT     |
+| 0x0B | FAT32 (CHS)    |
+| 0x0C | FAT32 (LBA)    |
 | 0x0F | Extended (LBA) |
-| 0x82 | Linux swap |
-| 0x83 | Linux |
+| 0x82 | Linux swap     |
+| 0x83 | Linux          |
 | 0xEE | GPT protective |
 
 ## Detection Notes

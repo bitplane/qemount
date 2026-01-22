@@ -55,7 +55,7 @@ through attributes, values, and subvalues.
 
 | Type | Description |
 |------|-------------|
-| 0x40 | PICK |
+| 0x40 | PICK        |
 
 Note: 0x40 is also used by Venix 80286 (different system).
 

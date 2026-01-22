@@ -61,22 +61,22 @@ Offset  Size  Description
 
 ## Partition Types
 
-| Type | Description |
-|------|-------------|
-| 0 | Volume header |
-| 1 | Replicated tracks |
-| 2 | Replicated sectors |
-| 3 | Raw |
-| 4 | BSD 4.2 |
-| 5 | System V |
-| 6 | Entire volume |
-| 7 | EFS |
-| 8 | Logical volume |
-| 9 | Raw logical volume |
-| 10 | XFS |
-| 11 | XFS log |
-| 12 | XLV volume |
-| 13 | XVM volume |
+| Type | Description        |
+|------|--------------------|
+| 0    | Volume header      |
+| 1    | Replicated tracks  |
+| 2    | Replicated sectors |
+| 3    | Raw                |
+| 4    | BSD 4.2            |
+| 5    | System V           |
+| 6    | Entire volume      |
+| 7    | EFS                |
+| 8    | Logical volume     |
+| 9    | Raw logical volume |
+| 10   | XFS                |
+| 11   | XFS log            |
+| 12   | XLV volume         |
+| 13   | XVM volume         |
 
 ## Volume Directory
 

@@ -53,13 +53,13 @@ for scalability and parallel I/O.
 
 ## Comparison
 
-| Feature | XFS | ext4 |
-|---------|-----|------|
-| Max file | 8 EB | 16 TB |
-| Max volume | 8 EB | 1 EB |
-| Shrink | No | Yes |
-| Reflinks | Yes | Yes |
-| Default RHEL | Yes (7+) | No |
+| Feature      | XFS      | ext4  |
+|--------------|----------|-------|
+| Max file     | 8 EB     | 16 TB |
+| Max volume   | 8 EB     | 1 EB  |
+| Shrink       | No       | Yes   |
+| Reflinks     | Yes      | Yes   |
+| Default RHEL | Yes (7+) | No    |
 
 ## Use Cases
 
