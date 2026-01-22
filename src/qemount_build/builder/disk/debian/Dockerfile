@@ -6,6 +6,7 @@ RUN apt-get update && \
         bash \
         tar \
         jq \
+        cloop-utils \
         genromfs \
         hfsutils \
         makefs \
