@@ -24,9 +24,9 @@ support:
   # partition tables
   - format/pt/mbr
   - format/pt/gpt
-  - format/pt/bsd-disklabel
+  - format/pt/disklabel
   - format/pt/apm
-  - format/pt/amiga-rdb
+  - format/pt/rdb
   - format/pt/atari
   # transports
   - transport/9p

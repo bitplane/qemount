@@ -49,9 +49,9 @@ support:
   # partition tables
   - format/pt/mbr
   - format/pt/gpt
-  - format/pt/bsd-disklabel
+  - format/pt/disklabel
   - format/pt/apm
-  - format/pt/amiga-rdb
+  - format/pt/rdb
   - format/pt/atari
   - format/pt/sun
   - format/pt/sgi
@@ -59,9 +59,9 @@ support:
   - format/pt/ubi
   - format/pt/acorn
   - format/pt/aix
-  - format/pt/ultrix
+  - format/pt/disklabel/ultrix
   - format/pt/sysv68
-  - format/pt/osf
+  - format/pt/disklabel/osf
   - format/pt/hpux
   - format/pt/qnx4
   - format/pt/plan9

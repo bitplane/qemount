@@ -4,7 +4,7 @@ created: 1993
 related:
   - format/fs/amiga-ffs
   - format/fs/amiga-sfs
-  - format/pt/amiga-rdb
+  - format/pt/rdb
 detect:
   - offset: 0
     type: string

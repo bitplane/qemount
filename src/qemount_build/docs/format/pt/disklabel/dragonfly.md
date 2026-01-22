@@ -2,7 +2,7 @@
 title: DragonFly BSD Disklabel
 created: 2003
 related:
-  - format/pt/bsd-disklabel
+  - format/pt/disklabel
   - format/fs/hammer2
 detect:
   - offset: 512

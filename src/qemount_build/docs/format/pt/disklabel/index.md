@@ -5,14 +5,15 @@ related:
   - format/fs/ufs1
   - format/fs/ufs2
 detect:
-  - offset: 512
-    type: le32
-    value: 0x82564557
-    name: magic
-  - offset: 0
-    type: le32
-    value: 0x82564557
-    name: magic_at_zero
+  any:
+    - offset: 512
+      type: le32
+      value: 0x82564557
+      name: magic
+    - offset: 0
+      type: le32
+      value: 0x82564557
+      name: magic_at_zero
 ---
 
 # BSD Disklabel
@@ -77,6 +78,23 @@ Offset  Size  Description
 
 ## Variants
 
-- **OpenBSD**: 16 partitions (a-p)
-- **FreeBSD**: 8 partitions (a-h)
-- **NetBSD**: 16 partitions, different magic on some ports
+| Feature    | FreeBSD  | OpenBSD  | NetBSD   |
+|------------|----------|----------|----------|
+| Partitions | 8 (a-h)  | 16 (a-p) | 16 (a-p) |
+| MBR Type   | 0xa5     | 0xa6     | 0xa9     |
+| Size field | 32-bit   | 48-bit   | 32-bit   |
+| DUID       | No       | Yes      | No       |
+
+### OpenBSD
+
+OpenBSD 4.0+ uses DUID (Disk Unique Identifier) for stable disk
+identification. The 48-bit size field supports disks beyond 2TB.
+
+### FreeBSD
+
+FreeBSD 15+ deprecated disklabel in favor of GPT. Uses the term
+"slice" for MBR partitions and "partition" for BSD partitions.
+
+### NetBSD
+
+NetBSD supports endian-independent disklabels on some platforms.

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $1 = output file (e.g. data/pt/basic.amiga-rdb)
+# $1 = output file (e.g. data/pt/basic.rdb)
 set -e
 
 OUTPUT="/host/build/$1"

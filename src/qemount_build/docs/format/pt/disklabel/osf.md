@@ -2,8 +2,7 @@
 title: DEC OSF/1 Disklabel
 created: 1992
 related:
-  - format/pt/ultrix
-  - format/pt/bsd-disklabel
+  - format/pt/disklabel/ultrix
 detect:
   - offset: 0
     type: le64

@@ -2,7 +2,7 @@
 title: NeXT Disklabel
 created: 1988
 related:
-  - format/pt/bsd-disklabel
+  - format/pt/disklabel
   - format/pt/apm
 detect:
   - offset: 0
