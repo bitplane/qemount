@@ -72,13 +72,14 @@ impl Container for MbrContainer {
                 )?;
                 children.extend(logical);
             } else {
-                let offset = entry.lba_start as u64 * SECTOR_SIZE;
+                let start = entry.lba_start as u64 * SECTOR_SIZE;
                 let length = entry.sector_count as u64 * SECTOR_SIZE;
                 if entry.lba_start > 0 && entry.sector_count > 0 {
                     // Primary partitions use their slot index (0-3)
                     children.push(Child {
                         index: slot as u32,
-                        reader: Arc::new(SliceReader::new(Arc::clone(&reader), offset, length)),
+                        offset: start,
+                        reader: Arc::new(SliceReader::new(Arc::clone(&reader), start, length)),
                     });
                 }
             }
@@ -143,11 +144,12 @@ fn parse_extended_chain(
 
             // Sanity check: partition should be within extended partition
             if partition_end_lba <= extended_start + extended_size {
-                let offset = partition_lba * SECTOR_SIZE;
+                let start = partition_lba * SECTOR_SIZE;
                 let length = logical.sector_count as u64 * SECTOR_SIZE;
                 children.push(Child {
                     index: *partition_index,
-                    reader: Arc::new(SliceReader::new(Arc::clone(parent), offset, length)),
+                    offset: start,
+                    reader: Arc::new(SliceReader::new(Arc::clone(parent), start, length)),
                 });
                 *partition_index += 1;
             }

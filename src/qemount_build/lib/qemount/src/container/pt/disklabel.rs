@@ -62,6 +62,7 @@ impl Container for DisklabelContainer {
 
             children.push(Child {
                 index: i as u32,
+                offset: start,
                 reader: Arc::new(SliceReader::new(Arc::clone(&reader), start, length)),
             });
         }

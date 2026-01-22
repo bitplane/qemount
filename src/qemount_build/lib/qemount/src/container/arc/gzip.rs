@@ -23,6 +23,7 @@ impl Container for GzipContainer {
 
         Ok(vec![Child {
             index: 0,
+            offset: u64::MAX, // Transformed data, not a slice
             reader: Arc::new(BytesReader::new(decompressed)),
         }])
     }

@@ -62,7 +62,7 @@ def normalize_detect(detect) -> dict | None:
 
 def compile_formats(catalogue: dict) -> dict:
     """Extract detection rules from catalogue paths under format/"""
-    formats = {}
+    formats = []
     paths = catalogue.get("paths", {})
 
     for path, data in paths.items():
@@ -81,12 +81,14 @@ def compile_formats(catalogue: dict) -> dict:
         try:
             result = normalize_detect(meta["detect"])
             if result is not None:
-                formats[key] = result
+                priority = meta.get("priority", 0)
+                formats.append((key, result, priority))
         except (KeyError, TypeError) as e:
             raise ValueError(f"Error in {path}: {e}") from e
 
-    # Sort for deterministic output
-    return {"version": 1, "formats": dict(sorted(formats.items()))}
+    # Sort by priority (descending), then name for deterministic output
+    formats.sort(key=lambda x: (-x[2], x[0]))
+    return {"version": 1, "formats": {k: v for k, v, _ in formats}}
 
 
 def main():

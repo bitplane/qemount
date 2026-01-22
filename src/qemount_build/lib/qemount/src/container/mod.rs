@@ -19,6 +19,8 @@ const MAX_SIZE: usize = 1024 * 1024 * 1024;
 pub struct Child {
     /// Index within parent (partition number, file index, etc.)
     pub index: u32,
+    /// Byte offset within parent (for slices). Ignored for transforms.
+    pub offset: u64,
     /// Reader for the child's data
     pub reader: Arc<dyn Reader + Send + Sync>,
 }

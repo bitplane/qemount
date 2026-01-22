@@ -2,6 +2,7 @@
 
 use crate::container;
 use crate::format::{Detect, Rule, Value, FORMATS};
+use std::collections::HashSet;
 use std::ffi::CStr;
 use std::io;
 use std::sync::Arc;
@@ -214,45 +215,75 @@ pub struct DetectNode {
 /// Maximum recursion depth for nested containers
 const MAX_DEPTH: u32 = 16;
 
+/// Check if format is a transform (creates new byte stream) vs slice (same bytes)
+fn is_transform(format: &str) -> bool {
+    format.starts_with("arc/")
+}
+
 /// Detect format tree recursively
 ///
 /// Returns a list of root-level detected formats, each with their
 /// children populated if they are container formats.
 pub fn detect_tree(reader: Arc<dyn Reader + Send + Sync>) -> Vec<DetectNode> {
-    detect_tree_recursive(reader, 0, 0)
+    let mut seen = HashSet::new();
+    detect_tree_recursive(reader, 0, 0, String::new(), 0, &mut seen)
 }
 
-fn detect_tree_recursive(reader: Arc<dyn Reader + Send + Sync>, index: u32, depth: u32) -> Vec<DetectNode> {
+fn detect_tree_recursive(
+    reader: Arc<dyn Reader + Send + Sync>,
+    index: u32,
+    depth: u32,
+    stream: String,
+    offset: u64,
+    seen: &mut HashSet<(String, u64, &'static CStr)>,
+) -> Vec<DetectNode> {
     if depth >= MAX_DEPTH {
         return vec![];
     }
 
-    let formats = detect_all_dyn(&*reader);
+    let mut results = Vec::new();
 
-    formats
-        .into_iter()
-        .map(|format| {
-            let format_str = format.to_str().unwrap_or("");
-            let children = match container::get_container(format_str) {
-                Some(container) => match container.children(Arc::clone(&reader)) {
-                    Ok(kids) => kids
-                        .into_iter()
+    for format in detect_all_dyn(&*reader) {
+        // Key by (stream, offset, format) - same bytes get deduped, different bytes don't
+        if !seen.insert((stream.clone(), offset, format)) {
+            continue;
+        }
+
+        let format_str = format.to_str().unwrap_or("");
+        let children = match container::get_container(format_str) {
+            Some(container) => match container.children(Arc::clone(&reader)) {
+                Ok(kids) => {
+                    let child_stream = if is_transform(format_str) {
+                        format!("{}/{}", stream, format_str)
+                    } else {
+                        stream.clone()
+                    };
+                    kids.into_iter()
                         .flat_map(|child| {
-                            detect_tree_recursive(child.reader, child.index, depth + 1)
+                            detect_tree_recursive(
+                                child.reader,
+                                child.index,
+                                depth + 1,
+                                child_stream.clone(),
+                                child.offset,
+                                seen,
+                            )
                         })
-                        .collect(),
-                    Err(_) => vec![],
-                },
-                None => vec![],
-            };
+                        .collect()
+                }
+                Err(_) => vec![],
+            },
+            None => vec![],
+        };
 
-            DetectNode {
-                format,
-                index,
-                children,
-            }
-        })
-        .collect()
+        results.push(DetectNode {
+            format,
+            index,
+            children,
+        });
+    }
+
+    results
 }
 
 /// detect_all for trait objects

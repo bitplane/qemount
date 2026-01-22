@@ -76,6 +76,7 @@ impl Container for RdbContainer {
 
             children.push(Child {
                 index: children.len() as u32,
+                offset: start,
                 reader: Arc::new(SliceReader::new(Arc::clone(&reader), start, length)),
             });
 

@@ -76,12 +76,13 @@ impl Container for GptContainer {
                 continue;
             }
 
-            let offset = first_lba * SECTOR_SIZE;
+            let start = first_lba * SECTOR_SIZE;
             let length = (last_lba - first_lba + 1) * SECTOR_SIZE;
 
             children.push(Child {
                 index: i,
-                reader: Arc::new(SliceReader::new(Arc::clone(&reader), offset, length)),
+                offset: start,
+                reader: Arc::new(SliceReader::new(Arc::clone(&reader), start, length)),
             });
         }
 
