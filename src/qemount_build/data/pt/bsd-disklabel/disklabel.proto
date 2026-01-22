@@ -1,0 +1,15 @@
+type: SCSI
+disk: TEST
+label: test
+bytes/sector: 512
+sectors/track: 32
+tracks/cylinder: 64
+sectors/cylinder: 2048
+cylinders: 22
+total sectors: 45056
+
+8 partitions:
+ a:   20480 2048    4.2BSD  2048  16384 0
+ c:   45056 0       unused  0     0
+ d:   45056 0       unused  0     0
+ e:   20480 22528   4.2BSD  2048  16384 0
