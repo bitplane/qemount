@@ -3,6 +3,7 @@
 *.log
 *.swp
 *.img
+*.hdd
 
 __pycache__
 .coverage

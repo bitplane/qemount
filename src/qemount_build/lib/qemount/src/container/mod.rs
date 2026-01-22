@@ -1,10 +1,11 @@
 //! Container readers for recursive format detection
 //!
-//! Container formats (archives, compressed streams, partition tables) hold
-//! other data that can be recursively detected. Container readers enumerate
+//! Container formats (archives, compressed streams, partition tables, disk images)
+//! hold other data that can be recursively detected. Container readers enumerate
 //! children and provide Reader access to each.
 
 pub mod arc;
+pub mod disk;
 pub mod pt;
 pub mod slice;
 
@@ -86,6 +87,7 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
 pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
         "arc/gzip" => Some(&arc::gzip::GZIP),
+        "disk/parallels" => Some(&disk::parallels::PARALLELS),
         "pt/apm" => Some(&pt::apm::APM),
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
