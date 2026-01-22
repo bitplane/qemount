@@ -55,12 +55,12 @@ def hash_path_inputs(
     build_dir: Path,
 ) -> str:
     """
-    Compute input hash for a catalogue path's file outputs.
+    Compute input hash for a catalogue path.
 
     Includes:
     - All files in the path's directory (Dockerfile, build.sh, overlays)
     - Hashes of all requires (from dep_hashes, Merkle tree)
-    - File dependencies in build_dir (e.g., catalogue.json)
+    - Hashes of all build_requires (files mounted during docker build)
     - Env vars
     """
     h = hashlib.md5()
@@ -76,6 +76,16 @@ def hash_path_inputs(
             h.update(dep_hashes[req].encode())
         elif (build_dir / req).exists():
             h.update((build_dir / req).read_bytes())
+
+    # Hash build_requires (mounted during docker build)
+    for req in sorted(resolved.get("build_requires", {}).keys()):
+        h.update(req.encode())
+        req_path = build_dir / req
+        if req_path.exists():
+            if req_path.is_file():
+                h.update(req_path.read_bytes())
+            elif req_path.is_dir():
+                h.update(hash_files(req_path).encode())
 
     # Hash env vars
     env = resolved.get("env", {})
