@@ -1,60 +1,52 @@
 ---
 title: SYSV68
 created: 1985
-related:
-  - format/pt/mbr
+priority: -10
 detect:
   - offset: 0xF8
     type: string
     value: "MOTOROLA"
-    name: vid_mac
 ---
 
 # SYSV68 (Motorola 68k System V)
 
 SYSV68 is the partitioning scheme used by System V Unix on
-Motorola 68000-series workstations from various vendors.
+Motorola 68000-series workstations.
 
-## Characteristics
+## Detection
 
-- Big-endian format (68k native)
-- System V Unix based
-- Used on Motorola VME systems
-- Vendor-specific variations
+"MOTOROLA" string at offset 248 (0xF8).
+
+## Structure
+
+**Block 0 (512 bytes)**
+```
+Offset  Size  Type   Description
+--- Volume ID (first 256 bytes) ---
+0x00    248   -      Unused
+0xF8    8     str    Magic "MOTOROLA"
+--- DK Config (second 256 bytes) ---
+0x100   128   -      Unused
+0x180   4     BE32   Slice table sector (ios_slcblk)
+0x184   2     BE16   Slice count (ios_slccnt)
+0x186   122   -      Unused
+```
+
+**Slice Table (at sector ios_slcblk)**
+```
+Offset  Size  Type   Description
+0x00    4     BE32   Size in blocks (nblocks)
+0x04    4     BE32   Block offset (blkoff)
+```
+
+Each slice entry is 8 bytes. Last slice is whole disk (skipped).
 
 ## Platforms
 
 - **Motorola MVME**: VMEbus computers
 - **Integrated Solutions**: Various 68k systems
-- **Other 68k Unix**: Various vendors
-
-## Structure
-
-The format varies by vendor but typically includes:
-
-```
-Offset  Size  Description
-0       512   Boot block
-512     ...   Volume header
-...
-0x600   ...   Partition data
-```
-
-## Linux Support
-
-Linux kernel has basic SYSV68 partition support
-(CONFIG_SYSV68_PARTITION). Detection heuristics
-check for specific patterns in the boot block
-and volume header.
 
 ## Historical Note
 
 The 68k architecture was popular for Unix workstations
-in the 1980s before RISC processors took over. Sun's
-original workstations were 68k-based before SPARC.
-
-## Related Formats
-
-- **Sun-2/Sun-3**: Early Sun 68k systems used different format
-- **Apollo Domain**: Apollo's 68k workstations had unique scheme
-- **HP 9000/300**: HP's 68k systems used HP-UX format
+in the 1980s before RISC processors took over.
