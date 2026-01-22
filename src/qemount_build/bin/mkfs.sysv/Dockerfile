@@ -1,5 +1,4 @@
-ARG HOST_ARCH
-FROM builder/compiler/linux/6:${HOST_ARCH}
+FROM builder/compiler/linux/6
 
 WORKDIR /work
 COPY mkfs.sysv.c /work/
