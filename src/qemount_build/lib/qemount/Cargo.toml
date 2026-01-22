@@ -9,8 +9,10 @@ description = "Universal filesystem detection and mounting library"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
+bzip2 = { version = "0.4", default-features = false }
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 libc = "0.2"
+lzfse = "0.2"
 rmp-serde = "1"
 serde = { version = "1", features = ["derive"] }
 
