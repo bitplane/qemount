@@ -91,6 +91,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
         "pt/rdb" => Some(&pt::rdb::RDB),
+        "pt/pc98" => Some(&pt::pc98::PC98),
         "pt/sgi" => Some(&pt::sgi::SGI),
         "pt/sun" => Some(&pt::sun::SUN),
         _ => None,
