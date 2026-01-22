@@ -89,6 +89,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "arc/bzip2" => Some(&arc::bzip2::BZIP2),
         "arc/compress" => Some(&arc::compress::COMPRESS),
         "arc/gzip" => Some(&arc::gzip::GZIP),
+        "arc/lzma" => Some(&arc::lzma::LZMA),
         "arc/xz" => Some(&arc::xz::XZ),
         "arc/zstd" => Some(&arc::zstd::ZSTD),
         "disk/bochs" => Some(&disk::bochs::BOCHS),
