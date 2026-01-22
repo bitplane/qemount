@@ -1,7 +1,7 @@
 ---
 title: Linux 6.x Compiler
 provides:
-  - docker:builder/compiler/linux/6:${HOST_ARCH}
+  - docker:builder/compiler/linux/6
 ---
 
 # Linux 6.x Compiler

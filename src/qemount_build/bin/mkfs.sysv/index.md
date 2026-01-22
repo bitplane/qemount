@@ -1,7 +1,7 @@
 ---
 title: mkfs.sysv
 requires:
-  - docker:builder/compiler/linux/6:${HOST_ARCH}
+  - docker:builder/compiler/linux/6
 provides:
   - bin/${HOST_ARCH}-linux-musl/mkfs.sysv
 ---

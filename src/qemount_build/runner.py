@@ -217,9 +217,10 @@ def run_build(
         # Build image if Dockerfile exists
         if dockerfile.exists():
             tag = docker_tags[0] if docker_tags else f"localhost/{path}"
+            host_arch = context.get("HOST_ARCH", "unknown")
 
             # Skip podman entirely if image is clean
-            if not force and not is_image_dirty(tag, input_hash, cache, image_exists):
+            if not force and not is_image_dirty(tag, input_hash, cache, image_exists, host_arch):
                 log.info("Clean: %s (image)", tag)
             else:
                 image_id = build_image(
@@ -230,7 +231,7 @@ def run_build(
                     return False
 
                 # Update cache with new image state and save immediately
-                update_image_hash(cache, tag, input_hash, image_id)
+                update_image_hash(cache, tag, input_hash, image_id, host_arch)
                 save_cache(build_dir, cache)
 
         # Done if no file outputs

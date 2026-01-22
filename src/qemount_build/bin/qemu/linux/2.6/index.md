@@ -1,7 +1,7 @@
 ---
 title: Linux 2.6 Guest
 env:
-  BUILDER: builder/compiler/linux/2:${HOST_ARCH}
+  BUILDER: builder/compiler/linux/2
 requires:
   - docker:${BUILDER}
 ---

@@ -1,7 +1,7 @@
 ---
 title: NetBSD Disk Builder
 requires:
-  - docker:builder/compiler/netbsd/10.0:${HOST_ARCH}
+  - docker:builder/compiler/netbsd/10.0
 provides:
   - docker:builder/disk/netbsd
 ---

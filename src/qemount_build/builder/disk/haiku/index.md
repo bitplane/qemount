@@ -1,7 +1,7 @@
 ---
 title: Haiku Disk Builder
 requires:
-  - docker:builder/compiler/haiku:${HOST_ARCH}
+  - docker:builder/compiler/haiku
 provides:
   - docker:builder/disk/haiku
 ---

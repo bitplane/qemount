@@ -3,7 +3,7 @@ title: Haiku Cross-Compiler
 build_requires:
   - sources/haiku-r1beta5.tar.gz
 provides:
-  - docker:builder/compiler/haiku:${HOST_ARCH}
+  - docker:builder/compiler/haiku
 ---
 
 # Haiku Cross-Compiler

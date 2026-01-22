@@ -1,7 +1,7 @@
 ---
 title: Linux Rootfs
 env:
-  BUILDER: builder/compiler/linux/6:${HOST_ARCH}
+  BUILDER: builder/compiler/linux/6
 requires:
   - docker:${BUILDER}
   - bin/${ARCH}-linux-${ENV}/busybox

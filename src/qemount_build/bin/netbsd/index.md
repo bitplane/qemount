@@ -1,7 +1,7 @@
 ---
 title: NetBSD binaries
 env:
-  BUILDER: builder/compiler/netbsd/10.0:${HOST_ARCH}
+  BUILDER: builder/compiler/netbsd/10.0
 requires:
   - docker:${BUILDER}
 ---

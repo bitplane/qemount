@@ -146,13 +146,15 @@ def is_image_dirty(
     input_hash: str,
     cache: dict,
     image_exists_fn,
+    host_arch: str,
 ) -> bool:
     """
     Check if a docker image needs rebuilding.
 
     Returns True if input_hash changed or image doesn't exist.
+    Cache key includes host_arch to separate per-arch builds.
     """
-    cache_key = f"docker:{tag}"
+    cache_key = f"docker:{tag}:{host_arch}"
     cached = cache.get(cache_key)
 
     if cached is None:
@@ -172,9 +174,9 @@ def update_output_hash(cache: dict, output: str, input_hash: str):
     cache[output] = input_hash
 
 
-def update_image_hash(cache: dict, tag: str, input_hash: str, image_id: str):
+def update_image_hash(cache: dict, tag: str, input_hash: str, image_id: str, host_arch: str):
     """Record the build state for a docker image."""
-    cache[f"docker:{tag}"] = {
+    cache[f"docker:{tag}:{host_arch}"] = {
         "input_hash": input_hash,
         "image_id": image_id,
     }

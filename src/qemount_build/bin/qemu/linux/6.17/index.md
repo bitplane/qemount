@@ -1,7 +1,7 @@
 ---
 title: Linux 6.17 Guest
 env:
-  BUILDER: builder/compiler/linux/6:${HOST_ARCH}
+  BUILDER: builder/compiler/linux/6
 requires:
   - docker:${BUILDER}
 ---
