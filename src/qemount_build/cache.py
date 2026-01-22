@@ -33,8 +33,32 @@ def save_cache(build_dir: Path, cache: dict):
     tmp.rename(path)
 
 
+def hash_file(path: Path, cache: dict) -> str:
+    """
+    Hash a file, using cached hash if mtime+size unchanged.
+
+    Returns content hash (md5). Caches by absolute path with mtime+size.
+    """
+    key = f"file:{path.absolute()}"
+    stat = path.stat()
+    mtime = stat.st_mtime
+    size = stat.st_size
+
+    cached = cache.get(key)
+    if cached and cached["mtime"] == mtime and cached["size"] == size:
+        return cached["hash"]
+
+    # Hash the file
+    h = hashlib.md5()
+    h.update(path.read_bytes())
+    file_hash = h.hexdigest()
+
+    cache[key] = {"mtime": mtime, "size": size, "hash": file_hash}
+    return file_hash
+
+
 @timed
-def hash_files(directory: Path) -> str:
+def hash_files(directory: Path, cache: dict) -> str:
     """Hash all files in a directory recursively."""
     h = hashlib.md5()
     if not directory.exists():
@@ -42,10 +66,9 @@ def hash_files(directory: Path) -> str:
 
     for f in sorted(directory.rglob("*")):
         if f.is_file():
-            # Include relative path to detect renames/moves
             rel = f.relative_to(directory)
             h.update(str(rel).encode())
-            h.update(f.read_bytes())
+            h.update(hash_file(f, cache).encode())
 
     return h.hexdigest()
 
@@ -57,6 +80,7 @@ def hash_path_inputs(
     resolved: dict,
     dep_hashes: dict,
     build_dir: Path,
+    cache: dict,
 ) -> str:
     """
     Compute input hash for a catalogue path.
@@ -71,15 +95,17 @@ def hash_path_inputs(
 
     # Hash all files in build context
     context_dir = pkg_dir / path
-    h.update(hash_files(context_dir).encode())
+    h.update(hash_files(context_dir, cache).encode())
 
     # Hash dependency hashes (Merkle tree) or file contents
     for req in sorted(resolved.get("requires", {}).keys()):
         h.update(req.encode())
         if req in dep_hashes:
             h.update(dep_hashes[req].encode())
-        elif (build_dir / req).exists():
-            h.update((build_dir / req).read_bytes())
+        else:
+            req_path = build_dir / req
+            if req_path.exists():
+                h.update(hash_file(req_path, cache).encode())
 
     # Hash build_requires (mounted during docker build)
     for req in sorted(resolved.get("build_requires", {}).keys()):
@@ -87,9 +113,9 @@ def hash_path_inputs(
         req_path = build_dir / req
         if req_path.exists():
             if req_path.is_file():
-                h.update(req_path.read_bytes())
-            elif req_path.is_dir():
-                h.update(hash_files(req_path).encode())
+                h.update(hash_file(req_path, cache).encode())
+            else:
+                h.update(hash_files(req_path, cache).encode())
 
     # Hash env vars
     env = resolved.get("env", {})

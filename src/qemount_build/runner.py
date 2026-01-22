@@ -174,7 +174,7 @@ def run_build(
         build_requires = list(resolved.get("build_requires", {}).keys())
 
         # Compute input hash for this path (Merkle tree)
-        input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes, build_dir)
+        input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes, build_dir, cache)
         dep_hashes[path] = input_hash
 
         # Validate: docker provides requires Dockerfile

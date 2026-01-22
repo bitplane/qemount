@@ -32,8 +32,8 @@ LEVELS = {
 
 # ANSI color codes
 COLORS = {
-    TRACE: "\033[90m",      # grey
-    logging.DEBUG: "\033[90m",    # grey
+    TRACE: "\033[38;5;245m",      # light grey
+    logging.DEBUG: "\033[38;5;240m",    # dark grey
     logging.INFO: "\033[32m",     # green
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",    # red
