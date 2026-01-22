@@ -4,6 +4,7 @@ pub mod acorn;
 pub mod aix;
 pub mod apm;
 pub mod atari;
+pub mod dasd;
 pub mod disklabel;
 pub mod gpt;
 pub mod karma;

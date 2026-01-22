@@ -107,6 +107,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "pt/apm" => Some(&pt::apm::APM),
         "pt/karma" => Some(&pt::karma::KARMA),
         "pt/atari" => Some(&pt::atari::ATARI),
+        "pt/dasd" => Some(&pt::dasd::DASD),
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
