@@ -42,16 +42,16 @@ pub struct BochsReader {
 
 impl BochsReader {
     pub fn new(parent: Arc<dyn Reader + Send + Sync>) -> io::Result<Self> {
-        // Read header (need at least 92 bytes)
-        let mut header = [0u8; 92];
-        if parent.read_at(0, &mut header)? < 92 {
+        // Read header (need at least 96 bytes for v2 format)
+        let mut header = [0u8; 96];
+        if parent.read_at(0, &mut header)? < 96 {
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
                 "short Bochs header read",
             ));
         }
 
-        // Check magic
+        // Check magic (first 22 bytes of 32-byte field)
         if &header[0..22] != BOCHS_MAGIC {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -59,7 +59,7 @@ impl BochsReader {
             ));
         }
 
-        // Check type and subtype
+        // Check type and subtype (16-byte fields)
         if &header[32..39] != REDOLOG_TYPE {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -74,6 +74,8 @@ impl BochsReader {
         }
 
         // Parse header fields (little-endian)
+        let version =
+            u32::from_le_bytes([header[64], header[65], header[66], header[67]]);
         let header_size =
             u32::from_le_bytes([header[68], header[69], header[70], header[71]]) as u64;
         let catalog_size =
@@ -82,10 +84,21 @@ impl BochsReader {
             u32::from_le_bytes([header[76], header[77], header[78], header[79]]) as u64;
         let extent_size =
             u32::from_le_bytes([header[80], header[81], header[82], header[83]]) as u64;
-        let disk_size = u64::from_le_bytes([
-            header[84], header[85], header[86], header[87],
-            header[88], header[89], header[90], header[91],
-        ]);
+
+        // Disk size offset depends on version
+        // v1 (0x00010000): disk_size at offset 84
+        // v2 (0x00020000): disk_size at offset 88 (4-byte reserved before it)
+        let disk_size = if version == 0x00010000 {
+            u64::from_le_bytes([
+                header[84], header[85], header[86], header[87],
+                header[88], header[89], header[90], header[91],
+            ])
+        } else {
+            u64::from_le_bytes([
+                header[88], header[89], header[90], header[91],
+                header[92], header[93], header[94], header[95],
+            ])
+        };
 
         // Validate extent_size
         if extent_size < 512 || (extent_size & (extent_size - 1)) != 0 {
@@ -122,11 +135,14 @@ impl BochsReader {
         // Data starts after header and catalog
         let data_offset = header_size + catalog_bytes as u64;
 
+        // Bitmap is sector-aligned on disk (rounded up to 512)
+        let bitmap_size_aligned = (bitmap_size + 511) & !511;
+
         Ok(Self {
             parent,
             catalog,
             extent_size,
-            bitmap_size,
+            bitmap_size: bitmap_size_aligned,
             data_offset,
             virtual_size: disk_size,
         })
@@ -167,14 +183,11 @@ impl Reader for BochsReader {
 
         // Calculate physical offset
         // Each allocated extent has: bitmap + data
-        // extent_blocks = extent_size / 512
-        // bitmap_blocks = bitmap_size / 512
-        let extent_blocks = self.extent_size / 512;
-        let bitmap_blocks = self.bitmap_size / 512;
-        let blocks_per_extent = bitmap_blocks + extent_blocks;
+        // Slot size = bitmap_size + extent_size
+        let slot_size = self.bitmap_size + self.extent_size;
 
         let physical_offset = self.data_offset
-            + (catalog_entry as u64 * blocks_per_extent * 512)
+            + (catalog_entry as u64 * slot_size)
             + self.bitmap_size
             + in_extent;
 
