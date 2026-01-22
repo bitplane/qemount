@@ -14,3 +14,4 @@ pub mod sgi;
 pub mod sun;
 pub mod sysv68;
 pub mod ubi;
+pub mod ultrix;
