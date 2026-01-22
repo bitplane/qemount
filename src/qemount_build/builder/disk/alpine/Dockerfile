@@ -21,6 +21,8 @@ RUN apk add --no-cache \
     xz \
     gzip \
     bzip2 \
+    zstd \
+    lz4 \
     python3 \
     py3-pip
 
