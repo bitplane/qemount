@@ -4,3 +4,4 @@
 //! that can be recursively detected for partition tables and filesystems.
 
 pub mod parallels;
+pub mod qcow;
