@@ -1,25 +1,25 @@
-//! XZ container reader
+//! LZ4 container reader
 //!
-//! XZ is a compression wrapper containing a single decompressed stream.
+//! LZ4 frame format - fast compression used in ZFS, Linux kernel, etc.
 
 use crate::container::{read_all, BytesReader, Child, Container};
 use crate::detect::Reader;
-use std::io;
+use std::io::{self, Read};
 use std::sync::Arc;
 
-/// XZ container - decompresses content to expose inner stream
-pub struct XzContainer;
+/// LZ4 container - decompresses content to expose inner stream
+pub struct Lz4Container;
 
 /// Static instance for registry
-pub static XZ: XzContainer = XzContainer;
+pub static LZ4: Lz4Container = Lz4Container;
 
-impl Container for XzContainer {
+impl Container for Lz4Container {
     fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>> {
         let compressed = read_all(&*reader)?;
-        let mut decompressed = Vec::new();
 
-        lzma_rs::xz_decompress(&mut &compressed[..], &mut decompressed)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+        let mut decoder = lz4_flex::frame::FrameDecoder::new(&compressed[..]);
+        let mut decompressed = Vec::new();
+        decoder.read_to_end(&mut decompressed)?;
 
         Ok(vec![Child {
             index: 0,

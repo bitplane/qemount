@@ -11,7 +11,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 bzip2 = { version = "0.4", default-features = false }
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
-xz2 = "0.1"
+lz4_flex = "0.11"
 lzma-rs = "0.3"
 weezl = "0.1"
 zstd = { version = "0.13", default-features = false }
