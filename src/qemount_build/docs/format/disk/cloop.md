@@ -5,16 +5,11 @@ related:
   - format/disk/raw
   - format/fs/squashfs
 detect:
-  any:
-    - offset: 0
-      type: string
-      length: 14
-      value: "#!/bin/sh\n#V2"
-      name: "cloop v2 script"
-    - offset: 128
-      type: be32
-      value: 0x00000001
-      name: "cloop block size marker"
+  # cloop v2 has a shell script header
+  - offset: 0
+    type: string
+    value: "#!/bin/sh\n#V2"
+    name: "cloop v2 script"
 ---
 
 # Compressed Loop (cloop)
