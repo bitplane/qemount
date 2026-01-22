@@ -99,6 +99,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "disk/vhdx" => Some(&disk::vhdx::VHDX),
         "disk/vmdk" => Some(&disk::vmdk::VMDK),
         "pt/apm" => Some(&pt::apm::APM),
+        "pt/atari" => Some(&pt::atari::ATARI),
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
