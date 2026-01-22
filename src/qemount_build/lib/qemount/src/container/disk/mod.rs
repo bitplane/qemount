@@ -9,3 +9,4 @@ pub mod qcow2;
 pub mod qed;
 pub mod vdi;
 pub mod vhd;
+pub mod vhdx;
