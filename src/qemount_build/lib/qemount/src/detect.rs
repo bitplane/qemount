@@ -2,6 +2,7 @@
 
 use crate::container;
 use crate::format::{Detect, Rule, Value, FORMATS};
+use regex::Regex;
 use std::collections::HashSet;
 use std::ffi::CStr;
 use std::io;
@@ -35,8 +36,8 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
     match rule {
         Rule::Any { any } => any.iter().any(|r| matches_rule(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, then_rules.as_ref(), |r, rule| matches_rule(r, rule))
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), |r, rule| matches_rule(r, rule))
         }
     }
 }
@@ -48,6 +49,7 @@ fn matches_leaf<R, F>(
     value: Option<&Value>,
     op: Option<&str>,
     mask: Option<u64>,
+    length: Option<u32>,
     then_rules: Option<&Vec<Rule>>,
     recurse: F,
 ) -> bool
@@ -69,6 +71,28 @@ where
     // Handle string type specially
     if typ == "string" {
         let matched = match match_bytes_generic(reader, offset, expected) {
+            Some(m) => m,
+            None => return false,
+        };
+        if matched {
+            if let Some(rules) = then_rules {
+                return rules.iter().all(|r| recurse(reader, r));
+            }
+        }
+        return matched;
+    }
+
+    // Handle ascii type with regex pattern matching
+    if typ == "ascii" {
+        let len = match length {
+            Some(l) => l as usize,
+            None => return false, // length is required for ascii type
+        };
+        let pattern = match expected {
+            Value::String(s) => s.as_str(),
+            _ => return false,
+        };
+        let matched = match match_ascii_regex(reader, offset, len, pattern) {
             Some(m) => m,
             None => return false,
         };
@@ -108,6 +132,25 @@ where
     }
 
     matches
+}
+
+fn match_ascii_regex<R: Reader + ?Sized>(
+    reader: &R,
+    offset: u64,
+    length: usize,
+    pattern: &str,
+) -> Option<bool> {
+    let mut buf = vec![0u8; length];
+    if reader.read_at(offset, &mut buf).ok()? != length {
+        return Some(false);
+    }
+    // Check all bytes are ASCII
+    if !buf.iter().all(|&b| b.is_ascii()) {
+        return Some(false);
+    }
+    let s = std::str::from_utf8(&buf).ok()?;
+    let re = Regex::new(pattern).ok()?;
+    Some(re.is_match(s))
 }
 
 fn match_bytes_generic<R: Reader + ?Sized>(reader: &R, offset: u64, expected: &Value) -> Option<bool> {
@@ -307,8 +350,8 @@ fn matches_rule_dyn(reader: &dyn Reader, rule: &Rule) -> bool {
     match rule {
         Rule::Any { any } => any.iter().any(|r| matches_rule_dyn(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule_dyn(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, then_rules.as_ref(), |r, rule| matches_rule_dyn(r, rule))
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), |r, rule| matches_rule_dyn(r, rule))
         }
     }
 }

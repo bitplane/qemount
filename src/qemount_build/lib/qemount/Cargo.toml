@@ -13,6 +13,7 @@ bzip2 = { version = "0.4", default-features = false }
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 libc = "0.2"
 lzfse = "0.2"
+regex = "1"
 rmp-serde = "1"
 serde = { version = "1", features = ["derive"] }
 

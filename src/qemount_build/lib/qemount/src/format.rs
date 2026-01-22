@@ -35,6 +35,7 @@ pub enum Rule {
         name: Option<String>,
         #[serde(rename = "then")]
         then_rules: Option<Vec<Rule>>,
+        length: Option<u32>,
     },
 }
 
@@ -43,6 +44,7 @@ pub enum Rule {
 pub enum Value {
     Int(i64),
     Bytes(Vec<i64>),
+    String(String),
 }
 
 /// Format database with static CStr names for C API
