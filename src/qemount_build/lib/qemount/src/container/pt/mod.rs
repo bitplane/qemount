@@ -6,6 +6,7 @@ pub mod apm;
 pub mod atari;
 pub mod disklabel;
 pub mod gpt;
+pub mod karma;
 pub mod mbr;
 pub mod pc98;
 pub mod rdb;
