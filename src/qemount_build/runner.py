@@ -44,6 +44,34 @@ def get_image_id(tag: str) -> str | None:
     return result.stdout.strip()
 
 
+def run_streaming(
+    cmd: list[str],
+    cwd: Path | None = None,
+) -> tuple[int, str]:
+    """
+    Run command, streaming output to DEBUG log.
+
+    Returns (returncode, combined_output).
+    """
+    proc = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        errors='replace',
+    )
+
+    lines = []
+    for line in proc.stdout:
+        line = line.rstrip()
+        log.debug(line)
+        lines.append(line)
+
+    proc.wait()
+    return proc.returncode, "\n".join(lines)
+
+
 def build_image(
     context_dir: Path,
     tag: str,
@@ -74,12 +102,12 @@ def build_image(
     for key, value in env.items():
         cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
-    result = subprocess.run(cmd, cwd=context_dir, capture_output=True, text=True, errors='replace')
-    logger = log.error if result.returncode else log.debug
-    logger("stdout: %s", result.stdout)
-    logger("stderr: %s", result.stderr)
-    if result.returncode != 0:
+
+    returncode, output = run_streaming(cmd, cwd=context_dir)
+    if returncode != 0:
+        log.error("Build failed:\n%s", output)
         return None
+
     image_id = get_image_id(tag)
     if not image_id:
         log.error("Image was not created: %s", tag)
@@ -92,13 +120,13 @@ def run_container(
     build_dir: Path,
     env: dict,
     targets: list[str],
-) -> tuple[bool, str, str]:
+) -> tuple[bool, str]:
     """Run a container with the given environment.
 
     Targets are passed as positional args to the container entrypoint.
     Build scripts use these to filter which outputs to build.
 
-    Returns (success, stdout, stderr).
+    Returns (success, output).
     """
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
@@ -107,11 +135,10 @@ def run_container(
     cmd.extend(targets)
 
     log.info("Running: %s", image)
-    result = subprocess.run(cmd, capture_output=True, text=True, errors='replace')
-    logger = log.error if result.returncode else log.debug
-    logger("stdout: %s", result.stdout)
-    logger("stderr: %s", result.stderr)
-    return result.returncode == 0, result.stdout, result.stderr
+    returncode, output = run_streaming(cmd)
+    if returncode != 0:
+        log.error("Container failed:\n%s", output)
+    return returncode == 0, output
 
 
 def get_image_tag(resolved: dict) -> str | None:
@@ -236,19 +263,18 @@ def run_build(
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
-        success, stdout, stderr = run_container(tag, build_dir, env, dirty_outputs)
+        success, output = run_container(tag, build_dir, env, dirty_outputs)
         if not success:
             log.error("Failed to run: %s", path)
             return False
 
         # Verify dirty outputs were created and update cache
-        for output in dirty_outputs:
-            if not (build_dir / output).exists():
-                log.error("Output was not created: %s", output)
-                log.error("Container stdout:\n%s", stdout)
-                log.error("Container stderr:\n%s", stderr)
+        for output_name in dirty_outputs:
+            if not (build_dir / output_name).exists():
+                log.error("Output was not created: %s", output_name)
+                log.error("Container output:\n%s", output)
                 return False
-            update_output_hash(cache, output, input_hash)
+            update_output_hash(cache, output_name, input_hash)
 
         # Save cache after each successful build step
         save_cache(build_dir, cache)
