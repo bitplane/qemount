@@ -34,11 +34,9 @@ Offset  Size  Description
 4       2     Root partition
 6       2     Swap partition
 8       16    Boot file name
-24      4     Reserved
-...
-72      40    Device parameters
-112     15*16 Volume directory (15 entries)
-352     16*12 Partition table (16 entries)
+24      48    Device parameters
+72      240   Volume directory (15 entries × 16 bytes)
+312     192   Partition table (16 entries × 12 bytes)
 504     4     Checksum
 508     4     Padding
 ```
