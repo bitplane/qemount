@@ -93,11 +93,13 @@ def run_container(
     build_dir: Path,
     env: dict,
     targets: list[str],
-) -> bool:
+) -> tuple[bool, str, str]:
     """Run a container with the given environment.
 
     Targets are passed as positional args to the container entrypoint.
     Build scripts use these to filter which outputs to build.
+
+    Returns (success, stdout, stderr).
     """
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
@@ -110,7 +112,7 @@ def run_container(
     logger = log.error if result.returncode else log.debug
     logger("stdout: %s", result.stdout)
     logger("stderr: %s", result.stderr)
-    return result.returncode == 0
+    return result.returncode == 0, result.stdout, result.stderr
 
 
 def get_image_tag(resolved: dict) -> str | None:
@@ -237,7 +239,8 @@ def run_build(
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
-        if not run_container(tag, build_dir, env, dirty_outputs):
+        success, stdout, stderr = run_container(tag, build_dir, env, dirty_outputs)
+        if not success:
             log.error("Failed to run: %s", path)
             return False
 
@@ -245,6 +248,8 @@ def run_build(
         for output in dirty_outputs:
             if not (build_dir / output).exists():
                 log.error("Output was not created: %s", output)
+                log.error("Container stdout:\n%s", stdout)
+                log.error("Container stderr:\n%s", stderr)
                 return False
             update_output_hash(cache, output, input_hash)
 
