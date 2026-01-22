@@ -1,1 +1,4 @@
-apk add --no-cache tar xz
+#!/bin/sh
+# $1 = input directory
+# $2 = output file
+tar -cf - -C "$1" . | xz > "$2"
