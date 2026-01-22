@@ -13,8 +13,8 @@ kernels for truly obscure formats.
 ## Philosophy
 
 **Pure over pragmatic.** We get things right rather than get things done. This
-project aims to be technically excellent - a showcase of what careful engineering
-looks like, not typical "make it work" LLM-assisted code.
+project aims to be technically excellent - a showcase of what careful
+engineering looks like, not typical "make it work" LLM-assisted code.
 
 **Branches are the enemy.** Special cases, divergent code paths, workarounds -
 these are technical debt. If something needs a special case, the abstraction is
@@ -34,13 +34,13 @@ or awkward, fix it immediately rather than accumulating cruft.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Frontend Clients                          │
+│                        Frontend Clients                         │
 │  FUSE, GVFS, KIO, 7zip plugin, PeaZip, WASM, Windows driver...  │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                         libqemount                               │
+│                         libqemount                              │
 │  - Recursive format detection (disk → partition → fs → archive) │
 │  - Guest selection (best kernel for format + host arch)         │
 │  - Transport orchestration (9P, future: NFS, etc.)              │
@@ -60,7 +60,8 @@ a socket. The client connects and does I/O.
 
 ## Build System
 
-The Python package `qemount_build` orchestrates everything via podman containers.
+The Python package `qemount_build` orchestrates everything via podman
+containers.
 
 ### Concepts
 
@@ -175,7 +176,8 @@ detect filesystem → detect archive inside → etc.
 
 ## Format Documentation vs Guest Capabilities
 
-**Separation of concerns:** Format documentation and guest capabilities are distinct.
+**Separation of concerns:** Format documentation and guest capabilities are
+distinct.
 
 **Format docs (`docs/format/`)** describe what formats look like:
 - Detection rules (magic bytes, offsets, structures)
@@ -222,7 +224,8 @@ Detection returns a tree structure:
 
 **Key concepts:**
 - `index` identifies a child within its parent (partition number, track number)
-- Same index with different formats = multiple valid interpretations (ISO + Joliet + RockRidge)
+- Same index with different formats = multiple valid interpretations (ISO +
+  Joliet + RockRidge)
 - Path through indices gives unique addressing: `/0/gpt/1/ntfs`
 - Features are detected properties that affect guest selection
 
@@ -251,8 +254,8 @@ Examples:
 
 **ARCH vs HOST_ARCH:** Some builders can't cross-compile, so they use `HOST_ARCH`
 to indicate "we can only build for the architecture we're running on". This is a
-builder limitation, not a statement about where the binary runs. Both produce the
-same type of output (e.g., static musl binaries), the variable just reflects
+builder limitation, not a statement about where the binary runs. Both produce
+the same type of output (e.g., static musl binaries), the variable just reflects
 cross-compilation capability.
 
 ## Current State
@@ -267,7 +270,6 @@ Early scaffolding. What works:
 What's next:
 - libqemount: guest selection and orchestration (not just detection)
 - Consistent target naming
-- Build caching (hash inputs to skip unchanged targets)
 - More formats, more guests
 - Frontend clients (FUSE wrapper, then plugins, then everything else)
 
