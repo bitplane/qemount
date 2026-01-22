@@ -87,6 +87,7 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
 pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
         "arc/gzip" => Some(&arc::gzip::GZIP),
+        "disk/cloop" => Some(&disk::cloop::CLOOP),
         "disk/dmg" => Some(&disk::dmg::DMG),
         "disk/parallels" => Some(&disk::parallels::PARALLELS),
         "disk/qcow" => Some(&disk::qcow::QCOW),
