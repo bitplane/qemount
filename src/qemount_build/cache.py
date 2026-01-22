@@ -47,20 +47,6 @@ def hash_files(directory: Path) -> str:
     return h.hexdigest()
 
 
-def hash_build_requires(build_requires: list[str], build_dir: Path) -> str:
-    """Hash the content of build_requires files."""
-    h = hashlib.md5()
-    for req in sorted(build_requires):
-        h.update(req.encode())
-        req_path = build_dir / req
-        if req_path.exists():
-            if req_path.is_file():
-                h.update(req_path.read_bytes())
-            elif req_path.is_dir():
-                h.update(hash_files(req_path).encode())
-    return h.hexdigest()
-
-
 def hash_path_inputs(
     path: str,
     pkg_dir: Path,
@@ -117,15 +103,14 @@ def is_output_dirty(
 
 def is_image_dirty(
     tag: str,
-    build_requires_hash: str,
+    input_hash: str,
     cache: dict,
     image_exists_fn,
 ) -> bool:
     """
-    Check if a docker image needs rebuilding with --no-cache.
+    Check if a docker image needs rebuilding.
 
-    Returns True if build_requires changed or image doesn't exist.
-    Podman handles Dockerfile/context caching itself.
+    Returns True if input_hash changed or image doesn't exist.
     """
     cache_key = f"docker:{tag}"
     cached = cache.get(cache_key)
@@ -133,7 +118,7 @@ def is_image_dirty(
     if cached is None:
         return True
 
-    if cached.get("build_requires_hash") != build_requires_hash:
+    if cached.get("input_hash") != input_hash:
         return True
 
     if not image_exists_fn(cached.get("image_id", "")):
@@ -147,9 +132,9 @@ def update_output_hash(cache: dict, output: str, input_hash: str):
     cache[output] = input_hash
 
 
-def update_image_hash(cache: dict, tag: str, build_requires_hash: str, image_id: str):
+def update_image_hash(cache: dict, tag: str, input_hash: str, image_id: str):
     """Record the build state for a docker image."""
     cache[f"docker:{tag}"] = {
-        "build_requires_hash": build_requires_hash,
+        "input_hash": input_hash,
         "image_id": image_id,
     }

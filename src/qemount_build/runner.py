@@ -14,7 +14,6 @@ from .cache import (
     load_cache,
     save_cache,
     hash_path_inputs,
-    hash_build_requires,
     is_output_dirty,
     is_image_dirty,
     update_output_hash,
@@ -192,22 +191,20 @@ def run_build(
         if dockerfile.exists():
             tag = docker_tags[0] if docker_tags else f"localhost/{path}"
 
-            # Check if build_requires changed - if so, force --no-cache
-            br_hash = hash_build_requires(build_requires, build_dir)
-            needs_no_cache = force or is_image_dirty(
-                tag, br_hash, cache, image_exists
-            )
+            # Skip podman entirely if image is clean
+            if not force and not is_image_dirty(tag, input_hash, cache, image_exists):
+                log.info("Clean: %s (image)", tag)
+            else:
+                image_id = build_image(
+                    dockerfile.parent, tag, env, build_requires, build_dir,
+                    no_cache=force,
+                )
+                if not image_id:
+                    return False
 
-            image_id = build_image(
-                dockerfile.parent, tag, env, build_requires, build_dir,
-                no_cache=needs_no_cache,
-            )
-            if not image_id:
-                return False
-
-            # Update cache with new image state and save immediately
-            update_image_hash(cache, tag, br_hash, image_id)
-            save_cache(build_dir, cache)
+                # Update cache with new image state and save immediately
+                update_image_hash(cache, tag, input_hash, image_id)
+                save_cache(build_dir, cache)
 
         # Done if no file outputs
         if not file_outputs:
