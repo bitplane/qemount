@@ -10,6 +10,7 @@ RUN apt-get update && \
         hfsutils \
         makefs \
         parted \
+        qemu-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

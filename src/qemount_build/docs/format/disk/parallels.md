@@ -8,14 +8,12 @@ detect:
   any:
     - offset: 0
       type: string
-      length: 16
       value: "WithoutFreeSpace"
-      name: "Parallels expanding"
+      name: "Parallels original"
     - offset: 0
       type: string
-      length: 16
-      value: "WithouFreSpworkaroundacefrSpworkaroundace"
-      name: "Parallels plain"
+      value: "WithouFreSpacExt"
+      name: "Parallels extended"
 ---
 
 # Parallels Disk Image
@@ -57,7 +55,9 @@ running on macOS.
 
 ## Detection
 
-String "WithoutFreeSpace" at offset 0 for expanding disk format.
+String at offset 0:
+- `"WithoutFreeSpace"` - Original format
+- `"WithouFreSpacExt"` - Extended format (current)
 
 ## QEMU Support
 
