@@ -8,3 +8,4 @@ pub mod pc98;
 pub mod rdb;
 pub mod sgi;
 pub mod sun;
+pub mod ubi;

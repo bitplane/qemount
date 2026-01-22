@@ -290,3 +290,9 @@ make coverage  # Generate coverage report
 
 Tests are functional (pytest style, not unittest classes). Mocks indicate
 poor isolation - fix the code instead.
+
+## Build and run
+
+The user will build the project, given the time required to run the build and
+the size of the outputs.
+
