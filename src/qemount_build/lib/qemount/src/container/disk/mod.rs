@@ -6,3 +6,4 @@
 pub mod parallels;
 pub mod qcow;
 pub mod qcow2;
+pub mod qed;
