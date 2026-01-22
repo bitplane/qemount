@@ -5,3 +5,4 @@
 
 pub mod parallels;
 pub mod qcow;
+pub mod qcow2;
