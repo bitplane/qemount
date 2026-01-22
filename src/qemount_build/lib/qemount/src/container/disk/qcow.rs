@@ -4,7 +4,8 @@
 
 use crate::container::{Child, Container};
 use crate::detect::Reader;
-use std::io;
+use flate2::read::DeflateDecoder;
+use std::io::{self, Read};
 use std::sync::Arc;
 
 const QCOW_MAGIC: u32 = 0x514649fb;
@@ -138,6 +139,32 @@ impl QcowReader {
         }
         Ok(u64::from_be_bytes(buf))
     }
+
+    fn read_compressed_cluster(&self, l2_entry: u64) -> io::Result<Vec<u8>> {
+        // QCOW v1 compressed cluster encoding:
+        // - Bit 63 is set (compressed flag)
+        // - Lower (63 - cluster_bits) bits: byte offset of compressed data
+        // - Next cluster_bits bits: number of 512-byte sectors - 1
+        let coffset_bits = 63 - self.cluster_bits;
+        let coffset_mask = (1u64 << coffset_bits) - 1;
+        let csize_mask = (1u64 << self.cluster_bits) - 1;
+
+        let coffset = l2_entry & coffset_mask;
+        let nb_sectors = ((l2_entry >> coffset_bits) & csize_mask) + 1;
+        let compressed_size = nb_sectors as usize * 512;
+
+        // Read compressed data
+        let mut compressed = vec![0u8; compressed_size];
+        let n = self.parent.read_at(coffset, &mut compressed)?;
+        compressed.truncate(n);
+
+        // Decompress (QCOW uses raw deflate)
+        let mut decoder = DeflateDecoder::new(&compressed[..]);
+        let mut decompressed = vec![0u8; self.cluster_size as usize];
+        decoder.read_exact(&mut decompressed)?;
+
+        Ok(decompressed)
+    }
 }
 
 impl Reader for QcowReader {
@@ -188,11 +215,9 @@ impl Reader for QcowReader {
 
         // Check for compression flag (bit 63)
         if cluster_offset & (1 << 63) != 0 {
-            // Compressed cluster - not supported for now
-            return Err(io::Error::new(
-                io::ErrorKind::Unsupported,
-                "compressed QCOW clusters not supported",
-            ));
+            let decompressed = self.read_compressed_cluster(cluster_offset)?;
+            buf[..to_read].copy_from_slice(&decompressed[in_cluster as usize..][..to_read]);
+            return Ok(to_read);
         }
 
         // Read from physical location
