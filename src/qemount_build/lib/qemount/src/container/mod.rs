@@ -86,10 +86,11 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
 pub fn get_container(format: &str) -> Option<&'static dyn Container> {
     match format {
         "arc/gzip" => Some(&arc::gzip::GZIP),
-        "pt/rdb" => Some(&pt::rdb::RDB),
+        "pt/apm" => Some(&pt::apm::APM),
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
+        "pt/rdb" => Some(&pt::rdb::RDB),
         _ => None,
     }
 }

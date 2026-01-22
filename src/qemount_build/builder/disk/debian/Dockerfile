@@ -9,6 +9,7 @@ RUN apt-get update && \
         genromfs \
         hfsutils \
         makefs \
+        parted \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
