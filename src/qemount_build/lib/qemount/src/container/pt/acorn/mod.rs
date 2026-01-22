@@ -17,64 +17,24 @@ pub mod eesox;
 pub mod ics;
 pub mod powertec;
 
+use crate::checksum;
 use crate::detect::Reader;
 use std::io;
 
 /// Sector size (always 512 for Acorn)
 pub const SECTOR_SIZE: u64 = 512;
 
-/// ADFS boot block checksum (from Linux kernel)
-/// Iterates bytes 510→0 with carry folding, compares to byte 511
-pub fn adfs_checksum(data: &[u8]) -> bool {
-    if data.len() < 512 {
-        return false;
-    }
-    let mut result: u32 = 0;
-    for i in (0..511).rev() {
-        result = (result & 0xff) + (result >> 8) + data[i] as u32;
-    }
-    (result & 0xff) as u8 == data[511]
-}
-
-/// ICS checksum: sum(bytes[0..507]) + 0x50617274 == *(le32*)&data[508]
-pub fn ics_checksum(data: &[u8]) -> bool {
-    if data.len() < 512 {
-        return false;
-    }
-    let mut sum: u32 = 0x50617274; // "Part" in ASCII
-    for &b in &data[..508] {
-        sum = sum.wrapping_add(b as u32);
-    }
-    let stored = u32::from_le_bytes([data[508], data[509], data[510], data[511]]);
-    sum == stored
-}
-
-/// PowerTec checksum: sum(bytes[0..510]) + 0x2a == data[511]
-/// Also rejects MBR signature (0x55AA at 510-511)
-pub fn powertec_checksum(data: &[u8]) -> bool {
-    if data.len() < 512 {
-        return false;
-    }
-    // Reject if looks like MBR
-    if data[510] == 0x55 && data[511] == 0xaa {
-        return false;
-    }
-    let mut checksum: u8 = 0x2a;
-    for &b in &data[..511] {
-        checksum = checksum.wrapping_add(b);
-    }
-    checksum == data[511]
-}
+// Re-export checksum functions for backwards compatibility
+pub use checksum::adfs as adfs_checksum;
+pub use checksum::ics as ics_checksum;
+pub use checksum::powertec as powertec_checksum;
 
 /// EESOX XOR decryption key
-const EESOX_KEY: &[u8; 16] = b"Neil Critchell  ";
+const EESOX_KEY: &[u8] = b"Neil Critchell  ";
 
 /// Decrypt EESOX partition table (XOR with key)
 pub fn eesox_decrypt(data: &[u8]) -> Vec<u8> {
-    data.iter()
-        .enumerate()
-        .map(|(i, &b)| b ^ EESOX_KEY[i & 15])
-        .collect()
+    checksum::xor_decrypt(data, EESOX_KEY)
 }
 
 /// ADFS disc record at offset 0x1c0 within boot block

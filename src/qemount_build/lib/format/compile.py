@@ -50,6 +50,10 @@ def normalize_rule(rule, path: list[str] | None = None) -> dict:
         normalized["op"] = rule["op"]
     if "mask" in rule:
         normalized["mask"] = rule["mask"]
+    if "algorithm" in rule:
+        normalized["algorithm"] = rule["algorithm"]
+    if "key" in rule:
+        normalized["key"] = rule["key"]
     if "then" in rule:
         normalized["then"] = [normalize_rule(r, path + [f"then[{i}]"]) for i, r in enumerate(rule["then"])]
     return normalized

@@ -1,5 +1,6 @@
 //! Format detection engine
 
+use crate::checksum;
 use crate::container;
 use crate::format::{Detect, Rule, Value, FORMATS};
 use regex::Regex;
@@ -36,8 +37,8 @@ fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
     match rule {
         Rule::Any { any } => any.iter().any(|r| matches_rule(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), |r, rule| matches_rule(r, rule))
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| matches_rule(r, rule))
         }
     }
 }
@@ -51,12 +52,28 @@ fn matches_leaf<R, F>(
     mask: Option<u64>,
     length: Option<u32>,
     then_rules: Option<&Vec<Rule>>,
+    algorithm: Option<&str>,
+    key: Option<&str>,
     recurse: F,
 ) -> bool
 where
     R: Reader + ?Sized,
     F: Fn(&R, &Rule) -> bool,
 {
+    // Handle checksum type - validates checksum over a range
+    if typ == "checksum" {
+        let len = length.unwrap_or(512) as usize;
+        let alg = algorithm.unwrap_or("adfs");
+        return match_checksum(reader, offset, len, alg);
+    }
+
+    // Handle xor type - decrypts data and applies nested rules
+    if typ == "xor" {
+        let len = length.unwrap_or(256) as usize;
+        let xor_key = key.unwrap_or("");
+        return match_xor_then(reader, offset, len, xor_key, then_rules, &recurse);
+    }
+
     // If no expected value, rule is extraction-only (always matches)
     let expected = match value {
         Some(v) => v,
@@ -238,6 +255,65 @@ fn compare(actual: &Value, expected: &Value, op: &str) -> bool {
     }
 }
 
+/// Match checksum validation rule
+fn match_checksum<R: Reader + ?Sized>(reader: &R, offset: u64, length: usize, algorithm: &str) -> bool {
+    let validator = match checksum::get(algorithm) {
+        Some(f) => f,
+        None => return false,
+    };
+    let mut buf = vec![0u8; length];
+    match reader.read_at(offset, &mut buf) {
+        Ok(n) if n == length => validator(&buf),
+        _ => false,
+    }
+}
+
+/// Match xor decryption with nested rules
+fn match_xor_then<R, F>(
+    reader: &R,
+    offset: u64,
+    length: usize,
+    key: &str,
+    then_rules: Option<&Vec<Rule>>,
+    recurse: &F,
+) -> bool
+where
+    R: Reader + ?Sized,
+    F: Fn(&R, &Rule) -> bool,
+{
+    let rules = match then_rules {
+        Some(r) => r,
+        None => return true, // No nested rules means xor alone matched
+    };
+
+    // Read and decrypt the data
+    let mut buf = vec![0u8; length];
+    match reader.read_at(offset, &mut buf) {
+        Ok(n) if n == length => {}
+        _ => return false,
+    }
+    let decrypted = checksum::xor_decrypt(&buf, key.as_bytes());
+
+    // Create a reader for the decrypted data and check nested rules
+    let decrypted_reader = crate::container::BytesReader::new(decrypted);
+    rules.iter().all(|r| match r {
+        Rule::Any { any } => any.iter().any(|r2| match_rule_on_bytes(&decrypted_reader, r2)),
+        Rule::All { all } => all.iter().all(|r2| match_rule_on_bytes(&decrypted_reader, r2)),
+        Rule::Leaf { .. } => match_rule_on_bytes(&decrypted_reader, r),
+    })
+}
+
+/// Match a rule against a BytesReader (for xor nested rules)
+fn match_rule_on_bytes(reader: &crate::container::BytesReader, rule: &Rule) -> bool {
+    match rule {
+        Rule::Any { any } => any.iter().any(|r| match_rule_on_bytes(reader, r)),
+        Rule::All { all } => all.iter().all(|r| match_rule_on_bytes(reader, r)),
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| match_rule_on_bytes(r, rule))
+        }
+    }
+}
+
 // Allow Reader to work with trait objects
 impl Reader for &dyn Reader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize> {
@@ -350,8 +426,8 @@ fn matches_rule_dyn(reader: &dyn Reader, rule: &Rule) -> bool {
     match rule {
         Rule::Any { any } => any.iter().any(|r| matches_rule_dyn(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule_dyn(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), |r, rule| matches_rule_dyn(r, rule))
+        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
+            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| matches_rule_dyn(r, rule))
         }
     }
 }

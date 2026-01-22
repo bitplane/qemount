@@ -36,6 +36,8 @@ pub enum Rule {
         #[serde(rename = "then")]
         then_rules: Option<Vec<Rule>>,
         length: Option<u32>,
+        algorithm: Option<String>,
+        key: Option<String>,
     },
 }
 

@@ -1,5 +1,6 @@
 //! qemount - Universal filesystem detection and mounting library
 
+mod checksum;
 mod container;
 mod detect;
 mod format;
