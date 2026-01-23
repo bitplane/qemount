@@ -79,7 +79,10 @@ def cmd_deps(args, catalogue, context):
         print(f"Targets: {', '.join(targets)}")
         print(f"\nBuild order ({len(graph['order'])} steps):")
         for i, path in enumerate(graph["order"], 1):
+            outputs = sorted(graph["needed"].get(path, []))
             print(f"  {i}. {path}")
+            for output in outputs:
+                print(f"       → {output}")
 
     return 0
 
