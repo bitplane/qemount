@@ -324,6 +324,23 @@ def resolve_path(path: str, catalogue: dict, context: dict) -> dict:
     return resolved
 
 
+def resolve_output(path: str, output: str, catalogue: dict, context: dict) -> dict:
+    """
+    Get fully resolved metadata for a specific output from a path.
+
+    The output inherits from its catalogue entry and can extend/override.
+    Note: no_inherit/no_merge from path are for directory inheritance,
+    not provides->output inheritance, so we don't apply them here.
+    """
+    path_meta = resolve_path(path, catalogue, context)
+    output_meta = path_meta.get("provides", {}).get(output, {})
+
+    if not output_meta:
+        return path_meta
+
+    return merge_meta(path_meta, output_meta)
+
+
 def build_provides_index(catalogue: dict, context: dict) -> dict:
     """
     Build index mapping outputs to the paths that provide them.
@@ -380,22 +397,29 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
             needed[path] = set()
         needed[path].add(output)
 
+        # Cycle detection must happen before visited check
         if path in chain:
             cycle = chain[chain.index(path):] + [path]
             raise ValueError(f"Dependency cycle: {' -> '.join(cycle)}")
 
-        if path in visited:
+        if output in visited:
             return
+        visited.add(output)
 
-        visited.add(path)
-        meta = resolve_path(path, catalogue, context)
-        nodes[path] = meta
+        meta = resolve_output(path, output, catalogue, context)
+
+        # Store path metadata only once (first output wins)
+        first_output = path not in nodes
+        if first_output:
+            nodes[path] = resolve_path(path, catalogue, context)
 
         for req in meta.get("requires", {}):
             edges.append((path, index.get(req, req)))
             visit(req, chain + [path])
 
-        order.append(path)
+        # Add to order after deps, only once per path
+        if first_output:
+            order.append(path)
 
     for target in targets:
         visit(target, [])
