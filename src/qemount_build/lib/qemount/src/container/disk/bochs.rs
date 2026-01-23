@@ -193,6 +193,10 @@ impl Reader for BochsReader {
 
         self.parent.read_at(physical_offset, &mut buf[..to_read])
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: BochsReader only holds Arc and Vec, safe to send/share

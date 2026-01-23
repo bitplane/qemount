@@ -319,6 +319,10 @@ impl Reader for UbiVolumeReader {
             }
         }
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: UbiVolumeReader only holds Arc and BTreeMap, safe to send/share

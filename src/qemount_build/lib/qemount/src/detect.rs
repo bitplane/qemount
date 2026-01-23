@@ -14,6 +14,17 @@ use std::sync::Arc;
 /// stateless positional reads. This mirrors FileExt::read_at() as a trait.
 pub trait Reader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize>;
+    fn size(&self) -> Option<u64>;
+}
+
+/// Resolve a potentially negative offset using file size.
+/// Negative offsets are relative to end of file (e.g., -8 = 8 bytes from end).
+fn resolve_offset(offset: i64, size: Option<u64>) -> Option<u64> {
+    if offset >= 0 {
+        Some(offset as u64)
+    } else {
+        size.map(|s| s.saturating_sub((-offset) as u64))
+    }
 }
 
 fn matches_leaf<R, F>(
@@ -282,7 +293,11 @@ fn match_rule_on_bytes(reader: &crate::container::BytesReader, rule: &Rule) -> b
         Rule::Any { any } => any.iter().any(|r| match_rule_on_bytes(reader, r)),
         Rule::All { all } => all.iter().all(|r| match_rule_on_bytes(reader, r)),
         Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| match_rule_on_bytes(r, rule))
+            let resolved = match resolve_offset(*offset, reader.size()) {
+                Some(o) => o,
+                None => return false,
+            };
+            matches_leaf(reader, resolved, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| match_rule_on_bytes(r, rule))
         }
     }
 }
@@ -291,6 +306,9 @@ fn match_rule_on_bytes(reader: &crate::container::BytesReader, rule: &Rule) -> b
 impl Reader for &dyn Reader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize> {
         (*self).read_at(offset, buf)
+    }
+    fn size(&self) -> Option<u64> {
+        (*self).size()
     }
 }
 
@@ -400,7 +418,11 @@ fn matches_rule_dyn(reader: &dyn Reader, rule: &Rule) -> bool {
         Rule::Any { any } => any.iter().any(|r| matches_rule_dyn(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule_dyn(reader, r)),
         Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| matches_rule_dyn(r, rule))
+            let resolved = match resolve_offset(*offset, reader.size()) {
+                Some(o) => o,
+                None => return false,
+            };
+            matches_leaf(reader, resolved, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| matches_rule_dyn(r, rule))
         }
     }
 }

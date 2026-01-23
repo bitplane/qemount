@@ -26,4 +26,8 @@ impl Reader for SliceReader {
         let to_read = buf.len().min(available);
         self.parent.read_at(self.offset + offset, &mut buf[..to_read])
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.length)
+    }
 }

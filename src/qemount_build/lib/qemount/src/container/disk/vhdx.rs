@@ -252,6 +252,10 @@ impl Reader for VhdxReader {
         let physical_offset = file_offset + in_block;
         self.parent.read_at(physical_offset, &mut buf[..to_read])
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: VhdxReader only holds Arc and Vec, safe to send/share

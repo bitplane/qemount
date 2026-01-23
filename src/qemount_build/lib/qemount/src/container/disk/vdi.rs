@@ -153,6 +153,10 @@ impl Reader for VdiReader {
         let physical_offset = self.data_offset + (bmap_entry as u64 * self.block_size) + in_block;
         self.parent.read_at(physical_offset, &mut buf[..to_read])
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: VdiReader only holds Arc and Vec, safe to send/share

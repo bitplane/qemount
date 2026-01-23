@@ -67,6 +67,9 @@ def normalize_detect(detect) -> dict | None:
     if isinstance(detect, list):
         rules = [normalize_rule(r, [f"detect[{i}]"]) for i, r in enumerate(detect)]
         return {"all": rules} if rules else None
+    if isinstance(detect, dict) and "all" in detect:
+        rules = [normalize_rule(r, [f"detect/all[{i}]"]) for i, r in enumerate(detect["all"])]
+        return {"all": rules} if rules else None
     if isinstance(detect, dict) and "any" in detect:
         rules = [normalize_rule(r, [f"detect/any[{i}]"]) for i, r in enumerate(detect["any"])]
         return {"any": rules} if rules else None

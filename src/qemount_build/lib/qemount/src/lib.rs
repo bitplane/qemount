@@ -23,6 +23,11 @@ impl Reader for FileReader {
         file.seek(SeekFrom::Start(offset))?;
         file.read(buf)
     }
+
+    fn size(&self) -> Option<u64> {
+        let mut file = self.file.lock().unwrap();
+        file.seek(SeekFrom::End(0)).ok()
+    }
 }
 
 /// Get library version

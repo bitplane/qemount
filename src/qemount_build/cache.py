@@ -125,11 +125,31 @@ def hash_path_inputs(
     return h.hexdigest()
 
 
+def hash_output_inputs(
+    base_hash: str,
+    output_requires: list[str],
+    cache: dict,
+    build_dir: Path,
+) -> str:
+    """Compute input hash for a specific output, including its per-output requires."""
+    if not output_requires:
+        return base_hash
+    h = hashlib.md5()
+    h.update(base_hash.encode())
+    for req in sorted(output_requires):
+        h.update(req.encode())
+        req_path = build_dir / req
+        if req_path.exists():
+            h.update(hash_file(req_path, cache).encode())
+    return h.hexdigest()
+
+
 def is_output_dirty(
     output: str,
     input_hash: str,
     cache: dict,
     build_dir: Path,
+    output_requires: list[str] | None = None,
 ) -> bool:
     """Check if a file output needs rebuilding."""
     if not (build_dir / output).exists():
@@ -137,7 +157,9 @@ def is_output_dirty(
     cached = cache.get(output)
     if cached is None:
         return True
-    return cached.get("input_hash") != input_hash
+    # Include per-output requires in hash
+    full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
+    return cached.get("input_hash") != full_hash
 
 
 def is_image_dirty(
@@ -168,14 +190,22 @@ def is_image_dirty(
     return False
 
 
-def update_output_hash(cache: dict, output: str, input_hash: str, build_dir: Path):
+def update_output_hash(
+    cache: dict,
+    output: str,
+    input_hash: str,
+    build_dir: Path,
+    output_requires: list[str] | None = None,
+):
     """Record hash state for a built file output."""
     path = build_dir / output
     stat = path.stat()
     h = hashlib.md5()
     h.update(path.read_bytes())
+    # Include per-output requires in stored hash
+    full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
     cache[output] = {
-        "input_hash": input_hash,
+        "input_hash": full_hash,
         "hash": h.hexdigest(),
         "mtime": stat.st_mtime,
         "size": stat.st_size,

@@ -434,6 +434,10 @@ impl Reader for DmgReader {
 
         Ok(to_read)
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: DmgReader only holds Arc and Vec, safe to send/share

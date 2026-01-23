@@ -1,9 +1,14 @@
 # Build output
 /build
-*.log
+
+# vim
 *.swp
+
+# debug stuff
+*.log
 *.img
 *.hdd
+*.cdi
 
 __pycache__
 .coverage

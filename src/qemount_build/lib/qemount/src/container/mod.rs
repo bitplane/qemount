@@ -54,6 +54,10 @@ impl Reader for BytesReader {
         buf[..to_read].copy_from_slice(&self.data[offset..offset + to_read]);
         Ok(to_read)
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.data.len() as u64)
+    }
 }
 
 // SAFETY: BytesReader only holds owned Vec<u8>, safe to send/share

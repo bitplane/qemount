@@ -446,6 +446,10 @@ impl Reader for VmdkReader {
             }
         }
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: VmdkReader only holds Arc and Vec, safe to send/share

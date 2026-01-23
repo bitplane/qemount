@@ -201,6 +201,10 @@ impl Reader for VhdReader {
             }
         }
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: VhdReader only holds Arc and Vec, safe to send/share

@@ -19,6 +19,7 @@ from pathlib import Path
 
 from .catalogue import load, build_provides_index, build_graph
 from .runner import run_build
+from .cache import load_cache, save_cache, hash_file
 from . import log as logsetup
 
 log = logging.getLogger(__name__)
@@ -134,6 +135,11 @@ def cmd_build(args, catalogue, context):
     catalogue_file = build_dir / "catalogue.json"
     catalogue_file.write_text(json.dumps(catalogue, indent=2))
     log.debug("Wrote catalogue to %s", catalogue_file)
+
+    # Update cache with new catalogue hash so dependents see the change
+    cache = load_cache(build_dir)
+    hash_file(catalogue_file, cache)
+    save_cache(build_dir, cache)
 
     success = run_build(
         targets,

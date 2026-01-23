@@ -139,6 +139,10 @@ impl Reader for CloopReader {
 
         Ok(to_read)
     }
+
+    fn size(&self) -> Option<u64> {
+        Some(self.virtual_size)
+    }
 }
 
 // SAFETY: CloopReader only holds Arc and Vec, safe to send/share

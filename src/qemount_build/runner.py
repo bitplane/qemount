@@ -255,13 +255,17 @@ def run_build(
         if not file_outputs:
             continue
 
+        # Helper to get per-output requires
+        def get_output_requires(output: str) -> list[str]:
+            return meta.get("provides", {}).get(output, {}).get("requires", [])
+
         # Find dirty outputs (missing or hash changed)
         if force:
             dirty_outputs = needed_outputs
         else:
             dirty_outputs = [
                 o for o in needed_outputs
-                if is_output_dirty(o, input_hash, cache, build_dir)
+                if is_output_dirty(o, input_hash, cache, build_dir, get_output_requires(o))
             ]
 
         if not dirty_outputs:
@@ -292,7 +296,7 @@ def run_build(
                 log.error("Output was not created: %s", output_name)
                 log.error("Container output:\n%s", output)
                 return False
-            update_output_hash(cache, output_name, input_hash, build_dir)
+            update_output_hash(cache, output_name, input_hash, build_dir, get_output_requires(output_name))
 
         # Save cache after each successful build step
         save_cache(build_dir, cache)
