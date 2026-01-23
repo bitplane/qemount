@@ -44,13 +44,9 @@ impl Container for CdiContainer {
     fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>> {
         let tracks = parse_cdi(&*reader)?;
 
-        // Return data tracks (Mode1/Mode2) as children
+        // Return all tracks as children (audio and data)
         let mut children = Vec::new();
         for (idx, track) in tracks.iter().enumerate() {
-            if track.mode == TrackMode::Audio {
-                continue;
-            }
-
             // Calculate track data size
             let data_size = track.length as u64 * track.sector_size as u64;
 

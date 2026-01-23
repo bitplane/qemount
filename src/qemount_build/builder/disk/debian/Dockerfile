@@ -7,6 +7,8 @@ RUN apt-get update && \
         tar \
         jq \
         cloop-utils \
+        espeak-ng \
+        ffmpeg \
         genromfs \
         hfsutils \
         makefs \

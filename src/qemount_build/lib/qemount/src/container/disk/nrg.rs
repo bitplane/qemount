@@ -41,19 +41,6 @@ impl TrackMode {
             _ => None,
         }
     }
-
-    fn sector_size(&self) -> u32 {
-        match self {
-            TrackMode::Mode1 | TrackMode::Mode2Xa1 => 2048,
-            TrackMode::Mode2 => 2336,
-            TrackMode::Mode2Raw | TrackMode::Audio | TrackMode::Mode1Raw |
-            TrackMode::Mode2Xa1Raw | TrackMode::Mode2Xa2Raw => 2352,
-        }
-    }
-
-    fn is_audio(&self) -> bool {
-        matches!(self, TrackMode::Audio)
-    }
 }
 
 /// Parsed track info
@@ -68,13 +55,9 @@ impl Container for NrgContainer {
     fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>> {
         let tracks = parse_nrg(&*reader)?;
 
-        // Return data tracks (not audio) as children
+        // Return all tracks as children (audio and data)
         let mut children = Vec::new();
         for (idx, track) in tracks.iter().enumerate() {
-            if track.mode.is_audio() {
-                continue;
-            }
-
             children.push(Child {
                 index: idx as u32,
                 offset: track.offset,
