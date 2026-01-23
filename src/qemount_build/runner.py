@@ -292,7 +292,7 @@ def run_build(
                 log.error("Output was not created: %s", output_name)
                 log.error("Container output:\n%s", output)
                 return False
-            update_output_hash(cache, output_name, input_hash)
+            update_output_hash(cache, output_name, input_hash, build_dir)
 
         # Save cache after each successful build step
         save_cache(build_dir, cache)

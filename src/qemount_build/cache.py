@@ -13,7 +13,7 @@ from pathlib import Path
 from .log import timed
 
 
-CACHE_FILE = "cache/hashes.json"
+CACHE_FILE = "cache/build_cache.json"
 
 
 def load_cache(build_dir: Path) -> dict:
@@ -132,13 +132,12 @@ def is_output_dirty(
     build_dir: Path,
 ) -> bool:
     """Check if a file output needs rebuilding."""
-    # Output doesn't exist
     if not (build_dir / output).exists():
         return True
-
-    # No stored hash or hash differs
-    stored = cache.get(output)
-    return stored is None or stored != input_hash
+    cached = cache.get(output)
+    if cached is None:
+        return True
+    return cached.get("input_hash") != input_hash
 
 
 def is_image_dirty(
@@ -163,20 +162,29 @@ def is_image_dirty(
     if cached.get("input_hash") != input_hash:
         return True
 
-    if not image_exists_fn(cached.get("image_id", "")):
+    if not image_exists_fn(cached.get("hash", "")):
         return True
 
     return False
 
 
-def update_output_hash(cache: dict, output: str, input_hash: str):
-    """Record the input hash for a built output."""
-    cache[output] = input_hash
+def update_output_hash(cache: dict, output: str, input_hash: str, build_dir: Path):
+    """Record hash state for a built file output."""
+    path = build_dir / output
+    stat = path.stat()
+    h = hashlib.md5()
+    h.update(path.read_bytes())
+    cache[output] = {
+        "input_hash": input_hash,
+        "hash": h.hexdigest(),
+        "mtime": stat.st_mtime,
+        "size": stat.st_size,
+    }
 
 
 def update_image_hash(cache: dict, tag: str, input_hash: str, image_id: str, host_arch: str):
-    """Record the build state for a docker image."""
+    """Record hash state for a docker image."""
     cache[f"docker:{tag}:{host_arch}"] = {
         "input_hash": input_hash,
-        "image_id": image_id,
+        "hash": image_id,
     }
