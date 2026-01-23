@@ -14,10 +14,10 @@
 
 - [x] client library
   - [x] detection
-    - [ ] image file
+    - [x] image file
     - [x] partition format
     - [x] file system
-    - [ ] nested detection
+    - [x] nested detection
   - [ ] qemu wrapper lib
 - [ ] filesystem catalogue
   - [x] documentation as code (front-matter)
