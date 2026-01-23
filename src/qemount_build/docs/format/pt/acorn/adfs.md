@@ -6,6 +6,10 @@ related:
   - format/fs/adfs
 detect:
   all:
+    - offset: 0xC00
+      type: checksum
+      algorithm: adfs
+      length: 512
     - offset: 0xDC1
       type: byte
       name: secspertrack
