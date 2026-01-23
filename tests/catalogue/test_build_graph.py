@@ -152,3 +152,21 @@ def test_build_graph_multiple_outputs_same_path():
     assert "lib" in graph["nodes"]
     assert "lib-win" in graph["nodes"]
     assert {"bin-linux", "bin-windows"} == graph["needed"]["bin"]
+
+
+def test_build_graph_file_dependency_in_build_dir():
+    """File dependencies in build_dir are allowed without catalogue entry."""
+    cat = load(DATA_DIR / "deps")
+    ctx = {}
+
+    # Add a requires for a file that doesn't have a provider
+    cat["paths"]["a"]["meta"]["requires"]["external-file.bin"] = {}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # Create the file in build_dir
+        (Path(tmp) / "external-file.bin").write_bytes(b"data")
+
+        # Should succeed - file exists in build_dir
+        graph = build_graph(["a-output"], cat, ctx, Path(tmp))
+
+    assert "a" in graph["nodes"]

@@ -31,3 +31,15 @@ def test_build_provides_index_different_arch():
     assert "output/x86_64/thing" in index_x86
     assert "output/aarch64/thing" in index_arm
     assert "output/x86_64/thing" not in index_arm
+
+
+def test_build_provides_index_duplicate_provider():
+    """Duplicate providers raise ValueError."""
+    cat = load(DATA_DIR / "deps")
+    ctx = {}
+
+    # Inject duplicate provider
+    cat["paths"]["a"]["meta"]["provides"]["b-output"] = {}
+
+    with pytest.raises(ValueError, match="Duplicate provider"):
+        build_provides_index(cat, ctx)

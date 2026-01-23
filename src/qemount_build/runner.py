@@ -161,6 +161,25 @@ def get_file_provides(provides: list) -> list:
     return [p for p in provides if not p.startswith("docker:")]
 
 
+def validate_path_provides(
+    path: str,
+    docker_tags: list,
+    file_outputs: list,
+    has_dockerfile: bool,
+    runs_on_tag: str | None,
+) -> str | None:
+    """
+    Validate that a path's provides are buildable.
+
+    Returns error message if invalid, None if valid.
+    """
+    if docker_tags and not has_dockerfile:
+        return f"{path} provides docker image but has no Dockerfile"
+    if file_outputs and not has_dockerfile and not runs_on_tag:
+        return f"{path} provides files but has no Dockerfile or runs_on"
+    return None
+
+
 def run_build(
     targets: list[str],
     catalogue: dict,
@@ -204,14 +223,12 @@ def run_build(
         input_hash = hash_path_inputs(path, pkg_dir, resolved, dep_hashes, build_dir, cache)
         dep_hashes[path] = input_hash
 
-        # Validate: docker provides requires Dockerfile
-        if docker_tags and not dockerfile.exists():
-            log.error("%s provides docker image but has no Dockerfile", path)
-            return False
-
-        # Validate: file provides requires Dockerfile or runs_on
-        if file_outputs and not dockerfile.exists() and not runs_on_tag:
-            log.error("%s provides files but has no Dockerfile or runs_on", path)
+        # Validate provides are buildable
+        error = validate_path_provides(
+            path, docker_tags, file_outputs, dockerfile.exists(), runs_on_tag
+        )
+        if error:
+            log.error(error)
             return False
 
         # Build image if Dockerfile exists

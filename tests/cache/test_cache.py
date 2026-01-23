@@ -6,6 +6,7 @@ from pathlib import Path
 from qemount_build.cache import (
     load_cache,
     save_cache,
+    hash_file,
     hash_files,
     hash_path_inputs,
     is_output_dirty,
@@ -235,6 +236,66 @@ def test_hash_path_inputs_file_dep():
         h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
 
         (build_dir / "catalogue.json").write_text('{"version": 2}')
+        cache.clear()
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
+
+        assert h1 != h2
+
+
+def test_hash_file_cache_hit():
+    """hash_file uses cached hash when mtime and size unchanged."""
+    with tempfile.TemporaryDirectory() as tmp:
+        f = Path(tmp) / "test.txt"
+        f.write_text("content")
+
+        cache = {}
+        h1 = hash_file(f, cache)
+
+        # Cache should have entry
+        assert len(cache) == 1
+
+        # Second call should use cache (same hash returned)
+        h2 = hash_file(f, cache)
+        assert h1 == h2
+
+
+def test_hash_path_inputs_build_requires_file():
+    """hash_path_inputs includes build_requires files."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+        (pkg_dir / "mypath").mkdir()
+        (build_dir / "data.bin").write_bytes(b"binary data")
+
+        resolved = {"build_requires": {"data.bin": {}}}
+        cache = {}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
+
+        (build_dir / "data.bin").write_bytes(b"different")
+        cache.clear()
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
+
+        assert h1 != h2
+
+
+def test_hash_path_inputs_build_requires_dir():
+    """hash_path_inputs includes build_requires directories."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+        (pkg_dir / "mypath").mkdir()
+        (build_dir / "subdir").mkdir()
+        (build_dir / "subdir/file.txt").write_text("hello")
+
+        resolved = {"build_requires": {"subdir": {}}}
+        cache = {}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
+
+        (build_dir / "subdir/file.txt").write_text("world")
         cache.clear()
         h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
 
