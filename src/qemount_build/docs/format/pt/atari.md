@@ -15,6 +15,32 @@ detect:
         length: 3
         value: "^[A-Za-z0-9]{3}$"
         name: part0_id
+        then:
+          # First partition starts near beginning (after boot sector)
+          - offset: 0x1ca
+            type: be32
+            op: ">"
+            value: 0
+            name: part0_start_nonzero
+            then:
+              - offset: 0x1ca
+                type: be32
+                op: "<"
+                value: 0x100
+                name: part0_start_near_beginning
+                then:
+                  # Partition size must be non-zero and reasonable (<1GB)
+                  - offset: 0x1ce
+                    type: be32
+                    op: ">"
+                    value: 0
+                    name: part0_size_nonzero
+                    then:
+                      - offset: 0x1ce
+                        type: be32
+                        op: "<"
+                        value: 0x200000
+                        name: part0_size_reasonable
 ---
 
 # Atari AHDI (Atari Hard Disk Interface)
