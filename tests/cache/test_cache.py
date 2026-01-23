@@ -7,7 +7,6 @@ from qemount_build.cache import (
     load_cache,
     save_cache,
     hash_files,
-    hash_build_requires,
     hash_path_inputs,
     is_output_dirty,
     is_image_dirty,
@@ -36,8 +35,9 @@ def test_save_and_load_cache():
 def test_hash_files_empty_dir():
     """Hashing empty directory returns consistent hash."""
     with tempfile.TemporaryDirectory() as tmp:
-        h1 = hash_files(Path(tmp))
-        h2 = hash_files(Path(tmp))
+        cache = {}
+        h1 = hash_files(Path(tmp), cache)
+        h2 = hash_files(Path(tmp), cache)
         assert h1 == h2
 
 
@@ -45,11 +45,13 @@ def test_hash_files_content():
     """Hashing includes file content."""
     with tempfile.TemporaryDirectory() as tmp:
         d = Path(tmp)
+        cache = {}
         (d / "a.txt").write_text("hello")
-        h1 = hash_files(d)
+        h1 = hash_files(d, cache)
 
         (d / "a.txt").write_text("world")
-        h2 = hash_files(d)
+        cache.clear()  # Clear cache to force rehash
+        h2 = hash_files(d, cache)
 
         assert h1 != h2
 
@@ -65,7 +67,8 @@ def test_hash_files_includes_name():
         (d1 / "a.txt").write_text("hello")
         (d2 / "b.txt").write_text("hello")
 
-        assert hash_files(d1) != hash_files(d2)
+        cache = {}
+        assert hash_files(d1, cache) != hash_files(d2, cache)
 
 
 def test_is_output_dirty_missing():
@@ -99,40 +102,40 @@ def test_is_output_dirty_clean():
 
 def test_is_image_dirty_no_cache():
     """Image with no cache is dirty."""
-    assert is_image_dirty("my/image", "abc", {}, lambda x: True)
+    assert is_image_dirty("my/image", "abc", {}, lambda x: True, "x86_64")
 
 
 def test_is_image_dirty_hash_changed():
-    """Image with changed build_requires is dirty."""
+    """Image with changed input_hash is dirty."""
     cache = {
-        "docker:my/image": {
-            "build_requires_hash": "old_hash",
+        "docker:my/image:x86_64": {
+            "input_hash": "old_hash",
             "image_id": "sha256:abc",
         }
     }
-    assert is_image_dirty("my/image", "new_hash", cache, lambda x: True)
+    assert is_image_dirty("my/image", "new_hash", cache, lambda x: True, "x86_64")
 
 
 def test_is_image_dirty_image_missing():
     """Image that doesn't exist is dirty."""
     cache = {
-        "docker:my/image": {
-            "build_requires_hash": "abc",
+        "docker:my/image:x86_64": {
+            "input_hash": "abc",
             "image_id": "sha256:abc",
         }
     }
-    assert is_image_dirty("my/image", "abc", cache, lambda x: False)
+    assert is_image_dirty("my/image", "abc", cache, lambda x: False, "x86_64")
 
 
 def test_is_image_dirty_clean():
     """Image with matching hash and existing is clean."""
     cache = {
-        "docker:my/image": {
-            "build_requires_hash": "abc",
+        "docker:my/image:x86_64": {
+            "input_hash": "abc",
             "image_id": "sha256:abc",
         }
     }
-    assert not is_image_dirty("my/image", "abc", cache, lambda x: True)
+    assert not is_image_dirty("my/image", "abc", cache, lambda x: True, "x86_64")
 
 
 def test_update_output_hash():
@@ -145,57 +148,19 @@ def test_update_output_hash():
 def test_update_image_hash():
     """update_image_hash stores build state in cache."""
     cache = {}
-    update_image_hash(cache, "my/image", "br_hash", "sha256:abc")
-    assert cache["docker:my/image"] == {
-        "build_requires_hash": "br_hash",
+    update_image_hash(cache, "my/image", "input_hash", "sha256:abc", "x86_64")
+    assert cache["docker:my/image:x86_64"] == {
+        "input_hash": "input_hash",
         "image_id": "sha256:abc",
     }
 
 
 def test_hash_files_nonexistent():
     """Hashing non-existent directory returns consistent empty hash."""
-    h1 = hash_files(Path("/nonexistent/path/that/does/not/exist"))
-    h2 = hash_files(Path("/another/nonexistent/path"))
+    cache = {}
+    h1 = hash_files(Path("/nonexistent/path/that/does/not/exist"), cache)
+    h2 = hash_files(Path("/another/nonexistent/path"), cache)
     assert h1 == h2  # Both return hash of empty content
-
-
-def test_hash_build_requires_file():
-    """hash_build_requires includes file content."""
-    with tempfile.TemporaryDirectory() as tmp:
-        build_dir = Path(tmp)
-        (build_dir / "data").mkdir()
-        (build_dir / "data/file.bin").write_bytes(b"content")
-
-        h1 = hash_build_requires(["data/file.bin"], build_dir)
-
-        (build_dir / "data/file.bin").write_bytes(b"different")
-        h2 = hash_build_requires(["data/file.bin"], build_dir)
-
-        assert h1 != h2
-
-
-def test_hash_build_requires_dir():
-    """hash_build_requires includes directory contents."""
-    with tempfile.TemporaryDirectory() as tmp:
-        build_dir = Path(tmp)
-        (build_dir / "data/subdir").mkdir(parents=True)
-        (build_dir / "data/subdir/a.txt").write_text("hello")
-
-        h1 = hash_build_requires(["data/subdir"], build_dir)
-
-        (build_dir / "data/subdir/a.txt").write_text("world")
-        h2 = hash_build_requires(["data/subdir"], build_dir)
-
-        assert h1 != h2
-
-
-def test_hash_build_requires_missing():
-    """hash_build_requires handles missing files gracefully."""
-    with tempfile.TemporaryDirectory() as tmp:
-        build_dir = Path(tmp)
-        # Should not raise, just skip missing
-        h = hash_build_requires(["does/not/exist"], build_dir)
-        assert isinstance(h, str)
 
 
 def test_hash_path_inputs_context():
@@ -211,11 +176,13 @@ def test_hash_path_inputs_context():
 
         resolved = {"env": {"FOO": "bar"}}
         dep_hashes = {}
+        cache = {}
 
-        h1 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir)
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir, cache)
 
         (pkg_dir / "mypath/Dockerfile").write_text("FROM debian")
-        h2 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir)
+        cache.clear()
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, dep_hashes, build_dir, cache)
 
         assert h1 != h2
 
@@ -229,8 +196,9 @@ def test_hash_path_inputs_env():
         build_dir.mkdir()
         (pkg_dir / "mypath").mkdir()
 
-        h1 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "1"}}, {}, build_dir)
-        h2 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "2"}}, {}, build_dir)
+        cache = {}
+        h1 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "1"}}, {}, build_dir, cache)
+        h2 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "2"}}, {}, build_dir, cache)
 
         assert h1 != h2
 
@@ -245,8 +213,9 @@ def test_hash_path_inputs_requires():
         (pkg_dir / "mypath").mkdir()
 
         resolved = {"requires": {"dep1": {}}}
-        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_a"}, build_dir)
-        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_b"}, build_dir)
+        cache = {}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_a"}, build_dir, cache)
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {"dep1": "hash_b"}, build_dir, cache)
 
         assert h1 != h2
 
@@ -262,9 +231,11 @@ def test_hash_path_inputs_file_dep():
         (build_dir / "catalogue.json").write_text('{"version": 1}')
 
         resolved = {"requires": {"catalogue.json": {}}}
-        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir)
+        cache = {}
+        h1 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
 
         (build_dir / "catalogue.json").write_text('{"version": 2}')
-        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir)
+        cache.clear()
+        h2 = hash_path_inputs("mypath", pkg_dir, resolved, {}, build_dir, cache)
 
         assert h1 != h2
