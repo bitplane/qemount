@@ -16,6 +16,14 @@ from .log import timed
 CACHE_FILE = "cache/build_cache.json"
 
 
+def strip_ref_prefix(ref: str) -> str:
+    """Strip docker: or file: prefix from a ref."""
+    for prefix in ("docker:", "file:"):
+        if ref.startswith(prefix):
+            return ref[len(prefix):]
+    return ref
+
+
 def load_cache(build_dir: Path) -> dict:
     """Load hash cache from disk."""
     path = build_dir / CACHE_FILE
@@ -100,8 +108,7 @@ def hash_path_inputs(
     # Hash dependency hashes (Merkle tree) or file contents
     for req in sorted(resolved.get("requires", {}).keys()):
         h.update(req.encode())
-        # Strip docker: prefix for dep_hashes lookup (paths don't include prefix)
-        dep_key = req[7:] if req.startswith("docker:") else req
+        dep_key = strip_ref_prefix(req)
         if dep_key in dep_hashes:
             h.update(dep_hashes[dep_key].encode())
         else:
