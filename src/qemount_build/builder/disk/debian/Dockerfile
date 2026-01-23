@@ -13,6 +13,7 @@ RUN apt-get update && \
         hfsutils \
         makefs \
         parted \
+        python3 \
         qemu-utils \
     && rm -rf /var/lib/apt/lists/*
 
