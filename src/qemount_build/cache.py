@@ -208,14 +208,14 @@ def update_output_hash(
 ):
     """Record hash state for a built file output."""
     path = build_dir / output
+    # Update file cache entry so downstream deps see the new hash
+    file_hash = hash_file(path, cache)
     stat = path.stat()
-    h = hashlib.md5()
-    h.update(path.read_bytes())
     # Include per-output requires in stored hash
     full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
     cache[output] = {
         "input_hash": full_hash,
-        "hash": h.hexdigest(),
+        "hash": file_hash,
         "mtime": stat.st_mtime,
         "size": stat.st_size,
     }

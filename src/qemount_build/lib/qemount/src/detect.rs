@@ -356,9 +356,14 @@ fn detect_tree_recursive(
 
     let mut results = Vec::new();
 
-    for format in detect_all_dyn(&*reader) {
+    // Iterate in priority order, processing each match immediately (depth-first)
+    for (format, detect) in FORMATS.formats.iter() {
+        if !matches_detect_dyn(&*reader, detect) {
+            continue;
+        }
+
         // Key by (stream, offset, format) - same bytes get deduped, different bytes don't
-        if !seen.insert((stream.clone(), offset, format)) {
+        if !seen.insert((stream.clone(), offset, *format)) {
             continue;
         }
 
@@ -400,23 +405,13 @@ fn detect_tree_recursive(
         };
 
         results.push(DetectNode {
-            format,
+            format: *format,
             index,
             children,
         });
     }
 
     results
-}
-
-/// detect_all for trait objects
-fn detect_all_dyn(reader: &dyn Reader) -> Vec<&'static CStr> {
-    FORMATS
-        .formats
-        .iter()
-        .filter(|(_, detect)| matches_detect_dyn(reader, detect))
-        .map(|(name, _)| *name)
-        .collect()
 }
 
 fn matches_detect_dyn(reader: &dyn Reader, detect: &Detect) -> bool {
