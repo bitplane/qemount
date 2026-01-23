@@ -2,23 +2,10 @@
  * detect - Simple format detection CLI tool
  *
  * Links against libqemount.a via C to validate the C ABI.
- * Note: Currently Unix only (uses file descriptors).
  */
 
-#ifdef _WIN32
-#include <stdio.h>
-int main(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
-    fprintf(stderr, "detect: not supported on Windows yet\n");
-    return 1;
-}
-#else
-
-#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <unistd.h>
 #include "qemount.h"
 
 static void print_format_tree(const char *format, uint32_t index,
@@ -48,15 +35,8 @@ int main(int argc, char **argv) {
         if (argc > 2)
             printf("%s:\n", path);
 
-        int fd = open(path, O_RDONLY);
-        if (fd < 0) {
-            perror(path);
-            continue;
-        }
-
         int count = 0;
-        qemount_detect_tree_fd(fd, print_format_tree, &count);
-        close(fd);
+        qemount_detect_tree(path, print_format_tree, &count);
         total += count;
 
         if (argc > 2 && i < argc - 1)
@@ -65,4 +45,3 @@ int main(int argc, char **argv) {
 
     return total > 0 ? 0 : 1;
 }
-#endif

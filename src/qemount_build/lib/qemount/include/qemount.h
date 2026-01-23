@@ -8,28 +8,7 @@ extern "C" {
 #endif
 
 /**
- * Callback type for qemount_detect_fd.
- * Called once for each matching format.
- */
-typedef void (*qemount_detect_callback)(const char* format, void* userdata);
-
-#ifndef _WIN32
-/**
- * Detect all matching formats from file descriptor.
- * Calls the callback for each matching format with its name.
- * Uses pread() internally - does not change file position.
- * Format strings are static - do not free.
- *
- * Note: Unix only. Not available on Windows.
- */
-void qemount_detect_fd(
-    int fd,
-    qemount_detect_callback callback,
-    void* userdata
-);
-
-/**
- * Callback type for qemount_detect_tree_fd.
+ * Callback type for qemount_detect_tree.
  * Called once for each node in the detection tree.
  *
  * @param format Format name (e.g., "arc/gzip", "fs/ext4")
@@ -45,18 +24,19 @@ typedef void (*qemount_detect_tree_callback)(
 );
 
 /**
- * Detect format tree from file descriptor.
+ * Detect format tree from file path.
  * Recursively detects formats in containers (gzip, tar, partition tables, etc.)
  * Calls the callback for each detected format with its position in the tree.
  *
- * Note: Unix only. Not available on Windows.
+ * @param path Path to file to detect (UTF-8 encoded)
+ * @param callback Function called for each detected format
+ * @param userdata Passed through to callback
  */
-void qemount_detect_tree_fd(
-    int fd,
+void qemount_detect_tree(
+    const char* path,
     qemount_detect_tree_callback callback,
     void* userdata
 );
-#endif
 
 /**
  * Get library version string.

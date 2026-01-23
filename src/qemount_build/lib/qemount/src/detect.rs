@@ -16,33 +16,6 @@ pub trait Reader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize>;
 }
 
-/// Returns all matching format names
-pub fn detect_all(reader: &impl Reader) -> Vec<&'static CStr> {
-    FORMATS
-        .formats
-        .iter()
-        .filter(|(_, detect)| matches_detect(reader, detect))
-        .map(|(name, _)| *name)
-        .collect()
-}
-
-fn matches_detect(reader: &impl Reader, detect: &Detect) -> bool {
-    match detect {
-        Detect::All { all } => all.iter().all(|r| matches_rule(reader, r)),
-        Detect::Any { any } => any.iter().any(|r| matches_rule(reader, r)),
-    }
-}
-
-fn matches_rule(reader: &impl Reader, rule: &Rule) -> bool {
-    match rule {
-        Rule::Any { any } => any.iter().any(|r| matches_rule(reader, r)),
-        Rule::All { all } => all.iter().all(|r| matches_rule(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
-            matches_leaf(reader, *offset as u64, typ, value.as_ref(), op.as_deref(), *mask, *length, then_rules.as_ref(), algorithm.as_deref(), key.as_deref(), |r, rule| matches_rule(r, rule))
-        }
-    }
-}
-
 fn matches_leaf<R, F>(
     reader: &R,
     offset: u64,

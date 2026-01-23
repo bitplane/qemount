@@ -5,56 +5,23 @@ mod container;
 mod detect;
 mod format;
 
-use std::ffi::c_char;
-use std::ffi::c_void;
-use std::io;
-use std::sync::Arc;
+use std::ffi::{c_char, c_void, CStr};
+use std::fs::File;
+use std::io::{self, Read, Seek, SeekFrom};
+use std::sync::{Arc, Mutex};
 
 use detect::Reader;
 
-/// File descriptor reader - wraps a raw fd and uses pread for positional reads
-#[cfg(unix)]
-struct FdReader {
-    fd: std::os::unix::io::RawFd,
+/// File reader - wraps a File with mutex for thread-safe positional reads
+struct FileReader {
+    file: Mutex<File>,
 }
 
-#[cfg(unix)]
-impl Reader for FdReader {
+impl Reader for FileReader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize> {
-        let n = unsafe {
-            libc::pread(
-                self.fd,
-                buf.as_mut_ptr() as *mut libc::c_void,
-                buf.len(),
-                offset as libc::off_t,
-            )
-        };
-        if n < 0 {
-            Err(io::Error::last_os_error())
-        } else {
-            Ok(n as usize)
-        }
-    }
-}
-
-/// Callback type for qemount_detect_fd
-pub type DetectCallback = extern "C" fn(format: *const c_char, userdata: *mut c_void);
-
-/// Detect all matching formats from file descriptor.
-/// Calls the callback for each matching format with its name.
-/// Uses pread() internally - does not change file position.
-/// Format strings are static - do not free.
-#[cfg(unix)]
-#[no_mangle]
-pub extern "C" fn qemount_detect_fd(
-    fd: std::os::unix::io::RawFd,
-    callback: DetectCallback,
-    userdata: *mut c_void,
-) {
-    let reader = FdReader { fd };
-
-    for cstr in detect::detect_all(&reader) {
-        callback(cstr.as_ptr(), userdata);
+        let mut file = self.file.lock().unwrap();
+        file.seek(SeekFrom::Start(offset))?;
+        file.read(buf)
     }
 }
 
@@ -66,7 +33,7 @@ pub extern "C" fn qemount_version() -> *const c_char {
     VERSION.as_ptr() as *const c_char
 }
 
-/// Callback type for qemount_detect_tree_fd
+/// Callback type for qemount_detect_tree
 /// Called for each node in the detection tree.
 /// - format: format name (static, do not free)
 /// - index: index within parent (0 for root level)
@@ -75,17 +42,28 @@ pub extern "C" fn qemount_version() -> *const c_char {
 pub type DetectTreeCallback =
     extern "C" fn(format: *const c_char, index: u32, depth: u32, userdata: *mut c_void);
 
-/// Detect format tree from file descriptor.
+/// Detect format tree from file path.
 /// Recursively detects formats in containers (gzip, tar, partition tables, etc.)
 /// Calls the callback for each detected format with its position in the tree.
-#[cfg(unix)]
 #[no_mangle]
-pub extern "C" fn qemount_detect_tree_fd(
-    fd: std::os::unix::io::RawFd,
+pub extern "C" fn qemount_detect_tree(
+    path: *const c_char,
     callback: DetectTreeCallback,
     userdata: *mut c_void,
 ) {
-    let reader: Arc<dyn detect::Reader + Send + Sync> = Arc::new(FdReader { fd });
+    let path = match unsafe { CStr::from_ptr(path) }.to_str() {
+        Ok(s) => s,
+        Err(_) => return,
+    };
+
+    let file = match File::open(path) {
+        Ok(f) => f,
+        Err(_) => return,
+    };
+
+    let reader: Arc<dyn Reader + Send + Sync> = Arc::new(FileReader {
+        file: Mutex::new(file),
+    });
     let tree = detect::detect_tree(reader);
 
     fn walk_tree(
