@@ -89,7 +89,7 @@ def test_is_output_dirty_hash_mismatch():
     """Output with different hash is dirty."""
     with tempfile.TemporaryDirectory() as tmp:
         (Path(tmp) / "foo").write_text("data")
-        cache = {"foo": "old_hash"}
+        cache = {"foo": {"input_hash": "old_hash", "hash": "abc", "mtime": 0, "size": 4}}
         assert is_output_dirty("foo", "new_hash", cache, Path(tmp))
 
 
@@ -97,7 +97,7 @@ def test_is_output_dirty_clean():
     """Output with matching hash is clean."""
     with tempfile.TemporaryDirectory() as tmp:
         (Path(tmp) / "foo").write_text("data")
-        cache = {"foo": "abc123"}
+        cache = {"foo": {"input_hash": "abc123", "hash": "xyz", "mtime": 0, "size": 4}}
         assert not is_output_dirty("foo", "abc123", cache, Path(tmp))
 
 
@@ -111,7 +111,7 @@ def test_is_image_dirty_hash_changed():
     cache = {
         "docker:my/image:x86_64": {
             "input_hash": "old_hash",
-            "image_id": "sha256:abc",
+            "hash": "sha256:abc",
         }
     }
     assert is_image_dirty("my/image", "new_hash", cache, lambda x: True, "x86_64")
@@ -122,7 +122,7 @@ def test_is_image_dirty_image_missing():
     cache = {
         "docker:my/image:x86_64": {
             "input_hash": "abc",
-            "image_id": "sha256:abc",
+            "hash": "sha256:abc",
         }
     }
     assert is_image_dirty("my/image", "abc", cache, lambda x: False, "x86_64")
@@ -133,17 +133,27 @@ def test_is_image_dirty_clean():
     cache = {
         "docker:my/image:x86_64": {
             "input_hash": "abc",
-            "image_id": "sha256:abc",
+            "hash": "sha256:abc",
         }
     }
     assert not is_image_dirty("my/image", "abc", cache, lambda x: True, "x86_64")
 
 
 def test_update_output_hash():
-    """update_output_hash stores hash in cache."""
-    cache = {}
-    update_output_hash(cache, "foo/bar", "hash123")
-    assert cache["foo/bar"] == "hash123"
+    """update_output_hash stores hash state in cache."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "foo").mkdir()
+        (build_dir / "foo/bar").write_text("content")
+
+        cache = {}
+        update_output_hash(cache, "foo/bar", "input123", build_dir)
+
+        entry = cache["foo/bar"]
+        assert entry["input_hash"] == "input123"
+        assert "hash" in entry
+        assert "mtime" in entry
+        assert "size" in entry
 
 
 def test_update_image_hash():
@@ -152,7 +162,7 @@ def test_update_image_hash():
     update_image_hash(cache, "my/image", "input_hash", "sha256:abc", "x86_64")
     assert cache["docker:my/image:x86_64"] == {
         "input_hash": "input_hash",
-        "image_id": "sha256:abc",
+        "hash": "sha256:abc",
     }
 
 
