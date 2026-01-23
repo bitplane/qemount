@@ -325,6 +325,9 @@ pub struct DetectNode {
 /// Maximum recursion depth for nested containers
 const MAX_DEPTH: u32 = 16;
 
+/// Fallback format for unrecognized data
+static DATA_FORMAT: &std::ffi::CStr = c"data";
+
 /// Check if format is a transform (creates new byte stream) vs slice (same bytes)
 fn is_transform(format: &str) -> bool {
     format.starts_with("arc/")
@@ -370,14 +373,24 @@ fn detect_tree_recursive(
                     };
                     kids.into_iter()
                         .flat_map(|child| {
-                            detect_tree_recursive(
-                                child.reader,
+                            let detected = detect_tree_recursive(
+                                Arc::clone(&child.reader),
                                 child.index,
                                 depth + 1,
                                 child_stream.clone(),
                                 child.offset,
                                 seen,
-                            )
+                            );
+                            // If nothing detected, emit "data" as fallback
+                            if detected.is_empty() {
+                                vec![DetectNode {
+                                    format: DATA_FORMAT,
+                                    index: child.index,
+                                    children: vec![],
+                                }]
+                            } else {
+                                detected
+                            }
                         })
                         .collect()
                 }
