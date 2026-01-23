@@ -100,8 +100,10 @@ def hash_path_inputs(
     # Hash dependency hashes (Merkle tree) or file contents
     for req in sorted(resolved.get("requires", {}).keys()):
         h.update(req.encode())
-        if req in dep_hashes:
-            h.update(dep_hashes[req].encode())
+        # Strip docker: prefix for dep_hashes lookup (paths don't include prefix)
+        dep_key = req[7:] if req.startswith("docker:") else req
+        if dep_key in dep_hashes:
+            h.update(dep_hashes[dep_key].encode())
         else:
             req_path = build_dir / req
             if req_path.exists():
