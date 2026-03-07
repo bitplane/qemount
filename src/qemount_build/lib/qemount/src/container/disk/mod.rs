@@ -6,6 +6,7 @@
 pub mod bochs;
 pub mod cdi;
 pub mod cloop;
+pub mod dms;
 pub mod dmg;
 pub mod nrg;
 pub mod parallels;
