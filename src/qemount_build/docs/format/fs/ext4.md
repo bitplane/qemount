@@ -2,6 +2,7 @@
 title: ext4
 created: 2008
 related:
+  - format/fs/ext
   - format/fs/ext2
   - format/fs/ext3
   - format/fs/xfs

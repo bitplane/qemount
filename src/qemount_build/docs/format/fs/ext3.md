@@ -2,6 +2,7 @@
 title: ext3
 created: 2001
 related:
+  - format/fs/ext
   - format/fs/ext2
   - format/fs/ext4
 detect:

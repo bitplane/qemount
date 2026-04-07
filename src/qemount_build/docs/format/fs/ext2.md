@@ -2,6 +2,7 @@
 title: ext2
 created: 1993
 related:
+  - format/fs/ext
   - format/fs/ext3
   - format/fs/ext4
   - format/fs/minix
