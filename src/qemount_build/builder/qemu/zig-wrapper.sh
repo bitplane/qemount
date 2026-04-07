@@ -5,29 +5,35 @@
 TARGET=$1
 OUTDIR=$2
 
+# Find zig binary - pip package installs entry point as "python-zig"
+ZIG=$(command -v zig 2>/dev/null || command -v python-zig 2>/dev/null) || {
+    echo "error: zig not found (install via: pip install ziglang)" >&2
+    exit 1
+}
+
 mkdir -p $OUTDIR
 
 cat > $OUTDIR/cc << EOF
 #!/bin/sh
-exec zig cc -target $TARGET "\$@"
+exec $ZIG cc -target $TARGET "\$@"
 EOF
 chmod +x $OUTDIR/cc
 
 cat > $OUTDIR/c++ << EOF
 #!/bin/sh
-exec zig c++ -target $TARGET "\$@"
+exec $ZIG c++ -target $TARGET "\$@"
 EOF
 chmod +x $OUTDIR/c++
 
 cat > $OUTDIR/ar << EOF
 #!/bin/sh
-exec zig ar "\$@"
+exec $ZIG ar "\$@"
 EOF
 chmod +x $OUTDIR/ar
 
 cat > $OUTDIR/ranlib << EOF
 #!/bin/sh
-exec zig ranlib "\$@"
+exec $ZIG ranlib "\$@"
 EOF
 chmod +x $OUTDIR/ranlib
 
