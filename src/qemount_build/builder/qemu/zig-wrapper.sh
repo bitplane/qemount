@@ -1,6 +1,10 @@
 #!/bin/bash
 # Creates zig wrapper scripts for a given target
 # Usage: zig-wrapper.sh <target> <output-dir>
+#
+# Provides a complete toolchain using zig as the backend, so no system
+# compiler or binutils are needed. This avoids mismatches between system
+# tools (e.g. GNU ar creating thin archives that zig's lld can't read).
 
 TARGET=$1
 OUTDIR=$2
@@ -17,31 +21,43 @@ cat > $OUTDIR/cc << EOF
 #!/bin/sh
 exec $ZIG cc -target $TARGET "\$@"
 EOF
-chmod +x $OUTDIR/cc
 
 cat > $OUTDIR/c++ << EOF
 #!/bin/sh
 exec $ZIG c++ -target $TARGET "\$@"
 EOF
-chmod +x $OUTDIR/c++
 
+# Meson passes 'T' flag to ar requesting thin archives, but zig's lld
+# can't link them. Strip the T from the flags argument.
 cat > $OUTDIR/ar << EOF
 #!/bin/sh
-exec $ZIG ar "\$@"
+flags=\$1; shift
+flags=\$(echo "\$flags" | tr -d T)
+exec $ZIG ar \$flags "\$@"
 EOF
-chmod +x $OUTDIR/ar
 
 cat > $OUTDIR/ranlib << EOF
 #!/bin/sh
 exec $ZIG ranlib "\$@"
 EOF
-chmod +x $OUTDIR/ranlib
 
-# zig doesn't have strip, use true as no-op
+cat > $OUTDIR/ld << EOF
+#!/bin/sh
+exec $ZIG ld.lld "\$@"
+EOF
+
+cat > $OUTDIR/objcopy << EOF
+#!/bin/sh
+exec $ZIG objcopy "\$@"
+EOF
+
+# zig objcopy supports --strip-all
 cat > $OUTDIR/strip << EOF
 #!/bin/sh
-exit 0
+exec $ZIG objcopy --strip-all "\$@" 2>/dev/null || true
 EOF
-chmod +x $OUTDIR/strip
+
+chmod +x $OUTDIR/cc $OUTDIR/c++ $OUTDIR/ar $OUTDIR/ranlib \
+         $OUTDIR/ld $OUTDIR/objcopy $OUTDIR/strip
 
 echo "Created zig wrappers for $TARGET in $OUTDIR"

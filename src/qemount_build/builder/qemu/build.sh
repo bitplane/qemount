@@ -20,12 +20,15 @@ build_deps_for_target() {
 
     echo "=== Building deps for $TARGET ==="
 
-    # Use zig wrapper scripts
+    # Use zig wrapper scripts for the entire toolchain
     export PATH="$WRAPDIR:$PATH"
     export CC=$WRAPDIR/cc
     export CXX=$WRAPDIR/c++
     export AR=$WRAPDIR/ar
     export RANLIB=$WRAPDIR/ranlib
+    export LD=$WRAPDIR/ld
+    export STRIP=$WRAPDIR/strip
+    export OBJCOPY=$WRAPDIR/objcopy
 
     # Build libffi
     echo "--- Building libffi for $TARGET ---"
@@ -42,6 +45,7 @@ build_deps_for_target() {
 
     # Build pixman
     echo "--- Building pixman for $TARGET ---"
+    export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PREFIX/lib64/pkgconfig
     cd /deps/pixman-0.44.2
     rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
     meson setup \
@@ -50,12 +54,15 @@ build_deps_for_target() {
         --default-library=static \
         -Dgtk=disabled \
         -Dlibpng=disabled \
+        -Dtests=disabled \
         ..
     ninja -j$JOBS
     ninja install
 
     # Build glib (minimal, no gio)
     echo "--- Building glib for $TARGET ---"
+    export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PREFIX/lib64/pkgconfig
+    export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
     cd /deps/glib-2.82.4
     rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
     meson setup \
@@ -63,6 +70,7 @@ build_deps_for_target() {
         --cross-file=/work/zig-$TARGET.cross \
         --default-library=static \
         -Dtests=false \
+        -Dintrospection=disabled \
         -Dglib_debug=disabled \
         -Dgio_module_dir=/nonexistent \
         ..
