@@ -34,6 +34,16 @@ impl Container for CompressContainer {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid max_bits"));
         }
 
+        // weezl only supports up to 12-bit codes (GIF/TIFF LZW).
+        // Unix compress supports up to 16-bit. Bail until we have a
+        // proper LZW implementation that handles the full range.
+        if max_bits > 12 {
+            return Err(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "compress: code size >12 not supported by weezl",
+            ));
+        }
+
         // Decompress using LZW
         // Unix compress uses LSB-first bit order
         let mut decoder = Decoder::new(BitOrder::Lsb, max_bits);

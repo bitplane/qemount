@@ -233,7 +233,7 @@ def run_build(
 
         # Build image if Dockerfile exists
         if dockerfile.exists():
-            tag = docker_tags[0] if docker_tags else f"localhost/{path}"
+            tag = docker_tags[0] if docker_tags else f"localhost/{path}".lower()
             host_arch = context.get("HOST_ARCH", "unknown")
 
             # Skip podman entirely if image is clean
