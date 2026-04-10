@@ -1,5 +1,5 @@
 .PHONY: help all install test dev coverage clean \
-		pre-commit update-pre-commit build archive
+		pre-commit update-pre-commit build archive cloc
 
 PROJECT_NAME := qemount_build
 
@@ -55,6 +55,13 @@ archive: scripts/archive.sh scripts/Dockerfile.archive  ## build complete archiv
 
 .git/hooks/pre-commit: scripts/install-pre-commit.sh
 	scripts/install-pre-commit.sh
+
+cloc: .venv/bin/cloc  ## count lines of code
+	.venv/bin/cloc --vcs=git .
+
+.venv/bin/cloc: .venv/bin/activate
+	curl -sL https://raw.githubusercontent.com/AlDanial/cloc/refs/heads/master/cloc -o .venv/bin/cloc
+	chmod +x .venv/bin/cloc
 
 help:  ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
