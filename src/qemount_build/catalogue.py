@@ -380,7 +380,6 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
     nodes = {}
     edges = []
     visited = set()
-    order = []
     needed = {}  # path -> set of outputs needed from that path
 
     def visit(output: str, chain: list):
@@ -409,20 +408,36 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
         meta = resolve_output(path, output, catalogue, context)
 
         # Store path metadata only once (first output wins)
-        first_output = path not in nodes
-        if first_output:
+        if path not in nodes:
             nodes[path] = resolve_path(path, catalogue, context)
 
         for req in meta.get("requires", {}):
             edges.append((path, index.get(req, req)))
             visit(req, chain + [path])
 
-        # Add to order after deps, only once per path
-        if first_output:
-            order.append(path)
-
     for target in targets:
         visit(target, [])
+
+    # Topological sort from edges using Kahn's algorithm.
+    # edges are (dependent, dependency) so dependency must come first.
+    from collections import defaultdict, deque
+
+    in_degree = {p: 0 for p in nodes}
+    adj = defaultdict(set)
+    for src, dst in edges:
+        if dst in nodes and dst != src and src not in adj[dst]:
+            adj[dst].add(src)
+            in_degree[src] += 1
+
+    queue = deque(p for p in nodes if in_degree[p] == 0)
+    order = []
+    while queue:
+        p = queue.popleft()
+        order.append(p)
+        for neighbor in adj[p]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
 
     return {
         "nodes": nodes,

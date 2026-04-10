@@ -5,6 +5,7 @@ discontinued: 2006
 related:
   - format/fs/ext3
   - format/fs/btrfs
+  - format/fs/reiser4
 detect:
   any:
     - offset: 0x10034
@@ -16,9 +17,6 @@ detect:
     - offset: 0x10034
       type: string
       value: "ReIsEr3Fs"
-    - offset: 0x10000
-      type: string
-      value: "ReIsEr4"
 ---
 
 # ReiserFS (Reiser File System v3)

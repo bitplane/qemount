@@ -23,6 +23,12 @@ and MicroVAXes.
 - **SOLO**: Boot loader with filesystem support, ramdisk, gzip decompression
 - **DECO**: Dynamic C++ to C++ compiler (thesis project)
 
+## Detection
+
+No filesystem-level magic number. Filesystem format is undocumented.
+Detection limited to MBR partition type 0xAE. Note: 0xAF (ShagOS swap)
+conflicts with Apple HFS+ on Intel Macs.
+
 ## Current Status
 
 - Development stalled around 2000

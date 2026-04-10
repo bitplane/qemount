@@ -55,10 +55,10 @@ Both ForthOS and VSTa (same author) use partition type 0x9E (158).
 
 ## Detection
 
-No documented magic number. Would need to identify by:
-- Block structure at offset 0
-- Valid Forth source in first 2000 bytes
-- Filesystem metadata in last 96 bytes of blocks
+No magic number. Block 0 is unused, boot image at block 1, source
+filesystem at block 10000. The last 96 bytes of each 4096-byte block
+contain filesystem metadata but with no documented signature. Detection
+is limited to MBR partition type 0x9E.
 
 ## VSTa
 

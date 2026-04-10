@@ -46,9 +46,10 @@ Total size: one block (typically 4096 bytes).
 
 ## Detection
 
-No magic number. The superblock is at block 100 and starts with a
-64-byte filesystem name string. Heuristic detection would need to
-check for valid structure at that offset.
+No magic number. The superblock at block 100 starts with a 64-byte
+filesystem name string but has no fixed magic value. Research-only
+filesystem (MIT exokernel), never used in production — likelihood of
+encountering it in the wild is essentially zero.
 
 ## MBR Partition Type
 

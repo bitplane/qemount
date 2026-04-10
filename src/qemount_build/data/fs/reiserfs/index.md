@@ -1,6 +1,8 @@
 ---
 format: fs/reiserfs
 kernel: "2.6"
+build_requires:
+  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs
 requires:
   - docker:builder/disk/qemu
   - data/templates/basic.tar

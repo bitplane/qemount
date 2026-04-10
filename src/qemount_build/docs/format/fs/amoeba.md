@@ -2,6 +2,10 @@
 title: Amoeba
 created: 1983
 discontinued: 1996
+detect:
+  - offset: 0
+    type: be32
+    value: 0x70bdce21
 ---
 
 # Amoeba
@@ -51,22 +55,20 @@ The Amoeba filesystem was designed for distributed access:
 - 1996: Active development winds down
 - Source code released for educational use
 
+## Detection
+
+The Bullet server superblock at block 0 (offset 0) starts with magic number
+`0x70BDCE21` as a big-endian 32-bit integer. Defined as `S_MAGIC` in
+`src/h/server/bullet/superblk.h`. All multi-byte fields are stored
+big-endian on disk. The superblock also has a 16-bit checksum covering
+the entire 512-byte block.
+
 ## Current Status
 
 - Source code available for research/education
 - No modern kernel driver
 - Academic papers document the design
 - Disk images may exist in university archives
-
-## Implementation Notes
-
-Possible approaches for qemount support:
-
-1. **Native driver**: Implement based on published specifications
-2. **Emulation**: Run Amoeba in emulator, extract files
-
-Given its academic origins, the filesystem format is likely well-documented
-in Tanenbaum's papers and the source code.
 
 ## Academic Significance
 

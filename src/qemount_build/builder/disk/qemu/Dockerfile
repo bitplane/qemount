@@ -28,9 +28,6 @@ RUN cd /tmp && \
     ln -s bcachefs /usr/local/bin/mkfs.bcachefs && \
     cd / && rm -rf /tmp/bcachefs-tools-1.20.0
 
-# Copy pre-built static binaries
-RUN cp /host/build/bin/${HOST_ARCH}-linux-musl/mkfs.sysv /usr/bin/mkfs.sysv && \
-    cp /host/build/bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs /usr/bin/mkfs.reiserfs
 
 # Runtime libraries for bcachefs
 RUN apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs

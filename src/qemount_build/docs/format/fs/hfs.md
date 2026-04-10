@@ -3,6 +3,7 @@ title: HFS
 created: 1985
 discontinued: 1998
 related:
+  - format/fs/mfs
   - format/fs/hfsplus
   - format/fs/amiga-ffs
 detect:

@@ -1,7 +1,19 @@
 ---
-title: NetWare
+title: NetWare (NWFS)
 created: 1983
 discontinued: 2010
+related:
+  - format/fs/nss
+detect:
+  any:
+    # NWFS 386 (v3.x+): HOTFIX header at sector 32 (offset 0x4000)
+    - offset: 0x4000
+      type: string
+      value: "HOTFIX00"
+    # NWFS 286 (v2.x): magic 0xFADE at sector 16 offset 2
+    - offset: 0x2002
+      type: le16
+      value: 0xfade
 ---
 
 # NetWare
@@ -21,9 +33,9 @@ permissions.
 | 0x68 | Novell       | Unknown specific use            |
 | 0x69 | Novell       | Unknown specific use            |
 
-Multiple partition types were allocated to Novell, possibly for different
-volume types (system, data) or product versions. NSS (Novell Storage
-Services) in v5+ typically uses 0x65.
+Multiple partition types were allocated to Novell for different product
+versions. The traditional NetWare File System (NWFS) was replaced by NSS
+(Novell Storage Services) in NetWare 5, which is a separate filesystem.
 
 ## Characteristics
 
@@ -37,12 +49,35 @@ Services) in v5+ typically uses 0x65.
 
 ## Structure
 
-NetWare uses a volume-based structure:
+### NWFS 386 (NetWare 3.x+)
+
+Configurable block size (1KB-64KB). Partition layout:
+
+| Sector | Offset | Description                                    |
+|--------|--------|------------------------------------------------|
+| 32     | 0x4000 | Hotfix area: string `"HOTFIX00"` (4 copies)    |
+| 33     | 0x4200 | Mirror area: string `"MIRROR00"`               |
+| varies | varies | Volume area: string `"NetWare Volumes\0"`      |
+| varies | varies | Data area: FAT, directory entries, file data    |
+
+- 128-byte directory entries
+- FAT-based block allocation (not DOS FAT)
+- Turbo FAT for large files
+- Volumes can span multiple partitions
+
+### NWFS 286 (NetWare 2.x)
+
+Fixed 4KB block size. Simpler layout:
+
+| Sector | Description                                        |
+|--------|----------------------------------------------------|
+| 0      | Boot sector with partition table                   |
+| 1-14   | Loader                                             |
+| 15     | Control sector                                     |
+| 16     | Volume information (magic `0xFADE` at offset 2)    |
 
 - Volume segments can span multiple partitions
 - Directory Entry Table (DET)
-- File Allocation Table (FAT) - not DOS FAT, different format
-- Turbo FAT for large files
 - Extended attributes stored separately
 
 ## History

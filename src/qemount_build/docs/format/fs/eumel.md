@@ -2,6 +2,10 @@
 title: EUMEL
 created: 1978
 discontinued: 1992
+detect:
+  - offset: 5120
+    type: string
+    value: "EUMEL"
 ---
 
 # EUMEL
@@ -30,8 +34,14 @@ programming language called ELAN.
 ## Structure
 
 EUMEL used its own filesystem format, unrelated to Unix or DOS filesystems.
-Details of the on-disk format would require examination of EUMEL source
-code or disk images.
+The urlader (boot loader) occupies blocks 10-109 (100 blocks of 512 bytes,
+starting at byte offset 5120). Page size is 512 bytes throughout.
+
+## Detection
+
+The ASCII string `EUMEL` (5 bytes) at offset 5120 (block 10) identifies
+the start of the urlader. Source: `BOOT.ASM` from the SHard x86-AT layer.
+MBR partition type `0x45` ('E') also identifies EUMEL partitions.
 
 ## MBR Partition Types
 

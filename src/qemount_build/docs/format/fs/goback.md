@@ -40,6 +40,13 @@ deltas to reconstruct the filesystem at a desired point in time.
 - 2003: Symantec acquires from Roxio
 - 2007: Symantec discontinues product
 
+## Detection
+
+No filesystem-level magic. GoBack replaces the MBR and intercepts disk I/O
+to log changes — it is a versioned block container wrapping a real filesystem
+(FAT/NTFS), not a filesystem itself. Detection is limited to MBR partition
+type 0x44.
+
 ## Current Status
 
 - No known open source implementation

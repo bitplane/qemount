@@ -10,6 +10,7 @@ pub type ChecksumFn = fn(&[u8]) -> bool;
 pub fn get(name: &str) -> Option<ChecksumFn> {
     match name {
         "adfs" => Some(adfs),
+        "atari_boot" => Some(atari_boot),
         "ics" => Some(ics),
         "powertec" => Some(powertec),
         _ => None,
@@ -29,6 +30,21 @@ pub fn adfs(data: &[u8]) -> bool {
         result = (result & 0xff) + (result >> 8) + data[i] as u32;
     }
     (result & 0xff) as u8 == data[511]
+}
+
+/// Atari TOS boot sector checksum
+///
+/// Sum all 256 big-endian 16-bit words in the 512-byte boot sector.
+/// Valid if the sum equals 0x1234.
+pub fn atari_boot(data: &[u8]) -> bool {
+    if data.len() < 512 {
+        return false;
+    }
+    let mut sum: u16 = 0;
+    for i in (0..512).step_by(2) {
+        sum = sum.wrapping_add(u16::from_be_bytes([data[i], data[i + 1]]));
+    }
+    sum == 0x1234
 }
 
 /// ICS checksum
@@ -83,9 +99,41 @@ mod tests {
     #[test]
     fn test_registry() {
         assert!(get("adfs").is_some());
+        assert!(get("atari_boot").is_some());
         assert!(get("ics").is_some());
         assert!(get("powertec").is_some());
         assert!(get("unknown").is_none());
+    }
+
+    #[test]
+    fn test_atari_boot_valid() {
+        // Create a 512-byte sector where the BE16 word sum == 0x1234
+        let mut data = [0u8; 512];
+        // Put 0x1234 in the checksum word at offset 510
+        // All other words are 0, so sum = 0x1234
+        data[510] = 0x12;
+        data[511] = 0x34;
+        assert!(atari_boot(&data));
+    }
+
+    #[test]
+    fn test_atari_boot_invalid() {
+        let data = [0u8; 512];
+        assert!(!atari_boot(&data));
+    }
+
+    #[test]
+    fn test_atari_boot_with_data() {
+        // Sector with some data, adjust checksum to make sum == 0x1234
+        let mut data = [0u8; 512];
+        data[0] = 0x60; // BRA.S
+        data[1] = 0x38; // branch offset
+        // Word at offset 0 = 0x6038
+        // Need checksum word at 510 to be 0x1234 - 0x6038 = 0xB1FC
+        let cksum: u16 = 0x1234u16.wrapping_sub(0x6038);
+        data[510] = (cksum >> 8) as u8;
+        data[511] = (cksum & 0xff) as u8;
+        assert!(atari_boot(&data));
     }
 
     #[test]

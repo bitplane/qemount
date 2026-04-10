@@ -5,6 +5,7 @@ related:
   - format/fs/ext
   - format/fs/ext2
   - format/fs/ext4
+  - format/fs/ext3cow
 detect:
   - offset: 0x438
     type: le16

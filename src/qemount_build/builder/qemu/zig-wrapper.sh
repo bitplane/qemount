@@ -17,14 +17,51 @@ ZIG=$(command -v zig 2>/dev/null || command -v python-zig 2>/dev/null) || {
 
 mkdir -p $OUTDIR
 
+# Shared helper: recursively expand @file response files into plain args.
+# Zig cc can't handle nested response files (NestedResponseFile error).
+# Outputs one arg per line; caller uses unquoted $() to word-split.
+cat > $OUTDIR/_expand << 'EXPAND'
+#!/bin/sh
+expand_file() {
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+            @*) f="${line#@}"; [ -f "$f" ] && expand_file < "$f" || printf '%s\n' "$line" ;;
+            "") ;;
+            *) printf '%s\n' "$line" ;;
+        esac
+    done
+}
+for arg in "$@"; do
+    case "$arg" in
+        @*) f="${arg#@}"; [ -f "$f" ] && expand_file < "$f" || printf '%s\n' "$arg" ;;
+        *) printf '%s\n' "$arg" ;;
+    esac
+done
+EXPAND
+
 cat > $OUTDIR/cc << EOF
 #!/bin/sh
-exec $ZIG cc -target $TARGET "\$@"
+# Meson probes linker identity via -Wl,--version. zig's lld reports as
+# "ld.zigcc" which meson doesn't recognise. Fake the lld banner so meson
+# detects it correctly.
+for arg in "\$@"; do
+    case "\$arg" in -Wl,--version)
+        echo "LLD 20.1.2 (compatible with GNU linkers)"
+        exit 0 ;;
+    esac
+done
+exec $ZIG cc -target $TARGET \$($OUTDIR/_expand "\$@")
 EOF
 
 cat > $OUTDIR/c++ << EOF
 #!/bin/sh
-exec $ZIG c++ -target $TARGET "\$@"
+for arg in "\$@"; do
+    case "\$arg" in -Wl,--version)
+        echo "LLD 20.1.2 (compatible with GNU linkers)"
+        exit 0 ;;
+    esac
+done
+exec $ZIG c++ -target $TARGET \$($OUTDIR/_expand "\$@")
 EOF
 
 # Meson passes 'T' flag to ar requesting thin archives, but zig's lld
@@ -57,7 +94,13 @@ cat > $OUTDIR/strip << EOF
 exec $ZIG objcopy --strip-all "\$@" 2>/dev/null || true
 EOF
 
-chmod +x $OUTDIR/cc $OUTDIR/c++ $OUTDIR/ar $OUTDIR/ranlib \
-         $OUTDIR/ld $OUTDIR/objcopy $OUTDIR/strip
+# Windows resource compiler (zig rc wraps llvm-rc)
+cat > $OUTDIR/windres << EOF
+#!/bin/sh
+exec $ZIG rc "\$@"
+EOF
+
+chmod +x $OUTDIR/_expand $OUTDIR/cc $OUTDIR/c++ $OUTDIR/ar $OUTDIR/ranlib \
+         $OUTDIR/ld $OUTDIR/objcopy $OUTDIR/strip $OUTDIR/windres
 
 echo "Created zig wrappers for $TARGET in $OUTDIR"

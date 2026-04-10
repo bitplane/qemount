@@ -154,6 +154,28 @@ def test_build_graph_multiple_outputs_same_path():
     assert {"bin-linux", "bin-windows"} == graph["needed"]["bin"]
 
 
+def test_build_graph_multi_output_topo_order():
+    """Path with mixed deps must come after ALL its outputs' dependencies.
+
+    If path A provides output-nodeps (no requires) and output-withdeps
+    (requires dep-output from path B), then B must come before A in the
+    topological order — even if output-nodeps is visited first.
+    """
+    cat = load(DATA_DIR / "topo_multi_output")
+    ctx = {}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # Request both outputs — output-nodeps will be visited first
+        graph = build_graph(["output-nodeps", "output-withdeps"], cat, ctx, Path(tmp))
+
+    builder_idx = graph["order"].index("builder")
+    dep_idx = graph["order"].index("dep")
+    assert dep_idx < builder_idx, (
+        f"dep must come before builder in order, "
+        f"got order: {graph['order']}"
+    )
+
+
 def test_build_graph_file_dependency_in_build_dir():
     """File dependencies in build_dir are allowed without catalogue entry."""
     cat = load(DATA_DIR / "deps")

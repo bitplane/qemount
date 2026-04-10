@@ -36,10 +36,16 @@ for disconnected operation - allowing clients to work offline and sync later.
 - **Conflict Detection**: Identify and resolve conflicting edits
 - **Replication**: Servers replicate for fault tolerance
 
-## Magic Number
+## Detection
 
-The Coda superblock uses magic 0x73757245, which spells "surE" in ASCII -
-a playful touch from the CMU developers.
+Coda has no on-disk format — it is a distributed network filesystem
+(architecturally similar to NFS). The magic number 0x73757245 ("surE") is a
+VFS-only constant used by `statfs()` to identify mounted Coda filesystems; it
+never appears on disk. The kernel module communicates with a userspace cache
+manager (Venus) via `/dev/coda` and uses `get_tree_nodev()` (no block device).
+
+Venus maintains a local file cache, but that uses whatever the host filesystem
+is (typically ext4). There is no distinct on-disk format to detect.
 
 ## Current Status
 

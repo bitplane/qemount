@@ -54,27 +54,33 @@ Directory entries are 32 bytes each:
 - 1991: Digital Research acquired by Novell
 - 1990s: Fades from commercial use
 
+## Detection
+
+CP/M disks are not self-describing. The Disk Parameter Block (DPB) — which
+defines sector size, block size, directory layout — is not stored on disk.
+It lives in the BIOS ROM. There is no superblock, no magic number, no
+version field. Freshly formatted disks are filled with 0xE5 (which also
+marks unused directory entries), making blank CP/M disks ambiguous.
+
+The `file` magic database has no CP/M filesystem entries. Neither does
+libblkid.
+
+**Amstrad PCW/Spectrum +3 exception**: These store a 16-byte format
+descriptor at track 0, sector 1. Byte 0 is 0x00 (SS/SD) or 0x03 (DS/DD).
+The PCW16 extension uses 0xE9/0xEB (DOS JMP) with "CP/M" at offsets 0x2B
+and 0x7C. This is the only CP/M variant with a detectable signature.
+
+**Heuristic approach**: Try candidate geometries (matched by image size),
+locate where the directory would be, validate that all 32-byte entries have
+valid status bytes (0x00-0x1F or 0xE5), filenames are printable ASCII, and
+block pointers are self-consistent. High false-positive risk.
+
+Generic CP/M detection is not feasible for qemount. User-specified format
+would be required.
+
 ## Current Status
 
-- **cpmtools**: Userspace tools can read/write images
+- **cpmtools**: Userspace tools can read/write images (requires `-f format`)
 - No Linux kernel driver
-- FUSE implementation may exist
 - Many preserved disk images available
-- Format is well documented
-
-## Implementation Notes
-
-Possible approaches for qemount support:
-
-1. **FUSE**: Use or adapt existing FUSE implementation
-2. **Kernel module**: Format is simple enough for a .ko
-3. **Emulation**: Run CP/M in emulator, bridge files out
-
-The filesystem structure is straightforward, but the challenge is handling
-the many different disk parameter variations (different machines used
-different block sizes, directory sizes, and skew factors).
-
-## References
-
-The "Disk Parameter Block" (DPB) defines the format for each disk type.
-Tools like cpmtools use definition files to handle the variations.
+- Format is well documented but varies per machine

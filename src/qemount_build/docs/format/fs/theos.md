@@ -49,8 +49,9 @@ microcomputer OS. The name "THEOS" comes from Greek for "God".
 
 ## Detection
 
-No known magic number documented. The filesystem format is proprietary
-and would require reverse engineering or access to THEOS documentation.
+No filesystem-level magic number. Format is proprietary and undocumented.
+Detection limited to MBR partition types 0x38 (v3.2), 0x39 (v4 spanned,
+conflicts with Plan 9), 0x3A (v4), 0x3B (v4 extended).
 
 ## Current Status
 

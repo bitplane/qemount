@@ -76,6 +76,15 @@ PICK was licensed and implemented by many vendors:
 - jBASE
 - OpenQM
 
+## Detection
+
+No magic number. The disk format has no superblock or identifying signature.
+MBR partition type 0x40 is assigned to Pick R83 but is shared with Venix
+80286 and LynxOS. The frame-based storage (512-byte sectors with 12-byte
+link overhead) is structurally distinctive but has no fixed values suitable
+for reliable detection. Format varies across implementations (R83, AP, D3,
+UniVerse, jBASE).
+
 ## Current Status
 
 - Still in use in niche markets

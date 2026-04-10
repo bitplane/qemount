@@ -5,6 +5,10 @@ related:
   - format/fs/fossil
   - format/fs/cwfs
   - format/pt/plan9
+detect:
+  - offset: 256
+    type: string
+    value: "kfs wren device\n"
 ---
 
 # KFS (Ken's File System)
@@ -51,10 +55,9 @@ Each block is 6144 bytes:
 
 ## Detection
 
-KFS has no magic number. The original Plan 9 filesystems were identified
-by context (partition name in the Plan 9 partition table) rather than
-magic signatures. This makes automatic detection difficult without
-heuristics.
+KFS stores the ASCII string `kfs wren device\n` (16 bytes) at byte offset
+256 of the disk. This is followed by the block size as a decimal ASCII
+number (e.g. `1024\n`). Source: `devwren.c`, constant `WMAGIC`.
 
 ## History
 
@@ -69,7 +72,7 @@ heuristics.
 - Superseded by Fossil as default
 - Still functional in Plan 9/9front
 - No Linux kernel driver
-- No known magic number for detection
+- Detectable via `kfs wren device` string at offset 256
 
 ## References
 

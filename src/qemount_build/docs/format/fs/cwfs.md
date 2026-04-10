@@ -47,8 +47,11 @@ Read-only snapshot filesystem:
 
 ## Detection
 
-CWFS has no magic number. Like KFS, it relies on context (partition
-naming in Plan 9's ASCII partition table) for identification.
+No magic number. The superblock (`Super1` struct) at block 2 has no magic
+field. Blocks have appended `Tag` structs (with `tag=Tsuper` for the
+superblock), but these are internal consistency tags, not detection
+signatures. The constant `Labmagic = 0xb0ffe3` is for in-memory buffers
+only. Identified by partition name in Plan 9's ASCII partition table.
 
 ## 64-bit Variant
 

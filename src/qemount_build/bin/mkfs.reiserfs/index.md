@@ -1,5 +1,5 @@
 ---
-title: reiserfsprogs
+title: mkfs.reiserfs
 build_requires:
   - sources/reiserfsprogs-3.6.27.tar.xz
 requires: []
