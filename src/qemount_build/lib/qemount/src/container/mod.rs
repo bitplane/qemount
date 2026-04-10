@@ -103,6 +103,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "disk/dms" => Some(&disk::dms::DMS),
         "disk/nrg" => Some(&disk::nrg::NRG),
         "disk/dmg" => Some(&disk::dmg::DMG),
+        "disk/ewf" => Some(&disk::ewf::EWF),
         "disk/parallels" => Some(&disk::parallels::PARALLELS),
         "disk/qcow" => Some(&disk::qcow::QCOW),
         "disk/qcow2" => Some(&disk::qcow2::QCOW2),

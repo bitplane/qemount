@@ -8,6 +8,7 @@ pub mod cdi;
 pub mod cloop;
 pub mod dms;
 pub mod dmg;
+pub mod ewf;
 pub mod nrg;
 pub mod parallels;
 pub mod qcow;
