@@ -376,6 +376,9 @@ fn detect_tree_recursive(
                     } else {
                         stream.clone()
                     };
+                    // Clone seen so sibling formats at this level explore
+                    // independently — each is a valid path for guest selection
+                    let mut branch_seen = seen.clone();
                     kids.into_iter()
                         .flat_map(|child| {
                             let detected = detect_tree_recursive(
@@ -384,7 +387,7 @@ fn detect_tree_recursive(
                                 depth + 1,
                                 child_stream.clone(),
                                 child.offset,
-                                seen,
+                                &mut branch_seen,
                             );
                             // If nothing detected, emit "data" as fallback
                             if detected.is_empty() {
