@@ -6,6 +6,9 @@ RUN apt-get update && \
         bash \
         tar \
         jq \
+        gcc \
+        libc6-dev \
+        make \
         cloop-utils \
         espeak-ng \
         ffmpeg \
