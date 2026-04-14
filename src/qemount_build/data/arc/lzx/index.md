@@ -9,5 +9,6 @@ provides:
 
 # LZX Test Archive
 
-Test archive in Amiga LZX format (v1.21R). Built using the original
-m68k binary under vamos (amitools) 68k emulation.
+Test archive in Amiga LZX format, built using the `amiga-lzx-cli`
+Rust crate (pure-Rust compressor compatible with the original
+Amiga LZX 1.21R output).
