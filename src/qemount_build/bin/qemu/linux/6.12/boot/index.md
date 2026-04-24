@@ -1,11 +1,11 @@
 ---
-title: Linux 6.17 Boot
+title: Linux 6.12 Boot
 requires:
-  - bin/qemu/${ARCH}-linux/6.17/kernel
+  - bin/qemu/${ARCH}-linux/6.12/kernel
   - bin/qemu/${ARCH}-linux/rootfs/rootfs.img
 provides:
-  - bin/qemu/${ARCH}-linux/6.17/boot/kernel
-  - bin/qemu/${ARCH}-linux/6.17/boot/rootfs.img
+  - bin/qemu/${ARCH}-linux/6.12/boot/kernel
+  - bin/qemu/${ARCH}-linux/6.12/boot/rootfs.img
 support:
   # filesystems
   - format/fs/ext2
@@ -24,6 +24,7 @@ support:
   - format/fs/hfsplus
   - format/fs/hfs
   - format/fs/vxfs
+  - format/fs/reiserfs
   - format/fs/sysv
   - format/fs/v7
   - format/fs/hpfs
@@ -77,7 +78,8 @@ support:
   - transport/sh
 ---
 
-# Linux 6.17 Boot
+# Linux 6.12 Boot
 
-Bootable Linux 6.17 guest. QEMU loads kernel and rootfs (initrd) separately.
-Supports modern filesystems including bcachefs, exFAT, F2FS, and EROFS.
+Bootable Linux 6.12 guest. QEMU loads kernel and rootfs (initrd) separately.
+Supports modern filesystems including bcachefs, exFAT, F2FS, and EROFS while
+retaining late legacy filesystems such as ReiserFS and System V.

@@ -13,7 +13,7 @@ MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
 
 Currently, there's:
 
-* Linux 2.6, Linux 6.17 and NetBSD 10.0 guests
+* Linux 2.6, Linux 6.12 and NetBSD 10.0 guests
 * 9P2000.U support in both a simple9p server and 9pfuse client
 * Scripts to start the FUSE client
 * A collection of filesystems to play with
@@ -40,7 +40,7 @@ image.
 
 ### Partition tables
 
-| Partition Table  | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                          |
+| Partition Table  | Linux 6.12 | Linux 2.6 | NetBSD 10 | Notes                          |
 | ---------------- | ---------- | --------- | --------- | ------------------------------ |
 | **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
 | **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
@@ -74,14 +74,14 @@ image.
 
 ## Filesystems
 
-| Filesystem       | Linux 6.17 | Linux 2.6 | NetBSD 10 | Notes                            |
+| Filesystem       | Linux 6.12 | Linux 2.6 | NetBSD 10 | Notes                            |
 | ---------------- | ---------- | --------- | --------- | -------------------------------- |
 | **ext2**         | ✅         | ✅        | ✅        |                                  |
 | **ext3**         | ✅         | ✅        | ✅        | NetBSD mounts as ext2            |
 | **ext4**         | ✅         | ✅        | ❌        |                                  |
 | **FAT12/16/32**  | ✅         | ✅        | ✅        | vfat/msdos                       |
 | **exFAT**        | ✅         | ❌        | ❌        |                                  |
-| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.17 has full r/w                |
+| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.12 has full r/w                |
 | **ISO9660**      | ✅         | ✅        | ✅        | cd9660 on BSD                    |
 | **UDF**          | ✅         | ✅        | ✅        | DVD/Blu-ray                      |
 | **HFS**          | ✅         | ✅        | ✅        | Classic Mac                      |
@@ -94,13 +94,13 @@ image.
 | **F2FS**         | ✅         | ❌        | ❌        | Flash-friendly                   |
 | **bcachefs**     | ✅         | ❌        | ❌        |                                  |
 | **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
-| **ReiserFS**     | ❌         | ✅        | ❌        | Removed in 6.13                  |
+| **ReiserFS**     | ✅         | ✅        | ❌        | Removed in 6.13                  |
 | **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga OFS/FFS                    |
 | **SFS**          | ❌         | ❌        | ❌        | Amiga Smart FS (needs AROS)      |
 | **PFS**          | ❌         | ❌        | ❌        | Amiga Professional FS (needs AROS)|
 | **Minix**        | ✅         | ✅        | ❌        |                                  |
-| **V7**           | ❌         | ✅        | ✅        | 7th Edition UNIX                 |
-| **SysV**         | ❌         | 💩        | ❌        | System V - symlinks crash 2.6    |
+| **V7**           | ✅         | ✅        | ✅        | 7th Edition UNIX                 |
+| **SysV**         | ✅         | 💩        | ❌        | System V - symlinks crash 2.6    |
 | **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
 | **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
 | **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
@@ -125,4 +125,3 @@ image.
 | **JFFS2**        | ✅         | ✅        | ❌        | Flash journaling                 |
 | **UBIFS**        | ✅         | ❌        | ❌        | UBI Flash FS                     |
 | **High Sierra**  | ✅         | ✅        | ✅        | ISO9660 extension (Apple)        |
-

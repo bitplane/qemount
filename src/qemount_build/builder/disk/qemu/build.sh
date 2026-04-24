@@ -5,7 +5,7 @@ set -e
 # Requires kernel and rootfs.img in /host/build
 
 HOST_ARCH="${HOST_ARCH:-x86_64}"
-KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.17"')
+KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.12"')
 KERNEL="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
 ROOTFS="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
 

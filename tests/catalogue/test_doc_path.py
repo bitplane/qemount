@@ -16,7 +16,7 @@ from qemount_build.catalogue import doc_path
     ("builder/compiler/index.md", {}, "builder/compiler"),
 
     # README.md becomes directory path
-    ("guests/linux/6.17/README.md", {}, "guests/linux/6.17"),
+    ("guests/linux/6.12/README.md", {}, "guests/linux/6.12"),
     ("data/fs/ext4/README.md", {}, "data/fs/ext4"),
 
     # root index/readme becomes empty string
@@ -24,7 +24,7 @@ from qemount_build.catalogue import doc_path
     ("README.md", {}, ""),
 
     # regular .md files
-    ("guests/linux/6.17/kernel.md", {}, "guests/linux/6.17/kernel"),
+    ("guests/linux/6.12/kernel.md", {}, "guests/linux/6.12/kernel"),
     ("something.md", {}, "something"),
 
     # explicit path override

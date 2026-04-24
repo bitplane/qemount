@@ -6,9 +6,9 @@ qemount mounts anything. Disk images, archives, filesystems from dead operating
 systems - if it ever existed, qemount should be able to open it.
 
 The approach: spin up tiny VMs (guests) that use real kernels to read formats,
-expose the contents over 9P protocol to the host. Linux 6.17 for modern formats,
-Linux 2.6 for legacy (ReiserFS, etc.), NetBSD for UFS/ZFS, eventually esoteric
-kernels for truly obscure formats.
+expose the contents over 9P protocol to the host. Linux 6.12 for broad modern
+and late legacy coverage, Linux 2.6 for older compatibility, NetBSD for
+UFS/ZFS, eventually esoteric kernels for truly obscure formats.
 
 ## Philosophy
 
@@ -49,7 +49,7 @@ or awkward, fix it immediately rather than accumulating cruft.
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Guests                                  │
-│  Linux 6.17 │ Linux 2.6 │ NetBSD 10 │ (future: AROS, Haiku...)  │
+│  Linux 6.12 │ Linux 2.6 │ NetBSD 10 │ (future: AROS, Haiku...)  │
 │  Minimal VMs with busybox + 9P server, run via QEMU             │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -119,7 +119,7 @@ src/qemount_build/          # Python package (the build system)
 │   ├── linux/              # Linux-hosted binaries (busybox, etc.)
 │   ├── netbsd/             # NetBSD-hosted binaries
 │   └── qemu/               # Guest VM builds
-│       ├── linux/          # Linux guests (2.6, 6.17)
+│       ├── linux/          # Linux guests (2.6, 6.12)
 │       └── netbsd/         # NetBSD guests
 ├── builder/                # Build infrastructure (compilers, disk tools)
 ├── data/                   # Test data generation (filesystem images)
@@ -262,7 +262,7 @@ cross-compilation capability.
 
 Early scaffolding. What works:
 - Build system resolves dependencies and builds in containers
-- Linux 2.6 and 6.17 guests boot, mount filesystems, serve 9P
+- Linux 2.6 and 6.12 guests boot, mount filesystems, serve 9P
 - NetBSD 10 guest builds (needs manual 9P init)
 - Format detection library compiles rules and detects ~40 formats
 - 9pfuse client connects and mounts
@@ -295,4 +295,3 @@ poor isolation - fix the code instead.
 
 The user will build the project, given the time required to run the build and
 the size of the outputs.
-

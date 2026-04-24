@@ -7,7 +7,8 @@ env:
 # Linux QEMU Guests
 
 Linux-based virtual machines for QEMU. Each version provides different
-filesystem support - use 2.6 for legacy formats, 6.17 for modern ones.
+filesystem support - use 2.6 for legacy formats, 6.12 for broad modern
+coverage.
 
 ## Filesystem support history
 
@@ -291,8 +292,7 @@ are in the 2.5.x development series, noted below where applicable.
 * Removed: **sysv** - System V/Coherent/Xenix filesystem, removed after 31
   years in-tree
 
-### Linux 6.18+ (unreleased)
+### Linux 6.18+
 
-6.18 and 6.19 tarballs exist on kernel.org as development snapshots. Notable:
-bcachefs was removed in 6.18 following the maintainer's departure from the
-project.
+Notable: bcachefs was removed in 6.18 following the maintainer's departure
+from the project.

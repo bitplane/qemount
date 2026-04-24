@@ -2,8 +2,8 @@
 set -e
 
 cd /work
-tar -xf /host/build/sources/linux-6.17.tar.xz
-cd linux-6.17
+tar -xf /host/build/sources/linux-6.12.tar.xz
+cd linux-6.12.83
 
 # Copy config files
 cp /kernel.config /filesystems.config .
@@ -19,13 +19,13 @@ yes "" | make ARCH=$KERNEL_ARCH oldconfig
 make ARCH=$KERNEL_ARCH -j${JOBS}
 
 # Copy kernel image
-mkdir -p /host/build/bin/qemu/${ARCH}-linux/6.17
+mkdir -p /host/build/bin/qemu/${ARCH}-linux/6.12
 if [ "$ARCH" = "x86_64" ]; then
-    cp -v arch/x86_64/boot/bzImage /host/build/bin/qemu/${ARCH}-linux/6.17/kernel
+    cp -v arch/x86_64/boot/bzImage /host/build/bin/qemu/${ARCH}-linux/6.12/kernel
 elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-    cp -v arch/arm64/boot/Image.gz /host/build/bin/qemu/${ARCH}-linux/6.17/kernel
+    cp -v arch/arm64/boot/Image.gz /host/build/bin/qemu/${ARCH}-linux/6.12/kernel
 elif [ "$ARCH" = "arm" ]; then
-    cp -v arch/arm/boot/zImage /host/build/bin/qemu/${ARCH}-linux/6.17/kernel
+    cp -v arch/arm/boot/zImage /host/build/bin/qemu/${ARCH}-linux/6.12/kernel
 else
     echo "Unsupported architecture: $ARCH"
     exit 1
