@@ -1,13 +1,10 @@
 ---
 format: fs/sysv
-kernel: "2.6"
 build_requires:
   - bin/${HOST_ARCH}-linux-musl/mkfs.sysv
 requires:
-  - docker:builder/disk/qemu
+  - docker:builder/disk/alpine
   - data/templates/basic.tar
-  - bin/qemu/${HOST_ARCH}-linux/2.6/boot/kernel
-  - bin/qemu/${HOST_ARCH}-linux/2.6/boot/rootfs.img
 provides:
   - data/fs/basic.sysv
 ---
