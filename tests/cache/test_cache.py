@@ -9,6 +9,7 @@ from qemount_build.cache import (
     hash_file,
     hash_files,
     hash_path_inputs,
+    strip_ref_prefix,
     is_output_dirty,
     is_image_dirty,
     update_output_hash,
@@ -31,6 +32,13 @@ def test_save_and_load_cache():
         save_cache(build_dir, cache)
         loaded = load_cache(build_dir)
         assert loaded == cache
+
+
+def test_strip_ref_prefix():
+    """Known ref prefixes are stripped."""
+    assert strip_ref_prefix("docker:builder/base") == "builder/base"
+    assert strip_ref_prefix("file:catalogue.json") == "catalogue.json"
+    assert strip_ref_prefix("sources/foo.tar.gz") == "sources/foo.tar.gz"
 
 
 def test_hash_files_empty_dir():
@@ -115,6 +123,32 @@ def test_is_output_dirty_modified_output():
         (build_dir / "foo").write_text("changed")
 
         assert is_output_dirty("foo", "abc123", cache, build_dir)
+
+
+def test_is_output_dirty_output_requires_clean():
+    """Output-specific requires are included in the clean cache state."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "foo").write_text("data")
+        (build_dir / "dep.bin").write_text("dependency")
+        cache = {}
+        update_output_hash(cache, "foo", "abc123", build_dir, ["dep.bin"])
+
+        assert not is_output_dirty("foo", "abc123", cache, build_dir, ["dep.bin"])
+
+
+def test_is_output_dirty_output_requires_changed():
+    """Changing an output-specific required file dirties the output."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "foo").write_text("data")
+        (build_dir / "dep.bin").write_text("dependency")
+        cache = {}
+        update_output_hash(cache, "foo", "abc123", build_dir, ["dep.bin"])
+
+        (build_dir / "dep.bin").write_text("changed")
+
+        assert is_output_dirty("foo", "abc123", cache, build_dir, ["dep.bin"])
 
 
 def test_is_image_dirty_no_cache():
