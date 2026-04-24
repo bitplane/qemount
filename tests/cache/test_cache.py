@@ -96,9 +96,25 @@ def test_is_output_dirty_hash_mismatch():
 def test_is_output_dirty_clean():
     """Output with matching hash is clean."""
     with tempfile.TemporaryDirectory() as tmp:
-        (Path(tmp) / "foo").write_text("data")
-        cache = {"foo": {"input_hash": "abc123", "hash": "xyz", "mtime": 0, "size": 4}}
-        assert not is_output_dirty("foo", "abc123", cache, Path(tmp))
+        build_dir = Path(tmp)
+        (build_dir / "foo").write_text("data")
+        cache = {}
+        update_output_hash(cache, "foo", "abc123", build_dir)
+
+        assert not is_output_dirty("foo", "abc123", cache, build_dir)
+
+
+def test_is_output_dirty_modified_output():
+    """Output content changes are dirty even when inputs are unchanged."""
+    with tempfile.TemporaryDirectory() as tmp:
+        build_dir = Path(tmp)
+        (build_dir / "foo").write_text("data")
+        cache = {}
+        update_output_hash(cache, "foo", "abc123", build_dir)
+
+        (build_dir / "foo").write_text("changed")
+
+        assert is_output_dirty("foo", "abc123", cache, build_dir)
 
 
 def test_is_image_dirty_no_cache():
@@ -210,6 +226,35 @@ def test_hash_path_inputs_env():
         cache = {}
         h1 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "1"}}, {}, build_dir, cache)
         h2 = hash_path_inputs("mypath", pkg_dir, {"env": {"A": "2"}}, {}, build_dir, cache)
+
+        assert h1 != h2
+
+
+def test_hash_path_inputs_metadata():
+    """hash_path_inputs includes resolved metadata consumed through META."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        pkg_dir.mkdir()
+        build_dir.mkdir()
+
+        cache = {}
+        h1 = hash_path_inputs(
+            "sources/example",
+            pkg_dir,
+            {"urls": ["https://example.com/one.tar.gz"]},
+            {},
+            build_dir,
+            cache,
+        )
+        h2 = hash_path_inputs(
+            "sources/example",
+            pkg_dir,
+            {"urls": ["https://example.com/two.tar.gz"]},
+            {},
+            build_dir,
+            cache,
+        )
 
         assert h1 != h2
 

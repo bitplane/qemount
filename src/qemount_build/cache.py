@@ -16,6 +16,11 @@ from .log import timed
 CACHE_FILE = "cache/build_cache.json"
 
 
+def stable_json(value) -> str:
+    """Serialize a value deterministically for hashing."""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
 def strip_ref_prefix(ref: str) -> str:
     """Strip docker: or file: prefix from a ref."""
     for prefix in ("docker:", "file:"):
@@ -95,6 +100,7 @@ def hash_path_inputs(
 
     Includes:
     - All files in the path's directory (Dockerfile, build.sh, overlays)
+    - Resolved catalogue metadata passed to builds via META
     - Hashes of all requires (from dep_hashes, Merkle tree)
     - Hashes of all build_requires (files mounted during docker build)
     - Env vars
@@ -104,6 +110,10 @@ def hash_path_inputs(
     # Hash all files in build context
     context_dir = pkg_dir / path
     h.update(hash_files(context_dir, cache).encode())
+
+    # Hash resolved metadata. Build scripts consume this through META, and
+    # single-file catalogue entries may not have a matching context directory.
+    h.update(stable_json(resolved).encode())
 
     # Hash dependency hashes (Merkle tree) or file contents
     for req in sorted(resolved.get("requires", {}).keys()):
@@ -161,14 +171,23 @@ def is_output_dirty(
     output_requires: list[str] | None = None,
 ) -> bool:
     """Check if a file output needs rebuilding."""
-    if not (build_dir / output).exists():
+    output_path = build_dir / output
+    if not output_path.exists():
         return True
     cached = cache.get(output)
     if cached is None:
         return True
+
     # Include per-output requires in hash
     full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
-    return cached.get("input_hash") != full_hash
+    if cached.get("input_hash") != full_hash:
+        return True
+
+    stat = output_path.stat()
+    if cached.get("mtime") == stat.st_mtime and cached.get("size") == stat.st_size:
+        return False
+
+    return hash_file(output_path, cache) != cached.get("hash")
 
 
 def is_image_dirty(
