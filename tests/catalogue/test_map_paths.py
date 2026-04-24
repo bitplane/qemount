@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from qemount_build.catalogue import map_paths, load_docs
 
 
@@ -29,15 +31,23 @@ def test_map_paths_sources():
 
 
 def test_map_paths_conflict():
-    """Multiple files mapping to same path are collected."""
+    """Multiple files mapping to same path are rejected."""
     files = {
         "docs/fs/ext4.md": {"meta": {}, "content": "", "hash": "abc"},
         "other/ext4.md": {"meta": {"path": "fs/ext4"}, "content": "", "hash": "def"},
     }
-    paths = map_paths(files)
-    assert len(paths["fs/ext4"]["sources"]) == 2
-    assert "docs/fs/ext4.md" in paths["fs/ext4"]["sources"]
-    assert "other/ext4.md" in paths["fs/ext4"]["sources"]
+    with pytest.raises(ValueError, match="Duplicate catalogue path"):
+        map_paths(files)
+
+
+def test_map_paths_conflict_index_and_file():
+    """foo.md and foo/index.md cannot both define logical path foo."""
+    files = {
+        "foo.md": {"meta": {}, "content": "", "hash": "abc"},
+        "foo/index.md": {"meta": {}, "content": "", "hash": "def"},
+    }
+    with pytest.raises(ValueError, match=r"foo: .*foo\.md.*foo/index\.md"):
+        map_paths(files)
 
 
 def test_map_paths_with_fixture():

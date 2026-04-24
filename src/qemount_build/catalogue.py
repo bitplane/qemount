@@ -45,7 +45,7 @@ def load_docs(root: Path) -> dict:
     root = Path(root)
     docs = {}
 
-    for md_file in root.rglob("*.md"):
+    for md_file in sorted(root.rglob("*.md")):
         rel_path = str(md_file.relative_to(root))
         text = md_file.read_text()
         meta, content = parse_frontmatter(text)
@@ -168,14 +168,27 @@ def map_paths(files: dict) -> dict:
     Map file paths to logical catalogue paths.
 
     Returns dict mapping logical paths to {"sources": [file_paths]}.
-    Multiple files can map to same path (conflicts resolved later).
+    Raises ValueError if multiple files map to the same logical path.
     """
     paths = {}
-    for file_path, doc in files.items():
+    for file_path, doc in sorted(files.items()):
         path = doc_path(file_path, doc["meta"])
         if path not in paths:
             paths[path] = {"sources": []}
         paths[path]["sources"].append(file_path)
+
+    duplicates = {
+        path: data["sources"]
+        for path, data in paths.items()
+        if len(data["sources"]) > 1
+    }
+    if duplicates:
+        details = "; ".join(
+            f"{path or '<root>'}: {', '.join(sources)}"
+            for path, sources in sorted(duplicates.items())
+        )
+        raise ValueError(f"Duplicate catalogue path(s): {details}")
+
     return paths
 
 
