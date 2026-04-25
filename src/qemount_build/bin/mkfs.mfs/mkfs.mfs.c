@@ -46,6 +46,7 @@ static uint32_t num_alloc_blks; /* number of allocation blocks */
 static uint32_t alloc_blk_start; /* first alloc block (in 512-byte blocks) */
 static uint32_t dir_start;      /* first directory block number */
 static uint32_t dir_blocks;     /* number of directory blocks */
+static uint32_t mdb_blocks;     /* number of 512-byte blocks the MDB+map occupies */
 static uint32_t now_mac;        /* current time in Mac epoch */
 
 /* 12-bit allocation block map (in memory, indexed from 0) */
@@ -68,6 +69,8 @@ static void die(const char *msg)
  * So map entry for alloc block N contains N+2 as the "next" pointer. */
 static uint32_t alloc_blocks(uint32_t count)
 {
+    if (count == 0)
+        die("alloc_blocks called with count=0");
     if (next_alloc_blk + count > num_alloc_blks)
         die("no free allocation blocks");
 
@@ -91,7 +94,10 @@ static void add_file(const char *name, const void *data, uint32_t size,
         die("too many files");
 
     size_t raw_len = strlen(name);
-    if (raw_len > 255) raw_len = 255;
+    if (raw_len > 255) {
+        fprintf(stderr, "mkfs.mfs: warning: name truncated to 255 bytes: %s\n", name);
+        raw_len = 255;
+    }
     uint8_t name_len = raw_len;
 
     /* Entry size: 51 bytes fixed + name_len, padded to word boundary */
@@ -219,9 +225,9 @@ static void write_mdb(void)
     /* Pack the 12-bit block map after the volume info */
     pack_block_map();
 
-    /* Write backup MDB at the end of the volume */
-    uint32_t backup_block = (image_size / BLOCK_SIZE) - 2;
-    memcpy(image + backup_block * BLOCK_SIZE, mdb, 2 * BLOCK_SIZE);
+    /* Write backup MDB at the end of the volume (mirrors the full MDB+map) */
+    uint32_t backup_block = (image_size / BLOCK_SIZE) - mdb_blocks;
+    memcpy(image + backup_block * BLOCK_SIZE, mdb, mdb_blocks * BLOCK_SIZE);
 }
 
 /* Map a file extension to Mac type/creator codes */
@@ -250,12 +256,19 @@ static void type_for_ext(const char *name, char *type, char *creator)
 static void populate(const char *src_path, const char *prefix)
 {
     DIR *d = opendir(src_path);
-    if (!d) { perror(src_path); return; }
+    if (!d) { perror(src_path); exit(1); }
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             continue;
+
+        /* ':' is the Mac path separator and would be ambiguous after flattening */
+        if (strchr(ent->d_name, ':')) {
+            fprintf(stderr, "mkfs.mfs: filename contains ':' (Mac path separator): %s\n",
+                    ent->d_name);
+            exit(1);
+        }
 
         char child_path[4096];
         snprintf(child_path, sizeof(child_path), "%s/%s", src_path, ent->d_name);
@@ -268,7 +281,7 @@ static void populate(const char *src_path, const char *prefix)
             snprintf(flat_name, sizeof(flat_name), "%s", ent->d_name);
 
         struct stat st;
-        if (lstat(child_path, &st) < 0) { perror(child_path); continue; }
+        if (lstat(child_path, &st) < 0) { perror(child_path); exit(1); }
 
         if (S_ISDIR(st.st_mode)) {
             populate(child_path, flat_name);
@@ -278,10 +291,21 @@ static void populate(const char *src_path, const char *prefix)
             uint32_t size = st.st_size;
             if (size > 0) {
                 data = malloc(size);
-                if (!data) { perror("malloc"); continue; }
+                if (!data) { perror("malloc"); exit(1); }
                 int f = open(child_path, O_RDONLY);
-                if (f < 0) { perror(child_path); free(data); continue; }
-                read(f, data, size);
+                if (f < 0) { perror(child_path); exit(1); }
+
+                uint32_t got = 0;
+                while (got < size) {
+                    ssize_t n = read(f, data + got, size - got);
+                    if (n < 0) { perror(child_path); exit(1); }
+                    if (n == 0) {
+                        fprintf(stderr, "mkfs.mfs: short read on %s (got %u of %u)\n",
+                                child_path, got, size);
+                        exit(1);
+                    }
+                    got += n;
+                }
                 close(f);
             }
 
@@ -320,26 +344,50 @@ int main(int argc, char **argv)
 
     char *filename = argv[optind];
 
+    if (size_kb <= 0)
+        die("size must be positive");
+
     /* Compute layout */
-    image_size = size_kb * 1024;
+    uint64_t bytes = (uint64_t)size_kb * 1024;
+    if (bytes > 0xFFFFFFFFu)
+        die("image size exceeds 4 GB");
+    image_size = (uint32_t)bytes;
     uint32_t total_blocks = image_size / BLOCK_SIZE;
 
     if (total_blocks < 20)
         die("volume too small");
 
-    /* Reserve: 2 boot blocks + 2 MDB blocks + directory + 2 backup MDB */
-    dir_start = 4;
     dir_blocks = 12;  /* same as 400KB floppy */
     if (size_kb > 400)
         dir_blocks = 24;
     if (size_kb > 2048)
         dir_blocks = 48;
 
-    alloc_blk_start = dir_start + dir_blocks;
-    uint32_t alloc_area = (total_blocks - alloc_blk_start - 2) * BLOCK_SIZE;
-    num_alloc_blks = alloc_area / ALLOC_BLK_SIZE;
-    if (num_alloc_blks > MAX_ALLOC_BLKS)
-        num_alloc_blks = MAX_ALLOC_BLKS;
+    /* MDB+map sizing is circular: more alloc blocks → bigger map → bigger
+     * MDB → fewer alloc blocks. Iterate until it converges. The MDB starts
+     * at block 2 (after the boot blocks) and the backup at the end of the
+     * volume mirrors it, so both sides take mdb_blocks each. */
+    mdb_blocks = 2;
+    for (int iter = 0; iter < 8; iter++) {
+        if (total_blocks <= 2 + mdb_blocks + dir_blocks + mdb_blocks + 1)
+            die("volume too small for layout");
+        uint32_t alloc_start = 2 + mdb_blocks + dir_blocks;
+        uint32_t alloc_area = (total_blocks - alloc_start - mdb_blocks) * BLOCK_SIZE;
+        uint32_t nab = alloc_area / ALLOC_BLK_SIZE;
+        if (nab > MAX_ALLOC_BLKS)
+            nab = MAX_ALLOC_BLKS;
+        uint32_t map_bytes = (nab * 12 + 7) / 8;
+        uint32_t needed = (0x40 + map_bytes + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        if (needed <= mdb_blocks) {
+            num_alloc_blks = nab;
+            alloc_blk_start = alloc_start;
+            dir_start = 2 + mdb_blocks;
+            break;
+        }
+        mdb_blocks = needed;
+    }
+    if (alloc_blk_start == 0)
+        die("MDB sizing did not converge");
 
     /* Mac epoch timestamp */
     now_mac = (uint32_t)time(NULL) + MAC_EPOCH_OFFSET;
@@ -371,8 +419,8 @@ int main(int argc, char **argv)
         memcpy(mdb + 0x25, vol_name, vn_len);
 
         /* Update backup */
-        uint32_t backup_block = (image_size / BLOCK_SIZE) - 2;
-        memcpy(image + backup_block * BLOCK_SIZE, mdb, 2 * BLOCK_SIZE);
+        uint32_t backup_block = (image_size / BLOCK_SIZE) - mdb_blocks;
+        memcpy(image + backup_block * BLOCK_SIZE, mdb, mdb_blocks * BLOCK_SIZE);
     }
 
     /* Write image to file */
