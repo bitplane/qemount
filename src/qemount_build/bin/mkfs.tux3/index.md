@@ -1,12 +1,15 @@
 ---
 title: mkfs.tux3
-requires:
-  - docker:builder/compiler/linux/6
+build_requires:
+  - sources/mkfs-tux3-2015.06.01.tar.gz
+requires: []
 provides:
-  - bin/${HOST_ARCH}-linux-musl/mkfs.tux3
+  - bin/${HOST_ARCH}-linux-gnu/mkfs.tux3
 ---
 
 # mkfs.tux3
 
-Minimal Tux3 filesystem image creator. Creates images with a valid Tux3
-superblock for detection testing. Based on Daniel Phillips' tux3 source.
+Static build of mkfs.tux3 from Daniel Phillips' Tux3 source, repackaged as
+a self-contained tree (see `sources/mkfs-tux3-2015.06.01.md`). Built on
+glibc (Debian) for compatibility with the upstream kernel-emulation shim
+layer.
