@@ -111,6 +111,12 @@ static void write_block(uint32_t block, const void *buf)
     write_at((off_t)block * BLOCK_SIZE, buf, BLOCK_SIZE);
 }
 
+static void read_block(uint32_t block, void *buf)
+{
+    if (lseek(fs_fd, (off_t)block * BLOCK_SIZE, SEEK_SET) < 0) { perror("lseek"); exit(1); }
+    if ((size_t)read(fs_fd, buf, BLOCK_SIZE) != BLOCK_SIZE) { perror("read"); exit(1); }
+}
+
 /* ---- Bitmap-based allocators ---- */
 
 static uint32_t alloc_block(void)
@@ -139,31 +145,14 @@ static uint32_t alloc_inode(void)
 
 /* ---- Block assignment for file data ---- */
 
+/* Set a direct block pointer. Indirect blocks are managed by the caller
+ * (see write_file_data) so we don't read-modify-write per zone. */
 static void inode_set_block(struct ext_inode *inode, uint32_t file_block,
                             uint32_t disk_block)
 {
-    if (file_block < DIRECT_BLOCKS) {
-        inode->i_zone[file_block] = disk_block;
-        return;
-    }
-
-    /* Single indirect */
-    file_block -= DIRECT_BLOCKS;
-    if (file_block < PTRS_PER_BLOCK) {
-        if (!inode->i_zone[9]) {
-            inode->i_zone[9] = alloc_block();
-            char zero[BLOCK_SIZE] = {0};
-            write_block(inode->i_zone[9], zero);
-        }
-        uint32_t buf[PTRS_PER_BLOCK];
-        lseek(fs_fd, (off_t)inode->i_zone[9] * BLOCK_SIZE, SEEK_SET);
-        read(fs_fd, buf, BLOCK_SIZE);
-        buf[file_block] = disk_block;
-        write_block(inode->i_zone[9], buf);
-        return;
-    }
-
-    die("file too large (needs double indirect)");
+    if (file_block >= DIRECT_BLOCKS)
+        die("inode_set_block: indirect zones must be handled by caller");
+    inode->i_zone[file_block] = disk_block;
 }
 
 /* ---- Directory operations ---- */
@@ -202,8 +191,7 @@ static void add_dir_entry(uint32_t dir_ino, const char *name, uint32_t child_ino
         /* Read the block - only direct blocks for directories */
         uint32_t disk_block = dir->i_zone[b];
         char buf[BLOCK_SIZE];
-        lseek(fs_fd, (off_t)disk_block * BLOCK_SIZE, SEEK_SET);
-        read(fs_fd, buf, BLOCK_SIZE);
+        read_block(disk_block, buf);
 
         /* Walk entries to find the last one */
         uint32_t off = 0;
@@ -249,33 +237,47 @@ static void add_dir_entry(uint32_t dir_ino, const char *name, uint32_t child_ino
 
 static void write_file_data(uint32_t ino, const char *src_path)
 {
+    int src = open(src_path, O_RDONLY);
+    if (src < 0) { perror(src_path); exit(1); }
+
     struct stat st;
-    if (stat(src_path, &st) < 0) { perror(src_path); return; }
+    if (fstat(src, &st) < 0) { perror(src_path); exit(1); }
 
     struct ext_inode *inode = &fs_inodes[ino - 1];
     inode->i_size = st.st_size;
 
-    if (st.st_size == 0) return;
-
-    int src = open(src_path, O_RDONLY);
-    if (src < 0) { perror(src_path); return; }
-
-    uint32_t remaining = st.st_size;
+    uint32_t indirect[PTRS_PER_BLOCK] = {0};
+    int have_indirect = 0;
     uint32_t file_block = 0;
-    while (remaining > 0) {
+
+    for (;;) {
         char buf[BLOCK_SIZE];
         memset(buf, 0, BLOCK_SIZE);
         ssize_t n = read(src, buf, BLOCK_SIZE);
-        if (n <= 0) break;
+        if (n < 0) { perror(src_path); exit(1); }
+        if (n == 0) break;
 
         uint32_t disk_block = alloc_block();
-        inode_set_block(inode, file_block, disk_block);
         write_block(disk_block, buf);
 
+        if (file_block < DIRECT_BLOCKS) {
+            inode_set_block(inode, file_block, disk_block);
+        } else {
+            uint32_t idx = file_block - DIRECT_BLOCKS;
+            if (idx >= PTRS_PER_BLOCK)
+                die("file too large (needs double indirect)");
+            indirect[idx] = disk_block;
+            have_indirect = 1;
+        }
+
         file_block++;
-        remaining -= n;
     }
     close(src);
+
+    if (have_indirect) {
+        inode->i_zone[9] = alloc_block();
+        write_block(inode->i_zone[9], indirect);
+    }
 }
 
 /* ---- Recursive directory population ---- */
@@ -283,18 +285,24 @@ static void write_file_data(uint32_t ino, const char *src_path)
 static void populate_dir(uint32_t dir_ino, const char *src_path)
 {
     DIR *d = opendir(src_path);
-    if (!d) { perror(src_path); return; }
+    if (!d) { perror(src_path); exit(1); }
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             continue;
 
+        if (strlen(ent->d_name) > EXT_NAME_LEN) {
+            fprintf(stderr, "mkfs.ext: name too long (max %d): %s\n",
+                    EXT_NAME_LEN, ent->d_name);
+            exit(1);
+        }
+
         char child_path[4096];
         snprintf(child_path, sizeof(child_path), "%s/%s", src_path, ent->d_name);
 
         struct stat st;
-        if (lstat(child_path, &st) < 0) { perror(child_path); continue; }
+        if (lstat(child_path, &st) < 0) { perror(child_path); exit(1); }
 
         /* Skip non-regular, non-directory entries */
         if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
@@ -417,7 +425,12 @@ int main(int argc, char **argv)
 
     char *filename = argv[optind];
     int size_mb = atoi(argv[optind + 1]);
-    fs_total_blocks = (size_mb * 1024 * 1024) / BLOCK_SIZE;
+    if (size_mb <= 0)
+        die("size must be positive");
+    uint64_t bytes = (uint64_t)size_mb * 1024 * 1024;
+    if (bytes / BLOCK_SIZE > 0xFFFFFFFFu)
+        die("filesystem exceeds 32-bit block-number limit");
+    fs_total_blocks = (uint32_t)(bytes / BLOCK_SIZE);
     fs_now = time(NULL);
 
     if (fs_total_blocks < 16) {
@@ -444,7 +457,7 @@ int main(int argc, char **argv)
     /* Create and truncate image */
     fs_fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fs_fd < 0) { perror("open"); return 1; }
-    ftruncate(fs_fd, size_mb * 1024 * 1024);
+    if (ftruncate(fs_fd, (off_t)bytes) < 0) { perror("ftruncate"); return 1; }
 
     /* Allocate in-memory inode table */
     size_t inode_buf_size = inode_blocks * BLOCK_SIZE;
