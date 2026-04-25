@@ -16,6 +16,29 @@ OUTDIR=$2
 # from zig's bundled mingw .def files).
 PREFIX=/opt/$TARGET
 
+# Target-specific extra flags baked into the cc/c++ shims. macOS needs
+# the SDK as a sysroot. zig cc invokes its bundled clang with
+# -nostdsysteminc, so -isysroot alone won't add the SDK's usr/include
+# to the include search path — we add it explicitly with -I. -F is the
+# clang framework search path (used at both compile and link time).
+EXTRA_CFLAGS=
+EXTRA_LDFLAGS=
+EXTRA_LIB_DIRS=
+case "$TARGET" in
+    *-macos|*-darwin)
+        SDK=/opt/macos-sdk/MacOSX11.3.sdk
+        # -isystem (not -I) so the SDK headers sit AFTER any project
+        # -I args. libiconv ships its own iconv.h that must win over
+        # the SDK's; the same applies to other deps with replacement
+        # headers.
+        EXTRA_CFLAGS="-isysroot $SDK -isystem $SDK/usr/include -F$SDK/System/Library/Frameworks"
+        EXTRA_LDFLAGS="-F$SDK/System/Library/Frameworks -L$SDK/usr/lib"
+        # Advertised via --print-search-dirs so meson's cc.find_library()
+        # can discover libz.tbd, libiconv.tbd, etc. that live in the SDK.
+        EXTRA_LIB_DIRS=":$SDK/usr/lib"
+        ;;
+esac
+
 # Find zig binary - pip package installs entry point as "python-zig"
 ZIG=$(command -v zig 2>/dev/null || command -v python-zig 2>/dev/null) || {
     echo "error: zig not found (install via: pip install ziglang)" >&2
@@ -58,18 +81,23 @@ cat > $OUTDIR/cc << EOF
 # Match both -print-search-dirs (single dash) and --print-search-dirs
 # (GCC long form, what meson uses), anywhere in the arg list — meson
 # may pass additional check flags alongside.
+#
+# Arg order: EXTRA_CFLAGS goes BEFORE user args (so -isysroot is set
+# early and -isystem is lower priority than user -I). EXTRA_LDFLAGS goes
+# AFTER user args (so -L\$PREFIX/lib from the build wins over -L\$SDK/lib
+# — otherwise Apple's libiconv.tbd masks our libiconv.a).
 for arg in "\$@"; do
     case "\$arg" in
         -Wl,--version)
             echo "LLD 20.1.2 (compatible with GNU linkers)"
             exit 0 ;;
         -print-search-dirs|--print-search-dirs)
-            $ZIG cc -target $TARGET "\$@" \\
-                | sed "s|^libraries: =|libraries: =$PREFIX/lib:|"
+            $ZIG cc -target $TARGET $EXTRA_CFLAGS "\$@" \\
+                | sed "s|^libraries: =|libraries: =$PREFIX/lib$EXTRA_LIB_DIRS:|"
             exit 0 ;;
     esac
 done
-exec $ZIG cc -target $TARGET \$($OUTDIR/_expand "\$@")
+exec $ZIG cc -target $TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
 EOF
 
 cat > $OUTDIR/c++ << EOF
@@ -80,12 +108,12 @@ for arg in "\$@"; do
             echo "LLD 20.1.2 (compatible with GNU linkers)"
             exit 0 ;;
         -print-search-dirs|--print-search-dirs)
-            $ZIG c++ -target $TARGET "\$@" \\
-                | sed "s|^libraries: =|libraries: =$PREFIX/lib:|"
+            $ZIG c++ -target $TARGET $EXTRA_CFLAGS "\$@" \\
+                | sed "s|^libraries: =|libraries: =$PREFIX/lib$EXTRA_LIB_DIRS:|"
             exit 0 ;;
     esac
 done
-exec $ZIG c++ -target $TARGET \$($OUTDIR/_expand "\$@")
+exec $ZIG c++ -target $TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
 EOF
 
 # Meson passes 'T' flag to ar requesting thin archives, but zig's lld

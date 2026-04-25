@@ -8,7 +8,7 @@ JOBS=${JOBS:-$(nproc)}
 PLATFORMS=(
     "x86_64-linux-musl"
     "x86_64-windows-gnu"
-    # "x86_64-macos"        # zig missing macOS SDK headers (nameser, xattr)
+    "x86_64-macos"
 )
 
 platforms_from_targets() {
@@ -109,6 +109,33 @@ meson_array() {
         sep=", "
     done
     printf "]"
+}
+
+ensure_macos_sdk() {
+    local TARGET=$1
+    case "$TARGET" in *-macos|*-darwin) ;; *) return 0 ;; esac
+    if [ ! -d /opt/macos-sdk/MacOSX11.3.sdk ]; then
+        echo "--- Extracting macOS SDK ---"
+        mkdir -p /opt/macos-sdk
+        tar xf /host/build/sources/MacOSX11.3.sdk.tar.xz -C /opt/macos-sdk
+    fi
+    # Synthesise pkg-config files for SDK-provided libraries that QEMU
+    # discovers via dependency() rather than cc.find_library(). zlib is
+    # the prominent case — meson tries pkg-config first.
+    local PREFIX=/opt/$TARGET
+    local SDK=/opt/macos-sdk/MacOSX11.3.sdk
+    mkdir -p $PREFIX/lib/pkgconfig
+    cat > $PREFIX/lib/pkgconfig/zlib.pc << EOF
+prefix=$SDK/usr
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: zlib
+Description: zlib (from macOS SDK)
+Version: 1.2.11
+Libs: -L\${libdir} -lz
+Cflags: -I\${includedir}
+EOF
 }
 
 ensure_windows_import_libs() {
@@ -262,6 +289,7 @@ build_deps_for_target() {
     local LD_ARGS="$(platform_ld_args $TARGET)"
 
     mkdir -p $PREFIX
+    ensure_macos_sdk $TARGET
     ensure_windows_import_libs $TARGET
 
     echo "=== Building deps for $TARGET ==="
@@ -319,6 +347,13 @@ build_deps_for_target() {
     if [[ $TARGET != *"linux"* ]]; then
         echo "--- Building libiconv for $TARGET ---"
         cd $SRCDIR/libiconv-1.17
+        # libiconv 1.17's iconv.c uses errno/E2BIG/EILSEQ but doesn't
+        # include <errno.h>, relying on transitive includes that don't
+        # exist via stdlib.h on macOS.
+        if [[ $TARGET == *"macos"* || $TARGET == *"darwin"* ]]; then
+            grep -q "^#include <errno.h>" lib/iconv.c || \
+                sed -i '/^#include <iconv.h>/a #include <errno.h>' lib/iconv.c
+        fi
         rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
         ../configure \
             --prefix=$PREFIX \
@@ -384,6 +419,13 @@ build_qemu_for_target() {
     tar xf /host/build/sources/qemu-10.2.0.tar.xz
     cd qemu-10.2.0
 
+    # SDK 11.3 only has IOMasterPort (renamed to IOMainPort in macOS 12).
+    # On real macOS 12+, IOMasterPort is still an alias, so binaries
+    # built against the older symbol run fine on newer systems.
+    if [[ $TARGET == *"macos"* || $TARGET == *"darwin"* ]]; then
+        sed -i 's/\bIOMainPort\b/IOMasterPort/g' block/file-posix.c
+    fi
+
     # Configure with cross-compile settings.
     # Unset CC/CXX/AR/etc. inherited from the deps build so meson
     # detects the native (build-machine) compiler from PATH for tools
@@ -395,6 +437,11 @@ build_qemu_for_target() {
     export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
     export PKG_CONFIG_ALL_STATIC=1
 
+    # macOS forbids fully-static binaries — Apple only ships dynamic
+    # libSystem stubs. Build dynamic on darwin, static elsewhere.
+    local STATIC_FLAG="--static"
+    case "$TARGET" in *-macos|*-darwin) STATIC_FLAG="" ;; esac
+
     ./configure \
         --cross-prefix="" \
         --cc="$WRAPDIR/cc" \
@@ -402,7 +449,7 @@ build_qemu_for_target() {
         --host-cc=gcc \
         --target-list=$QEMU_TARGETS \
         --prefix=/usr \
-        --static \
+        $STATIC_FLAG \
         --without-default-features \
         --disable-werror \
         --disable-install-blobs \
@@ -412,12 +459,17 @@ build_qemu_for_target() {
 
     make -j$JOBS
 
-    # Copy outputs
+    # Copy outputs. On macOS, QEMU's meson build produces *-unsigned
+    # binaries expecting a post-build codesign step. We don't sign in
+    # the build container — users can ad-hoc sign with `codesign -s -`
+    # on their mac, or run via `xattr -d com.apple.quarantine`.
     local EXT="$(platform_exe_ext $TARGET)"
+    local SUFFIX=""
+    case "$TARGET" in *-macos|*-darwin) SUFFIX="-unsigned" ;; esac
 
-    cp build/qemu-system-x86_64$EXT $OUTDIR/
-    cp build/qemu-system-aarch64$EXT $OUTDIR/
-    cp build/qemu-system-m68k$EXT $OUTDIR/
+    cp build/qemu-system-x86_64$SUFFIX$EXT $OUTDIR/qemu-system-x86_64$EXT
+    cp build/qemu-system-aarch64$SUFFIX$EXT $OUTDIR/qemu-system-aarch64$EXT
+    cp build/qemu-system-m68k$SUFFIX$EXT $OUTDIR/qemu-system-m68k$EXT
 
     # Strip binaries
     # zig doesn't have strip for all targets, so skip if not available
