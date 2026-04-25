@@ -71,7 +71,6 @@ static uint32_t fs_next_data_block;
 static uint32_t fs_next_inode = BFS_ROOT_INO + 1;
 static uint32_t fs_now;
 static struct bfs_inode *fs_inodes;
-static uint8_t *inode_bitmap;
 
 static void die(const char *msg)
 {
@@ -125,7 +124,6 @@ static void init_inode(uint32_t ino, uint32_t vtype, uint32_t mode)
     inode->i_mtime = fs_now;
     inode->i_ctime = fs_now;
     inode->i_eoffset = (uint32_t)-1;
-    inode_bitmap[ino] = 1;
 }
 
 static uint32_t alloc_inode(void)
@@ -148,8 +146,14 @@ static uint32_t reserve_blocks(uint32_t count)
 
 static void write_file_data(uint32_t ino, const char *src_path)
 {
+    int src = open(src_path, O_RDONLY);
+    if (src < 0) {
+        perror(src_path);
+        exit(1);
+    }
+
     struct stat st;
-    if (stat(src_path, &st) < 0) {
+    if (fstat(src, &st) < 0) {
         perror(src_path);
         exit(1);
     }
@@ -165,6 +169,7 @@ static void write_file_data(uint32_t ino, const char *src_path)
         inode->i_sblock = 0;
         inode->i_eblock = 0;
         inode->i_eoffset = (uint32_t)-1;
+        close(src);
         return;
     }
 
@@ -173,19 +178,12 @@ static void write_file_data(uint32_t ino, const char *src_path)
     inode->i_eblock = start + block_count - 1;
     inode->i_eoffset = start * BFS_BSIZE + size - 1;
 
-    int src = open(src_path, O_RDONLY);
-    if (src < 0) {
-        perror(src_path);
-        exit(1);
-    }
-
     for (uint32_t block = 0; block < block_count; block++) {
         char buf[BFS_BSIZE];
         memset(buf, 0, sizeof(buf));
         ssize_t n = read(src, buf, sizeof(buf));
         if (n < 0) {
             perror(src_path);
-            close(src);
             exit(1);
         }
         write_block(start + block, buf);
@@ -219,6 +217,10 @@ static void check_name_collision(const struct bfs_dirent *entries,
 static void add_dir_entry(struct bfs_dirent *entries, uint32_t *entry_count,
                           const char *name, uint32_t ino)
 {
+    if (strlen(name) > BFS_NAMELEN)
+        fprintf(stderr, "mkfs.bfs: warning: name truncated to %d bytes: %s\n",
+                BFS_NAMELEN, name);
+
     check_name_collision(entries, *entry_count, name);
 
     struct bfs_dirent *entry = &entries[*entry_count];
@@ -297,11 +299,9 @@ static void write_root_directory(const struct bfs_dirent *entries,
 
 static void write_inode_table(void)
 {
-    for (uint32_t ino = BFS_ROOT_INO; ino <= BFS_LAST_INO; ino++) {
-        if (inode_bitmap[ino]) {
-            write_at(inode_offset(ino), inode_by_number(ino),
-                     sizeof(struct bfs_inode));
-        }
+    for (uint32_t ino = BFS_ROOT_INO; ino < fs_next_inode; ino++) {
+        write_at(inode_offset(ino), inode_by_number(ino),
+                 sizeof(struct bfs_inode));
     }
 }
 
@@ -344,8 +344,7 @@ int main(int argc, char **argv)
 
     fs_inodes = calloc(BFS_LAST_INO - BFS_ROOT_INO + 1,
                        sizeof(struct bfs_inode));
-    inode_bitmap = calloc(BFS_LAST_INO + 1, 1);
-    if (!fs_inodes || !inode_bitmap)
+    if (!fs_inodes)
         die("cannot allocate filesystem state");
 
     struct bfs_dirent *entries = calloc(BFS_LAST_INO, sizeof(*entries));
@@ -372,8 +371,6 @@ int main(int argc, char **argv)
         populate_flat(entries, &entry_count, populate_dir_path);
 
     write_root_directory(entries, entry_count);
-    inode_by_number(BFS_ROOT_INO)->i_mode = S_IFDIR | 0755;
-    inode_by_number(BFS_ROOT_INO)->i_nlink = 2;
 
     struct bfs_super_block sb;
     memset(&sb, 0, sizeof(sb));
@@ -393,7 +390,6 @@ int main(int argc, char **argv)
     close(fs_fd);
     free(entries);
     free(fs_inodes);
-    free(inode_bitmap);
 
     printf("Created BFS image: %s (%dMB, %u blocks, %u entries)\n",
            filename, size_mb, fs_total_blocks, entry_count);
