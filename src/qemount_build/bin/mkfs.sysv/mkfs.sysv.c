@@ -228,22 +228,20 @@ static void add_dir_entry(uint32_t dir_ino, const char *name, uint32_t child_ino
 
 static void write_file_data(uint32_t ino, const char *src_path)
 {
-    struct stat st;
-    if (stat(src_path, &st) < 0) {
+    int src = open(src_path, O_RDONLY);
+    if (src < 0) {
         perror(src_path);
-        return;
+        exit(1);
+    }
+
+    struct stat st;
+    if (fstat(src, &st) < 0) {
+        perror(src_path);
+        exit(1);
     }
 
     struct sysv_inode *inode = &fs_inodes[ino - 1];
     inode->i_size = st.st_size;
-    if (st.st_size == 0)
-        return;
-
-    int src = open(src_path, O_RDONLY);
-    if (src < 0) {
-        perror(src_path);
-        return;
-    }
 
     uint32_t file_block = 0;
     for (;;) {
@@ -252,7 +250,6 @@ static void write_file_data(uint32_t ino, const char *src_path)
         ssize_t n = read(src, buf, sizeof(buf));
         if (n < 0) {
             perror(src_path);
-            close(src);
             exit(1);
         }
         if (n == 0)
@@ -271,7 +268,7 @@ static void populate_dir(uint32_t dir_ino, const char *src_path)
     DIR *d = opendir(src_path);
     if (!d) {
         perror(src_path);
-        return;
+        exit(1);
     }
 
     struct dirent *ent;
@@ -285,7 +282,7 @@ static void populate_dir(uint32_t dir_ino, const char *src_path)
         struct stat st;
         if (lstat(child_path, &st) < 0) {
             perror(child_path);
-            continue;
+            exit(1);
         }
 
         if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
