@@ -72,6 +72,8 @@ static void fix_checksum(void)
 /* Allocate a chain of clusters, return first cluster number (2-based) */
 static uint32_t alloc_clusters(uint32_t count)
 {
+    if (count == 0)
+        die("alloc_clusters called with count=0");
     if (next_cluster + count > total_clusters + 2)
         die("no free clusters");
 
@@ -105,14 +107,22 @@ static void write_fat(uint32_t fat_start_sector)
     }
 }
 
-/* Convert filename to 8.3 format */
+/* Convert filename to 8.3 format. "." and ".." are passed through verbatim
+ * so that subdirectory dot/dotdot entries get the literal dot bytes that
+ * FAT-style readers expect, rather than all-spaces. */
 static void name_to_83(const char *name, char *out)
 {
     memset(out, ' ', 11);
 
+    if (strcmp(name, ".") == 0) { out[0] = '.'; return; }
+    if (strcmp(name, "..") == 0) { out[0] = '.'; out[1] = '.'; return; }
+
     const char *dot = strrchr(name, '.');
     int base_len = dot ? (dot - name) : (int)strlen(name);
-    if (base_len > 8) base_len = 8;
+    if (base_len > 8) {
+        fprintf(stderr, "mkfs.gemdos: warning: basename truncated to 8 chars: %s\n", name);
+        base_len = 8;
+    }
 
     for (int i = 0; i < base_len; i++)
         out[i] = toupper((unsigned char)name[i]);
@@ -120,10 +130,70 @@ static void name_to_83(const char *name, char *out)
     if (dot) {
         dot++;
         int ext_len = strlen(dot);
-        if (ext_len > 3) ext_len = 3;
+        if (ext_len > 3) {
+            fprintf(stderr, "mkfs.gemdos: warning: extension truncated to 3 chars: %s\n", name);
+            ext_len = 3;
+        }
         for (int i = 0; i < ext_len; i++)
             out[8 + i] = toupper((unsigned char)dot[i]);
     }
+}
+
+/* FAT 8.3 disallows control chars, space, and these punctuation chars. */
+static int illegal_83_char(unsigned char c)
+{
+    if (c < 0x20 || c == 0x7f) return 1;
+    return strchr(" \"*+,/:;<=>?[\\]|", c) != NULL;
+}
+
+static void validate_user_name(const char *name)
+{
+    if (name[0] == '.') {
+        fprintf(stderr, "mkfs.gemdos: name starts with dot (no basename): %s\n", name);
+        exit(1);
+    }
+    int dots = 0;
+    for (const char *p = name; *p; p++) {
+        if (illegal_83_char((unsigned char)*p)) {
+            fprintf(stderr, "mkfs.gemdos: illegal character 0x%02x in name: %s\n",
+                    (unsigned char)*p, name);
+            exit(1);
+        }
+        if (*p == '.' && ++dots > 1) {
+            fprintf(stderr, "mkfs.gemdos: multiple dots in name: %s\n", name);
+            exit(1);
+        }
+    }
+}
+
+static int root_has_name(const char *name83)
+{
+    uint32_t root_dir_offset = (1 + NUM_FATS * sectors_per_fat) * SECTOR_SIZE;
+    for (uint32_t off = 0; off < root_dir_used; off += 32) {
+        uint8_t *ent = image + root_dir_offset + off;
+        if (ent[0] == 0x00 || ent[0] == 0xE5) continue;
+        if (memcmp(ent, name83, 11) == 0) return 1;
+    }
+    return 0;
+}
+
+static int subdir_has_name(uint32_t dir_cluster, uint32_t dir_used, const char *name83)
+{
+    uint32_t cur = dir_cluster;
+    uint32_t consumed = 0;
+    while (consumed < dir_used) {
+        uint32_t in_this = dir_used - consumed;
+        if (in_this > CLUSTER_SIZE) in_this = CLUSTER_SIZE;
+        uint8_t *base_ptr = image + cluster_offset(cur);
+        for (uint32_t off = 0; off < in_this; off += 32) {
+            uint8_t *ent = base_ptr + off;
+            if (ent[0] == 0x00 || ent[0] == 0xE5) continue;
+            if (memcmp(ent, name83, 11) == 0) return 1;
+        }
+        consumed += in_this;
+        if (consumed < dir_used) cur = fat[cur];
+    }
+    return 0;
 }
 
 /* Encode date/time in DOS format */
@@ -149,9 +219,14 @@ static void add_root_entry(const char *name, uint8_t attr, uint32_t cluster,
     if (root_dir_used + 32 > max_bytes)
         die("root directory full");
 
-    uint8_t *ent = image + root_dir_offset + root_dir_used;
     char name83[11];
     name_to_83(name, name83);
+    if (root_has_name(name83)) {
+        fprintf(stderr, "mkfs.gemdos: duplicate 8.3 name in root: %s\n", name);
+        exit(1);
+    }
+
+    uint8_t *ent = image + root_dir_offset + root_dir_used;
     memcpy(ent, name83, 11);
     ent[0x0B] = attr;
     put_le16(ent + 0x16, dos_time(mtime));
@@ -167,6 +242,13 @@ static void add_subdir_entry(uint32_t dir_cluster, uint32_t *dir_used,
                              const char *name, uint8_t attr,
                              uint32_t cluster, uint32_t size, time_t mtime)
 {
+    char name83[11];
+    name_to_83(name, name83);
+    if (subdir_has_name(dir_cluster, *dir_used, name83)) {
+        fprintf(stderr, "mkfs.gemdos: duplicate 8.3 name in subdirectory: %s\n", name);
+        exit(1);
+    }
+
     /* Find the right cluster in the chain */
     uint32_t cur = dir_cluster;
     uint32_t offset_in_dir = *dir_used;
@@ -183,8 +265,6 @@ static void add_subdir_entry(uint32_t dir_cluster, uint32_t *dir_used,
     }
 
     uint8_t *ent = image + cluster_offset(cur) + offset_in_dir;
-    char name83[11];
-    name_to_83(name, name83);
     memcpy(ent, name83, 11);
     ent[0x0B] = attr;
     put_le16(ent + 0x16, dos_time(mtime));
@@ -204,13 +284,19 @@ static uint32_t write_file(const char *path, uint32_t size)
     uint32_t first = alloc_clusters(num_clusters);
 
     int fd = open(path, O_RDONLY);
-    if (fd < 0) { perror(path); return 0; }
+    if (fd < 0) { perror(path); exit(1); }
 
     uint32_t remaining = size;
     for (uint32_t i = 0; i < num_clusters; i++) {
         uint32_t off = cluster_offset(first + i);
         uint32_t chunk = remaining < CLUSTER_SIZE ? remaining : CLUSTER_SIZE;
-        read(fd, image + off, chunk);
+        ssize_t n = read(fd, image + off, chunk);
+        if (n < 0) { perror(path); exit(1); }
+        if ((uint32_t)n != chunk) {
+            fprintf(stderr, "mkfs.gemdos: short read on %s (got %zd of %u)\n",
+                    path, n, chunk);
+            exit(1);
+        }
         remaining -= chunk;
     }
     close(fd);
@@ -224,18 +310,20 @@ static void populate_subdir(uint32_t dir_cluster, uint32_t *dir_used,
 static void populate_root(const char *src_path)
 {
     DIR *d = opendir(src_path);
-    if (!d) { perror(src_path); return; }
+    if (!d) { perror(src_path); exit(1); }
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             continue;
 
+        validate_user_name(ent->d_name);
+
         char child_path[4096];
         snprintf(child_path, sizeof(child_path), "%s/%s", src_path, ent->d_name);
 
         struct stat st;
-        if (lstat(child_path, &st) < 0) { perror(child_path); continue; }
+        if (lstat(child_path, &st) < 0) { perror(child_path); exit(1); }
 
         if (S_ISDIR(st.st_mode)) {
             uint32_t clust = alloc_clusters(1);
@@ -259,18 +347,20 @@ static void populate_subdir(uint32_t dir_cluster, uint32_t *dir_used,
                             const char *src_path)
 {
     DIR *d = opendir(src_path);
-    if (!d) { perror(src_path); return; }
+    if (!d) { perror(src_path); exit(1); }
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             continue;
 
+        validate_user_name(ent->d_name);
+
         char child_path[4096];
         snprintf(child_path, sizeof(child_path), "%s/%s", src_path, ent->d_name);
 
         struct stat st;
-        if (lstat(child_path, &st) < 0) { perror(child_path); continue; }
+        if (lstat(child_path, &st) < 0) { perror(child_path); exit(1); }
 
         if (S_ISDIR(st.st_mode)) {
             uint32_t clust = alloc_clusters(1);
@@ -313,13 +403,21 @@ int main(int argc, char **argv)
 
     char *filename = argv[optind];
 
+    if (size_kb <= 0)
+        die("size must be positive");
+
     /* Compute layout */
-    image_size = size_kb * 1024;
+    uint64_t bytes = (uint64_t)size_kb * 1024;
+    if (bytes > 0xFFFFFFFFu)
+        die("image size exceeds 4 GB");
+    image_size = (uint32_t)bytes;
     total_sectors = image_size / SECTOR_SIZE;
 
     /* FAT12 sizing */
     root_dir_sectors = (ROOT_DIR_ENTRIES * 32 + SECTOR_SIZE - 1) / SECTOR_SIZE;
     uint32_t reserved_sectors = 1; /* boot sector */
+    if (total_sectors <= reserved_sectors + root_dir_sectors + NUM_FATS + 2)
+        die("filesystem too small");
     uint32_t data_sectors = total_sectors - reserved_sectors - root_dir_sectors;
 
     /* Compute sectors per FAT: each FAT12 entry is 1.5 bytes */
@@ -357,9 +455,11 @@ int main(int argc, char **argv)
     image[0x00] = 0x60;           /* 68000 BRA.S */
     image[0x01] = 0x38;           /* branch offset (skip BPB) */
     memcpy(image + 0x02, "GEMDOS", 6);  /* OEM */
-    /* Serial number */
-    uint32_t serial = (uint32_t)time(NULL);
-    put_be16(image + 0x08, serial & 0xFFFF);
+    /* Serial number: 3 bytes at 0x08-0x0A, big-endian Atari convention */
+    uint32_t serial = (uint32_t)time(NULL) & 0xFFFFFF;
+    image[0x08] = (serial >> 16) & 0xFF;
+    image[0x09] = (serial >>  8) & 0xFF;
+    image[0x0A] =  serial        & 0xFF;
 
     /* BPB fields - Atari uses big-endian for BPS */
     put_be16(image + 0x0B, SECTOR_SIZE);          /* BPS (big-endian!) */
