@@ -6,6 +6,7 @@ requires:
   - sources/pixman-0.44.2.tar.gz
   - sources/libffi-3.4.6.tar.gz
   - sources/libiconv-1.17.tar.gz
+  - sources/MacOSX11.3.sdk.tar.xz
 provides:
   - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
   - bin/qemu-system/x86_64-linux-musl/qemu-system-aarch64
@@ -13,10 +14,9 @@ provides:
   - bin/qemu-system/x86_64-windows-gnu/qemu-system-x86_64.exe
   - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
   - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
-  # macOS needs macOS SDK headers, disabled for now
-  # - bin/qemu-system/x86_64-macos/qemu-system-x86_64
-  # - bin/qemu-system/x86_64-macos/qemu-system-aarch64
-  # - bin/qemu-system/x86_64-macos/qemu-system-m68k
+  - bin/qemu-system/x86_64-macos/qemu-system-x86_64
+  - bin/qemu-system/x86_64-macos/qemu-system-aarch64
+  - bin/qemu-system/x86_64-macos/qemu-system-m68k
 ---
 
 # QEMU Cross-Compiler
