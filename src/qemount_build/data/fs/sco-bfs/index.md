@@ -1,5 +1,7 @@
 ---
 format: fs/sco-bfs
+build_requires:
+  - bin/${HOST_ARCH}-linux-musl/mkfs.bfs
 requires:
   - docker:builder/disk/alpine
   - data/templates/basic.tar
