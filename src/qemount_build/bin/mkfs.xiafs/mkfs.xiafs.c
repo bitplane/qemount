@@ -104,8 +104,8 @@ static void write_block(uint32_t block, const void *buf)
 
 static void read_block(uint32_t block, void *buf)
 {
-    lseek(fs_fd, (off_t)block * BLOCK_SIZE, SEEK_SET);
-    read(fs_fd, buf, BLOCK_SIZE);
+    if (lseek(fs_fd, (off_t)block * BLOCK_SIZE, SEEK_SET) < 0) { perror("lseek"); exit(1); }
+    if ((size_t)read(fs_fd, buf, BLOCK_SIZE) != BLOCK_SIZE) { perror("read"); exit(1); }
 }
 
 /* Bitmap operations */
@@ -143,35 +143,17 @@ static uint32_t alloc_inode(void)
     return 0;
 }
 
-/* Set a zone pointer for an inode, handling the block-count high bytes */
+/* Set a direct zone pointer for an inode, preserving the block-count high
+ * byte on zones 0-2. Indirect zones are managed by the caller. */
 static void inode_set_zone(struct xiafs_inode *inode, uint32_t file_zone,
                            uint32_t disk_zone)
 {
-    if (file_zone < XIAFS_DIRECT_ZONES) {
-        /* Preserve high byte (block count) for zones 0-2 */
-        if (file_zone < 3)
-            inode->i_zone[file_zone] = (inode->i_zone[file_zone] & 0xFF000000) | disk_zone;
-        else
-            inode->i_zone[file_zone] = disk_zone;
-        return;
-    }
-
-    /* Single indirect (zone pointer 8) */
-    file_zone -= XIAFS_DIRECT_ZONES;
-    if (file_zone < ADDRS_PER_ZONE) {
-        if (!inode->i_zone[8]) {
-            inode->i_zone[8] = alloc_zone();
-            char zero[BLOCK_SIZE] = {0};
-            write_block(inode->i_zone[8], zero);
-        }
-        uint32_t buf[ADDRS_PER_ZONE];
-        read_block(inode->i_zone[8], buf);
-        buf[file_zone] = disk_zone;
-        write_block(inode->i_zone[8], buf);
-        return;
-    }
-
-    die("file too large (needs double indirect)");
+    if (file_zone >= XIAFS_DIRECT_ZONES)
+        die("inode_set_zone: indirect zones must be handled by caller");
+    if (file_zone < 3)
+        inode->i_zone[file_zone] = (inode->i_zone[file_zone] & 0xFF000000) | disk_zone;
+    else
+        inode->i_zone[file_zone] = disk_zone;
 }
 
 /* Set block count in high bytes of zone pointers 0-2 */
@@ -188,15 +170,17 @@ static void init_dir_block(uint32_t block, uint32_t self_ino, uint32_t parent_in
     char buf[BLOCK_SIZE];
     memset(buf, 0, BLOCK_SIZE);
 
+    uint16_t dot_len = DIR_REC_LEN(1);
+
     struct xiafs_direct *dot = (struct xiafs_direct *)buf;
     dot->d_ino = self_ino;
-    dot->d_rec_len = 12;
+    dot->d_rec_len = dot_len;
     dot->d_name_len = 1;
     dot->d_name[0] = '.';
 
-    struct xiafs_direct *dotdot = (struct xiafs_direct *)(buf + 12);
+    struct xiafs_direct *dotdot = (struct xiafs_direct *)(buf + dot_len);
     dotdot->d_ino = parent_ino;
-    dotdot->d_rec_len = BLOCK_SIZE - 12;
+    dotdot->d_rec_len = BLOCK_SIZE - dot_len;
     dotdot->d_name_len = 2;
     dotdot->d_name[0] = '.';
     dotdot->d_name[1] = '.';
@@ -256,53 +240,74 @@ static void add_dir_entry(uint32_t dir_ino, const char *name, uint32_t child_ino
 
 static void write_file_data(uint32_t ino, const char *src_path)
 {
+    int src = open(src_path, O_RDONLY);
+    if (src < 0) { perror(src_path); exit(1); }
+
     struct stat st;
-    if (stat(src_path, &st) < 0) { perror(src_path); return; }
+    if (fstat(src, &st) < 0) { perror(src_path); exit(1); }
 
     struct xiafs_inode *inode = &inode_table[ino - 1];
     inode->i_size = st.st_size;
 
-    if (st.st_size == 0) return;
-
-    int src = open(src_path, O_RDONLY);
-    if (src < 0) { perror(src_path); return; }
-
-    uint32_t remaining = st.st_size;
+    uint32_t indirect[ADDRS_PER_ZONE] = {0};
+    int have_indirect = 0;
     uint32_t file_zone = 0;
     uint32_t blocks = 0;
-    while (remaining > 0) {
+
+    for (;;) {
         char buf[BLOCK_SIZE];
         memset(buf, 0, BLOCK_SIZE);
         ssize_t n = read(src, buf, BLOCK_SIZE);
-        if (n <= 0) break;
+        if (n < 0) { perror(src_path); exit(1); }
+        if (n == 0) break;
 
         uint32_t disk_zone = alloc_zone();
-        inode_set_zone(inode, file_zone, disk_zone);
         write_block(disk_zone, buf);
+
+        if (file_zone < XIAFS_DIRECT_ZONES) {
+            inode_set_zone(inode, file_zone, disk_zone);
+        } else {
+            uint32_t idx = file_zone - XIAFS_DIRECT_ZONES;
+            if (idx >= ADDRS_PER_ZONE)
+                die("file too large (needs double indirect)");
+            indirect[idx] = disk_zone;
+            have_indirect = 1;
+        }
 
         file_zone++;
         blocks++;
-        remaining -= n;
     }
     close(src);
+
+    if (have_indirect) {
+        inode->i_zone[8] = alloc_zone();
+        write_block(inode->i_zone[8], indirect);
+    }
+
     inode_set_blocks(inode, blocks);
 }
 
 static void populate_dir(uint32_t dir_ino, const char *src_path)
 {
     DIR *d = opendir(src_path);
-    if (!d) { perror(src_path); return; }
+    if (!d) { perror(src_path); exit(1); }
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
         if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
             continue;
 
+        if (strlen(ent->d_name) > XIAFS_NAME_LEN) {
+            fprintf(stderr, "mkfs.xiafs: name too long (max %d): %s\n",
+                    XIAFS_NAME_LEN, ent->d_name);
+            exit(1);
+        }
+
         char child_path[4096];
         snprintf(child_path, sizeof(child_path), "%s/%s", src_path, ent->d_name);
 
         struct stat st;
-        if (lstat(child_path, &st) < 0) { perror(child_path); continue; }
+        if (lstat(child_path, &st) < 0) { perror(child_path); exit(1); }
         if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
             continue;
 
@@ -353,11 +358,15 @@ int main(int argc, char **argv)
 
     char *filename = argv[optind];
     size_mb = atoi(argv[optind + 1]);
-    fs_nzones = (size_mb * 1024 * 1024) / BLOCK_SIZE;
+    if (size_mb <= 0)
+        die("size must be positive");
+    fs_nzones = (uint32_t)((uint64_t)size_mb * 1024 * 1024 / BLOCK_SIZE);
     fs_now = time(NULL);
 
     if (fs_nzones < 32)
         die("filesystem too small");
+    if (fs_nzones >= (1u << 24))
+        die("filesystem exceeds 16 GB zone-number limit");
 
     /* Compute layout (matching original mkxfs logic) */
     fs_inode_zones = ((fs_nzones >> 2) / INODES_PER_BLOCK) + 1;
@@ -388,7 +397,7 @@ int main(int argc, char **argv)
     /* Create and truncate image */
     fs_fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fs_fd < 0) { perror("open"); return 1; }
-    ftruncate(fs_fd, (off_t)fs_nzones * BLOCK_SIZE);
+    if (ftruncate(fs_fd, (off_t)fs_nzones * BLOCK_SIZE) < 0) { perror("ftruncate"); return 1; }
 
     /* Set up root inode (inode 1) */
     set_bit(inode_bitmap, XIAFS_ROOT_INO);
