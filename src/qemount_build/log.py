@@ -44,9 +44,15 @@ RESET = "\033[0m"
 class ColorFormatter(logging.Formatter):
     """Formatter that adds colors based on log level."""
 
+    def __init__(self, fmt=None, datefmt=None, use_color=True):
+        super().__init__(fmt, datefmt)
+        self.use_color = use_color
+
     def format(self, record):
-        color = COLORS.get(record.levelno, "")
         message = super().format(record)
+        if not self.use_color:
+            return message
+        color = COLORS.get(record.levelno, "")
         return f"{color}{message}{RESET}"
 
 
@@ -54,8 +60,15 @@ def setup(level_name: str = "info"):
     """Configure logging with the given level."""
     level = LEVELS.get(level_name.lower(), logging.INFO)
 
-    handler = logging.StreamHandler(sys.stderr)
-    handler.setFormatter(ColorFormatter("%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"))
+    stream = sys.stderr
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(
+        ColorFormatter(
+            "%(asctime)s %(levelname)s: %(message)s",
+            "%Y-%m-%d %H:%M:%S",
+            use_color=stream.isatty(),
+        )
+    )
 
     root = logging.getLogger()
     root.setLevel(level)
