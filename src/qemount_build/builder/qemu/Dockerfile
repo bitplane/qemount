@@ -14,7 +14,9 @@ RUN apk add --no-cache \
     pkgconf \
     make \
     perl \
-    binutils
+    binutils \
+    gcc \
+    musl-dev
 
 # Install zig via pip (cross-compiler toolchain)
 RUN pip install --break-system-packages ziglang

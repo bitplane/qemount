@@ -10,10 +10,9 @@ provides:
   - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
   - bin/qemu-system/x86_64-linux-musl/qemu-system-aarch64
   - bin/qemu-system/x86_64-linux-musl/qemu-system-m68k
-  # Windows needs MinGW-w64 SDK, disabled for now
-  # - bin/qemu-system/x86_64-windows-gnu/qemu-system-x86_64.exe
-  # - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
-  # - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
+  - bin/qemu-system/x86_64-windows-gnu/qemu-system-x86_64.exe
+  - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
+  - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
   # macOS needs macOS SDK headers, disabled for now
   # - bin/qemu-system/x86_64-macos/qemu-system-x86_64
   # - bin/qemu-system/x86_64-macos/qemu-system-aarch64
