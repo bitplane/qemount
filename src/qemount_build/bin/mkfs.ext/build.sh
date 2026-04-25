@@ -1,8 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-cd /work
-gcc -static -o mkfs.ext mkfs.ext.c
+CRATE=mkfs-ext
+VERSION=0.1.0
+BIN_DOT=mkfs.ext
 
-mkdir -p /host/build/bin/${HOST_ARCH}-linux-musl
-cp -v mkfs.ext /host/build/bin/${HOST_ARCH}-linux-musl/
+cd /work
+tar xf /host/build/sources/${CRATE}-${VERSION}.tar.gz
+cd ${CRATE}-${VERSION}
+
+cargo zigbuild --release --locked \
+    --target ${HOST_ARCH}-unknown-linux-musl
+
+OUT=/host/build/bin/${HOST_ARCH}-linux-musl
+mkdir -p ${OUT}
+TARGET=${CARGO_TARGET_DIR:-target}
+cp -v ${TARGET}/${HOST_ARCH}-unknown-linux-musl/release/${CRATE} ${OUT}/${BIN_DOT}

@@ -1,13 +1,18 @@
 ---
 title: mkfs.mfs
+env:
+  CARGO_HOME: /host/build/cache/cargo
+  CARGO_TARGET_DIR: /host/build/cache/cargo-target
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
+build_requires:
+  - sources/mkfs-mfs-0.1.0.tar.gz
 requires:
-  - docker:builder/compiler/linux/6
+  - docker:builder/compiler/rust
 provides:
   - bin/${HOST_ARCH}-linux-musl/mkfs.mfs
 ---
 
 # mkfs.mfs
 
-Minimal Macintosh File System (MFS) image creator. Creates MFS filesystem
-images for testing, based on Apple's "Inside Macintosh, Volume II" (1985).
-MFS was the original Macintosh filesystem from 1984.
+Static musl build of [bitplane/mkfs-mfs](https://github.com/bitplane/mkfs-mfs)
+(Rust). Creates Macintosh File System (MFS) disk images.

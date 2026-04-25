@@ -1,8 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-cd /work
-gcc -static -o mkfs.sysv mkfs.sysv.c
+CRATE=mkfs-sysv
+VERSION=0.1.0
+BIN_DOT=mkfs.sysv
 
-mkdir -p /host/build/bin/${HOST_ARCH}-linux-musl
-cp -v mkfs.sysv /host/build/bin/${HOST_ARCH}-linux-musl/
+cd /work
+tar xf /host/build/sources/${CRATE}-${VERSION}.tar.gz
+cd ${CRATE}-${VERSION}
+
+cargo zigbuild --release --locked \
+    --target ${HOST_ARCH}-unknown-linux-musl
+
+OUT=/host/build/bin/${HOST_ARCH}-linux-musl
+mkdir -p ${OUT}
+TARGET=${CARGO_TARGET_DIR:-target}
+cp -v ${TARGET}/${HOST_ARCH}-unknown-linux-musl/release/${CRATE} ${OUT}/${BIN_DOT}

@@ -1,13 +1,18 @@
 ---
 title: mkfs.ext
+env:
+  CARGO_HOME: /host/build/cache/cargo
+  CARGO_TARGET_DIR: /host/build/cache/cargo-target
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
+build_requires:
+  - sources/mkfs-ext-0.1.0.tar.gz
 requires:
-  - docker:builder/compiler/linux/6
+  - docker:builder/compiler/rust
 provides:
   - bin/${HOST_ARCH}-linux-musl/mkfs.ext
 ---
 
 # mkfs.ext
 
-Minimal original ext filesystem creator. Creates empty ext filesystem images
-for testing. Based on Linux 1.0 kernel ext_fs.h structures and Remy Card's
-original efsprogs (1992-1993).
+Static musl build of [bitplane/mkfs-ext](https://github.com/bitplane/mkfs-ext)
+(Rust). Creates original ext (pre-ext2) filesystem images.
