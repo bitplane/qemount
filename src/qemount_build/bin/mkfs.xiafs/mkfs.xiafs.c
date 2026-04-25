@@ -422,22 +422,25 @@ int main(int argc, char **argv)
     if (populate_path)
         populate_dir(XIAFS_ROOT_INO, populate_path);
 
-    /* Write superblock */
-    struct xiafs_super_block sb;
-    memset(&sb, 0, sizeof(sb));
-    sb.s_zone_size = BLOCK_SIZE;
-    sb.s_nzones = fs_nzones;
-    sb.s_ninodes = fs_ninodes;
-    sb.s_ndatazones = fs_ndatazones;
-    sb.s_imap_zones = fs_imap_zones;
-    sb.s_zmap_zones = fs_zmap_zones;
-    sb.s_firstdatazone = fs_firstdatazone;
-    sb.s_zone_shift = 0;
-    sb.s_max_size = max_size;
-    sb.s_firstkernzone = fs_firstdatazone;
-    sb.s_kernzones = 0;
-    sb.s_magic = XIAFS_SUPER_MAGIC;
-    write_block(0, &sb);
+    /* Write superblock. The struct is smaller than BLOCK_SIZE, so use a
+     * full-block buffer to avoid reading uninitialized stack bytes past
+     * the end of the struct when we write_block. */
+    char sb_buf[BLOCK_SIZE];
+    memset(sb_buf, 0, sizeof(sb_buf));
+    struct xiafs_super_block *sb = (struct xiafs_super_block *)sb_buf;
+    sb->s_zone_size = BLOCK_SIZE;
+    sb->s_nzones = fs_nzones;
+    sb->s_ninodes = fs_ninodes;
+    sb->s_ndatazones = fs_ndatazones;
+    sb->s_imap_zones = fs_imap_zones;
+    sb->s_zmap_zones = fs_zmap_zones;
+    sb->s_firstdatazone = fs_firstdatazone;
+    sb->s_zone_shift = 0;
+    sb->s_max_size = max_size;
+    sb->s_firstkernzone = fs_firstdatazone;
+    sb->s_kernzones = 0;
+    sb->s_magic = XIAFS_SUPER_MAGIC;
+    write_block(0, sb_buf);
 
     /* Write inode bitmap */
     for (uint32_t i = 0; i < fs_imap_zones; i++)
