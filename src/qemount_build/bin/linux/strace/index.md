@@ -1,6 +1,7 @@
 ---
 title: strace
 requires:
+  - docker:${BUILDER}
   - sources/strace-6.7.tar.xz
 provides:
   - bin/${ARCH}-linux-${ENV}/strace

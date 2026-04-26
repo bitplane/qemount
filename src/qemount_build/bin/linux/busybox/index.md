@@ -1,6 +1,7 @@
 ---
 title: BusyBox
 requires:
+  - docker:${BUILDER}
   - sources/busybox-1.36.1.tar.bz2
 provides:
   - bin/${ARCH}-linux-${ENV}/busybox
