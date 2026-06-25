@@ -10,16 +10,6 @@ the STOP rule.
 
 ---
 
-a5105_dsk.cpp
-abc1600_dsk.cpp
-abc800_dsk.cpp
-abc800i_dsk.cpp
-abcfd2_dsk.cpp
-ace_tap.cpp
-acorn_dsk.cpp
-adam_cas.cpp
-adam_dsk.cpp
-afs_dsk.cpp
 agat840k_hle_dsk.cpp
 aiffile.cpp
 aim_dsk.cpp

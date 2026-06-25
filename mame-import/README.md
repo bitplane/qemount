@@ -26,8 +26,13 @@ For each format at the top of `worklist.md`:
    - **Out of scope** → delete the line from `worklist.md`, move on. No log, no
      note. The list only shrinks.
 
-3. **Do we already have it?** Search `src/qemount_build/docs/format/` by the
-   format's name **and** its known aliases and extensions.
+3. **Do we already have it?** Search **the whole** `src/qemount_build/docs/format/`
+   tree — **all** categories (`disk/ fs/ pt/ arc/ media/`), not just the obvious
+   one — by the format's name, its aliases, its extensions, **and the system /
+   platform name**. A format is often already present at a *different layer*
+   (e.g. Acorn was covered under `fs/adfs` and `pt/acorn/` long before the
+   `disk/acorn` image format existed). Use a recursive grep over the full tree,
+   e.g. `grep -ril acorn src/qemount_build/docs/format/`.
    - **Yes** → add a one-line note under the existing doc's `## References`
      linking the MAME source (`src/lib/formats/<file>.cpp`). Delete the line.
      Done.
