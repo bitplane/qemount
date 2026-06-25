@@ -9,6 +9,7 @@ aliases:
 related:
   - format/fs/fat12
   - format/disk/raw
+  - format/disk/x68000-xdf
 ---
 
 # IBM Extended Density Format (XDF)
@@ -36,6 +37,11 @@ recognises the 3.5" HD variant by its exact total image length (1,884,160
 bytes). A hardware caveat worth noting: XDF media can only be accessed through a
 floppy controller wired directly to the system — USB floppy drives cannot read
 it.
+
+Do not confuse this with the unrelated Sharp X68000 "XDF" floppy image
+(`format/disk/x68000-xdf`), which shares the `.xdf` extension and the "XDF"
+abbreviation but is a plain Japanese 2HD sector dump for Human68k, not IBM's
+mixed-sector PC scheme. They share only the three letters.
 
 ## References
 

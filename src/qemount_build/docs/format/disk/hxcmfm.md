@@ -11,6 +11,11 @@ related:
   - format/disk/hfe
   - format/disk/ipf
   - format/disk/imd
+detect:
+  any:
+    - offset: 0
+      type: string
+      value: "HXCMFM"
 ---
 
 # HxC MFM floppy image

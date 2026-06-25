@@ -10,6 +10,14 @@ related:
   - format/disk/86f
   - format/disk/dfi
   - format/disk/hxcmfm
+detect:
+  any:
+    - offset: 0
+      type: string
+      value: "MAMEFLOPPYIMAGE"
+    - offset: 0
+      type: string
+      value: "MESSFLOPPYIMAGE"   # legacy MESS releases
 ---
 
 MFI is the native floppy-image container written by the MAME (and historically
@@ -38,8 +46,7 @@ The header opens with a 16-byte ASCII signature. Current files use
 `MAMEFLOPPYIMAGE`; files written by older MESS releases use the legacy
 `MESSFLOPPYIMAGE`. Both forms are recognised on read. This is corroborated by the
 MAME source and by independent tooling discussions (Greaseweazle, MAME's floptool
-documentation), so it is recorded here as prose only; no `detect:` rule is added
-in this pass.
+documentation), and the `detect:` rule keys on these two 16-byte signatures.
 
 ## References
 

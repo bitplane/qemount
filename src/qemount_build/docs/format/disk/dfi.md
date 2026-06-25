@@ -8,6 +8,14 @@ related:
   - format/disk/ipf
   - format/disk/86f
   - format/disk/raw
+detect:
+  any:
+    - offset: 0
+      type: string
+      value: "DFE2"   # new-style
+    - offset: 0
+      type: string
+      value: "DFER"   # older revision
 ---
 
 # DFI (DiscFerret flux image)

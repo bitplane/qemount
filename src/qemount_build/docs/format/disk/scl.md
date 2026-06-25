@@ -2,6 +2,7 @@
 title: SCL (Sinclair TR-DOS)
 created: 1990s
 related:
+  - format/disk/trd
   - format/disk/raw
 detect:
   any:

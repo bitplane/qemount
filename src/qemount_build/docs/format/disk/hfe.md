@@ -14,6 +14,14 @@ related:
   - format/disk/86f
   - format/disk/ipf
   - format/disk/dfi
+detect:
+  any:
+    - offset: 0
+      type: string
+      value: "HXCPICFE"   # v1 / v2
+    - offset: 0
+      type: string
+      value: "HXCHFEV3"   # v3
 ---
 
 # HFE (HxC Floppy Emulator image)

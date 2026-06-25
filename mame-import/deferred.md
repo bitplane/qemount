@@ -7,14 +7,10 @@ One line per item, added during the import. Picked up separately, later.
 Format: `format/<cat>/<name> — <what's feasible / notes>`
 
 ---
-format/disk/2d — mkfs feasible: 320KB fixed 2D geometry, headerless raw (no unwrap needed). File extraction would need Sharp Hu-BASIC fs (separate fs/ work).
-format/disk/86f — unwrap feasible from the 86Box spec but complex (FM/MFM surface decode, weak-bit handling) → raw sectors. mkfs feasible.
 format/disk/abc800i — deinterleave to a linear sector image feasible (interleave tables in the MAME loader).
 format/media/adam-ddp — unwrap feasible: HE/GW directory + per-block checksums documented; decode the DDP tape structure to a linear EOS block image (shared with disk/adam).
-format/disk/aim — MFM track decode → sector image feasible (index marks + sector headers per MAME loader).
 format/disk/apple2 — nibble formats (.nib/.edd) GCR decode → sector image feasible.
 format/disk/apple-gcr — GCR (zoned) decode → raw sectors; 2IMG/2MG header strip feasible.
-format/disk/apd — decompress (gzip) + decode SD/DD/QD track bitstreams → raw sectors feasible (flux-level, complex).
 format/disk/apridisk — unwrap: 128-byte header + typed RLE records → raw sectors.
 format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
 format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.
@@ -23,7 +19,6 @@ format/disk/cqm — unwrap: 133-byte header + signed-length RLE → raw sector i
 format/disk/d88 — unwrap: header + track-offset table + per-sector headers → ordered raw sectors.
 format/disk/dcp — unwrap: 0xA3 header + track map → expand present tracks to full raw image.
 format/disk/commodore-disk — CBM DOS filesystem reader feasible (BAM/directory on info track, 256-byte blocks).
-format/disk/dfi — flux decoder feasible: rescale DiscFerret flux deltas → FM/MFM sectors (complex, like IPF).
 format/disk/dim — unwrap: strip 0x100 header → raw PC-98 sectors.
 format/disk/dmk — converter: walk 16-byte header + per-track IDAM tables → raw sectors.
 format/disk/cpc-dsk — reader: walk Disc/Track Information Blocks → extract raw sectors.
@@ -51,9 +46,7 @@ format/disk/guab — raw sector extractor feasible from fixed WD177x geometry (8
 format/disk/h17disk — unpacker feasible: walk H17D tagged blocks, strip sector framing to raw data
 format/disk/hector-disc2 — mkfs feasible: fixed-geometry basicdsk (3 variants)
 format/disk/hector-minidisc — mkfs feasible: fixed uPD765 geometry 70/2/9/512
-format/disk/hfe — reader/writer feasible; HxC2001-published header + track LUT + bitstream (v1/v2)
 format/disk/hpi — raw-sector image; HPDir/imgtool round-trip these; unpacker via fs/hp98x5 or fs/hp-lif feasible
-format/disk/hxcmfm — mkfs feasible (header + flat track-descriptor table, magic HXCMFM); unpacker needs MFM decode
 format/disk/ibmxdf — unpacker feasible: fixed 3.5"HD geometry, mixed-size sectors per MAME tables; cyl0 plain FAT12
 format/disk/idpart — mkfs/unpacker feasible: fixed 18/256 QD geometry (gaps unverified upstream)
 format/disk/intel-mds — mkfs/unpacker feasible: two fixed geometries by size, FM vs MMFM
@@ -68,7 +61,6 @@ format/disk/lw30 — GCR sector image, fixed 78/1/12/256 geometry; extract/mkfs 
 format/disk/m20 — raw 286720-byte mixed FM/MFM sector dump; extract/mkfs feasible
 format/disk/m5 — raw fixed-geometry sector dumps (5.25" DSDD + 3" FD-5); extract/mkfs feasible
 format/disk/mdos — fixed-geometry 8" FM sector dump; mkfs feasible
-format/disk/mfi — flux reader/unpacker feasible (zlib + delta-packed cell decode), non-trivial
 format/disk/mikromikko — fixed-geometry sector dump; mkfs feasible for MM1 (640 KB)
 format/disk/ms0515 — fixed-geometry MFM sector dump; mkfs feasible
 format/disk/msx — raw FAT12 sector image; mkfs feasible (standard 720K FAT12 BPB + MSX boot)
@@ -89,3 +81,32 @@ format/disk/poly — size-keyed CP/M geometries; mkfs + CP/M unpacker feasible
 format/disk/pyldin — fixed 80/2/9/512 raw image; mkfs/extract straightforward once FS known
 format/disk/ql — raw sector image; QDOS filesystem reader/extractor documented and implementable
 format/disk/rc759 — fixed 77/2/8/1024 raw image; CP/M-86 directory extraction possible
+format/disk/roland-sdisk — wd177x DSDD 80/2/9x512 MFM fixed geometry; mkfs feasible
+format/disk/akai-s900 — fixed-geometry MFM 80/2/5x1024 (+ HD 10 sec); mkfs feasible
+format/disk/rx01 — raw 77/1/26x128 FM dump; mkfs trivial (size-defined)
+format/disk/rx50 — raw 80/1/10x512 MFM dump; mkfs trivial (size-defined)
+format/arc/rpk — ZIP + layout.xml; unpacker feasible (unzip + parse XML socket map)
+format/disk/sap — unpacker feasible: 66-byte header, per-sector framing, XOR 0xB3 + CRC; mkfs feasible
+format/disk/sdf — unpacker feasible: SDF1 header + per-track records to raw MFM track image; mkfs feasible
+format/disk/sf7000 — mkfs feasible: fixed 40/1/16/256 MFM sector image (163,840 B)
+format/disk/sdd — mkfs feasible: headerless 256-byte-sector dump, size-keyed geometry
+format/disk/st — mkfs feasible: raw GEMDOS/FAT sector image, geometries from BPB/size
+format/disk/svi — mkfs feasible: fixed geometry, mixed FM 18x128 boot track + MFM 17x256
+format/disk/swd — mkfs feasible: fixed 80/2/16x256 MFM geometry, side# 1/2 offset quirk
+format/disk/tandy2000 — loop-mount/mkfs trivial: fixed 80/2/9/512 (720K) raw FAT12 image
+format/disk/thom — mkfs feasible: 5 fixed FM/MFM geometries keyed by size
+format/disk/ti99 — SDF (v9t9) raw dump → mkfs/reader feasible; TI FS (VIB + FDR chains) extraction feasible; TDF needs track decode
+format/disk/tibdd001 — loop-mount/mkfs trivial: fixed 80/2/9/512 (720K) raw FAT/DOS image
+format/disk/tiki100 — raw FM/MFM sector dump, fixed geometries; mkfs + reader feasible
+format/disk/tim011 — single 800K MFM sector dump; mkfs feasible
+format/disk/trd — raw TR-DOS sector image; mkfs (blank TR-DOS disk) + SCL->TRD expander feasible; pairs with disk/scl
+format/disk/trs80 — JV1 trivial sector dump; JV3 descriptor-table parser feasible
+format/disk/tvc — raw fixed-geometry 360K/720K MFM image; mkfs feasible
+format/disk/uniflex — reader feasible: parse SIR at 0x200 + FDN area for a Unix-like directory/file walk
+format/disk/vdk — strip variable header (dk + len word) then flat MFM sectors; unpacker straightforward
+format/disk/vector06 — raw fixed-geometry (80/82x2x5x1024) sector dump; mkfs trivial
+format/disk/vgi — raw 275-byte-sector Micropolis dump; unpacker can strip framing to recover 256-byte data
+format/disk/victor9k — .img is ordered 512-byte sector dump; zoned geometry known; sector extraction straightforward
+format/disk/vtech-disk — .bin/.dsk decode to 128-byte sectors on 40x16 SS geometry; reuses fs/vtech layout; mkfs feasible
+format/disk/wren — fixed 200K SSDD sector dump; mkfs + CP/M unpacker feasible
+format/disk/x68000-xdf — fixed 1232K 2HD sector dump; mkfs + Human68k FAT unpacker feasible

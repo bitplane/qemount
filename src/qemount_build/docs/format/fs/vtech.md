@@ -9,6 +9,8 @@ aliases:
   - VZ200 disk filesystem
   - Laser 200 disk filesystem
 related:
+  - format/disk/vtech-disk
+  - format/media/vt-cas
   - format/disk/raw
 ---
 

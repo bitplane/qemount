@@ -48,4 +48,8 @@ followed by fill byte, then 2-byte repeat count).
 
 ## References
 
+- MAME loader: [`src/lib/formats/st_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/st_dsk.cpp)
+  — the same MAME source implements both `.msa` and the raw Atari ST `.st`
+  image (see [`format/disk/st`](st.md)); it identifies MSA by the `0x0E0F`
+  header.
 - Used by Hatari, Steem, and other Atari ST emulators
