@@ -66,18 +66,27 @@ fabricated one poisons the catalogue.
 
 ## Scope
 
-- **IN** — anything that holds data/files or represents a **disk image,
-  filesystem, partition table, or archive**. Most MAME `*_dsk` files are floppy
-  *image container* formats and are in scope. `fs_*` files are on-media
-  filesystems and are in scope.
-- **BORDERLINE (knowledge-only)** — pure ROM/cartridge executable dumps, raw
-  flux captures with no filesystem, raw tape/audio with no file structure.
-  Document as a knowledge entry under `media/` **only if** it has a real name
-  and independent sources; mark it no-driver (no `deferred.md` entry). If you are
-  unsure whether something is in scope → **STOP and flag**, don't guess.
-- **OUT** — MAME infrastructure that isn't a format: the floppy-image core
-  (`flopimg`), format managers/registries (`all.cpp`, `fsmgr`), helpers. Delete
-  and move on.
+The test is **structure, not subject matter**. A format earns a doc if it has
+navigable structure a reader can use — a header, magic, metadata, offsets, or a
+page / sector / directory table. If it is an opaque blob with no internal
+structure (identified only by its size or extension, payload not navigable), it
+is not a format: delete it and move on. Read the MAME source to decide — the
+parser shows you exactly what structure (if any) the format has.
+
+Applying that:
+
+- **IN** — anything structured that holds data: disk/floppy images (`*_dsk`,
+  including flux/surface formats like `86f`/`ipf` — their track and flux tables
+  *are* structure), filesystems (`fs_*`), partition tables, archives.
+- **Structured but not mountable → `media/` knowledge entry** — tape/cassette,
+  optical-audio, or program-load images that have a real header/page table but
+  no filesystem to mount (e.g. `media/supercharger`: a load header at `0x2000`
+  with a page table). Catalogue for identification and cross-reference; mark
+  no-driver (no `deferred.md` entry).
+- **OUT (delete)** — opaque blobs with no navigable structure (a bare ROM dump
+  that is just code bytes; raw audio with no framing), and MAME infrastructure
+  that isn't a format at all (`flopimg`, `fsmgr`, `all.cpp`, helpers).
+- Genuinely unsure after reading the source → **STOP and flag**, don't guess.
 
 ## Category (sets the path `docs/format/<cat>/<name>.md`)
 

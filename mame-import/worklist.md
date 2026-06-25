@@ -10,8 +10,6 @@ the STOP rule.
 
 ---
 
-86f_dsk.cpp
-a26_cas.cpp
 a5105_dsk.cpp
 abc1600_dsk.cpp
 abc800_dsk.cpp
