@@ -31,4 +31,6 @@ slightly larger variants accepted at lower confidence).
 ## References
 
 - MAME loader: [`src/lib/formats/agat840k_hle_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/agat840k_hle_dsk.cpp)
+- MAME loader: [`src/lib/formats/ds9_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/ds9_dsk.cpp) — the Agat-9 840K variant (`.ds9` extension, format name `a9dsk`), same 80/2/21/256 = 860,160-byte geometry but a different on-disk track encoding produced by the Agat-9 controller / IKP9 copier
 - [Agat (computer) — Wikipedia](https://en.wikipedia.org/wiki/Agat_(computer))
+- [Agat-9 machine — Vas the Man minimaws](https://arcade.vastheman.com/minimaws/machine/agat9)

@@ -19,3 +19,11 @@ format/disk/apridisk — unwrap: 128-byte header + typed RLE records → raw sec
 format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
 format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.
 format/disk/ccvf — unwrap: parse the text/hex CCVF container → rebuild raw 128-byte sectors.
+format/disk/cqm — unwrap: 133-byte header + signed-length RLE → raw sector image.
+format/disk/d88 — unwrap: header + track-offset table + per-sector headers → ordered raw sectors.
+format/disk/dcp — unwrap: 0xA3 header + track map → expand present tracks to full raw image.
+format/disk/commodore-disk — CBM DOS filesystem reader feasible (BAM/directory on info track, 256-byte blocks).
+format/disk/dfi — flux decoder feasible: rescale DiscFerret flux deltas → FM/MFM sectors (complex, like IPF).
+format/disk/dim — unwrap: strip 0x100 header → raw PC-98 sectors.
+format/disk/dmk — converter: walk 16-byte header + per-track IDAM tables → raw sectors.
+format/disk/cpc-dsk — reader: walk Disc/Track Information Blocks → extract raw sectors.

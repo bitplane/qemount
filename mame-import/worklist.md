@@ -10,31 +10,7 @@ the STOP rule.
 
 ---
 
-coco_rawdsk.cpp
-comx35_dsk.cpp
-concept_dsk.cpp
-coupedsk.cpp
-cp68_dsk.cpp
-cpis_dsk.cpp
-cqm_dsk.cpp
-csw_cas.cpp
-d64_dsk.cpp
-d71_dsk.cpp
-d80_dsk.cpp
-d81_dsk.cpp
-d82_dsk.cpp
-d88_dsk.cpp
-dcp_dsk.cpp
-dfi_dsk.cpp
-dim_dsk.cpp
 dip_dsk.cpp
-dmk_dsk.cpp
-dmv_dsk.cpp
-ds9_dsk.cpp
-dsk_dsk.cpp
-dvk_mx_dsk.cpp
-ep64_dsk.cpp
-esq16_dsk.cpp
 esq8_dsk.cpp
 excali64_dsk.cpp
 fc100_cas.cpp

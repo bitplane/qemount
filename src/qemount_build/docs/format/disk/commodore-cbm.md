@@ -7,6 +7,7 @@ aliases:
   - CBM dual drive image
   - Commodore IEEE-488 disk image
 related:
+  - format/disk/commodore-disk
   - format/disk/raw
   - format/fs/cpm
 ---
