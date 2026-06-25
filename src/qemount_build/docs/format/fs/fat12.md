@@ -75,3 +75,7 @@ FAT type is determined by cluster count, not a magic number:
 
 First filesystem for MS-DOS 1.0 (1981). Still supported everywhere for
 backward compatibility with floppy disk images.
+
+## References
+
+- MAME loader (PC FAT12/FAT16, floppy-only): [`src/lib/formats/fs_fat.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/fs_fat.cpp)

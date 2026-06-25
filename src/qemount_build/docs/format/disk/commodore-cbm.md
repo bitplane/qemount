@@ -8,6 +8,7 @@ aliases:
   - Commodore IEEE-488 disk image
 related:
   - format/disk/commodore-disk
+  - format/disk/g64
   - format/disk/raw
   - format/fs/cpm
 ---

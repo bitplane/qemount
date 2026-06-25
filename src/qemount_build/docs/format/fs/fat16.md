@@ -82,3 +82,7 @@ FAT type is determined by cluster count:
 
 Replaced by FAT32 for large volumes. Still used for small partitions,
 USB drives, and embedded systems where simplicity is valued.
+
+## References
+
+- MAME loader (PC FAT12/FAT16, floppy-only, no FAT32): [`src/lib/formats/fs_fat.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/fs_fat.cpp)

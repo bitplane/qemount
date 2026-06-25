@@ -8,6 +8,7 @@ related:
   - format/disk/woz
   - format/disk/agat840k
   - format/disk/raw
+  - format/fs/prodos
 ---
 
 # Apple II disk images (DSK / DO / PO / NIB)
@@ -32,3 +33,4 @@ filesystem inside, not by the container.
 
 - MAME loader: [`src/lib/formats/ap2_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/ap2_dsk.cpp)
 - [Apple DOS 3.3 / disk formats — Wikipedia](https://en.wikipedia.org/wiki/Apple_DOS)
+- The on-disk filesystem carried by `.po`/ProDOS-order images is documented separately at `format/fs/prodos`.

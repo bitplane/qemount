@@ -63,3 +63,4 @@ Per-track records:
 ## References
 
 - [ImageDisk](http://dunfield.classiccmp.org/img/index.htm)
+- MAME loader: [`src/lib/formats/imd_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/imd_dsk.cpp)

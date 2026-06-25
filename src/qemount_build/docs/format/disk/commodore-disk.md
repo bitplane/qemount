@@ -11,6 +11,7 @@ aliases:
   - CBM disk image
 related:
   - format/disk/commodore-cbm
+  - format/disk/g64
   - format/media/c64-tap
   - format/media/c64-crt
   - format/disk/raw
@@ -84,5 +85,8 @@ unpacker can read to confirm the format and list files.
 - [Disk Image — C64-Wiki](https://www.c64-wiki.com/wiki/disk_image)
 - [Commodore 1581 — C64-Wiki](https://www.c64-wiki.com/wiki/Commodore_1581)
 - [Commodore 1541 disk — Just Solve the File Format Problem](http://fileformats.archiveteam.org/wiki/Commodore_1541_disk)
+- Bitstream-level sibling: the [G64 GCR disk image](g64.md) preserves the raw
+  GCR track data these decoded sector images discard
+  ([`g64_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/g64_dsk.cpp)).
 </content>
 </invoke>
