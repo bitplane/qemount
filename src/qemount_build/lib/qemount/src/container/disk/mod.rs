@@ -14,6 +14,7 @@ pub mod parallels;
 pub mod qcow;
 pub mod qcow2;
 pub mod qed;
+pub mod scl;
 pub mod vdi;
 pub mod vhd;
 pub mod vhdx;
