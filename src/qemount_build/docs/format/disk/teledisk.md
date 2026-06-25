@@ -68,3 +68,4 @@ Optional comment block follows, then per-track data.
 
 - Sydex (Sydney Dataworks, www.sydex.com)
 - Superseded by ImageDisk (IMD) for modern preservation work
+- MAME loader: [`src/lib/formats/td0_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/td0_dsk.cpp)
