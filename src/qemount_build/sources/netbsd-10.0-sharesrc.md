@@ -2,8 +2,9 @@
 title: NetBSD 10.0 sharesrc
 version: "10.0"
 urls:
-  - https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/sharesrc.tgz
+  - https://www.mirrorservice.org/pub/NetBSD/NetBSD-10.0/source/sets/sharesrc.tgz
   - https://cdn.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/sharesrc.tgz
+  - https://ftp.netbsd.org/pub/NetBSD/NetBSD-10.0/source/sets/sharesrc.tgz
 provides:
   - sources/netbsd-10.0-sharesrc.tgz
 ---
