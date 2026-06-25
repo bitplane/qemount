@@ -6,6 +6,8 @@ extensions: [".raw"]
 aliases:
   - CoCo raw disk
 related:
+  - format/disk/jvc
+  - format/disk/dmk
   - format/media/coco-cas
   - format/disk/raw
 ---
@@ -17,8 +19,8 @@ Computer (CoCo), the 6809-based home computer family Tandy sold through Radio
 Shack from 1980. The standard RS-DOS disk layout is a single-sided, 35-track
 5.25" floppy with 18 sectors of 256 bytes per track, written in MFM
 double-density. MAME's loader handles this as a flat track-by-track image with
-no metadata, distinct from the headered/flux CoCo image formats (JVC/DSK, DMK,
-SDF).
+no metadata, distinct from the headered/flux CoCo image formats
+([JVC/DSK](jvc.md), [DMK](dmk.md), SDF).
 
 The CoCo's tape counterpart is the cassette image catalogued separately at
 [media/coco-cas](../media/coco-cas.md).

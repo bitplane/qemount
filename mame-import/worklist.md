@@ -10,31 +10,6 @@ the STOP rule.
 
 ---
 
-ipf_dsk.cpp
-iq151_dsk.cpp
-itt3030_dsk.cpp
-jfd_dsk.cpp
-juku_dsk.cpp
-jvc_dsk.cpp
-kaypro_dsk.cpp
-kc85_dsk.cpp
-kc_cas.cpp
-kim1_cas.cpp
-lviv_lvt.cpp
-lw30_dsk.cpp
-m20_dsk.cpp
-m5_dsk.cpp
-mbee_cas.cpp
-mdos_dsk.cpp
-mfi_dsk.cpp
-mfm_hd.cpp
-mm_dsk.cpp
-ms0515_dsk.cpp
-msx_dsk.cpp
-mtx_dsk.cpp
-mz_cas.cpp
-nabupc_dsk.cpp
-nanos_dsk.cpp
 nascom_dsk.cpp
 naslite_dsk.cpp
 nes_dsk.cpp

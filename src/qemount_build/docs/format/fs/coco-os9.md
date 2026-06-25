@@ -11,6 +11,7 @@ aliases:
 related:
   - format/fs/coco-rsdos
   - format/disk/coco-rawdsk
+  - format/disk/jvc
   - format/disk/dmk
 ---
 

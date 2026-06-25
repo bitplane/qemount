@@ -11,6 +11,7 @@ aliases:
 related:
   - format/fs/coco-os9
   - format/disk/coco-rawdsk
+  - format/disk/jvc
   - format/disk/dmk
 ---
 

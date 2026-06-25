@@ -3,6 +3,10 @@ title: IPF (CAPS/SPS)
 created: 2001
 related:
   - format/disk/raw
+  - format/disk/86f
+  - format/disk/hfe
+  - format/disk/dfi
+  - format/disk/hxcmfm
 detect:
   - offset: 0
     type: string
@@ -59,3 +63,4 @@ include:
 
 - [Software Preservation Society](http://www.softpres.org/)
 - [CAPS/IPF library](https://github.com/keirf/caps-ipf)
+- MAME loader: [`src/lib/formats/ipf_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/ipf_dsk.cpp) — note MAME parses and reconstructs IPF flux directly rather than linking the proprietary CAPS library.

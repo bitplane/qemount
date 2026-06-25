@@ -57,3 +57,21 @@ format/disk/hxcmfm — mkfs feasible (header + flat track-descriptor table, magi
 format/disk/ibmxdf — unpacker feasible: fixed 3.5"HD geometry, mixed-size sectors per MAME tables; cyl0 plain FAT12
 format/disk/idpart — mkfs/unpacker feasible: fixed 18/256 QD geometry (gaps unverified upstream)
 format/disk/intel-mds — mkfs/unpacker feasible: two fixed geometries by size, FM vs MMFM
+format/disk/iq151 — fixed 77/1/26/128 8" SSSD geometry; unpacker/mkfs feasible
+format/disk/itt3030 — fixed DSDD wd177x geometry; unpacker/mkfs feasible
+format/disk/juku — fixed 80/10/512 SS/DS wd177x geometry; unpacker/mkfs feasible
+format/disk/jfd — reader feasible: JFDI header + gzip + track/sector/data tables; writer harder (protection metadata)
+format/disk/jvc — feasible: sector dump + optional header (size = filelen % 256), geometry from header fields
+format/disk/kaypro — feasible: raw 512-byte mkfs/unpacker, KAY1/KAY2 fixed geometry
+format/disk/kc85 — feasible: raw sector mkfs/unpacker, 80/2 fixed geometry (3 sector layouts)
+format/disk/lw30 — GCR sector image, fixed 78/1/12/256 geometry; extract/mkfs feasible
+format/disk/m20 — raw 286720-byte mixed FM/MFM sector dump; extract/mkfs feasible
+format/disk/m5 — raw fixed-geometry sector dumps (5.25" DSDD + 3" FD-5); extract/mkfs feasible
+format/disk/mdos — fixed-geometry 8" FM sector dump; mkfs feasible
+format/disk/mfi — flux reader/unpacker feasible (zlib + delta-packed cell decode), non-trivial
+format/disk/mikromikko — fixed-geometry sector dump; mkfs feasible for MM1 (640 KB)
+format/disk/ms0515 — fixed-geometry MFM sector dump; mkfs feasible
+format/disk/msx — raw FAT12 sector image; mkfs feasible (standard 720K FAT12 BPB + MSX boot)
+format/disk/mtx — raw CP/M sector image (256-byte sectors); mkfs feasible
+format/disk/nabupc — raw CP/M sector image; mkfs feasible (DPB in track-0 gap not captured by plain layout)
+format/disk/nanos — raw CP/M sector image; mkfs feasible (gap sizes unverified upstream)

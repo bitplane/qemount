@@ -6,6 +6,7 @@ extensions: [".cas"]
 aliases: [CAS, fMSX cassette, fmsx_cas]
 related:
   - format/disk/dmk
+  - format/disk/msx
 ---
 
 The CAS file is a cassette-tape image for MSX home computers, the 1983 Japanese

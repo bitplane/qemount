@@ -8,6 +8,7 @@ related:
   - format/media/coco-cas
   - format/disk/cgenie
   - format/disk/raw
+  - format/disk/msx
 ---
 
 # DMK (David Keil disk image)
