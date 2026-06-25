@@ -48,4 +48,5 @@ and chunk data.
 ## References
 
 - [Applesauce FDC](https://applesaucefdc.com/)
+- MAME loader: [`src/lib/formats/as_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/as_dsk.cpp) (shared "Applesauce solved output" loader for WOZ and MOOF)
 - Companion to the WOZ format (Apple II equivalent)

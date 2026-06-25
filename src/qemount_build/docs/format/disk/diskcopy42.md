@@ -59,3 +59,4 @@ must be a valid floppy size (400KB-64MB).
 ## References
 
 - Mac type `dImg`, creator `dCpy`
+- MAME loader: [`src/lib/formats/ap_dsk35.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/ap_dsk35.cpp) (handles DC42 alongside raw Apple 3.5" GCR — see [apple-gcr](apple-gcr))

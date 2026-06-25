@@ -88,9 +88,16 @@ Applying that:
   no filesystem to mount (e.g. `media/supercharger`: a load header at `0x2000`
   with a page table). Catalogue for identification and cross-reference; mark
   no-driver (no `deferred.md` entry).
-- **OUT (delete)** — opaque blobs with no navigable structure (a bare ROM dump
-  that is just code bytes; raw audio with no framing), and MAME infrastructure
-  that isn't a format at all (`flopimg`, `fsmgr`, `all.cpp`, helpers).
+- **OUT (delete)** — three kinds:
+  - opaque blobs with no navigable structure (a bare ROM dump that is just code
+    bytes; raw audio with no framing);
+  - **generic, ubiquitous interchange codecs** that MAME only uses as cassette
+    I/O plumbing rather than as a system's own storage format — AIFF, WAV, FLAC
+    (`aiffile`, `wavfile`, `flacfile`). Structure is necessary but **not
+    sufficient**: these are structured yet still out, because they are general
+    audio containers, not an obscure system's format;
+  - MAME infrastructure that isn't a format at all (`flopimg`, `fsmgr`,
+    `all.cpp`, helpers).
 - Genuinely unsure after reading the source → **STOP and flag**, don't guess.
 
 ## Category (sets the path `docs/format/<cat>/<name>.md`)
