@@ -36,10 +36,21 @@ def download_file(url: str, dest: Path) -> bool:
     try:
         log.info("Trying: %s", url)
         with urllib.request.urlopen(url, timeout=60) as response:
+            length = response.headers.get("Content-Length")
+            expected = int(length) if length is not None else None
             with open(tmp, "wb") as f:
                 shutil.copyfileobj(response, f)
+
+        # A connection closed early reads as a clean EOF here: urllib/shutil
+        # raise nothing and we get a short file. Verify the byte count against
+        # Content-Length so a truncated transfer fails instead of being renamed
+        # into place as if it were complete.
+        got = tmp.stat().st_size
+        if expected is not None and got != expected:
+            raise OSError(f"incomplete download: got {got} of {expected} bytes")
+
         tmp.rename(dest)
-        log.info("OK: %s", dest)
+        log.info("OK: %s (%d bytes)", dest, got)
         return True
     except Exception as e:
         log.warning("Failed: %s", e)
@@ -76,10 +87,18 @@ def clone_repo(url: str, dest: Path) -> bool:
             log.warning("Clone failed: %s", result.stderr.strip())
             return False
 
-        # Create tarball (keep .git - some build systems need it)
+        # Create tarball (keep .git - some build systems need it). Write to a
+        # temp path and rename on success so an interrupted run never leaves a
+        # partial tarball at the destination.
+        tmp = dest.with_suffix(dest.suffix + ".tmp")
         log.info("Creating tarball: %s", dest)
-        with tarfile.open(dest, "w:gz") as tar:
-            tar.add(clone_dir, arcname=export_name)
+        try:
+            with tarfile.open(tmp, "w:gz") as tar:
+                tar.add(clone_dir, arcname=export_name)
+            tmp.rename(dest)
+        except Exception:
+            tmp.unlink(missing_ok=True)
+            raise
 
     log.info("OK: %s", dest)
     return True
