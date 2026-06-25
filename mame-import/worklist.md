@@ -10,31 +10,6 @@ the STOP rule.
 
 ---
 
-nascom_dsk.cpp
-naslite_dsk.cpp
-nes_dsk.cpp
-nfd_dsk.cpp
-opd_dsk.cpp
-orao_cas.cpp
-oric_dsk.cpp
-oric_tap.cpp
-os9_dsk.cpp
-p2000t_cas.cpp
-p6001_cas.cpp
-pasti_dsk.cpp
-pc98_dsk.cpp
-pc98fdi_dsk.cpp
-pc_dsk.cpp
-phc25_cas.cpp
-pk8020_dsk.cpp
-pmd_cas.cpp
-poly_dsk.cpp
-ppg_dsk.cpp
-primoptp.cpp
-pyldin_dsk.cpp
-ql_dsk.cpp
-rc759_dsk.cpp
-rk_cas.cpp
 roland_dsk.cpp
 rpk.cpp
 rx01_dsk.cpp

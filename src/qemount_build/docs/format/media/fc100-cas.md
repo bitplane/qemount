@@ -6,6 +6,8 @@ extensions: [".cas"]
 aliases:
   - fc100_cas
   - FC-100 tape image
+related:
+  - format/media/p6001-cas
 ---
 
 # Goldstar FC-100 cassette image

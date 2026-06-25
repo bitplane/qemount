@@ -50,5 +50,8 @@ Followed by per-track descriptors and sector data.
 
 ## References
 
+- MAME loader: [`src/lib/formats/pasti_dsk.cpp`](https://github.com/mamedev/mame/blob/master/src/lib/formats/pasti_dsk.cpp)
+  — MAME's reader for Pasti `.stx` images; identifies the file by the `RSY\0`
+  signature at offset 0.
 - [Pasti project](http://pasti.fandal.cz/)
 - Companion to MSA for Atari ST disk preservation

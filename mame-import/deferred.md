@@ -75,3 +75,17 @@ format/disk/msx — raw FAT12 sector image; mkfs feasible (standard 720K FAT12 B
 format/disk/mtx — raw CP/M sector image (256-byte sectors); mkfs feasible
 format/disk/nabupc — raw CP/M sector image; mkfs feasible (DPB in track-0 gap not captured by plain layout)
 format/disk/nanos — raw CP/M sector image; mkfs feasible (gap sizes unverified upstream)
+format/disk/fds — block-structured; file-block extractor feasible (NESdev block types 1-4); mkfs from logical files feasible
+format/disk/nfd — sector-map reader → raw/MFM conversion feasible (r0 fixed map; r1 needs track-index parse)
+format/disk/nascom — fixed-geometry raw-dump mkfs feasible; CP/M variants reuse fs/cpm
+format/disk/opd — fixed-geometry raw image; mkfs feasible (gap params unverified)
+format/disk/naslite — raw image + deterministic interleave; round-trip converter feasible
+format/disk/os9 — geometry-detected raw OS-9 image container; image writer feasible (reuses fs/coco-os9 layout)
+format/disk/pc98 — raw PC-98 sectors; loop-mountable / sector extract feasible (no header to strip)
+format/disk/pc98fdi — strip self-described header (hsize at 0x08, usually 4096) to recover raw image; mkfs feasible
+format/disk/pc-img — raw 512B-sector PC floppy; loop-mountable; mkfs trivial from size→geometry table
+format/disk/pk8020 — fixed-geometry CP/M sector dump (819200 bytes, 80/2/5/1024); mkfs + CP/M unpacker feasible
+format/disk/poly — size-keyed CP/M geometries; mkfs + CP/M unpacker feasible
+format/disk/pyldin — fixed 80/2/9/512 raw image; mkfs/extract straightforward once FS known
+format/disk/ql — raw sector image; QDOS filesystem reader/extractor documented and implementable
+format/disk/rc759 — fixed 77/2/8/1024 raw image; CP/M-86 directory extraction possible

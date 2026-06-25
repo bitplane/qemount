@@ -10,6 +10,7 @@ related:
   - format/disk/dfi
   - format/disk/86f
   - format/disk/raw
+  - format/disk/pc98fdi
 ---
 
 # FDI (Formatted Disk Image)
@@ -39,7 +40,8 @@ the header but treats the per-track decoders as unimplemented.
 Note: the `.fdi` extension is heavily overloaded. This page is the Joguin
 "Formatted Disk Image file" container only. Unrelated formats also use `.fdi`,
 including a ZX Spectrum disk image (signature `FDI`) and the Anex86 PC-98 image
-format — those are different formats that happen to share the extension.
+format — those are different formats that happen to share the extension. The
+Anex86 PC-98 variant is catalogued separately at [disk/pc98fdi](pc98fdi).
 
 ## Detection
 
