@@ -4,6 +4,7 @@ created: 1987
 related:
   - format/fs/hfs
   - format/fs/hfsplus
+  - format/fs/prodos
 detect:
   - offset: 0
     type: be16
@@ -65,6 +66,7 @@ Offset  Size  Description
 | Apple_Driver43      | SCSI driver              |
 | Apple_HFS           | HFS filesystem           |
 | Apple_HFSX          | HFS+ or HFSX             |
+| Apple_PRODOS        | ProDOS filesystem        |
 | Apple_Unix_SVR2     | A/UX                     |
 | Apple_Free          | Free space               |
 
