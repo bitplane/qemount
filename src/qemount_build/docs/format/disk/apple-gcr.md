@@ -2,12 +2,11 @@
 title: Apple 3.5" GCR disk (400K/800K)
 created: unknown
 system: Early Macintosh, Apple IIgs
-extensions: [".img", ".po", ".2mg"]
+extensions: [".img", ".po"]
 aliases:
   - Apple GCR
-  - 2IMG
-  - 2MG
 related:
+  - format/disk/2img
   - format/disk/diskcopy42
   - format/disk/woz
   - format/disk/moof
@@ -37,8 +36,12 @@ with sectors-per-track varying by zone:
 | 64–79 | 8 |
 
 The same MAME loader also reads two headered relatives: [DiskCopy 4.2](diskcopy42)
-and the Apple IIgs **2IMG/2MG** image (which prepends a `2IMG` header to the raw
-sectors). The bare GCR image itself is headerless.
+and the Apple IIgs **2IMG/2MG** image, which prepends a `2IMG` header to the raw
+sectors and has its own catalogue entry and header-strip driver
+([2img](2img)). The bare GCR image itself is headerless, and decoding the
+zoned GCR surface into sectors (the part that distinguishes this from a plain
+raw image) is the same GCR problem as [apple2](apple2)'s nibble formats —
+deferred for want of test data.
 
 ## References
 

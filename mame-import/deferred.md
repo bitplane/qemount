@@ -7,10 +7,6 @@ One line per item, added during the import. Picked up separately, later.
 Format: `format/<cat>/<name> — <what's feasible / notes>`
 
 ---
-format/disk/abc800i — deinterleave to a linear sector image feasible (interleave tables in the MAME loader).
-format/media/adam-ddp — unwrap feasible: HE/GW directory + per-block checksums documented; decode the DDP tape structure to a linear EOS block image (shared with disk/adam).
-format/disk/apple2 — nibble formats (.nib/.edd) GCR decode → sector image feasible.
-format/disk/apple-gcr — GCR (zoned) decode → raw sectors; 2IMG/2MG header strip feasible.
 format/disk/apridisk — unwrap: 128-byte header + typed RLE records → raw sectors.
 format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
 format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.

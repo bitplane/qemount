@@ -8,10 +8,25 @@ aliases:
   - Professional Disk Operating System
   - SOS filesystem
 related:
+  - format/disk/2img
   - format/disk/apple2
   - format/disk/apple-gcr
   - format/fs/hfs
   - format/arc/nufx
+detect:
+  # ProDOS has no offset-0 magic (block 0 is 6502 boot code); identify it
+  # structurally from the volume-directory header at block 2 (offset 0x400).
+  all:
+    - offset: 0x400        # volume directory key block: prev-block pointer is null
+      type: string
+      value: [0x00, 0x00]
+    - offset: 0x404        # storage-type nibble = $F (volume directory header)
+      type: byte
+      value: 0xF0
+      mask: 0xF0
+    - offset: 0x423        # entry_length (0x27) + entries_per_block (0x0D)
+      type: string
+      value: [0x27, 0x0d]
 ---
 
 # Apple ProDOS filesystem
