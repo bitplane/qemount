@@ -7,7 +7,6 @@ One line per item, added during the import. Picked up separately, later.
 Format: `format/<cat>/<name> — <what's feasible / notes>`
 
 ---
-format/disk/apridisk — unwrap: 128-byte header + typed RLE records → raw sectors.
 format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
 format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.
 format/disk/ccvf — unwrap: parse the text/hex CCVF container → rebuild raw 128-byte sectors.

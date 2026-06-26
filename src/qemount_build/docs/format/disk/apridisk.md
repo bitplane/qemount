@@ -7,7 +7,14 @@ aliases:
   - ACT Apricot disk image
 related:
   - format/disk/apricotpc
+  - format/fs/fat12
   - format/disk/raw
+detect:
+  any:
+    # ASCII "ACT Apricot disk image" (followed by 0x1A 0x04) at offset 0.
+    - offset: 0
+      type: string
+      value: "ACT Apricot disk image"
 ---
 
 # APRIDISK
