@@ -7,6 +7,7 @@ One line per item, added during the import. Picked up separately, later.
 Format: `format/<cat>/<name> — <what's feasible / notes>`
 
 ---
+format/pt/hpux — HP-UX partition (VTOC) detection: retired the over-broad bare-0x8000 rule (that word is the generic LIF marker; it now resolves to fs/hp-lif, since an HP-UX boot area *is* a LIF volume). To detect HP-UX partitioning specifically, gate on the VTOC sanity 0x0E10C407 at its on-disk offset — which no reference tool (file, disktype) pins down, so it needs a real HP-UX disk image to determine. Until then HP-UX disks detect as fs/hp-lif, which is accurate.
 format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
 format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.
 format/disk/ccvf — unwrap: parse the text/hex CCVF container → rebuild raw 128-byte sectors.

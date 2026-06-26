@@ -4,6 +4,7 @@
 //! that can be recursively detected for partition tables and filesystems.
 
 pub mod apridisk;
+pub mod atr;
 pub mod bochs;
 pub mod cdi;
 pub mod cloop;

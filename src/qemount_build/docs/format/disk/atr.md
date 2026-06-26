@@ -8,7 +8,15 @@ aliases:
   - NICKATARI image
   - Xformer disk
 related:
+  - format/fs/atari-dos
   - format/disk/raw
+detect:
+  any:
+    # Little-endian magic word 0x0296 (bytes 96 02) at offset 0, the byte sum
+    # of "NICKATARI". XFD/DSK are headerless and have no signature.
+    - offset: 0
+      type: string
+      value: [0x96, 0x02]
 ---
 
 # Atari 8-bit disk image (ATR / XFD)

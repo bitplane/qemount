@@ -98,6 +98,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "arc/xz" => Some(&arc::xz::XZ),
         "arc/zstd" => Some(&arc::zstd::ZSTD),
         "disk/apridisk" => Some(&disk::apridisk::APRIDISK),
+        "disk/atr" => Some(&disk::atr::ATR),
         "disk/bochs" => Some(&disk::bochs::BOCHS),
         "disk/cdi" => Some(&disk::cdi::CDI),
         "disk/cloop" => Some(&disk::cloop::CLOOP),

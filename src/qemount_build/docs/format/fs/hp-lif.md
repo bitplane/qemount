@@ -14,6 +14,28 @@ related:
   - format/disk/hpi
   - format/disk/hp300
   - format/disk/hp-ipc
+detect:
+  # The LIF system word 0x8000 (big-endian) at offset 0 is the canonical LIF
+  # signature (per file(1)'s `lif` magic and disktype). An HP-UX boot area is
+  # itself a LIF volume, so this is the same marker the pt/hpux doc described.
+  # The extra clauses are file(1)'s refinements that reject a DEGAS .pc1 bitmap
+  # which also opens with 0x8000: word 14 is zero, the version word is small,
+  # and the volume label (offset 2) is ASCII-ish.
+  all:
+    - offset: 0
+      type: be16
+      value: 0x8000
+    - offset: 14
+      type: be16
+      value: 0
+    - offset: 20
+      type: be16
+      value: 0x0100
+      op: "<"
+    - offset: 2
+      type: be32
+      value: 0x2020201F
+      op: ">"
 ---
 
 # HP LIF (Logical Interchange Format)

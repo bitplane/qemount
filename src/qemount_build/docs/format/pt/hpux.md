@@ -4,11 +4,14 @@ created: 1984
 related:
   - format/pt/sun
   - format/pt/gpt
-detect:
-  - offset: 0
-    type: be16
-    value: 0x8000
-    name: lif_magic
+  - format/fs/hp-lif
+  - format/fs/cpm
+# No detect rule. The 0x8000 word at offset 0 is the generic LIF system word
+# (an HP-UX boot area is itself a LIF volume), so detecting on it alone wrongly
+# claimed every plain LIF volume as an HP-UX disk. The 0x8000 marker now resolves
+# to format/fs/hp-lif. Recovering HP-UX-specific partitioning needs the VTOC
+# sanity (0x0E10C407) at its on-disk offset, which no available reference tool
+# (file, disktype) pins down — see the deferred queue.
 ---
 
 # HP-UX Disklabel (LIF/VTOC)
