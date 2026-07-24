@@ -11,6 +11,20 @@ aliases:
 related:
   - format/disk/commodore-disk
   - format/disk/commodore-cbm
+detect:
+  # No boot magic; recognised structurally from the BAM/header at track 18,
+  # sector 0 (offset 91392 in a 35/40-track 1541 .d64): the first two bytes
+  # point at the first directory block (track 18, sector 1), and the DOS-format
+  # marker "2A" sits at header offset 0xA5. This anchors the canonical 1541/4040
+  # .d64 (and .d71, whose first side matches); the 1571/1581/8050 variants put
+  # the directory on a different track and would need their own clauses.
+  all:
+    - offset: 91392
+      type: string
+      value: [0x12, 0x01]
+    - offset: 91557
+      type: string
+      value: [0x32, 0x41]
 ---
 
 # CBM DOS filesystem

@@ -8,13 +8,12 @@ Format: `format/<cat>/<name> — <what's feasible / notes>`
 
 ---
 format/pt/hpux — HP-UX partition (VTOC) detection: retired the over-broad bare-0x8000 rule (that word is the generic LIF marker; it now resolves to fs/hp-lif, since an HP-UX boot area *is* a LIF volume). To detect HP-UX partitioning specifically, gate on the VTOC sanity 0x0E10C407 at its on-disk offset — which no reference tool (file, disktype) pins down, so it needs a real HP-UX disk image to determine. Until then HP-UX disks detect as fs/hp-lif, which is accurate.
-format/disk/atr — unwrap: strip 16-byte ATR header → raw Atari 8-bit sectors (XFD/DSK already raw).
-format/disk/commodore-cbm — CBM DOS filesystem reader feasible: .d64/.d67 are decoded sector images, mountable via a 1541/CBM-DOS reader.
+format/disk/commodore-cbm — PARTIAL: the 4040 .d64 now detects as fs/cbmdos (BAM @ track 18 sec 0, offset 91392; built via cbmconvert). Remaining: .d67 (2040/3040 DOS 1.x, 690 blocks / 176640 B — BAM at same offset but the "2A" format marker differs, so the current rule likely misses it) and the 8280 MFM .dsk (77trk/2-side/26-sector, directory not at offset 91392) need their own detect clauses.
 format/disk/ccvf — unwrap: parse the text/hex CCVF container → rebuild raw 128-byte sectors.
 format/disk/cqm — unwrap: 133-byte header + signed-length RLE → raw sector image.
 format/disk/d88 — unwrap: header + track-offset table + per-sector headers → ordered raw sectors.
 format/disk/dcp — unwrap: 0xA3 header + track map → expand present tracks to full raw image.
-format/disk/commodore-disk — CBM DOS filesystem reader feasible (BAM/directory on info track, 256-byte blocks).
+format/disk/commodore-disk — PARTIAL: the 1541 .d64 is served by fs/cbmdos (BAM @ track 18, the .d64 is the raw fs image directly — no unwrapper needed). Remaining: .d71 (1571, double-sided) and .d81 (1581) move the BAM/directory to a different track, so they need their own fs/cbmdos detect clauses at their offsets.
 format/disk/dim — unwrap: strip 0x100 header → raw PC-98 sectors.
 format/disk/dmk — converter: walk 16-byte header + per-track IDAM tables → raw sectors.
 format/disk/cpc-dsk — reader: walk Disc/Track Information Blocks → extract raw sectors.
