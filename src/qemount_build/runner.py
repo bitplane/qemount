@@ -161,6 +161,17 @@ def get_file_provides(provides: list) -> list:
     return [p for p in provides if not p.startswith("docker:")]
 
 
+def image_needs_no_cache(force: bool, build_requires: list[str]) -> bool:
+    """Return whether Podman's layer cache must be bypassed.
+
+    Podman does not include bind-mounted build inputs in a RUN instruction's
+    cache key. The qemount cache detects changes to build_requires, but a
+    subsequent podman build could otherwise reuse a layer built from stale
+    mounted content.
+    """
+    return force or bool(build_requires)
+
+
 def validate_path_provides(
     path: str,
     docker_tags: list,
@@ -242,7 +253,7 @@ def run_build(
             else:
                 image_id = build_image(
                     dockerfile.parent, tag, env, build_requires, build_dir,
-                    no_cache=force,
+                    no_cache=image_needs_no_cache(force, build_requires),
                 )
                 if not image_id:
                     return False

@@ -6,6 +6,7 @@ from qemount_build.runner import (
     get_image_tag,
     get_docker_provides,
     get_file_provides,
+    image_needs_no_cache,
     validate_path_provides,
 )
 
@@ -39,6 +40,21 @@ def test_get_file_provides():
     provides = ["docker:builder/base", "data/fs/fat32", "data/fs/ext4"]
     result = get_file_provides(provides)
     assert result == ["data/fs/fat32", "data/fs/ext4"]
+
+
+def test_image_needs_no_cache_for_force():
+    """A forced image build always bypasses Podman's layer cache."""
+    assert image_needs_no_cache(True, []) is True
+
+
+def test_image_needs_no_cache_for_build_requires():
+    """Mounted build inputs cannot safely use Podman's layer cache."""
+    assert image_needs_no_cache(False, ["sources/source.tar.gz"]) is True
+
+
+def test_image_allows_cache_without_mounted_inputs():
+    """Ordinary image builds retain Podman's layer cache."""
+    assert image_needs_no_cache(False, []) is False
 
 
 def test_validate_path_provides_valid_docker():

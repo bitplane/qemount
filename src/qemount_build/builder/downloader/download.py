@@ -6,7 +6,7 @@ Reads META env var, downloads from urls, writes to provides path.
 
 Supports:
 - http/https URLs: direct download
-- git+https://...#tag: clone at tag, export as tarball
+- git+https://...#tag: clone at tag with submodules, export as tarball
 """
 
 import json
@@ -79,7 +79,18 @@ def clone_repo(url: str, dest: Path) -> bool:
         clone_dir = Path(tmpdir) / export_name
 
         result = subprocess.run(
-            ["git", "clone", "--depth", "1", "--branch", ref, repo_url, str(clone_dir)],
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                "--branch",
+                ref,
+                "--recurse-submodules",
+                "--shallow-submodules",
+                repo_url,
+                str(clone_dir),
+            ],
             capture_output=True,
             text=True,
         )

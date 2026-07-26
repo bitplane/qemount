@@ -1,0 +1,48 @@
+FROM docker.io/debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    automake \
+    bison \
+    build-essential \
+    byacc \
+    bzip2 \
+    ca-certificates \
+    ccache \
+    cmake \
+    curl \
+    flex \
+    gawk \
+    gcc-multilib \
+    genisoimage \
+    git \
+    gperf \
+    libasound2-dev \
+    libelf-dev \
+    libgl1-mesa-dev \
+    libgmp-dev \
+    libjpeg-dev \
+    liblzo2-dev \
+    libmpc-dev \
+    libmpfr-dev \
+    libpng-dev \
+    libswitch-perl \
+    libtool \
+    libxcursor-dev \
+    libxext-dev \
+    libxxf86vm-dev \
+    liblzma-dev \
+    mtools \
+    nasm \
+    netpbm \
+    pkg-config \
+    python3 \
+    python3-distutils-extra \
+    python3-mako \
+    texinfo \
+    unzip \
+    wget \
+    xorriso \
+    xz-utils \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
