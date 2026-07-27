@@ -25,7 +25,7 @@ ls -la "$MOUNT_POINT" 2>&1 || echo "[9P] Failed to list $MOUNT_POINT"
 echo "[9P] Starting 9P server loop..."
 while true; do
     echo "[9P] Serving 9P on $PORT_PATH with -d flag..."
-    /bin/simple9p -d -p - "$MOUNT_POINT" <> "$PORT_PATH" 2>&1
+    /bin/simple9p -d -p - <> "$PORT_PATH" 2>&1
     RET=$?
     echo "[9P] Server exited with code $RET, restarting..."
     sleep 1

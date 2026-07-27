@@ -2,8 +2,8 @@
 set -e
 
 cd /work
-tar -xf /host/build/sources/9pfuse-qemount-0.2.tar.gz
-cd 9pfuse-qemount-0.2
+tar -xf /host/build/sources/9pfuse-qemount-0.3.tar.gz
+cd 9pfuse-qemount-0.3
 
 meson setup build \
     --default-library=static \

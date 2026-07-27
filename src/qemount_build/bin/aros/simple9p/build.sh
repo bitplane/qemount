@@ -14,7 +14,7 @@ mkdir -p \
     /work/sdk /work/objects/libixp \
     "$SIMPLE9P_SOURCE" "$LIBIXP_SOURCE" "$OUTPUT_DIR"
 tar -xzf /host/build/lib/${ARCH}-aros/sdk.tar.gz -C /work/sdk
-tar -xzf /host/build/sources/simple9p-qemount-0.2.tar.gz \
+tar -xzf /host/build/sources/simple9p-qemount-0.3.tar.gz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 tar -xzf /host/build/sources/libixp-qemount-0.2.tar.gz \
     -C "$LIBIXP_SOURCE" --strip-components=1
@@ -28,7 +28,9 @@ do
 done
 "$AR" rcs /work/objects/libixp.a /work/objects/libixp/*.o
 
-for name in simple9p path fs_dir fs_io fs_ops fs_stat
+for name in \
+    simple9p path namespace platform_amiga \
+    fs_dir fs_io fs_ops fs_stat
 do
     "$CC" $CFLAGS -c "$SIMPLE9P_SOURCE/$name.c" \
         -o "/work/objects/$name.o"
@@ -38,6 +40,8 @@ done
     -o /work/objects/simple9p \
     /work/objects/simple9p.o \
     /work/objects/path.o \
+    /work/objects/namespace.o \
+    /work/objects/platform_amiga.o \
     /work/objects/fs_dir.o \
     /work/objects/fs_io.o \
     /work/objects/fs_ops.o \

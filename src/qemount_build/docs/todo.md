@@ -3,7 +3,9 @@
 ## 1. Flesh it out
 
 - [ ] a common interface
-  - [x] `/mnt/b1` `/mnt/b2` `/mnt/c` etc for partitioned disks + images
+  - [x] export the guest namespace by default: `/` on POSIX, mounted DOS
+        volumes beneath a synthetic `/` on AROS
+  - [x] mount POSIX guest disks at `/mnt/b1`, `/mnt/b2`, `/mnt/c`, etc.
   - [ ] `/sbin/init.$mode` executed when `-m` is passed to the command line
     - [ ] Fix this in FreeBSD, but in a way that will actually work in future.
           Maybe have a shell?
@@ -42,8 +44,11 @@
 - [ ] fix bugs
   - [ ] simple9p
     - [x] .U + symlink support
+    - [x] platform filesystem discovery
+    - [ ] move harness server ports outside Linux's ephemeral port range
     - [ ] fewer segfaults
   - [ ] 9pfuse
+    - [x] configurable outstanding-request limit for constrained transports
     - [ ] spam in file browser (unsupported modes)
   - [ ] Linux runner
     - [ ] change virtserialport to virtconsole for consistency with NetBSD
@@ -55,4 +60,3 @@
   - [ ] Haiku
   - [ ] Atari ST (STEEM?)
   - [ ] OpenDarwin
-

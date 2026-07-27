@@ -2,7 +2,7 @@
 title: simple9p
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-qemount-0.2.tar.gz
+  - sources/simple9p-qemount-0.3.tar.gz
   - sources/libixp-qemount-0.2.tar.gz
 provides:
   - bin/${ARCH}-linux-${ENV}/simple9p
@@ -10,4 +10,5 @@ provides:
 
 # simple9p
 
-Static build of simple9p - a 9P filesystem server for qemount guests.
+Static build of simple9p. With no explicit directory it exports the POSIX
+filesystem namespace rooted at `/`.

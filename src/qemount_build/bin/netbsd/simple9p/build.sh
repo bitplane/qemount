@@ -12,7 +12,7 @@ cd /work
 
 # Extract sources
 mkdir -p simple9p-source libixp-source
-tar -xf /host/build/sources/simple9p-qemount-0.2.tar.gz \
+tar -xf /host/build/sources/simple9p-qemount-0.3.tar.gz \
     -C simple9p-source --strip-components=1
 tar -xf /host/build/sources/libixp-qemount-0.2.tar.gz \
     -C libixp-source --strip-components=1
@@ -31,7 +31,10 @@ cp include/ixp.h install/include/
 # Build simple9p
 cd /work/simple9p-source
 LIBIXP=/work/libixp-source/install
-$CC --sysroot=$SYSROOT -static -I$LIBIXP/include -o simple9p simple9p.c path.c fs_dir.c fs_io.c fs_ops.c fs_stat.c -L$LIBIXP/lib -lixp
+$CC --sysroot=$SYSROOT -static -I$LIBIXP/include -o simple9p \
+    simple9p.c path.c namespace.c platform_posix.c \
+    fs_dir.c fs_io.c fs_ops.c fs_stat.c \
+    -L$LIBIXP/lib -lixp
 $STRIP simple9p
 
 # Copy to output
