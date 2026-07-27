@@ -50,6 +50,9 @@
   - [ ] 9pfuse
     - [x] configurable outstanding-request limit for constrained transports
     - [ ] spam in file browser (unsupported modes)
+  - [ ] AROS guest
+    - [ ] mount supported filesystems from raw, MBR and GPT images
+    - [ ] investigate the MBR test image stalling guest startup
   - [x] Linux runner
     - [x] change virtserialport to virtconsole for consistency with NetBSD
 

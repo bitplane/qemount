@@ -25,20 +25,6 @@ Currently, there are:
 * A way to archive everything, inputs, outputs and containers, so the
   archive.org dumps will work long after the sources go offline
 
-### Guest status
-
-| Guest          | Builds | Mounts images | Exported namespace                         | FUSE proof |
-| -------------- | ------ | ------------- | ------------------------------------------ | ---------- |
-| Linux 6.12     | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
-| Linux 2.6      | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
-| NetBSD 10.0    | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
-| AROS i386      | ✅     | ✅            | Synthetic `/` containing mounted volumes  | ✅         |
-
-The AROS proof used a real Amiga hard-drive image. Its `WORK`, `SHITE`,
-`WORKBENCH`, `RAM Disk` and `AROS Live CD` volumes were discovered
-automatically, and files on `WORK` were read through FUSE and verified against
-an earlier extraction.
-
 ### Building
 
 Install `podman`, `fuse`, `make` and `qemu`; install `pigz` too if you want to
@@ -59,15 +45,16 @@ the catalogue documentation and [project plan](src/qemount_build/docs/todo.md).
 
 ## Format support
 
-These tables describe guest capabilities. `🧪` means the implementation is
-present in the current guest image but still needs an end-to-end qemount test.
+These tables describe guest capabilities as exercised by the current qemount
+integration, rather than every handler that an operating system could support
+with additional configuration.
 
 ### Partition tables
 
 | Partition Table   | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                         |
 | ----------------- | ---------- | --------- | --------- | --------- | ----------------------------- |
-| **MBR/DOS**       | ✅         | ✅        | ✅        | 🧪        | Classic PC, up to 4 primary   |
-| **GPT**           | ✅         | ✅        | ✅        | 🧪        | Modern standard, >2TB         |
+| **MBR/DOS**       | ✅         | ✅        | ✅        | ❌        | Test image stalls AROS startup |
+| **GPT**           | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
 | **BSD disklabel** | ✅         | ✅        | ✅        | ❌        | Native BSD partitioning       |
 | **Apple APM**     | ✅         | ✅        | ✅        | ❌        | Classic Mac partition map     |
 | **Amiga RDB**     | ✅         | ✅        | ✅        | ✅        | Real hard-drive image tested  |
@@ -89,8 +76,8 @@ present in the current guest image but still needs an end-to-end qemount test.
 | **QNX4 PT**       | ✅         | ✅        | ❌        | ❌        | QNX subpartitions             |
 | **Plan 9**        | ✅         | ✅        | ❌        | ❌        | ASCII partition table         |
 | **NetWare**       | ✅         | ✅        | ❌        | ❌        | Novell                        |
-| **Hybrid MBR**    | ✅         | ✅        | ✅        | 🧪        | GPT+MBR dual boot             |
-| **Protective MBR**| ✅         | ✅        | ✅        | 🧪        | GPT guard                     |
+| **Hybrid MBR**    | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
+| **Protective MBR**| ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
 | **OpenBSD**       | ✅         | ✅        | ❌        | ❌        | 16-partition disklabel        |
 | **DragonFly**     | ✅         | ❌        | ❌        | ❌        | Disklabel64 variant           |
 | **NeXT**          | ❌         | ❌        | ❌        | ❌        | NeXTSTEP / OPENSTEP           |
@@ -103,9 +90,9 @@ present in the current guest image but still needs an end-to-end qemount test.
 | **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
 | **ext4**        | ✅         | ✅        | ❌        | ❌        |                                   |
-| **FAT12/16/32** | ✅         | ✅        | ✅        | 🧪        | AROS image includes `fat-handler` |
+| **FAT12/16/32** | ✅         | ✅        | ✅        | ❌        | Raw test images are not auto-mounted |
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        |                                   |
-| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 🧪        | AROS handler is not enabled yet   |
+| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | Raw test image is not auto-mounted |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅        | AROS boots and serves its Live CD |
 | **UDF**         | ✅         | ✅        | ✅        | ❌        | DVD/Blu-ray                       |
 | **HFS**         | ✅         | ✅        | ✅        | ❌        | Classic Mac                       |
@@ -120,7 +107,7 @@ present in the current guest image but still needs an end-to-end qemount test.
 | **EROFS**       | ✅         | ❌        | ❌        | ❌        | Read-only compressed              |
 | **ReiserFS**    | ✅         | ✅        | ❌        | ❌        | Removed in 6.13                   |
 | **AFFS**        | ✅         | ✅        | 💩 adosfs | ✅        | AROS OFS/FFS tested end to end    |
-| **SFS**         | ❌         | ❌        | ❌        | 🧪        | AROS image includes `sfs-handler` |
+| **SFS**         | ❌         | ❌        | ❌        | ✅        | RDB volume survives reboot/readback |
 | **PFS**         | ❌         | ❌        | ❌        | ❌        | Not in the current AROS image     |
 | **Minix**       | ✅         | ✅        | ❌        | ❌        |                                   |
 | **V7**          | ✅         | ✅        | ✅        | ❌        | 7th Edition UNIX                  |
