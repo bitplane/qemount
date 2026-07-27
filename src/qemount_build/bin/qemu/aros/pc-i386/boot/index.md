@@ -1,12 +1,14 @@
 ---
-title: AROS PC i386 Boot ISO
+title: AROS PC i386 Guest
 requires:
-  - sources/aros-qemount.tar.gz
+  - bin/qemu/${ARCH}-aros/system/aros.iso
+  - bin/${ARCH}-aros/simple9p
 provides:
   - bin/qemu/${ARCH}-aros/boot/aros.iso
 ---
 
-# AROS PC i386 Boot ISO
+# AROS PC i386 Guest
 
-Bootable tiny-variant AROS ISO using the GRUB 2 bootloader. The matching
-source-pinned cross-toolchain is supplied by the PC i386 compiler image.
+Bootable tiny-variant AROS ISO with simple9p serving `SYS:` over the second
+serial unit. The base operating system, SDK, and guest program remain separate
+build outputs so other AROS integrations can reuse each layer.

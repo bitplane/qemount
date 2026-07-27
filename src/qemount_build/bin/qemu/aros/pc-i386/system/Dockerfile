@@ -3,6 +3,4 @@ FROM ${BUILDER}
 
 WORKDIR /work
 COPY --chmod=755 build.sh /build.sh
-COPY grub.cfg /grub.cfg
-COPY User-Startup /User-Startup
 ENTRYPOINT ["/build.sh"]
