@@ -2,8 +2,8 @@
 title: simple9p
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-qemount-0.1.tar.gz
-  - sources/libixp-qemount-0.1.tar.gz
+  - sources/simple9p-qemount-0.2.tar.gz
+  - sources/libixp-qemount-0.2.tar.gz
 provides:
   - bin/${ARCH}-linux-${ENV}/simple9p
 ---

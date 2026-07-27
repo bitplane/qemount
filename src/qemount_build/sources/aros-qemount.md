@@ -1,17 +1,13 @@
 ---
-title: AROS qemount development branch
-version: qemount
+title: AROS qemount-2026-07-27
 urls:
-  - git+https://github.com/bitplane/AROS.git#qemount
+  - https://github.com/bitplane/AROS/archive/refs/tags/qemount-2026-07-27.tar.gz
 provides:
-  - sources/aros-qemount.tar.gz
+  - sources/aros-qemount-2026-07-27.tar.gz
 ---
 
 # AROS
 
-AROS source from the qemount development branch of the bitplane fork.
-
-This is intentionally a moving development reference while the guest is being
-brought up. Force the ISO target to refresh the cached source archive after the
-branch changes. Once the guest build is stable, replace this reference with a
-dated, immutable qemount tag.
+The AROS source snapshot used by qemount guests. This immutable tag identifies
+the integration tree on which the PC i386 guest and serial transport were
+proved.

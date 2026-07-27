@@ -1,9 +1,9 @@
 ---
-title: libixp qemount-0.1
+title: libixp qemount-0.2
 urls:
-  - https://github.com/bitplane/libixp/archive/refs/tags/qemount-0.1.tar.gz
+  - https://github.com/bitplane/libixp/archive/refs/tags/qemount-0.2.tar.gz
 provides:
-  - sources/libixp-qemount-0.1.tar.gz
+  - sources/libixp-qemount-0.2.tar.gz
 ---
 
 # libixp

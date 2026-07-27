@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/aros-qemount.tar.gz
-SOURCE_DIR=/work/AROS-qemount
+SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-27.tar.gz
+SOURCE_DIR=/work/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/opt/aros-portssources
 GUEST_BUILD_DIR=/work/guest-build
@@ -17,7 +17,9 @@ BUILD_JOBS=${JOBS:-1}
 TAR_OPTIONS=--no-same-owner
 export TAR_OPTIONS
 
-tar --no-same-owner -xzf "$SOURCE_ARCHIVE" -C /work
+mkdir -p "$SOURCE_DIR"
+tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
+    -C "$SOURCE_DIR" --strip-components=1
 
 mkdir -p "$GUEST_BUILD_DIR"
 cd "$GUEST_BUILD_DIR"
