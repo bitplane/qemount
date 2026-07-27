@@ -1,7 +1,7 @@
 ---
 title: AROS qemount-2026-07-27
 urls:
-  - https://github.com/bitplane/AROS/archive/refs/tags/qemount-2026-07-27.tar.gz
+  - git+https://github.com/bitplane/AROS.git#qemount-2026-07-27
 provides:
   - sources/aros-qemount-2026-07-27.tar.gz
 ---
