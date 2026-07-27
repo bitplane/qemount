@@ -7,7 +7,7 @@
         volumes beneath a synthetic `/` on AROS
   - [x] mount POSIX guest disks at `/mnt/b1`, `/mnt/b2`, `/mnt/c`, etc.
   - [ ] `/sbin/init.$mode` executed when `-m` is passed to the command line
-    - [ ] Fix this in FreeBSD, but in a way that will actually work in future.
+    - [ ] Fix this in NetBSD, but in a way that will actually work in future.
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
@@ -50,13 +50,13 @@
   - [ ] 9pfuse
     - [x] configurable outstanding-request limit for constrained transports
     - [ ] spam in file browser (unsupported modes)
-  - [ ] Linux runner
-    - [ ] change virtserialport to virtconsole for consistency with NetBSD
+  - [x] Linux runner
+    - [x] change virtserialport to virtconsole for consistency with NetBSD
 
 ## 4. Stretch goals
 
 - [ ] add more guests
-  - [ ] AROS
+  - [x] AROS
   - [ ] Haiku
   - [ ] Atari ST (STEEM?)
   - [ ] OpenDarwin

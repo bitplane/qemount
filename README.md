@@ -1,7 +1,9 @@
 # 🔌 qemount
 
-Let's mount everything/anything using qemu, by exposing it over 9p. Spin up a
-tiny VM that provides access to an image, one instance per mount.
+Mount anything by giving the image to an operating system that understands it,
+then exposing the result over 9P. qemount runs one small guest per image, using
+real kernels and filesystem implementations instead of reimplementing every
+format on the host.
 
 ## ✅ STATUS
 
@@ -11,117 +13,139 @@ tiny VM that provides access to an image, one instance per mount.
 
 MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
 
-Currently, there's:
+Currently, there are:
 
-* Linux 2.6, Linux 6.12 and NetBSD 10.0 guests
+* Linux 2.6, Linux 6.12, NetBSD 10.0 and AROS i386 guests
 * 9P2000.U support in both a simple9p server and 9pfuse client
-* Scripts to start the FUSE client
+* Platform filesystem discovery: `/` on POSIX guests and a synthetic root
+  containing mounted DOS volumes on AROS
 * A collection of filesystems to play with
 * A build system that isolates everything inside containers, so it actually
-  builds easily.
+  builds easily
 * A way to archive everything, inputs, outputs and containers, so the
-  archive.org dumps will work long after the sources go offline.
+  archive.org dumps will work long after the sources go offline
 
-To use it:
+### Guest status
 
-1. Install `podman`, `fuse`, `make` and `qemu`. `pigz` if you're archiving
-2. Type `make` to build the guests.
-3. Use `./build/run-qemu.sh` to start one of the guests with `-i some-image`
-   and `-m 9p` to run the 9p init script. (BSD needs manual execution at
-   present; run ./init.9p from the shell)
-4. Once it's started and is grumbling about not having a connection (not
-   before), connect to it with the 9p FUSE client using:
-   `build/clients/linux-fuse/x86_64/bin/9pfuse /tmp/9p.sock /some/mount/point`
+| Guest          | Builds | Mounts images | Exported namespace                         | FUSE proof |
+| -------------- | ------ | ------------- | ------------------------------------------ | ---------- |
+| Linux 6.12     | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
+| Linux 2.6      | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
+| NetBSD 10.0    | ✅     | ✅            | `/`; attached filesystems beneath `/mnt`  | ✅         |
+| AROS i386      | ✅     | ✅            | Synthetic `/` containing mounted volumes  | ✅         |
 
-If the stars align, you'll have full access to the files in your given disk
-image.
+The AROS proof used a real Amiga hard-drive image. Its `WORK`, `SHITE`,
+`WORKBENCH`, `RAM Disk` and `AROS Live CD` volumes were discovered
+automatically, and files on `WORK` were read through FUSE and verified against
+an earlier extraction.
+
+### Building
+
+Install `podman`, `fuse`, `make` and `qemu`; install `pigz` too if you want to
+create archival builds. The catalogue exposes individual build targets:
+
+```sh
+python -m qemount_build outputs
+python -m qemount_build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
+python -m qemount_build build bin/qemu/x86_64-netbsd/10.0/boot/boot.img
+python -m qemount_build build bin/qemu/i386-aros/boot/aros.iso
+python -m qemount_build build bin/x86_64-linux-musl/9pfuse
+```
+
+The guest-selection and launch layer is still under construction, so this is
+currently a developer workflow rather than a finished one-command mounting
+tool. Guest-specific operational details and remaining integration work live in
+the catalogue documentation and [project plan](src/qemount_build/docs/todo.md).
 
 ## Format support
 
+These tables describe guest capabilities. `🧪` means the implementation is
+present in the current guest image but still needs an end-to-end qemount test.
+
 ### Partition tables
 
-| Partition Table  | Linux 6.12 | Linux 2.6 | NetBSD 10 | Notes                          |
-| ---------------- | ---------- | --------- | --------- | ------------------------------ |
-| **MBR/DOS**      | ✅         | ✅        | ✅        | Classic PC, up to 4 primary    |
-| **GPT**          | ✅         | ✅        | ✅        | Modern standard, >2TB          |
-| **BSD disklabel**| ✅         | ✅        | ✅        | Native BSD partitioning        |
-| **Apple APM**    | ✅         | ✅        | ✅        | Classic Mac partition map      |
-| **Amiga RDB**    | ✅         | ✅        | ✅        | Rigid Disk Block               |
-| **Atari AHDI**   | ✅         | ✅        | ✅        | Atari ST/TOS                   |
-| **Sun VTOC**     | ✅         | ✅        | ❌        | Solaris/SunOS                  |
-| **SGI DVH**      | ✅         | ✅        | ❌        | IRIX disks                     |
-| **LDM**          | ✅         | ❌        | ❌        | Windows dynamic disks          |
-| **Minix**        | ✅         | ✅        | ❌        | Minix subpartitions            |
-| **UBI**          | ✅         | ✅        | ❌        | NAND flash volumes (not a PT)  |
-| **Acorn**        | ✅         | ✅        | ❌        | RISC OS partition map          |
-| **AIX**          | ✅         | ✅        | ❌        | IBM AIX PV headers             |
-| **Ultrix**       | ✅         | ✅        | ❌        | DEC Ultrix (VAX/MIPS)          |
-| **SYSV68**       | ✅         | ✅        | ❌        | Motorola 68k System V          |
-| **IBM DASD**     | ❌         | ❌        | ❌        | S/390 mainframe                |
-| **PC-98**        | ❌         | ❌        | ❌        | NEC PC-98 (Japan)              |
-| **Rio Karma**    | ✅         | ❌        | ❌        | Portable media player          |
-| **OSF/1**        | ✅         | ✅        | ❌        | DEC Alpha / Tru64              |
-| **HP-UX LIF**    | ✅         | ✅        | ❌        | PA-RISC / Itanium              |
-| **QNX4 PT**      | ✅         | ✅        | ❌        | QNX subpartitions              |
-| **Plan 9**       | ✅         | ✅        | ❌        | ASCII partition table          |
-| **NetWare**      | ✅         | ✅        | ❌        | Novell                         |
-| **Hybrid MBR**   | ✅         | ✅        | ✅        | GPT+MBR dual boot              |
-| **Protective MBR**| ✅        | ✅        | ✅        | GPT guard                      |
-| **OpenBSD**      | ✅         | ✅        | ❌        | 16-partition disklabel         |
-| **DragonFly**    | ✅         | ❌        | ❌        | Disklabel64 variant            |
-| **NeXT**         | ❌         | ❌        | ❌        | NeXTSTEP / OPENSTEP            |
-| **CP/M-86**      | ✅         | ✅        | ❌        | Digital Research               |
+| Partition Table   | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                         |
+| ----------------- | ---------- | --------- | --------- | --------- | ----------------------------- |
+| **MBR/DOS**       | ✅         | ✅        | ✅        | 🧪        | Classic PC, up to 4 primary   |
+| **GPT**           | ✅         | ✅        | ✅        | 🧪        | Modern standard, >2TB         |
+| **BSD disklabel** | ✅         | ✅        | ✅        | ❌        | Native BSD partitioning       |
+| **Apple APM**     | ✅         | ✅        | ✅        | ❌        | Classic Mac partition map     |
+| **Amiga RDB**     | ✅         | ✅        | ✅        | ✅        | Real hard-drive image tested  |
+| **Atari AHDI**    | ✅         | ✅        | ✅        | ❌        | Atari ST/TOS                  |
+| **Sun VTOC**      | ✅         | ✅        | ❌        | ❌        | Solaris/SunOS                 |
+| **SGI DVH**       | ✅         | ✅        | ❌        | ❌        | IRIX disks                    |
+| **LDM**           | ✅         | ❌        | ❌        | ❌        | Windows dynamic disks         |
+| **Minix**         | ✅         | ✅        | ❌        | ❌        | Minix subpartitions           |
+| **UBI**           | ✅         | ✅        | ❌        | ❌        | NAND flash volumes (not a PT) |
+| **Acorn**         | ✅         | ✅        | ❌        | ❌        | RISC OS partition map         |
+| **AIX**           | ✅         | ✅        | ❌        | ❌        | IBM AIX PV headers            |
+| **Ultrix**        | ✅         | ✅        | ❌        | ❌        | DEC Ultrix (VAX/MIPS)         |
+| **SYSV68**        | ✅         | ✅        | ❌        | ❌        | Motorola 68k System V         |
+| **IBM DASD**      | ❌         | ❌        | ❌        | ❌        | S/390 mainframe               |
+| **PC-98**         | ❌         | ❌        | ❌        | ❌        | NEC PC-98 (Japan)             |
+| **Rio Karma**     | ✅         | ❌        | ❌        | ❌        | Portable media player         |
+| **OSF/1**         | ✅         | ✅        | ❌        | ❌        | DEC Alpha / Tru64             |
+| **HP-UX LIF**     | ✅         | ✅        | ❌        | ❌        | PA-RISC / Itanium             |
+| **QNX4 PT**       | ✅         | ✅        | ❌        | ❌        | QNX subpartitions             |
+| **Plan 9**        | ✅         | ✅        | ❌        | ❌        | ASCII partition table         |
+| **NetWare**       | ✅         | ✅        | ❌        | ❌        | Novell                        |
+| **Hybrid MBR**    | ✅         | ✅        | ✅        | 🧪        | GPT+MBR dual boot             |
+| **Protective MBR**| ✅         | ✅        | ✅        | 🧪        | GPT guard                     |
+| **OpenBSD**       | ✅         | ✅        | ❌        | ❌        | 16-partition disklabel        |
+| **DragonFly**     | ✅         | ❌        | ❌        | ❌        | Disklabel64 variant           |
+| **NeXT**          | ❌         | ❌        | ❌        | ❌        | NeXTSTEP / OPENSTEP           |
+| **CP/M-86**       | ✅         | ✅        | ❌        | ❌        | Digital Research              |
 
-## Filesystems
+### Filesystems
 
-| Filesystem       | Linux 6.12 | Linux 2.6 | NetBSD 10 | Notes                            |
-| ---------------- | ---------- | --------- | --------- | -------------------------------- |
-| **ext2**         | ✅         | ✅        | ✅        |                                  |
-| **ext3**         | ✅         | ✅        | ✅        | NetBSD mounts as ext2            |
-| **ext4**         | ✅         | ✅        | ❌        |                                  |
-| **FAT12/16/32**  | ✅         | ✅        | ✅        | vfat/msdos                       |
-| **exFAT**        | ✅         | ❌        | ❌        |                                  |
-| **NTFS**         | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 6.12 has full r/w                |
-| **ISO9660**      | ✅         | ✅        | ✅        | cd9660 on BSD                    |
-| **UDF**          | ✅         | ✅        | ✅        | DVD/Blu-ray                      |
-| **HFS**          | ✅         | ✅        | ✅        | Classic Mac                      |
-| **HFS+**         | ✅         | ✅        | ❌        | hfsplus                          |
-| **UFS/FFS**      | 💩         | 💩        | ✅        | Linux UFS is limited             |
-| **LFS**          | ❌         | ❌        | ✅        | NetBSD log-structured            |
-| **XFS**          | ✅         | ✅        | ❌        |                                  |
-| **JFS**          | ✅         | ✅        | ❌        | IBM journaled                    |
-| **Btrfs**        | ✅         | ✅        | ❌        |                                  |
-| **F2FS**         | ✅         | ❌        | ❌        | Flash-friendly                   |
-| **bcachefs**     | ✅         | ❌        | ❌        |                                  |
-| **EROFS**        | ✅         | ❌        | ❌        | Read-only compressed             |
-| **ReiserFS**     | ✅         | ✅        | ❌        | Removed in 6.13                  |
-| **AFFS**         | ✅         | ✅        | 💩 adosfs | Amiga OFS/FFS                    |
-| **SFS**          | ❌         | ❌        | ❌        | Amiga Smart FS (needs AROS)      |
-| **PFS**          | ❌         | ❌        | ❌        | Amiga Professional FS (needs AROS)|
-| **Minix**        | ✅         | ✅        | ❌        |                                  |
-| **V7**           | ✅         | ✅        | ✅        | 7th Edition UNIX                 |
-| **SysV**         | ✅         | 💩        | ❌        | System V - symlinks crash 2.6    |
-| **SquashFS**     | ✅         | ✅        | ❌        | Read-only compressed             |
-| **CramFS**       | ✅         | ✅        | ❌        | Read-only compressed             |
-| **RomFS**        | ✅         | ✅        | ❌        | Read-only                        |
-| **EFS**          | ✅         | ✅        | ✅        | SGI IRIX                         |
-| **BeFS**         | ✅         | ✅        | ❌        | BeOS/Haiku                       |
-| **HPFS**         | ✅         | ✅        | ❌        | OS/2                             |
-| **QNX4**         | ✅         | ✅        | ❌        |                                  |
-| **QNX6**         | ✅         | ❌        | ❌        |                                  |
-| **ADFS**         | ✅         | ✅        | ❌        | Acorn                            |
-| **Filecore**     | ❌         | ❌        | ✅        | Acorn RISC OS                    |
-| **VxFS**         | ✅         | ✅        | ❌        | Veritas                          |
-| **OMFS**         | ✅         | ✅        | ❌        | Optimized MPEG FS                |
-| **NILFS2**       | ✅         | ✅        | ❌        | Log-structured                   |
-| **GFS2**         | ✅         | ✅        | ❌        | Red Hat cluster                  |
-| **OCFS2**        | ❌         | ✅        | ❌        | Oracle cluster                   |
-| **Coda**         | ❌         | ❌        | ✅        | Distributed FS                   |
-| **BFS**          | ✅         | ✅        | ❌        | SCO Boot FS                      |
-| **ZFS**          | ❌         | ❌        | ✅        | OpenZFS (module, not in-kernel)  |
-| **APFS**         | ❌         | ❌        | ❌        | Apple macOS 10.13+               |
-| **ReFS**         | ❌         | ❌        | ❌        | Windows Resilient FS             |
-| **HAMMER2**      | ❌         | ❌        | ❌        | DragonFly BSD native             |
-| **JFFS2**        | ✅         | ✅        | ❌        | Flash journaling                 |
-| **UBIFS**        | ✅         | ❌        | ❌        | UBI Flash FS                     |
-| **High Sierra**  | ✅         | ✅        | ✅        | ISO9660 extension (Apple)        |
+| Filesystem      | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                             |
+| --------------- | ---------- | --------- | --------- | --------- | --------------------------------- |
+| **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
+| **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
+| **ext4**        | ✅         | ✅        | ❌        | ❌        |                                   |
+| **FAT12/16/32** | ✅         | ✅        | ✅        | 🧪        | AROS image includes `fat-handler` |
+| **exFAT**       | ✅         | ❌        | ❌        | ❌        |                                   |
+| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 🧪        | AROS handler is not enabled yet   |
+| **ISO9660**     | ✅         | ✅        | ✅        | ✅        | AROS boots and serves its Live CD |
+| **UDF**         | ✅         | ✅        | ✅        | ❌        | DVD/Blu-ray                       |
+| **HFS**         | ✅         | ✅        | ✅        | ❌        | Classic Mac                       |
+| **HFS+**        | ✅         | ✅        | ❌        | ❌        | hfsplus                           |
+| **UFS/FFS**     | 💩         | 💩        | ✅        | ❌        | Linux UFS is limited              |
+| **LFS**         | ❌         | ❌        | ✅        | ❌        | NetBSD log-structured             |
+| **XFS**         | ✅         | ✅        | ❌        | ❌        |                                   |
+| **JFS**         | ✅         | ✅        | ❌        | ❌        | IBM journaled                     |
+| **Btrfs**       | ✅         | ✅        | ❌        | ❌        |                                   |
+| **F2FS**        | ✅         | ❌        | ❌        | ❌        | Flash-friendly                    |
+| **bcachefs**    | ✅         | ❌        | ❌        | ❌        |                                   |
+| **EROFS**       | ✅         | ❌        | ❌        | ❌        | Read-only compressed              |
+| **ReiserFS**    | ✅         | ✅        | ❌        | ❌        | Removed in 6.13                   |
+| **AFFS**        | ✅         | ✅        | 💩 adosfs | ✅        | AROS OFS/FFS tested end to end    |
+| **SFS**         | ❌         | ❌        | ❌        | 🧪        | AROS image includes `sfs-handler` |
+| **PFS**         | ❌         | ❌        | ❌        | ❌        | Not in the current AROS image     |
+| **Minix**       | ✅         | ✅        | ❌        | ❌        |                                   |
+| **V7**          | ✅         | ✅        | ✅        | ❌        | 7th Edition UNIX                  |
+| **SysV**        | ✅         | 💩        | ❌        | ❌        | System V; symlinks crash 2.6      |
+| **SquashFS**    | ✅         | ✅        | ❌        | ❌        | Read-only compressed              |
+| **CramFS**      | ✅         | ✅        | ❌        | ❌        | Read-only compressed              |
+| **RomFS**       | ✅         | ✅        | ❌        | ❌        | Read-only                         |
+| **EFS**         | ✅         | ✅        | ✅        | ❌        | SGI IRIX                          |
+| **BeFS**        | ✅         | ✅        | ❌        | ❌        | BeOS/Haiku                        |
+| **HPFS**        | ✅         | ✅        | ❌        | ❌        | OS/2                              |
+| **QNX4**        | ✅         | ✅        | ❌        | ❌        |                                   |
+| **QNX6**        | ✅         | ❌        | ❌        | ❌        |                                   |
+| **ADFS**        | ✅         | ✅        | ❌        | ❌        | Acorn                             |
+| **Filecore**    | ❌         | ❌        | ✅        | ❌        | Acorn RISC OS                     |
+| **VxFS**        | ✅         | ✅        | ❌        | ❌        | Veritas                           |
+| **OMFS**        | ✅         | ✅        | ❌        | ❌        | Optimized MPEG FS                 |
+| **NILFS2**      | ✅         | ✅        | ❌        | ❌        | Log-structured                    |
+| **GFS2**        | ✅         | ✅        | ❌        | ❌        | Red Hat cluster                   |
+| **OCFS2**       | ❌         | ✅        | ❌        | ❌        | Oracle cluster                    |
+| **Coda**        | ❌         | ❌        | ✅        | ❌        | Distributed FS                    |
+| **BFS**         | ✅         | ✅        | ❌        | ❌        | SCO Boot FS                       |
+| **ZFS**         | ❌         | ❌        | ✅        | ❌        | OpenZFS (module, not in-kernel)   |
+| **APFS**        | ❌         | ❌        | ❌        | ❌        | Apple macOS 10.13+                |
+| **ReFS**        | ❌         | ❌        | ❌        | ❌        | Windows Resilient FS              |
+| **HAMMER2**     | ❌         | ❌        | ❌        | ❌        | DragonFly BSD native              |
+| **JFFS2**       | ✅         | ✅        | ❌        | ❌        | Flash journaling                  |
+| **UBIFS**       | ✅         | ❌        | ❌        | ❌        | UBI Flash FS                      |
+| **High Sierra** | ✅         | ✅        | ✅        | ❌        | ISO9660 predecessor               |
