@@ -7,7 +7,10 @@ Executes build steps in dependency order using podman.
 import json
 import logging
 import subprocess
+import sys
+from datetime import datetime
 from pathlib import Path
+from typing import TextIO
 
 from .catalogue import resolve_path, build_graph
 from .cache import (
@@ -44,35 +47,62 @@ def get_image_id(tag: str) -> str | None:
     return result.stdout.strip()
 
 
+def build_log_path(build_dir: Path, stage: str, phase: str) -> Path:
+    """Return the persistent log path for a catalogue stage and command phase."""
+    stage_path = Path(stage)
+    return build_dir / "logs" / stage_path.parent / f"{stage_path.name}.{phase}.log"
+
+
 def run_streaming(
     cmd: list[str],
+    log_path: Path,
     cwd: Path | None = None,
-) -> tuple[int, str]:
-    """
-    Run command, streaming output to DEBUG log.
+    stream: TextIO | None = None,
+) -> int:
+    """Run a command while teeing its combined output to the terminal and a log."""
+    if stream is None:
+        stream = sys.stderr
 
-    Returns (returncode, combined_output).
-    """
-    proc = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        errors='replace',
-    )
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("w", encoding="utf-8", errors="replace") as log_file:
+        started = datetime.now().astimezone().isoformat()
+        log_file.write(f"[qemount] started: {started}\n")
+        log_file.flush()
 
-    lines = []
-    for line in proc.stdout:
-        line = line.rstrip()
-        log.debug(line)
-        lines.append(line)
+        proc = subprocess.Popen(
+            cmd,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            errors="replace",
+            bufsize=1,
+        )
 
-    proc.wait()
-    return proc.returncode, "\n".join(lines)
+        last_line_had_newline = True
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            stream.write(line)
+            stream.flush()
+            log_file.write(line)
+            log_file.flush()
+            last_line_had_newline = line.endswith("\n")
+
+        returncode = proc.wait()
+        if not last_line_had_newline:
+            stream.write("\n")
+            stream.flush()
+            log_file.write("\n")
+
+        finished = datetime.now().astimezone().isoformat()
+        log_file.write(f"[qemount] finished: {finished}\n")
+        log_file.write(f"[qemount] exit status: {returncode}\n")
+
+    return returncode
 
 
 def build_image(
+    stage: str,
     context_dir: Path,
     tag: str,
     env: dict,
@@ -87,7 +117,12 @@ def build_image(
 
     Returns the image ID on success, None on failure.
     """
-    log.info("Building image: %s%s", tag, " (no-cache)" if no_cache else "")
+    log.info(
+        "Building image for %s: %s%s",
+        stage,
+        tag,
+        " (no-cache)" if no_cache else "",
+    )
     cmd = ["podman", "build"]
 
     if no_cache:
@@ -103,30 +138,34 @@ def build_image(
         cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
 
-    returncode, output = run_streaming(cmd, cwd=context_dir)
+    log_path = build_log_path(build_dir, stage, "image")
+    returncode = run_streaming(cmd, log_path, cwd=context_dir)
     if returncode != 0:
-        log.error("Build failed:\n%s", output)
+        log.error("Build failed: %s", stage)
+        log.error("Log: %s", log_path)
         return None
 
     image_id = get_image_id(tag)
     if not image_id:
         log.error("Image was not created: %s", tag)
+        log.error("Log: %s", log_path)
         return None
     return image_id
 
 
 def run_container(
+    stage: str,
     image: str,
     build_dir: Path,
     env: dict,
     targets: list[str],
-) -> tuple[bool, str]:
+) -> tuple[bool, Path]:
     """Run a container with the given environment.
 
     Targets are passed as positional args to the container entrypoint.
     Build scripts use these to filter which outputs to build.
 
-    Returns (success, output).
+    Returns (success, log_path).
     """
     cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
     for key, value in env.items():
@@ -134,11 +173,13 @@ def run_container(
     cmd.append(image)
     cmd.extend(targets)
 
-    log.info("Running: %s", image)
-    returncode, output = run_streaming(cmd)
+    log.info("Running stage %s: %s", stage, image)
+    log_path = build_log_path(build_dir, stage, "run")
+    returncode = run_streaming(cmd, log_path)
     if returncode != 0:
-        log.error("Container failed:\n%s", output)
-    return returncode == 0, output
+        log.error("Build failed: %s", stage)
+        log.error("Log: %s", log_path)
+    return returncode == 0, log_path
 
 
 def get_image_tag(resolved: dict) -> str | None:
@@ -252,7 +293,12 @@ def run_build(
                 log.info("Clean: %s (image)", tag)
             else:
                 image_id = build_image(
-                    dockerfile.parent, tag, env, build_requires, build_dir,
+                    path,
+                    dockerfile.parent,
+                    tag,
+                    env,
+                    build_requires,
+                    build_dir,
                     no_cache=image_needs_no_cache(force, build_requires),
                 )
                 if not image_id:
@@ -296,16 +342,15 @@ def run_build(
 
         # Run container to produce file outputs
         env["META"] = json.dumps(meta)
-        success, output = run_container(tag, build_dir, env, dirty_outputs)
+        success, log_path = run_container(path, tag, build_dir, env, dirty_outputs)
         if not success:
-            log.error("Failed to run: %s", path)
             return False
 
         # Verify dirty outputs were created and update cache
         for output_name in dirty_outputs:
             if not (build_dir / output_name).exists():
                 log.error("Output was not created: %s", output_name)
-                log.error("Container output:\n%s", output)
+                log.error("Log: %s", log_path)
                 return False
             update_output_hash(cache, output_name, input_hash, build_dir, get_output_requires(output_name))
 

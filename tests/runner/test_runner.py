@@ -1,14 +1,78 @@
 """Tests for runner.py helpers."""
 
+import io
+import sys
+
 import pytest
 
 from qemount_build.runner import (
+    build_log_path,
     get_image_tag,
     get_docker_provides,
     get_file_provides,
     image_needs_no_cache,
+    run_streaming,
     validate_path_provides,
 )
+
+
+def test_build_log_path_mirrors_catalogue_path(tmp_path):
+    """Stage logs mirror catalogue paths and distinguish command phases."""
+    result = build_log_path(
+        tmp_path,
+        "bin/qemu/aros/pc-i386/system",
+        "run",
+    )
+
+    assert result == (tmp_path / "logs/bin/qemu/aros/pc-i386/system.run.log")
+
+
+def test_run_streaming_tees_output_to_stream_and_log(tmp_path):
+    """Command output is visible immediately and retained with its exit status."""
+    terminal = io.StringIO()
+    log_path = tmp_path / "logs/stage.run.log"
+
+    returncode = run_streaming(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import sys; "
+                "sys.stdout.write('stdout\\n'); sys.stdout.flush(); "
+                "sys.stderr.write('stderr\\n'); sys.stderr.flush()"
+            ),
+        ],
+        log_path,
+        stream=terminal,
+    )
+
+    assert returncode == 0
+    assert terminal.getvalue() == "stdout\nstderr\n"
+    retained = log_path.read_text()
+    assert "stdout\nstderr\n" in retained
+    assert "[qemount] exit status: 0\n" in retained
+
+
+def test_run_streaming_retains_failed_command_without_replaying_it(tmp_path):
+    """Failed commands retain their output once and record the non-zero status."""
+    terminal = io.StringIO()
+    log_path = tmp_path / "logs/stage.image.log"
+
+    returncode = run_streaming(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.write('broken'); sys.exit(23)",
+        ],
+        log_path,
+        stream=terminal,
+    )
+
+    assert returncode == 23
+    assert terminal.getvalue() == "broken\n"
+    retained = log_path.read_text()
+    assert retained.count("broken") == 1
+    assert "[qemount] exit status: 23\n" in retained
 
 
 def test_get_image_tag_docker():

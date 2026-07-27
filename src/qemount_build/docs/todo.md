@@ -9,8 +9,8 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
-  - [ ] stream container output during long builds, with the current catalogue
-        stage identified, while retaining the captured log for failure reports
+  - [x] stream container output during long builds while retaining per-stage
+        logs for failure reports
 
 ## 2. Link it in
 
