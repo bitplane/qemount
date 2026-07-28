@@ -108,7 +108,7 @@ with additional configuration.
 | **ReiserFS**    | ✅         | ✅        | ❌        | ❌        | Removed in 6.13                   |
 | **AFFS**        | ✅         | ✅        | 💩 adosfs | ✅        | AROS OFS/FFS tested end to end    |
 | **SFS**         | ❌         | ❌        | ❌        | ✅        | RDB volume survives reboot/readback |
-| **PFS**         | ❌         | ❌        | ❌        | ❌        | Not in the current AROS image     |
+| **PFS**         | ❌         | ❌        | ❌        | ❌        | AROS/i386 handler is not endian-safe |
 | **Minix**       | ✅         | ✅        | ❌        | ❌        |                                   |
 | **V7**          | ✅         | ✅        | ✅        | ❌        | 7th Edition UNIX                  |
 | **SysV**        | ✅         | 💩        | ❌        | ❌        | System V; symlinks crash 2.6      |

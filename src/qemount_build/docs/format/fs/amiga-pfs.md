@@ -6,22 +6,27 @@ related:
   - format/fs/amiga-sfs
   - format/pt/rdb
 detect:
-  - offset: 0
-    type: string
-    value: "PFS\x01"
-    name: pfs1
-  - offset: 0
-    type: string
-    value: "PFS\x02"
-    name: pfs2
-  - offset: 0
-    type: string
-    value: "PFS\x03"
-    name: pfs3
-  - offset: 0
-    type: string
-    value: "muPF"
-    name: mufs
+  any:
+    - offset: 0
+      type: string
+      value: "PFS\x01"
+      name: pfs1
+    - offset: 0
+      type: string
+      value: "PFS\x02"
+      name: pfs2
+    - offset: 0
+      type: string
+      value: "muAF"
+      name: muafs
+    - offset: 0
+      type: string
+      value: "muPF"
+      name: mupfs
+    - offset: 0
+      type: string
+      value: "AFS\x01"
+      name: afs
 ---
 
 # PFS (Professional File System)
@@ -41,17 +46,23 @@ improvements over FFS, particularly for large directories.
 
 ## Versions
 
-| Version | Magic     | Features           |
+| Variant | Magic     | Features           |
 |---------|-----------|--------------------|
 | PFS1    | "PFS\x01" | Original           |
-| PFS2    | "PFS\x02" | Improved           |
-| PFS3    | "PFS\x03" | Large disk support |
-| muFS    | "muPF"    | Multi-user variant |
+| PFS2    | "PFS\x02" | Extended format    |
+| muAF    | "muAF"    | Multi-user AFS     |
+| muPFS   | "muPF"    | Multi-user PFS     |
+| AFS     | "AFS\x01" | AFS variant        |
+
+`PFS\3` is the RDB partition DOS type used to select the PFS3 handler. It is
+not a third raw-filesystem magic. Current PFS3 formatting writes a `PFS\1`
+boot block and may use a `PFS\2` root block for extended features.
 
 ## Structure
 
-- Root block at start
-- Magic in first 4 bytes
+- Two-sector boot block at the start
+- Root block at sector 2
+- Big-endian on-disk structures
 - Bitmap blocks for allocation
 - B-tree for directories
 - Anode blocks for file extents
@@ -75,15 +86,16 @@ with Andrew File System), added:
 - **AmigaOS 3.x+**: Commercial/shareware
 - **AmigaOS 4.x**: Included
 - **MorphOS**: Supported
-- **AROS**: Supported
+- **AROS**: Handler source present; current little-endian native builds are not
+  byte-order safe
 - **Linux**: No support
 
 ## Linux Considerations
 
-Linux has no PFS driver. Access requires:
-- AROS guest
-- AmigaOS emulation
-- Native hardware
+Linux has no PFS driver. Access currently requires a compatible AmigaOS
+environment or native hardware. The AROS PFS3 handler reads and writes packed
+on-disk structures in host byte order, so the i386 AROS guest cannot safely
+mount authentic big-endian PFS volumes yet.
 
 ## Historical Note
 
