@@ -6,7 +6,7 @@ ENV TAR_OPTIONS=--no-same-owner
 
 RUN mkdir -p /work/source /work/toolchain-build \
         /opt/aros-toolchain /opt/aros-portssources \
-    && tar -xzf /host/build/sources/aros-qemount-2026-07-27.tar.gz \
+    && tar -xzf /host/build/sources/aros-qemount-develop.tar.gz \
         -C /work/source --strip-components=1 \
     && cd /work/toolchain-build \
     && /work/source/configure \

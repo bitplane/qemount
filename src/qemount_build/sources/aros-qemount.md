@@ -1,13 +1,12 @@
 ---
-title: AROS qemount-2026-07-27
+title: AROS qemount integration branch
 urls:
-  - git+https://github.com/bitplane/AROS.git#qemount-2026-07-27
+  - git+https://github.com/bitplane/AROS.git#qemount
 provides:
-  - sources/aros-qemount-2026-07-27.tar.gz
+  - sources/aros-qemount-develop.tar.gz
 ---
 
 # AROS
 
-The AROS source snapshot used by qemount guests. This immutable tag identifies
-the integration tree on which the PC i386 guest and serial transport were
-proved.
+The current AROS integration tree used while guest changes are being proved.
+Stable guest releases replace this mutable branch with an immutable dated tag.

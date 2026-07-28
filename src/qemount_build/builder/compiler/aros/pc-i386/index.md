@@ -6,7 +6,7 @@ env:
 requires:
   - docker:${BUILDER}
 build_requires:
-  - sources/aros-qemount-2026-07-27.tar.gz
+  - sources/aros-qemount-develop.tar.gz
 provides:
   - docker:builder/compiler/aros/pc-i386
 ---
