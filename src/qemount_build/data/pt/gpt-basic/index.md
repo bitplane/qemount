@@ -15,5 +15,6 @@ provides:
 
 # GPT Test Image
 
-GPT disk with 6 partitions using various filesystem types.
-Tests flat partition entry parsing.
+GPT disk with six named partitions using various filesystem types.
+Tests flat partition entry parsing and provides a Microsoft Basic Data FAT32
+partition for guests that determine FAT variants from their boot sectors.
