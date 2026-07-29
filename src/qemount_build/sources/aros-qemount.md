@@ -1,6 +1,6 @@
 ---
 title: AROS qemount integration branch
-version: 9964fde9f58142a938ff11e94794d9f4288e1671
+version: 5a1c42223daaf1b6912aa5b6377535114d2754d2
 urls:
   - git+https://github.com/bitplane/AROS.git#qemount
 provides:
