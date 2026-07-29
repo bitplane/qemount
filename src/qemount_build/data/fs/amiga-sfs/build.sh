@@ -7,9 +7,9 @@ POPULATE=/host/build/data/templates/basic.amiga
 
 for output in "$@"; do
     output_path="/host/build/$output"
-    work=/work/amiga-pfs
+    work=/work/amiga-sfs
     template_dir="$work/template"
-    disk="$work/pfs.rdb"
+    disk="$work/sfs.rdb"
     format_iso="$work/format.iso"
     console_log="$work/console.log"
 
@@ -17,29 +17,24 @@ for output in "$@"; do
     mkdir -p "$template_dir" "$(dirname "$output_path")"
     tar -xf "$TEMPLATE" -C "$template_dir"
 
-    # Let amitools derive a valid geometry and assign all usable cylinders to
-    # the single partition. Fixed cylinder numbers would make the fixture
-    # depend on amitools' current geometry defaults.
-    rdbtool -f "$disk" create size=32M \
+    # Use explicit geometry so the exported partition is cylinder-aligned and
+    # can later be imported into composite RDB fixtures without truncation.
+    rdbtool -f "$disk" create chs=4096,1,32 \
         + init \
-        + add dostype=PFS3
+        + add dostype=SFS0
 
-    # Format reads a literal carriage return before formatting, even in QUICK
-    # mode. Supplying it as an ISO file keeps the build non-interactive.
-    printf '\r' >"$work/format-confirm"
     xorriso \
         -indev "$BASE_ISO" \
         -outdev "$format_iso" \
         -boot_image any replay \
         -map "$template_dir" /TestData \
-        -map "$work/format-confirm" /format-confirm \
         -map "$POPULATE" /populate \
         -map /build/grub.cfg /boot/grub/grub.cfg \
         -map /build/User-Startup /S/User-Startup \
         -commit
 
     if ! run-until-marker \
-        "PFS3 fixture complete" \
+        "SFS fixture complete" \
         "$console_log" \
         "$work/qemu.log" \
         90 \
@@ -58,16 +53,16 @@ for output in "$@"; do
     then
         cat "$work/qemu.log"
         cat "$console_log"
-        echo "AROS did not complete the PFS3 fixture"
+        echo "AROS did not complete the SFS fixture"
         exit 1
     fi
 
     rdbtool -f "$disk" export 0 "$output_path"
     magic=$(od -An -tx1 -N4 "$output_path" | tr -d ' \n')
-    if [ "$magic" != "50465301" ] && [ "$magic" != "50465302" ]; then
+    if [ "$magic" != "53465300" ]; then
         cat "$work/qemu.log"
         cat "$console_log"
-        echo "Expected a PFS boot block, found: $magic"
+        echo "Expected an SFS0 root block, found: $magic"
         exit 1
     fi
 

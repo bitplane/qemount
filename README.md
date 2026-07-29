@@ -54,7 +54,7 @@ with additional configuration.
 
 | Partition Table   | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                         |
 | ----------------- | ---------- | --------- | --------- | --------- | ----------------------------- |
-| **MBR/DOS**       | ✅         | ✅        | ✅        | ❌        | Test image stalls AROS startup |
+| **MBR/DOS**       | ✅         | ✅        | ✅        | ✅        | FAT16 and FAT32 partitions tested over 9P |
 | **GPT**           | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
 | **BSD disklabel** | ✅         | ✅        | ✅        | ❌        | Native BSD partitioning       |
 | **Apple APM**     | ✅         | ✅        | ✅        | ❌        | Classic Mac partition map     |
@@ -91,7 +91,8 @@ with additional configuration.
 | **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
 | **ext4**        | ✅         | ✅        | ❌        | ❌        |                                   |
-| **FAT12/16/32** | ✅         | ✅        | ✅        | ❌        | Raw test images are not auto-mounted |
+| **FAT12**       | ✅         | ✅        | ✅        | ❌        | Handler included; raw fixture not auto-mounted |
+| **FAT16/32**    | ✅         | ✅        | ✅        | ✅        | MBR partitions tested over 9P        |
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        |                                   |
 | **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | Raw test image is not auto-mounted |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅        | AROS boots and serves its Live CD |

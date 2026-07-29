@@ -3,6 +3,7 @@ format: pt/mbr
 requires:
   - docker:builder/disk/alpine
 build_requires:
+  - data/fs/basic.fat12
   - data/fs/basic.fat16
   - data/fs/basic.fat32
 provides:
@@ -11,4 +12,5 @@ provides:
 
 # MBR Simple Test Image
 
-MBR disk with 2 primary partitions containing FAT16 and FAT32 filesystems.
+MBR disk with three primary partitions containing FAT12, FAT16, and FAT32
+filesystems.

@@ -1,5 +1,6 @@
-Echo "Formatting DH0: as PFS3" >SER:
-SYS:System/Format DRIVE DH0: NAME TestPFS QUICK NOICONS <SYS:format-confirm
+Echo "Formatting DH0: as SFS" >SER:
+Echo "y" >T:sfs-confirm
+C:SFSformat DEVICE=DH0: NAME=TestSFS <T:sfs-confirm
 If WARN
     Echo "Formatting DH0: failed" >SER:
     C:Shutdown
@@ -12,5 +13,5 @@ If WARN
     C:Shutdown
 EndIf
 
-Echo "PFS3 fixture complete" >SER:
+Echo "SFS fixture complete" >SER:
 C:Shutdown

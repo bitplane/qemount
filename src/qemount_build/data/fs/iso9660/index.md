@@ -5,8 +5,17 @@ requires:
   - data/templates/basic.tar
 provides:
   - data/fs/basic.iso9660
+  - data/fs/basic.rock-ridge.iso9660
+  - data/fs/basic.joliet.iso9660
 ---
 
-# iso9660 Test Image
+# ISO 9660 Test Images
 
-Test image for the iso9660 filesystem.
+Three independent images populated from the standard template:
+
+- plain ISO 9660 without naming extensions;
+- ISO 9660 with Rock Ridge;
+- ISO 9660 with Joliet.
+
+Keeping the extensions separate ensures a reader cannot accidentally satisfy
+both extension tests through the same hybrid image.

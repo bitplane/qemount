@@ -32,7 +32,7 @@
   - [ ] xdg launcher
 - [ ] safety
   - [ ] test data + framework
-    - [ ] data builder for fileystems (27/43)
+    - [ ] data builder for filesystems (51/91)
     - [ ] create some machine-like images
     - [ ] test runner and rules (architecture, design, mvp)
 - [ ] fix bugs
@@ -42,7 +42,9 @@
     - [x] replace the 75 MiB pruned Live CD with a roughly 3 MiB allowlisted
           guest image
     - [ ] mount supported filesystems from raw, MBR and GPT images
-    - [ ] investigate the MBR test image stalling guest startup
+    - [x] investigate the MBR test image stalling guest startup (an
+          uninitialised serial data length caused a division by zero; fixed
+          upstream, and both MBR partitions now work over 9P)
 
 ## 4. Stretch goals
 

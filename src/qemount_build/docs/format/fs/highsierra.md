@@ -6,7 +6,7 @@ related:
   - format/fs/iso9660
   - format/fs/udf
 detect:
-  - offset: 0x8001
+  - offset: 0x8009
     type: string
     value: "CDROM"
 ---
