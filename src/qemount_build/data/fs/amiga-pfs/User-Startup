@@ -1,0 +1,16 @@
+Echo "Formatting DH0: as PFS3" >SER:UNIT=1
+SYS:System/Format DRIVE DH0: NAME TestPFS QUICK NOICONS <SYS:format-confirm
+If WARN
+    Echo "Formatting DH0: failed" >SER:UNIT=1
+    C:Shutdown
+EndIf
+
+Echo "Copying test data to DH0:" >SER:UNIT=1
+C:Copy SYS:TestData/#? DH0: ALL CLONE ERRWARN
+If WARN
+    Echo "Copying test data failed" >SER:UNIT=1
+    C:Shutdown
+EndIf
+
+Echo "PFS3 fixture complete" >SER:UNIT=1
+C:Shutdown

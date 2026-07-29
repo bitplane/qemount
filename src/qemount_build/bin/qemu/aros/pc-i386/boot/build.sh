@@ -12,6 +12,14 @@ xorriso \
     -indev "$BASE_ISO" \
     -outdev "$OUTPUT_TMP" \
     -boot_image any replay \
+    -rm_r \
+        /Demos \
+        /Developer \
+        /EFI \
+        /Extras \
+        /Demos.info \
+        /Developer.info \
+        -- \
     -map "$SIMPLE9P" /C/simple9p \
     -map /grub.cfg /boot/grub/grub.cfg \
     -map /User-Startup /S/User-Startup \
