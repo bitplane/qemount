@@ -13,5 +13,12 @@ If WARN
     C:Shutdown
 EndIf
 
+Echo "Dismounting DH0: to flush the fixture" >SER:
+C:Assign DH0: DISMOUNT
+If WARN
+    Echo "Dismounting DH0: failed" >SER:
+    C:Shutdown
+EndIf
+
 Echo "SFS fixture complete" >SER:
 C:Shutdown

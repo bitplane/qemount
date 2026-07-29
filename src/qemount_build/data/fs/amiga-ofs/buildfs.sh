@@ -3,8 +3,9 @@
 # $2 = output file
 set -e
 
-# Create 10MB HDF and format as OFS (needs .hdf extension)
-xdftool /tmp/output.hdf create size=10M + format TestFS ofs
+# Create 10MB HDF and format as OFS (needs .hdf extension). Keep the volume
+# label distinct from the FFS fixture so both can coexist in one RDB.
+xdftool /tmp/output.hdf create size=10M + format TestOFS ofs
 
 # Write each item from template to root of image
 cd "$1"

@@ -70,6 +70,12 @@ for output in "$@"; do
         echo "Expected a PFS boot block, found: $magic"
         exit 1
     fi
+    if ! grep -aFq "Hello, world!" "$output_path"; then
+        cat "$work/qemu.log"
+        cat "$console_log"
+        echo "PFS fixture does not contain the test-data payload"
+        exit 1
+    fi
 
     echo "Built: $output"
 done

@@ -65,6 +65,12 @@ for output in "$@"; do
         echo "Expected an SFS0 root block, found: $magic"
         exit 1
     fi
+    if ! grep -aFq "Hello, world!" "$output_path"; then
+        cat "$work/qemu.log"
+        cat "$console_log"
+        echo "SFS fixture does not contain the test-data payload"
+        exit 1
+    fi
 
     echo "Built: $output"
 done
