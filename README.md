@@ -85,7 +85,7 @@ with additional configuration.
 
 ### Filesystems
 
-| Filesystem      | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                             |
+| Filesystem      | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS      | Notes                             |
 | --------------- | ---------- | --------- | --------- | --------- | --------------------------------- |
 | **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
@@ -108,7 +108,7 @@ with additional configuration.
 | **ReiserFS**    | ✅         | ✅        | ❌        | ❌        | Removed in 6.13                   |
 | **AFFS**        | ✅         | ✅        | 💩 adosfs | ✅        | AROS OFS/FFS tested end to end    |
 | **SFS**         | ❌         | ❌        | ❌        | ✅        | RDB volume survives reboot/readback |
-| **PFS**         | ❌         | ❌        | ❌        | ❌        | AROS/i386 handler is not endian-safe |
+| **PFS**         | ❌         | ❌        | ❌        | ✅        | i386 and m68k write/read/boot proof |
 | **Minix**       | ✅         | ✅        | ❌        | ❌        |                                   |
 | **V7**          | ✅         | ✅        | ✅        | ❌        | 7th Edition UNIX                  |
 | **SysV**        | ✅         | 💩        | ❌        | ❌        | System V; symlinks crash 2.6      |

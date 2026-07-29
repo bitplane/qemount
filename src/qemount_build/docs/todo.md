@@ -53,8 +53,8 @@
   - [ ] AROS guest
     - [ ] mount supported filesystems from raw, MBR and GPT images
     - [ ] investigate the MBR test image stalling guest startup
-    - [ ] port PFS3 on-disk structures to explicit big-endian access before
-          enabling the handler or adding PFS fixtures
+    - [x] port PFS3 on-disk structures to explicit big-endian access
+    - [x] prove PFS3 format, population and root-volume boot on i386 and m68k
   - [x] Linux runner
     - [x] change virtserialport to virtconsole for consistency with NetBSD
 

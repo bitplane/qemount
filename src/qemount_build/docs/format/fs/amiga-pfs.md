@@ -86,16 +86,14 @@ with Andrew File System), added:
 - **AmigaOS 3.x+**: Commercial/shareware
 - **AmigaOS 4.x**: Included
 - **MorphOS**: Supported
-- **AROS**: Handler source present; current little-endian native builds are not
-  byte-order safe
+- **AROS**: Supported on little- and big-endian targets
 - **Linux**: No support
 
 ## Linux Considerations
 
-Linux has no PFS driver. Access currently requires a compatible AmigaOS
-environment or native hardware. The AROS PFS3 handler reads and writes packed
-on-disk structures in host byte order, so the i386 AROS guest cannot safely
-mount authentic big-endian PFS volumes yet.
+Linux has no PFS driver. Access requires a compatible AmigaOS environment,
+native hardware, or an AROS guest. The AROS handler uses explicit big-endian
+conversion for PFS metadata and has been exercised on both i386 and m68k.
 
 ## Historical Note
 
