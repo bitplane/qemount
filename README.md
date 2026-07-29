@@ -19,7 +19,7 @@ Currently, there are:
 * 9P2000.U support in both a simple9p server and 9pfuse client
 * Platform filesystem discovery: `/` on POSIX guests and a synthetic root
   containing mounted DOS volumes on AROS
-* A roughly 3 MiB allowlisted AROS guest for AFFS, SFS and PFS volumes
+* A roughly 3 MiB allowlisted AROS guest for Amiga OFS, FFS, SFS and PFS volumes
 * A collection of filesystems to play with
 * A build system that isolates everything inside containers, so it actually
   builds easily
@@ -39,26 +39,22 @@ python -m qemount_build build bin/qemu/i386-aros/boot/aros.iso
 python -m qemount_build build bin/x86_64-linux-musl/9pfuse
 ```
 
-The guest-selection and launch layer is still under construction, so this is
-currently a developer workflow rather than a finished one-command mounting
-tool. Guest-specific operational details and remaining integration work live in
-the catalogue documentation and [project plan](src/qemount_build/docs/todo.md).
+The guest-selection and launch layer is still under construction, see the
+[todo list](src/qemount_build/docs/todo.md).
 
 ## Format support
 
-These tables describe guest capabilities as exercised by the current qemount
-integration, rather than every handler that an operating system could support
-with additional configuration.
+This is what works so far, sometimes with a bit of connect script tweaking.
 
 ### Partition tables
 
 | Partition Table   | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                         |
 | ----------------- | ---------- | --------- | --------- | --------- | ----------------------------- |
-| **MBR/DOS**       | ✅         | ✅        | ✅        | ✅        | FAT16 and FAT32 partitions tested over 9P |
+| **MBR/DOS**       | ✅         | ✅        | ✅        | ✅        |                               |
 | **GPT**           | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
 | **BSD disklabel** | ✅         | ✅        | ✅        | ❌        | Native BSD partitioning       |
 | **Apple APM**     | ✅         | ✅        | ✅        | ❌        | Classic Mac partition map     |
-| **Amiga RDB**     | ✅         | ✅        | ✅        | ✅        | Real hard-drive image tested  |
+| **Amiga RDB**     | ✅         | ✅        | ✅        | ✅        |                               |
 | **Atari AHDI**    | ✅         | ✅        | ✅        | ❌        | Atari ST/TOS                  |
 | **Sun VTOC**      | ✅         | ✅        | ❌        | ❌        | Solaris/SunOS                 |
 | **SGI DVH**       | ✅         | ✅        | ❌        | ❌        | IRIX disks                    |
@@ -91,11 +87,11 @@ with additional configuration.
 | **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
 | **ext4**        | ✅         | ✅        | ❌        | ❌        |                                   |
-| **FAT12**       | ✅         | ✅        | ✅        | ❌        | Handler included; raw fixture not auto-mounted |
-| **FAT16/32**    | ✅         | ✅        | ✅        | ✅        | MBR partitions tested over 9P        |
+| **FAT12**       | ✅         | ✅        | ✅        | ❌        |                                   |
+| **FAT16/32**    | ✅         | ✅        | ✅        | ✅        |                                   |
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        |                                   |
-| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | Raw test image is not auto-mounted |
-| **ISO9660**     | ✅         | ✅        | ✅        | ✅        | AROS boots and serves its Live CD |
+| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        |                                   |
+| **ISO9660**     | ✅         | ✅        | ✅        | ✅        | Several variants tested           |
 | **UDF**         | ✅         | ✅        | ✅        | ❌        | DVD/Blu-ray                       |
 | **HFS**         | ✅         | ✅        | ✅        | ❌        | Classic Mac                       |
 | **HFS+**        | ✅         | ✅        | ❌        | ❌        | hfsplus                           |
@@ -108,9 +104,10 @@ with additional configuration.
 | **bcachefs**    | ✅         | ❌        | ❌        | ❌        |                                   |
 | **EROFS**       | ✅         | ❌        | ❌        | ❌        | Read-only compressed              |
 | **ReiserFS**    | ✅         | ✅        | ❌        | ❌        | Removed in 6.13                   |
-| **AFFS**        | ✅         | ✅        | 💩 adosfs | ✅        | AROS OFS/FFS tested end to end    |
-| **SFS**         | ❌         | ❌        | ❌        | ✅        | RDB volume survives reboot/readback |
-| **PFS**         | ❌         | ❌        | ❌        | ✅        | i386 and m68k write/read/boot proof |
+| **Amiga OFS**   | ✅         | ✅        | 💩 adosfs | ✅        |                                   |
+| **Amiga FFS**   | ✅         | ✅        | 💩 adosfs | ✅        |                                   |
+| **SFS**         | ❌         | ❌        | ❌        | ✅        |                                   |
+| **PFS**         | ❌         | ❌        | ❌        | ✅        |                                   |
 | **Minix**       | ✅         | ✅        | ❌        | ❌        |                                   |
 | **V7**          | ✅         | ✅        | ✅        | ❌        | 7th Edition UNIX                  |
 | **SysV**        | ✅         | 💩        | ❌        | ❌        | System V; symlinks crash 2.6      |
