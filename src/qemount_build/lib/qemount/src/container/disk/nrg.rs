@@ -46,7 +46,6 @@ impl TrackMode {
 /// Parsed track info
 #[derive(Debug)]
 struct Track {
-    mode: TrackMode,
     offset: u64,
     length: u64, // in bytes
 }
@@ -110,21 +109,20 @@ fn parse_nrg(reader: &dyn Reader) -> io::Result<Vec<Track>> {
     let mut sig = [0u8; 4];
     read_bytes(reader, file_size - 12, &mut sig)?;
 
-    let (chunk_offset, is_new_format) = if &sig == b"NER5" {
+    let chunk_offset = if &sig == b"NER5" {
         let offset = read_u64_be(reader, file_size - 8)?;
-        (offset, true)
+        offset
     } else {
         // Check for NERO (old format) at -8
         read_bytes(reader, file_size - 8, &mut sig)?;
         if &sig != b"NERO" {
             return Err(io::Error::new(io::ErrorKind::InvalidData, "not an NRG file"));
         }
-        let offset = read_u32_be(reader, file_size - 4)? as u64;
-        (offset, false)
+        read_u32_be(reader, file_size - 4)? as u64
     };
 
     // Parse chunk stream
-    parse_chunks(reader, chunk_offset, file_size, is_new_format)
+    parse_chunks(reader, chunk_offset, file_size)
 }
 
 /// Parse NRG chunk stream
@@ -132,13 +130,9 @@ fn parse_chunks(
     reader: &dyn Reader,
     start_offset: u64,
     file_size: u64,
-    is_new_format: bool,
 ) -> io::Result<Vec<Track>> {
     let mut pos = start_offset;
     let mut tracks = Vec::new();
-
-    // Track data starts at offset 0 in the file
-    let data_end = start_offset; // Chunk stream starts where data ends
 
     loop {
         if pos + 8 > file_size {
@@ -154,7 +148,7 @@ fn parse_chunks(
         match &chunk_id {
             b"END!" => break,
             b"DAOX" | b"DAOI" => {
-                let new_tracks = parse_dao_chunk(reader, pos, chunk_len, is_new_format, &chunk_id)?;
+                let new_tracks = parse_dao_chunk(reader, pos, chunk_len, &chunk_id)?;
                 tracks.extend(new_tracks);
             }
             b"ETN2" | b"ETNF" => {
@@ -177,7 +171,6 @@ fn parse_dao_chunk(
     reader: &dyn Reader,
     offset: u64,
     length: u64,
-    is_new_format: bool,
     chunk_id: &[u8; 4],
 ) -> io::Result<Vec<Track>> {
     // DAO header is 22 bytes, then track entries follow
@@ -213,12 +206,12 @@ fn parse_dao_chunk(
         // Read sector size code at +12
         let mut sector_code = [0u8; 2];
         read_bytes(reader, entry_pos + 12, &mut sector_code)?;
-        let sector_size = u16::from_be_bytes(sector_code) as u32;
+        let _sector_size = u16::from_be_bytes(sector_code);
 
         // Mode code at +14
         let mut mode_buf = [0u8; 1];
         read_bytes(reader, entry_pos + 14, &mut mode_buf)?;
-        let mode = match TrackMode::from_code(mode_buf[0]) {
+        let _mode = match TrackMode::from_code(mode_buf[0]) {
             Some(m) => m,
             None => {
                 entry_pos += entry_size;
@@ -227,7 +220,7 @@ fn parse_dao_chunk(
         };
 
         // Read offsets
-        let (pregap_offset, start_offset, end_offset) = if chunk_id == b"DAOX" {
+        let (_pregap_offset, start_offset, end_offset) = if chunk_id == b"DAOX" {
             let pregap = read_u64_be(reader, entry_pos + 18)?;
             let start = read_u64_be(reader, entry_pos + 26)?;
             let end = read_u64_be(reader, entry_pos + 34)?;
@@ -242,7 +235,6 @@ fn parse_dao_chunk(
         let track_length = end_offset.saturating_sub(start_offset);
 
         tracks.push(Track {
-            mode,
             offset: start_offset,
             length: track_length,
         });
@@ -282,7 +274,7 @@ fn parse_etn_chunk(
             (off, size, mode)
         };
 
-        let mode = match TrackMode::from_code(mode_val as u8) {
+        let _mode = match TrackMode::from_code(mode_val as u8) {
             Some(m) => m,
             None => {
                 entry_pos += entry_size;
@@ -291,7 +283,6 @@ fn parse_etn_chunk(
         };
 
         tracks.push(Track {
-            mode,
             offset: track_offset,
             length: track_size,
         });

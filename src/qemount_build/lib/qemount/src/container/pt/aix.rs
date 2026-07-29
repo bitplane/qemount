@@ -43,7 +43,6 @@ impl Container for AixContainer {
 
         // Read LVM record fields
         let pp_size_log2 = read_be16(&*reader, lvm_offset + 0x2E)?;
-        let vgda_len = read_be32(&*reader, lvm_offset + 0x18)?;
         let vgda_sector = read_be32(&*reader, lvm_offset + 0x1C)? as u64;
 
         if vgda_sector == 0 || pp_size_log2 > 30 {

@@ -43,7 +43,6 @@ enum VmdkVariant {
     /// VMDK3 (COWD) - single-level lookup
     Vmdk3 {
         l1_table: Vec<u32>,
-        l1_offset: u64,
     },
     /// VMDK4 (KDMV) - two-level GD/GT
     Vmdk4 {
@@ -137,7 +136,6 @@ impl VmdkReader {
             parent,
             variant: VmdkVariant::Vmdk3 {
                 l1_table,
-                l1_offset: l1dir_offset * 512,
             },
             grain_size,
             virtual_size,
@@ -334,7 +332,7 @@ impl Reader for VmdkReader {
             .min(remaining_in_disk as usize);
 
         match &self.variant {
-            VmdkVariant::Vmdk3 { l1_table, .. } => {
+            VmdkVariant::Vmdk3 { l1_table } => {
                 // Single-level lookup
                 if grain_idx as usize >= l1_table.len() {
                     buf[..to_read].fill(0);

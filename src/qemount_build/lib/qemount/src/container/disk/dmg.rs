@@ -55,7 +55,6 @@ struct DmgChunk {
 pub struct DmgReader {
     parent: Arc<dyn Reader + Send + Sync>,
     chunks: Vec<DmgChunk>,
-    data_fork_offset: u64,
     virtual_size: u64,
 }
 
@@ -134,7 +133,6 @@ impl DmgReader {
         Ok(Self {
             parent,
             chunks,
-            data_fork_offset,
             virtual_size,
         })
     }

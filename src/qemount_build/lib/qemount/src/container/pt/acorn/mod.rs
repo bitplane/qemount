@@ -39,7 +39,6 @@ pub fn eesox_decrypt(data: &[u8]) -> Vec<u8> {
 
 /// ADFS disc record at offset 0x1c0 within boot block
 pub struct DiscRecord {
-    pub log2secsize: u8,
     pub secspertrack: u8,
     pub heads: u8,
     pub lowsector: u8,
@@ -55,7 +54,6 @@ impl DiscRecord {
         }
         let dr = &data[0x1c0..];
         Some(Self {
-            log2secsize: dr[0],
             secspertrack: dr[1],
             heads: dr[2],
             lowsector: dr[8],

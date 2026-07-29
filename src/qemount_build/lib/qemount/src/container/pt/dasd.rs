@@ -16,14 +16,6 @@ const VOL1_EBCDIC: u32 = 0xE5D6D3F1;
 const LNX1_EBCDIC: u32 = 0xD3D5E7F1;
 const CMS1_EBCDIC: u32 = 0xC3D4E2F1;
 
-/// FMT label IDs in EBCDIC
-const FMT1_EBCDIC: u8 = 0xF1; // '1' in EBCDIC
-const FMT8_EBCDIC: u8 = 0xF8; // '8' in EBCDIC
-const FMT4_EBCDIC: u8 = 0xF4; // '4' in EBCDIC - skip
-const FMT5_EBCDIC: u8 = 0xF5; // '5' in EBCDIC - skip
-const FMT7_EBCDIC: u8 = 0xF7; // '7' in EBCDIC - skip
-const FMT9_EBCDIC: u8 = 0xF9; // '9' in EBCDIC - skip
-
 /// LNX1 version with large volume support
 const LNX1_VERSION_LARGE: u8 = 0xF2;
 
@@ -57,7 +49,7 @@ impl Container for DasdContainer {
 
 /// Parse VOL1 (CDL) label - multiple partitions from VTOC
 fn parse_vol1(
-    reader: &Arc<dyn Reader + Send + Sync>,
+    _reader: &Arc<dyn Reader + Send + Sync>,
     _label_offset: u64,
 ) -> io::Result<Vec<Child>> {
     // VOL1 requires parsing VTOC which needs geometry info

@@ -9,7 +9,8 @@ const FORMAT_BIN: &[u8] = include_bytes!(env!("QEMOUNT_FORMAT_BIN"));
 
 #[derive(Debug, Deserialize)]
 struct RawFormatDb {
-    version: u32,
+    #[serde(rename = "version")]
+    _version: u32,
     formats: HashMap<String, Detect>,
 }
 
@@ -32,7 +33,8 @@ pub enum Rule {
         value: Option<Value>,
         op: Option<String>,
         mask: Option<u64>,
-        name: Option<String>,
+        #[serde(rename = "name")]
+        _name: Option<String>,
         #[serde(rename = "then")]
         then_rules: Option<Vec<Rule>>,
         length: Option<u32>,

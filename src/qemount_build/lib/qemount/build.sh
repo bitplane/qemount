@@ -14,7 +14,10 @@ want() { [ -z "$TARGETS" ] || echo "$TARGETS" | grep -q "$1"; }
 # Linux musl (fully static, portable - no .so, musl doesn't support cdylib)
 for arch in x86_64 aarch64; do
     if want "lib/${arch}-linux-musl/"; then
-        cargo zigbuild --release --target ${arch}-unknown-linux-musl -j $JOBS
+        # Cargo warns while dropping the manifest's cdylib output for musl.
+        # Quiet mode suppresses that expected Cargo message; compiler diagnostics
+        # are still emitted.
+        cargo zigbuild --quiet --release --target ${arch}-unknown-linux-musl -j $JOBS
         mkdir -p ${OUT}/${arch}-linux-musl
         cp ${TARGET}/${arch}-unknown-linux-musl/release/libqemount.a ${OUT}/${arch}-linux-musl/
     fi

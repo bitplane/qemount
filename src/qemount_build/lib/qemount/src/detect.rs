@@ -55,7 +55,7 @@ where
     if typ == "xor" {
         let len = length.unwrap_or(256) as usize;
         let xor_key = key.unwrap_or("");
-        return match_xor_then(reader, offset, len, xor_key, then_rules, &recurse);
+        return match_xor_then(reader, offset, len, xor_key, then_rules);
     }
 
     // If no expected value, rule is extraction-only (always matches)
@@ -253,17 +253,15 @@ fn match_checksum<R: Reader + ?Sized>(reader: &R, offset: u64, length: usize, al
 }
 
 /// Match xor decryption with nested rules
-fn match_xor_then<R, F>(
+fn match_xor_then<R>(
     reader: &R,
     offset: u64,
     length: usize,
     key: &str,
     then_rules: Option<&Vec<Rule>>,
-    recurse: &F,
 ) -> bool
 where
     R: Reader + ?Sized,
-    F: Fn(&R, &Rule) -> bool,
 {
     let rules = match then_rules {
         Some(r) => r,
@@ -292,7 +290,7 @@ fn match_rule_on_bytes(reader: &crate::container::BytesReader, rule: &Rule) -> b
     match rule {
         Rule::Any { any } => any.iter().any(|r| match_rule_on_bytes(reader, r)),
         Rule::All { all } => all.iter().all(|r| match_rule_on_bytes(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
+        Rule::Leaf { offset, typ, value, op, mask, _name: _, then_rules, length, algorithm, key } => {
             let resolved = match resolve_offset(*offset, reader.size()) {
                 Some(o) => o,
                 None => return false,
@@ -428,7 +426,7 @@ fn matches_rule_dyn(reader: &dyn Reader, rule: &Rule) -> bool {
     match rule {
         Rule::Any { any } => any.iter().any(|r| matches_rule_dyn(reader, r)),
         Rule::All { all } => all.iter().all(|r| matches_rule_dyn(reader, r)),
-        Rule::Leaf { offset, typ, value, op, mask, name: _, then_rules, length, algorithm, key } => {
+        Rule::Leaf { offset, typ, value, op, mask, _name: _, then_rules, length, algorithm, key } => {
             let resolved = match resolve_offset(*offset, reader.size()) {
                 Some(o) => o,
                 None => return false,

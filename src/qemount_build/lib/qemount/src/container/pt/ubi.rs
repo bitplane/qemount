@@ -353,11 +353,3 @@ fn read_be32(reader: &dyn Reader, offset: u64) -> io::Result<u32> {
     }
     Ok(u32::from_be_bytes(buf))
 }
-
-fn read_be64(reader: &dyn Reader, offset: u64) -> io::Result<u64> {
-    let mut buf = [0u8; 8];
-    if reader.read_at(offset, &mut buf)? != 8 {
-        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short read"));
-    }
-    Ok(u64::from_be_bytes(buf))
-}

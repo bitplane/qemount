@@ -32,7 +32,6 @@ pub struct QedReader {
     parent: Arc<dyn Reader + Send + Sync>,
     l1_table: Vec<u64>,
     cluster_size: u64,
-    table_size: u64,
     l2_entries: u64,
     virtual_size: u64,
 }
@@ -118,7 +117,6 @@ impl QedReader {
             parent,
             l1_table,
             cluster_size,
-            table_size,
             l2_entries,
             virtual_size,
         })

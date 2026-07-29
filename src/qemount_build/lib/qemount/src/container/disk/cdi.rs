@@ -31,12 +31,9 @@ enum TrackMode {
 /// Parsed track info
 #[derive(Debug)]
 struct Track {
-    mode: TrackMode,
     sector_size: u32,
     pregap_length: u32,
     length: u32,
-    start_lba: u32,
-    total_length: u32,
     data_offset: u64, // File position where track data starts
 }
 
@@ -216,7 +213,7 @@ fn parse_track(
 
     let mode_val = read_u32_le(reader, pos)?;
     pos += 4;
-    let mode = match mode_val {
+    let _mode = match mode_val {
         0 => TrackMode::Audio,
         1 => TrackMode::Mode1,
         2 => TrackMode::Mode2,
@@ -231,10 +228,10 @@ fn parse_track(
     // Skip 12 bytes
     pos += 12;
 
-    let start_lba = read_u32_le(reader, pos)?;
+    let _start_lba = read_u32_le(reader, pos)?;
     pos += 4;
 
-    let total_length = read_u32_le(reader, pos)?;
+    let _total_length = read_u32_le(reader, pos)?;
     pos += 4;
 
     // Skip 16 bytes
@@ -272,12 +269,9 @@ fn parse_track(
 
     Ok((
         Track {
-            mode,
             sector_size,
             pregap_length,
             length,
-            start_lba,
-            total_length,
             data_offset: track_data_offset,
         },
         pos,
