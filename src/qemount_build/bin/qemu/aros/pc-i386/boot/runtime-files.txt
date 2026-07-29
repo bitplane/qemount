@@ -1,0 +1,41 @@
+# Native bootstrap and resident operating-system packages.
+.backdrop
+AROS.boot
+boot/pc-tiny/bootstrap.xz
+boot/pc-tiny/kernel.xz
+boot/pc-tiny/aros-bsp.pkg.xz
+boot/aros-base.pkg.xz
+boot/aros-fs.pkg.xz
+
+# Disk discovery.
+C/Assign
+C/Automount
+C/Echo
+C/Execute
+C/FailAt
+C/Mount
+Devs/DOSDrivers/DEBUG
+Devs/DOSDrivers/SER
+Devs/serial.device
+L/automount-config
+L/con-handler
+L/debug-handler
+L/port-handler
+L/ram-handler
+L/UserShell-Seg
+Libs/partition.library
+
+# Filesystem handlers. The boot package provides resident copies; retaining
+# the disk copies also supports mountlists and media-supplied DOS entries.
+L/afs-handler
+L/cdrom-handler
+L/fat-handler
+L/pfs3-handler
+L/sfs-handler
+
+# Runtime libraries used by simple9p's AROS C environment.
+Libs/iffparse.library
+Libs/locale.library
+Libs/posixc.library
+Libs/stdc.library
+Libs/stdcio.library

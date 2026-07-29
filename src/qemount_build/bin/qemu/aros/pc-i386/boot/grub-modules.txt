@@ -1,0 +1,10 @@
+# Initial CD access and normal-mode configuration.
+biosdisk
+configfile
+iso9660
+normal
+
+# qemount's serial console and AROS Multiboot loader.
+multiboot
+serial
+terminal

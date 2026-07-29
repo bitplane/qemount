@@ -19,6 +19,7 @@ Currently, there are:
 * 9P2000.U support in both a simple9p server and 9pfuse client
 * Platform filesystem discovery: `/` on POSIX guests and a synthetic root
   containing mounted DOS volumes on AROS
+* A roughly 3 MiB allowlisted AROS guest for AFFS, SFS and PFS volumes
 * A collection of filesystems to play with
 * A build system that isolates everything inside containers, so it actually
   builds easily

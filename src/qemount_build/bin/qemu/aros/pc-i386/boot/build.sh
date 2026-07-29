@@ -5,23 +5,76 @@ BASE_ISO=/host/build/bin/qemu/${ARCH}-aros/system/aros.iso
 SIMPLE9P=/host/build/bin/${ARCH}-aros/simple9p
 OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-aros/boot
 OUTPUT_TMP=$OUTPUT_DIR/aros.iso.tmp
+STAGING_DIR=/work/iso
 
 mkdir -p "$OUTPUT_DIR"
 rm -f "$OUTPUT_TMP"
-xorriso \
-    -indev "$BASE_ISO" \
-    -outdev "$OUTPUT_TMP" \
-    -boot_image any replay \
-    -rm_r \
-        /Demos \
-        /Developer \
-        /EFI \
-        /Extras \
-        /Demos.info \
-        /Developer.info \
-        -- \
-    -map "$SIMPLE9P" /C/simple9p \
-    -map /grub.cfg /boot/grub/grub.cfg \
-    -map /User-Startup /S/User-Startup \
-    -commit
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+
+extract_path() {
+    path=$1
+    mkdir -p "$STAGING_DIR/$(dirname "$path")"
+    xorriso -osirrox on -indev "$BASE_ISO" \
+        -extract "/$path" "$STAGING_DIR/$path"
+}
+
+while IFS= read -r path; do
+    case "$path" in
+        ""|\#*) continue ;;
+    esac
+    extract_path "$path"
+done < /runtime-files.txt
+
+GRUB_DIR=boot/grub/i386-pc
+for file in \
+    grub2_eltorito \
+    core.img \
+    command.lst \
+    fs.lst \
+    moddep.lst
+do
+    extract_path "$GRUB_DIR/$file"
+done
+
+extract_grub_module() {
+    module=$1
+    module_path=$GRUB_DIR/$module.mod
+    if [ -f "$STAGING_DIR/$module_path" ]; then
+        return
+    fi
+    extract_path "$module_path"
+    dependencies=$(awk -F: -v module="$module" \
+        '$1 == module { sub(/^[[:space:]]+/, "", $2); print $2 }' \
+        "$STAGING_DIR/$GRUB_DIR/moddep.lst")
+    for dependency in $dependencies; do
+        extract_grub_module "$dependency"
+    done
+}
+
+while IFS= read -r module; do
+    case "$module" in
+        ""|\#*) continue ;;
+    esac
+    extract_grub_module "$module"
+done < /grub-modules.txt
+
+mkdir -p "$STAGING_DIR/C" "$STAGING_DIR/S"
+install -m 755 "$SIMPLE9P" "$STAGING_DIR/C/simple9p"
+install -m 644 /grub.cfg "$STAGING_DIR/boot/grub/grub.cfg"
+install -m 644 /Startup-Sequence "$STAGING_DIR/S/Startup-Sequence"
+
+xorriso -as mkisofs \
+    -o "$OUTPUT_TMP" \
+    -b boot/grub/i386-pc/grub2_eltorito \
+    -c boot/pc-tiny/boot.catalog \
+    -no-emul-boot \
+    -boot-load-size 4 \
+    -boot-info-table \
+    -iso-level 4 \
+    -V "QEMOUNT_AROS" \
+    -publisher "qemount" \
+    -sysid "AROS-I386-PC" \
+    -l -J -r \
+    "$STAGING_DIR"
 mv "$OUTPUT_TMP" "$OUTPUT_DIR/aros.iso"

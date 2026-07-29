@@ -16,15 +16,9 @@
 
 ## 2. Link it in
 
-- [x] client library
-  - [x] detection
-    - [x] image file
-    - [x] partition format
-    - [x] file system
-    - [x] nested detection
+- [ ] client library
   - [ ] qemu wrapper lib
 - [ ] filesystem catalogue
-  - [x] documentation as code (front-matter)
   - [ ] site generator
 - [ ] clients
   - [ ] FUSE
@@ -42,26 +36,17 @@
     - [ ] create some machine-like images
     - [ ] test runner and rules (architecture, design, mvp)
 - [ ] fix bugs
-  - [ ] simple9p
-    - [x] .U + symlink support
-    - [x] platform filesystem discovery
-    - [ ] move harness server ports outside Linux's ephemeral port range
-    - [ ] fewer segfaults
   - [ ] 9pfuse
-    - [x] configurable outstanding-request limit for constrained transports
     - [ ] spam in file browser (unsupported modes)
   - [ ] AROS guest
+    - [x] replace the 75 MiB pruned Live CD with a roughly 3 MiB allowlisted
+          guest image
     - [ ] mount supported filesystems from raw, MBR and GPT images
     - [ ] investigate the MBR test image stalling guest startup
-    - [x] port PFS3 on-disk structures to explicit big-endian access
-    - [x] prove PFS3 format, population and root-volume boot on i386 and m68k
-  - [x] Linux runner
-    - [x] change virtserialport to virtconsole for consistency with NetBSD
 
 ## 4. Stretch goals
 
 - [ ] add more guests
-  - [x] AROS
   - [ ] Haiku
   - [ ] Atari ST (STEEM?)
   - [ ] OpenDarwin
