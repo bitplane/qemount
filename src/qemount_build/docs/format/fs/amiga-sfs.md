@@ -6,14 +6,15 @@ related:
   - format/fs/amiga-ofs
   - format/pt/rdb
 detect:
-  - offset: 0
-    type: string
-    value: "SFS\x00"
-    name: sfs_v1
-  - offset: 0
-    type: string
-    value: "SFS\x02"
-    name: sfs_v2
+  any:
+    - offset: 0
+      type: string
+      value: "SFS\x00"
+      name: sfs_v1
+    - offset: 0
+      type: string
+      value: "SFS\x02"
+      name: sfs_v2
 ---
 
 # SFS (Smart File System)
