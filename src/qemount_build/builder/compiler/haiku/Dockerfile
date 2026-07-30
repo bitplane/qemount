@@ -1,5 +1,5 @@
 ARG ARCH
-FROM docker.io/haiku/toolchain-worker@sha256:2a3c021f09245984528741ba0e562b14aa0353c31ffc2c8477b34fe7cd60cf49
+FROM ghcr.io/haiku/toolchain-worker-master@sha256:b89005bb884ee4b127e59169ce28924460bfe7765f79d1ac186fb55fa5944ee6
 ARG ARCH
 
 WORKDIR /src

@@ -3,14 +3,19 @@ set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 BOOT_IMAGE=$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1beta5/boot/haiku.image
-NINEPFUSE=$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse
+NINEPFUSE=${QEMOUNT_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
 RUNNER=$PROJECT_ROOT/src/qemount_build/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
 LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/r1beta5/integration
 TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-${TMPDIR:-/tmp}}
+WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-65536}
+NINEPFUSE_ARGS=(-n 1)
+if [[ ${QEMOUNT_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
+    NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
+fi
 
-for command in qemu-system-x86_64 python3 timeout cmp tar cp find mountpoint dd; do
+for command in qemu-system-x86_64 python3 timeout cmp tar cp find grep mountpoint dd; do
     if ! command -v "$command" >/dev/null; then
         echo "Required command not found: $command" >&2
         exit 1
@@ -33,13 +38,17 @@ for required_file in "$BOOT_IMAGE" "$NINEPFUSE" "$RUNNER" "$PROBE" "$TEMPLATE"; 
     fi
 done
 
-fixtures=(
-    beos-bfs
-    fat12
-    fat16
-    fat32
-    ext2
-)
+if (($#)); then
+    fixtures=("$@")
+else
+    fixtures=(
+        beos-bfs
+        fat12
+        fat16
+        fat32
+        ext2
+    )
+fi
 
 mkdir -p "$LOG_DIR" "$TEMP_PARENT"
 WORK_DIR=$(mktemp -d "$TEMP_PARENT/qemount-haiku-test.XXXXXXXX")
@@ -48,7 +57,7 @@ MOUNT_POINT=
 
 cleanup_case() {
     if [[ -n "$MOUNT_POINT" ]] && mountpoint -q "$MOUNT_POINT"; then
-        "$FUSERMOUNT" -u "$MOUNT_POINT" || true
+        "$FUSERMOUNT" -u -z "$MOUNT_POINT" || true
     fi
     if [[ -n "$QEMU_PID" ]] && kill -0 "$QEMU_PID" 2>/dev/null; then
         kill "$QEMU_PID" 2>/dev/null || true
@@ -63,6 +72,24 @@ cleanup_all() {
     rm -rf "$WORK_DIR"
 }
 trap cleanup_all EXIT INT TERM
+
+wait_for_guest() {
+    local log_file=$1
+    local deadline=$((SECONDS + 180))
+
+    until grep -q "qemount: serving / over" "$log_file" 2>/dev/null; do
+        if ! kill -0 "$QEMU_PID" 2>/dev/null; then
+            echo "Haiku exited before starting simple9p; see $log_file" >&2
+            return 1
+        fi
+        if ((SECONDS >= deadline)); then
+            echo "Haiku did not start simple9p within 180 seconds; see $log_file" >&2
+            return 1
+        fi
+        sleep 0.2
+    done
+    sleep 2
+}
 
 mkdir -p "$WORK_DIR/expected"
 tar -xf "$TEMPLATE" -C "$WORK_DIR/expected"
@@ -88,7 +115,8 @@ for filesystem in "${fixtures[@]}"; do
         >"$log_file" 2>&1 &
     QEMU_PID=$!
 
-    if ! timeout 180 python3 "$PROBE" "$socket_path" --timeout 170 \
+    wait_for_guest "$log_file"
+    if ! timeout 45 python3 "$PROBE" "$socket_path" --timeout 40 \
         >>"$log_file" 2>&1; then
         echo "9P probe failed for $filesystem; see $log_file" >&2
         exit 1
@@ -97,13 +125,14 @@ for filesystem in "${fixtures[@]}"; do
     # A serial port has no connection boundary, so the probe clunks its fid
     # before the FUSE client starts a fresh protocol negotiation.
     sleep 2
-    if ! timeout 30 "$NINEPFUSE" -n 1 "$socket_path" "$MOUNT_POINT" \
+    if ! timeout 30 "$NINEPFUSE" "${NINEPFUSE_ARGS[@]}" \
+        "$socket_path" "$MOUNT_POINT" \
         >>"$log_file" 2>&1; then
         echo "9pfuse failed for $filesystem; see $log_file" >&2
         exit 1
     fi
 
-    target_root=$(find "$MOUNT_POINT" -mindepth 3 -maxdepth 3 \
+    target_root=$(timeout 60 find "$MOUNT_POINT" -mindepth 3 -maxdepth 3 \
         -type f -path '*/basic/hello.txt' -printf '%h\n' -quit)
     if [[ -z "$target_root" ]]; then
         echo "Mounted $filesystem volume was not found; see $log_file" >&2
@@ -111,21 +140,22 @@ for filesystem in "${fixtures[@]}"; do
     fi
     target_root=${target_root%/basic}
 
-    cmp "$WORK_DIR/expected/basic/hello.txt" "$target_root/basic/hello.txt"
-    cmp "$WORK_DIR/expected/basic/script.sh" "$target_root/basic/script.sh"
-    cmp "$WORK_DIR/expected/basic/nested_dir/file_in_dir.txt" \
+    timeout 60 cmp "$WORK_DIR/expected/basic/hello.txt" "$target_root/basic/hello.txt"
+    timeout 60 cmp "$WORK_DIR/expected/basic/script.sh" "$target_root/basic/script.sh"
+    timeout 60 cmp "$WORK_DIR/expected/basic/nested_dir/file_in_dir.txt" \
         "$target_root/basic/nested_dir/file_in_dir.txt"
 
-    dd if=/dev/zero of="$case_dir/write-test.bin" bs=65536 count=1 status=none
-    cp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
-    cmp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
-    rm "$target_root/qemount-write-test.bin"
+    dd if=/dev/zero of="$case_dir/write-test.bin" bs="$WRITE_TEST_SIZE" \
+        count=1 status=none
+    timeout 60 cp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
+    timeout 60 cmp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
+    timeout 60 rm "$target_root/qemount-write-test.bin"
     if [[ -e "$target_root/qemount-write-test.bin" ]]; then
         echo "Delete did not persist for $filesystem" >&2
         exit 1
     fi
 
-    "$FUSERMOUNT" -u "$MOUNT_POINT"
+    "$FUSERMOUNT" -u -z "$MOUNT_POINT"
     kill "$QEMU_PID"
     wait "$QEMU_PID" 2>/dev/null || true
     QEMU_PID=

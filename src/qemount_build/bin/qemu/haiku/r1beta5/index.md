@@ -3,6 +3,7 @@ title: Haiku R1 Beta 5 Guest
 env:
   ARCH: x86_64
   BUILDER: builder/compiler/haiku
+  HAIKU_REVISION: hrev57937+137
 requires:
   - docker:${BUILDER}
 ---
