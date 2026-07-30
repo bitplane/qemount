@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /etc/containers /var/lib/containers /run/containers && \
     printf '[storage]\ndriver = "overlay"\nrunroot = "/run/containers"\ngraphroot = "/var/lib/containers"\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' > /etc/containers/storage.conf
 
+COPY scripts/registries.archive.conf /etc/containers/registries.conf
 COPY .qemount-archive.bundle /time-capsule/qemount.bundle
 RUN test -n "$QEMOUNT_COMMIT" && \
     git clone /time-capsule/qemount.bundle /src && \

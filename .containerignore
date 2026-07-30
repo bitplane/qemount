@@ -3,4 +3,5 @@
 !scripts/
 scripts/*
 !scripts/archive-build.sh
+!scripts/registries.archive.conf
 !scripts/TIME_CAPSULE.md
