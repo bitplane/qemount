@@ -1,13 +1,13 @@
 ---
-title: AROS qemount integration branch
-version: 56a843b977bedccae143f88a5edf52696ae7e5b7
+title: AROS qemount 2026-07-30
+version: qemount-2026-07-30
 urls:
-  - git+https://github.com/bitplane/AROS.git#qemount
+  - git+https://github.com/bitplane/AROS.git#qemount-2026-07-30
 provides:
-  - sources/aros-qemount-develop.tar.gz
+  - sources/aros-qemount-2026-07-30.tar.gz
 ---
 
 # AROS
 
-The current AROS integration tree used while guest changes are being proved.
-Stable guest releases replace this mutable branch with an immutable dated tag.
+The proven AROS integration tree used by the qemount guest, pinned to an
+immutable dated tag.

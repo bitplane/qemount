@@ -1,7 +1,7 @@
 ---
 title: AROS PC i386 System
 requires:
-  - sources/aros-qemount-develop.tar.gz
+  - sources/aros-qemount-2026-07-30.tar.gz
 provides:
   - bin/qemu/${ARCH}-aros/system/aros.iso
   - lib/${ARCH}-aros/sdk.tar.gz

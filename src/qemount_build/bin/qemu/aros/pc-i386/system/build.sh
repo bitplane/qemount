@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/aros-qemount-develop.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz
 SOURCE_DIR=/work/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/opt/aros-portssources

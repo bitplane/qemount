@@ -51,7 +51,7 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | Partition Table   | Linux 6.12 | Linux 2.6 | NetBSD 10 | AROS i386 | Notes                         |
 | ----------------- | ---------- | --------- | --------- | --------- | ----------------------------- |
 | **MBR/DOS**       | ✅         | ✅        | ✅        | ✅        |                               |
-| **GPT**           | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
+| **GPT**           | ✅         | ✅        | ✅        | ✅        |                               |
 | **BSD disklabel** | ✅         | ✅        | ✅        | ❌        | Native BSD partitioning       |
 | **Apple APM**     | ✅         | ✅        | ✅        | ❌        | Classic Mac partition map     |
 | **Amiga RDB**     | ✅         | ✅        | ✅        | ✅        |                               |
@@ -74,7 +74,7 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | **Plan 9**        | ✅         | ✅        | ❌        | ❌        | ASCII partition table         |
 | **NetWare**       | ✅         | ✅        | ❌        | ❌        | Novell                        |
 | **Hybrid MBR**    | ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
-| **Protective MBR**| ✅         | ✅        | ✅        | ❌        | Partitions are not auto-mounted |
+| **Protective MBR**| ✅         | ✅        | ✅        | ✅        |                               |
 | **OpenBSD**       | ✅         | ✅        | ❌        | ❌        | 16-partition disklabel        |
 | **DragonFly**     | ✅         | ❌        | ❌        | ❌        | Disklabel64 variant           |
 | **NeXT**          | ❌         | ❌        | ❌        | ❌        | NeXTSTEP / OPENSTEP           |
@@ -87,7 +87,7 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | **ext2**        | ✅         | ✅        | ✅        | ❌        |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | NetBSD mounts as ext2             |
 | **ext4**        | ✅         | ✅        | ❌        | ❌        |                                   |
-| **FAT12**       | ✅         | ✅        | ✅        | ❌        |                                   |
+| **FAT12**       | ✅         | ✅        | ✅        | ✅        |                                   |
 | **FAT16/32**    | ✅         | ✅        | ✅        | ✅        |                                   |
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        |                                   |
 | **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        |                                   |
