@@ -1,0 +1,24 @@
+#!/bin/sh
+
+LOG=/boot/home/qemount.log
+SERIAL=/dev/ports/pc_serial0
+SIMPLE9P=/boot/system/non-packaged/bin/simple9p
+
+exec >>"$LOG" 2>&1
+
+echo "qemount: waiting for second serial port"
+while [ ! -e "$SERIAL" ]; do
+    sleep 1
+done
+
+echo "qemount: mounting detected volumes"
+/bin/mountvolume -all
+/bin/mountvolume -l
+
+while true; do
+    echo "qemount: serving / over $SERIAL"
+    "$SIMPLE9P" -d -p "stream!$SERIAL" /
+    status=$?
+    echo "qemount: simple9p exited with status $status; restarting"
+    sleep 1
+done

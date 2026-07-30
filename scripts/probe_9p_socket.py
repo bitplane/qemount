@@ -16,6 +16,8 @@ TOPEN = 112
 ROPEN = 113
 TREAD = 116
 RREAD = 117
+TCLUNK = 120
+RCLUNK = 121
 NOTAG = 0xFFFF
 NOFID = 0xFFFFFFFF
 
@@ -137,6 +139,11 @@ def main() -> None:
             )
 
         print(f"read {count} bytes from the attached root directory")
+
+        response = request(sock, TCLUNK, 4, struct.pack("<I", 1))
+        if response[0] != RCLUNK:
+            raise RuntimeError(f"expected Rclunk, received type {response[0]}")
+        print("clunked root fid")
 
 
 if __name__ == "__main__":
