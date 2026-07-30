@@ -1,0 +1,6 @@
+*
+!.qemount-archive.bundle
+!scripts/
+scripts/*
+!scripts/archive-build.sh
+!scripts/TIME_CAPSULE.md

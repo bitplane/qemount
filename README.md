@@ -28,7 +28,7 @@ Currently, there are:
 
 ### Building
 
-Install `podman`, `fuse`, `make` and `qemu`; install `pigz` too if you want to
+Install `podman`, `fuse`, `make` and `qemu`; install `xz` too if you want to
 create archival builds. The catalogue exposes individual build targets:
 
 ```sh
@@ -38,6 +38,11 @@ python -m qemount_build build bin/qemu/x86_64-netbsd/10.0/boot/boot.img
 python -m qemount_build build bin/qemu/i386-aros/boot/aros.iso
 python -m qemount_build build bin/x86_64-linux-musl/9pfuse
 ```
+
+`make archive` performs a separate clean build inside a privileged outer
+container, then exports that complete environment as a compressed time capsule.
+It includes the source history, downloaded inputs, outputs, logs, caches, and
+the nested Podman image store containing all builder toolchains.
 
 The guest-selection and launch layer is still under construction, see the
 [todo list](src/qemount_build/docs/todo.md).

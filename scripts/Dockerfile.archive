@@ -1,19 +1,32 @@
 FROM docker.io/library/ubuntu:24.04
 
-RUN apt-get update && apt-get install -y \
+ARG DEBIAN_FRONTEND=noninteractive
+ARG QEMOUNT_COMMIT
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     podman \
     fuse-overlayfs \
-    qemu-system-x86 \
     make \
     python3 \
+    python3-venv \
     git \
-    xz-utils
+    xz-utils \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Configure podman to use overlay driver (fast with --privileged)
 RUN mkdir -p /etc/containers /var/lib/containers /run/containers && \
     printf '[storage]\ndriver = "overlay"\nrunroot = "/run/containers"\ngraphroot = "/var/lib/containers"\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' > /etc/containers/storage.conf
 
-RUN git clone https://github.com/bitplane/qemount /src
+COPY .qemount-archive.bundle /time-capsule/qemount.bundle
+RUN test -n "$QEMOUNT_COMMIT" && \
+    git clone /time-capsule/qemount.bundle /src && \
+    git -C /src checkout --detach "$QEMOUNT_COMMIT" && \
+    test "$(git -C /src rev-parse HEAD)" = "$QEMOUNT_COMMIT"
+
+COPY --chmod=755 scripts/archive-build.sh /usr/local/bin/qemount-archive-build
+COPY scripts/TIME_CAPSULE.md /TIME_CAPSULE.md
+
 WORKDIR /src
 
-CMD ["make"]
+CMD ["/usr/local/bin/qemount-archive-build"]
