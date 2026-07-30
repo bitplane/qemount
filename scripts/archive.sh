@@ -77,6 +77,7 @@ git bundle create "$BUNDLE_FILE" --all HEAD
 git bundle verify "$BUNDLE_FILE" 2>&1 | ts
 
 log_cmd "Building archive environment" \
+    env CONTAINERS_REGISTRIES_CONF="$ROOT_DIR/scripts/registries.archive.conf" \
     podman build \
         --build-arg "QEMOUNT_COMMIT=$QEMOUNT_COMMIT" \
         --label "org.opencontainers.image.revision=$QEMOUNT_COMMIT" \

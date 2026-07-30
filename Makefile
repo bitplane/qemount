@@ -40,7 +40,7 @@ dist: scripts/dist.sh  ## build the distributable files
 release: scripts/release.sh  ## publish to pypi
 	scripts/release.sh $(PROJECT_NAME)
 
-archive: scripts/archive.sh scripts/Dockerfile.archive scripts/archive-build.sh scripts/TIME_CAPSULE.md  ## build complete archive in container
+archive: scripts/archive.sh scripts/Dockerfile.archive scripts/archive-build.sh scripts/registries.archive.conf scripts/TIME_CAPSULE.md  ## build complete archive in container
 	scripts/archive.sh
 
 # Python project infrastructure
