@@ -33,8 +33,6 @@
 - [ ] fix bugs
   - [ ] 9pfuse
     - [ ] spam in file browser (unsupported modes)
-  - [ ] AROS guest
-    - [ ] mount supported filesystems from raw, MBR and GPT images
 
 ## 4. Stretch goals
 
