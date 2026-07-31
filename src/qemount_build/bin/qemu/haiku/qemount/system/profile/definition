@@ -16,11 +16,11 @@ rule HaikuImageGetSystemLibs
 		[ MultiArchDefaultGristFiles
 			libbe.so
 			libbnetapi.so
-			libdevice.so
+			libbsd.so
 			libnetwork.so
-			libpackage.so
 			libtextencoding.so
 			libtracker.so
+			libtranslation.so
 		]
 		;
 }
