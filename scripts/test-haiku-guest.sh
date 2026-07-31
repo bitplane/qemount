@@ -2,12 +2,12 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BOOT_IMAGE=$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1beta5/boot/haiku.image
+BOOT_IMAGE=$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/qemount/boot/haiku.image
 NINEPFUSE=${QEMOUNT_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
 RUNNER=$PROJECT_ROOT/src/qemount_build/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
-LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/r1beta5/integration
+LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/qemount/integration
 TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-${TMPDIR:-/tmp}}
 WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-65536}
 NINEPFUSE_ARGS=(-n 1)

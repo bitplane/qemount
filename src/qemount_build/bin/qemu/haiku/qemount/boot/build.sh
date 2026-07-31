@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-BASE_IMAGE=/host/build/bin/qemu/${ARCH}-haiku/r1beta5/system/haiku-minimum.image
+BASE_IMAGE=/host/build/bin/qemu/${ARCH}-haiku/qemount/system/haiku-minimum.image
 SIMPLE9P=/host/build/bin/${ARCH}-haiku/simple9p
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-haiku/r1beta5/boot
+OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-haiku/qemount/boot
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 WORK_IMAGE=$OUTPUT_DIR/.haiku.image.tmp
 

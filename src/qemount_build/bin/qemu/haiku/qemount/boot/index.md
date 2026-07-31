@@ -1,16 +1,16 @@
 ---
-title: Haiku R1 Beta 5 Guest Image
+title: Haiku qemount Guest Image
 env:
   BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
-  - bin/qemu/${ARCH}-haiku/r1beta5/system/haiku-minimum.image
+  - bin/qemu/${ARCH}-haiku/qemount/system/haiku-minimum.image
   - bin/${ARCH}-haiku/simple9p
 provides:
-  - bin/qemu/${ARCH}-haiku/r1beta5/boot/haiku.image
+  - bin/qemu/${ARCH}-haiku/qemount/boot/haiku.image
 ---
 
-# Haiku R1 Beta 5 Guest Image
+# Haiku qemount Guest Image
 
 Adds simple9p and a boot script to the stock minimum image. At boot Haiku
 mounts every filesystem it recognises, then serves the resulting system root

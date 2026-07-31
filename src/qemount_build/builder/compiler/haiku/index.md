@@ -1,14 +1,14 @@
 ---
 title: Haiku Cross-Compiler
 build_requires:
-  - sources/haiku-r1beta5.tar.gz
+  - sources/haiku-qemount.tar.gz
 provides:
   - docker:builder/compiler/haiku
 ---
 
 # Haiku Cross-Compiler
 
-Haiku OS cross-compiler based on the official toolchain-worker image.
-Configured for R1 Beta 5.
+Haiku build environment based on the official toolchain-worker image and the
+qemount integration source.
 
 Source is mounted during build via build_requires.

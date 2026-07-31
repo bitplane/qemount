@@ -3,8 +3,9 @@ FROM ghcr.io/haiku/toolchain-worker-master@sha256:b89005bb884ee4b127e59169ce2892
 ARG ARCH
 
 WORKDIR /src
-RUN tar xzf /host/build/sources/haiku-r1beta5.tar.gz && \
-    mv haiku-r1beta5 haiku
+RUN mkdir haiku && \
+    tar xzf /host/build/sources/haiku-qemount.tar.gz \
+        -C haiku --strip-components=1
 
 WORKDIR /src/haiku
 RUN mkdir -p generated && \
