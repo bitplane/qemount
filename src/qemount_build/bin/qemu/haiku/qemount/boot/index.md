@@ -5,14 +5,14 @@ env:
 requires:
   - docker:${BUILDER}
   - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
-  - bin/${ARCH}-haiku/simple9p-stream
+  - bin/${ARCH}-haiku/simple9p
 provides:
   - bin/qemu/${ARCH}-haiku/qemount/boot/haiku.image
 ---
 
 # Haiku qemount Guest Image
 
-Adds simple9p and a boot script to the stock minimum image. At boot Haiku
+Adds simple9p to the qemount appliance. At boot Haiku
 mounts every filesystem it recognises, then serves the resulting system root
 over its second PC serial port.
 

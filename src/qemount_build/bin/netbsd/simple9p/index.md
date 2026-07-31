@@ -1,7 +1,7 @@
 ---
 title: simple9p
 requires:
-  - sources/simple9p-qemount-0.3.tar.gz
+  - sources/simple9p-qemount-0.5.tar.gz
   - sources/libixp-qemount-0.2.tar.gz
 provides:
   - bin/${ARCH}-netbsd/simple9p
