@@ -1,0 +1,91 @@
+local haikuPackage = haiku.hpkg ;
+HaikuPackage $(haikuPackage) ;
+
+
+# Boot and storage modules for the QEMU PC appliance.
+AddFilesToPackage add-ons kernel bus_managers
+	: $(SYSTEM_ADD_ONS_BUS_MANAGERS) ;
+AddFilesToPackage add-ons kernel busses ata :
+	generic_ide_pci
+	ide_isa@x86
+	;
+AddFilesToPackage add-ons kernel busses pci :
+	<pci>x86@x86,x86_64
+	;
+AddFilesToPackage add-ons kernel busses scsi :
+	ahci
+	;
+AddFilesToPackage add-ons kernel console : vga_text ;
+AddFilesToPackage add-ons kernel file_systems
+	: $(SYSTEM_ADD_ONS_FILE_SYSTEMS) ;
+AddFilesToPackage add-ons kernel generic :
+	ata_adapter
+	bios@x86,x86_64
+	dpc
+	scsi_periph
+	<module>tty
+	;
+AddFilesToPackage add-ons kernel partitioning_systems :
+	efi_gpt
+	intel
+	session
+	;
+
+if $(TARGET_ARCH) = x86 || $(TARGET_ARCH) = x86_64 {
+	AddFilesToPackage add-ons kernel cpu : generic_x86 ;
+}
+
+AddNewDriversToPackage disk scsi :
+	scsi_cd
+	scsi_disk
+	;
+AddDriversToPackage :
+	console
+	dprintf
+	null
+	;
+AddDriversToPackage ports : pc_serial ;
+
+AddFilesToPackage : <revisioned>kernel_$(TARGET_ARCH) ;
+AddLibrariesToPackage lib
+	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
+AddFilesToPackage servers : $(SYSTEM_SERVERS) ;
+AddFilesToPackage : runtime_loader ;
+AddFilesToPackage bin : $(SYSTEM_BIN) ;
+
+# Only the services used by this headless appliance are declared.
+local systemLaunch = <qemount-launch>system ;
+SEARCH on $(systemLaunch) = [ FDirName $(HAIKU_TOP) build qemount ] ;
+AddFilesToPackage data launch : $(systemLaunch) ;
+
+# Userland disk-system modules used by mountvolume for discovery.
+AddFilesToPackage add-ons disk_systems :
+	<disk_system>fat
+	<disk_system>intel
+	<disk_system>gpt
+	<disk_system>bfs
+	<disk_system>ntfs
+	;
+
+AddBootModuleSymlinksToPackage
+	acpi@x86,x86_64
+	ahci
+	ata
+	ata_adapter
+	bfs
+	dpc
+	efi_gpt
+	generic_ide_pci
+	ide_isa@x86
+	intel
+	isa@x86,x86_64
+	packagefs
+	pci
+	<pci>x86@x86,x86_64
+	scsi
+	scsi_cd
+	scsi_disk
+	scsi_periph
+;
+
+BuildHaikuPackage $(haikuPackage) : haiku_qemount ;

@@ -1,11 +1,16 @@
 ---
-title: Haiku qemount Minimum System
+title: Haiku qemount Appliance System
 provides:
-  - bin/qemu/${ARCH}-haiku/qemount/system/haiku-minimum.image
+  - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
 ---
 
-# Haiku qemount Minimum System
+# Haiku qemount Appliance System
 
-Builds Haiku's `@minimum-raw` target as a 128 MiB image. Guest-specific
-programs and startup configuration are added in a separate stage so the system
-build remains reusable.
+Builds the qemount-owned Haiku appliance profile as a 64 MiB image. The profile
+keeps the kernel, boot storage path, supported filesystems and partition maps,
+serial driver, and services needed for volume mounting. Desktop applications,
+GUI services, kernel networking, fonts, and package-management tools are
+omitted.
+
+Guest-specific programs and startup configuration are added in a separate
+stage so the system build remains reusable.

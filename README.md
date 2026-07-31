@@ -94,10 +94,10 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | **ext2**        | ✅         | ✅        | ✅        | ❌        | ✅           |                                   |
 | **ext3**        | ✅         | ✅        | ✅        | ❌        | ✅           | NetBSD mounts as ext2             |
 | **ext4**        | ✅         | ✅        | ❌        | ❌        | ✅           |                                   |
-| **FAT12**       | ✅         | ✅        | ✅        | ✅        | 💩           | Haiku unlink panics               |
-| **FAT16/32**    | ✅         | ✅        | ✅        | ✅        | 💩           | Haiku unlink panics               |
+| **FAT12**       | ✅         | ✅        | ✅        | ✅        | ✅           |                                   |
+| **FAT16/32**    | ✅         | ✅        | ✅        | ✅        | ✅           |                                   |
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        | ❌           |                                   |
-| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | 💩           | Haiku unlink panics               |
+| **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | ✅           |                                   |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅        | ✅           | Several variants tested           |
 | **UDF**         | ✅         | ✅        | ✅        | ❌        | ❌           | DVD/Blu-ray                       |
 | **HFS**         | ✅         | ✅        | ✅        | ❌        | ❌           | Classic Mac                       |

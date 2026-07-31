@@ -1,13 +1,17 @@
 ---
-title: Haiku qemount
-version: qemount
+title: Haiku qemount 2026-07-31
+version: qemount-2026-07-31
 urls:
-  - git+https://github.com/bitplane/Haiku.git#qemount
+  - git+https://github.com/bitplane/Haiku.git#qemount-2026-07-31
 provides:
-  - sources/haiku-qemount.tar.gz
+  - sources/haiku-qemount-2026-07-31.tar.gz
 ---
 
 # Haiku
 
-The Haiku integration branch used while developing the qemount guest. Once the
-guest is proven, this moving branch will be replaced with an immutable tag.
+The proven Haiku integration tree used by the qemount guest, pinned to an
+immutable dated tag.[^bugfixes]
+
+[^bugfixes]: Includes fixes for Haiku [ticket #20220](https://dev.haiku-os.org/ticket/20220)
+    (`pc_serial`) and [ticket #20221](https://dev.haiku-os.org/ticket/20221)
+    (FAT/NTFS file-cache cleanup).

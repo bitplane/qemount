@@ -11,6 +11,7 @@ LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/qemount/integration
 TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-$PROJECT_ROOT/build/tmp}
 WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-4096}
 KEEP_TEST_WORK=${QEMOUNT_KEEP_TEST_WORK:-0}
+FORCE_MUTATION=${QEMOUNT_HAIKU_FORCE_MUTATION:-0}
 NINEPFUSE_ARGS=(-n 1)
 if [[ ${QEMOUNT_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
     NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
@@ -139,6 +140,33 @@ wait_for_guest() {
     sleep 2
 }
 
+remove_with_guest_watch() {
+    local path=$1
+    local log_file=$2
+    local remove_pid
+
+    timeout --kill-after=5 60 rm "$path" &
+    remove_pid=$!
+    while kill -0 "$remove_pid" 2>/dev/null; do
+        if grep -q '^PANIC:' "$log_file" 2>/dev/null; then
+            echo "Haiku panicked while removing $path; see $log_file" >&2
+            if kill -0 "$QEMU_PID" 2>/dev/null; then
+                kill "$QEMU_PID" 2>/dev/null || true
+                wait "$QEMU_PID" 2>/dev/null || true
+            fi
+            QEMU_PID=
+            if mountpoint -q "$MOUNT_POINT"; then
+                "$FUSERMOUNT" -u -z "$MOUNT_POINT" || true
+            fi
+            MOUNT_POINT=
+            wait "$remove_pid" 2>/dev/null || true
+            return 1
+        fi
+        sleep 0.2
+    done
+    wait "$remove_pid"
+}
+
 mkdir -p "$WORK_DIR/expected"
 tar -xf "$TEMPLATE" -C "$WORK_DIR/expected"
 
@@ -146,6 +174,11 @@ for case_name in "${cases[@]}"; do
     IFS='|' read -r fixture_path expected_volumes access_mode target_media \
         fixture_layout \
         <<< "$(case_spec "$case_name")"
+    log_suffix=
+    if [[ "$FORCE_MUTATION" == 1 && "$access_mode" == read ]]; then
+        access_mode=rw
+        log_suffix=-mutation
+    fi
     fixture=$PROJECT_ROOT/build/$fixture_path
     if [[ ! -f "$fixture" ]]; then
         echo "Fixture not found: $fixture" >&2
@@ -156,7 +189,7 @@ for case_name in "${cases[@]}"; do
     target_image=$case_dir/target.image
     socket_path=$case_dir/9p.sock
     MOUNT_POINT=$case_dir/mount
-    log_file=$LOG_DIR/$case_name.log
+    log_file=$LOG_DIR/$case_name$log_suffix.log
 
     mkdir -p "$MOUNT_POINT"
     cp --reflink=auto "$fixture" "$target_image"
@@ -228,7 +261,10 @@ for case_name in "${cases[@]}"; do
             "$target_root/qemount-write-test.bin"
         timeout 60 cmp "$case_dir/write-test.bin" \
             "$target_root/qemount-write-test.bin"
-        timeout 60 rm "$target_root/qemount-write-test.bin"
+        if ! remove_with_guest_watch "$target_root/qemount-write-test.bin" \
+            "$log_file"; then
+            exit 1
+        fi
         if [[ -e "$target_root/qemount-write-test.bin" ]]; then
             echo "Delete did not persist for $case_name" >&2
             exit 1

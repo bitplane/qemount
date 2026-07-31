@@ -11,5 +11,11 @@ ENV HAIKU_IMAGE_SIZE=${HAIKU_IMAGE_SIZE}
 ENV HAIKU_REVISION=${HAIKU_REVISION}
 
 WORKDIR /src/haiku/generated
+COPY qemount-profile.patch /tmp/qemount-profile.patch
+RUN patch -d /src/haiku -p1 < /tmp/qemount-profile.patch
+COPY profile/definition /src/haiku/build/qemount/definition
+COPY profile/package /src/haiku/build/jam/packages/HaikuQemount
+COPY profile/package-info /src/haiku/src/data/package_infos/generic/haiku_qemount
+COPY profile/system /src/haiku/build/qemount/system
 COPY --chmod=755 build.sh /build.sh
 ENTRYPOINT ["/build.sh"]

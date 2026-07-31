@@ -1,0 +1,208 @@
+--- a/build/jam/DefaultBuildProfiles
++++ b/build/jam/DefaultBuildProfiles
+@@ -12,6 +12,14 @@
+ 		TARGET_DEFINES += HAIKU_BOOTSTRAP_BUILD ;
+ 	}
+ 
++	case "qemount-*" : {
++		HAIKU_BUILD_TYPE = qemount ;
++		EnableBuildFeatures minimum_image ;
++
++		HAIKU_DEFINES += HAIKU_MINIMUM_BUILD ;
++		TARGET_DEFINES += HAIKU_MINIMUM_BUILD ;
++	}
++
+ 	case "minimum-*" : {
+ 		HAIKU_BUILD_TYPE = minimum ;
+ 		EnableBuildFeatures minimum_image ;
+@@ -64,6 +72,9 @@
+ 	DefineBuildProfile bootstrap-anyboot : anyboot-image
+ 		: "haiku-bootstrap-anyboot.iso" ;
+ 
++	# qemount appliance profile
++	DefineBuildProfile qemount-raw : image : "haiku-qemount.image" ;
++
+ 	# minimum profiles
+ 	DefineBuildProfile minimum-raw : image : "haiku-minimum.image" ;
+ 	DefineBuildProfile minimum-mmc : haiku-mmc-image : "haiku-minimum.mmc" ;
+@@ -177,6 +188,11 @@
+ 			}
+ 		}
+ 
++		case "qemount-*" : {
++			Echo Building qemount Haiku Appliance ;
++			HAIKU_IMAGE_HOST_NAME ?= qemount ;
++		}
++
+ 		case "minimum-*" : {
+ 			Echo Building Haiku Minimum Target ;
+ 			HAIKU_IMAGE_HOST_NAME ?= shredder ;
+--- a/build/jam/HaikuPackages
++++ b/build/jam/HaikuPackages
+@@ -1,39 +1,47 @@
+ # The packages we build. Each is defined in its own file in the packages/
+ # subdirectory.
+-local packages = [ FFilterByBuildFeatures
+-	HaikuDevel
+-	HaikuDataTranslators
+-	HaikuExtras
+-	HaikuLoader
+-	HaikuSource
+-	MakefileEngine
+-	NetFS
+-	UserlandFS
+-	]
+-	;
++local packages ;
++local archDependentPackages ;
++local secondaryArchPackages ;
+ 
+-if $(HAIKU_BUILD_TYPE) = bootstrap {
+-	packages += HaikuBootstrap ;
++if $(HAIKU_BUILD_TYPE) = qemount {
++	packages = HaikuLoader HaikuQemount ;
+ } else {
+-	packages += Haiku ;
+-}
+-
+-if $(HAIKU_BUILD_TYPE) = test {
+-	packages += HaikuUnitTests ;
+-}
+-
+-local archDependentPackages =
+-	HaikuCrossDevel
+-	WebPositive
+-	;
+-
+-local secondaryArchPackages =
+-	HaikuDevelSecondary
+-	;
+-if $(HAIKU_BUILD_TYPE) = bootstrap {
+-	secondaryArchPackages += HaikuSecondaryBootstrap ;
+-} else {
+-	secondaryArchPackages += HaikuSecondary ;
++	packages = [ FFilterByBuildFeatures
++		HaikuDevel
++		HaikuDataTranslators
++		HaikuExtras
++		HaikuLoader
++		HaikuSource
++		MakefileEngine
++		NetFS
++		UserlandFS
++		]
++		;
++
++	if $(HAIKU_BUILD_TYPE) = bootstrap {
++		packages += HaikuBootstrap ;
++	} else {
++		packages += Haiku ;
++	}
++
++	if $(HAIKU_BUILD_TYPE) = test {
++		packages += HaikuUnitTests ;
++	}
++
++	archDependentPackages =
++		HaikuCrossDevel
++		WebPositive
++		;
++
++	secondaryArchPackages =
++		HaikuDevelSecondary
++		;
++	if $(HAIKU_BUILD_TYPE) = bootstrap {
++		secondaryArchPackages += HaikuSecondaryBootstrap ;
++	} else {
++		secondaryArchPackages += HaikuSecondary ;
++	}
+ }
+ 
+ 
+--- a/build/jam/images/HaikuImage
++++ b/build/jam/images/HaikuImage
+@@ -5,6 +5,8 @@
+ # import the defintions of the image content
+ if $(HAIKU_BUILD_TYPE) = bootstrap {
+ 	include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions bootstrap ] ;
++} else if $(HAIKU_BUILD_TYPE) = qemount {
++	include [ FDirName $(HAIKU_TOP) build qemount definition ] ;
+ } else if $(HAIKU_BUILD_TYPE) = minimum {
+ 	include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions minimum ] ;
+ } else if $(HAIKU_BUILD_TYPE) = test {
+@@ -16,14 +18,23 @@
+ # build the haiku system packages and add them
+ include [ FDirName $(HAIKU_BUILD_RULES_DIR) HaikuPackages ] ;
+ 
+-AddPackageFilesToHaikuImage system packages :
+-	haiku_loader.hpkg
+-	haiku.hpkg
+-	haiku_datatranslators.hpkg
+-	haiku_$(TARGET_PACKAGING_ARCHS[2-]).hpkg
+-	:
+-	nameFromMetaInfo
+-	;
++if $(HAIKU_BUILD_TYPE) = qemount {
++	AddPackageFilesToHaikuImage system packages :
++		haiku_loader.hpkg
++		haiku.hpkg
++		:
++		nameFromMetaInfo
++		;
++} else {
++	AddPackageFilesToHaikuImage system packages :
++		haiku_loader.hpkg
++		haiku.hpkg
++		haiku_datatranslators.hpkg
++		haiku_$(TARGET_PACKAGING_ARCHS[2-]).hpkg
++		:
++		nameFromMetaInfo
++		;
++}
+ 
+ if $(HAIKU_BUILD_TYPE) = test {
+ 	AddPackageFilesToHaikuImage system packages : haiku_unittests.hpkg ;
+--- a/build/jam/repositories/Haiku
++++ b/build/jam/repositories/Haiku
+@@ -8,17 +8,23 @@
+ SEARCH on $(repoInfo) = $(HAIKU_TOP)/src/data/repository_infos ;
+ 
+ local secondaryArchs = $(TARGET_PACKAGING_ARCHS[2-]) ;
+-local packages = [ FFilterByBuildFeatures
+-	haiku
+-	haiku_datatranslators
+-	haiku_devel
+-	haiku_loader
+-
+-	haiku_$(secondaryArchs)
+-	haiku_$(secondaryArchs)_devel
+-	] ;
++local packages ;
++if $(HAIKU_BUILD_TYPE) = qemount {
++	packages = haiku haiku_loader ;
++} else {
++	packages = [ FFilterByBuildFeatures
++		haiku
++		haiku_datatranslators
++		haiku_devel
++		haiku_loader
++
++		haiku_$(secondaryArchs)
++		haiku_$(secondaryArchs)_devel
++		] ;
++}
+ 
+ if $(HAIKU_IS_BOOTSTRAP) != 1
++		&& $(HAIKU_BUILD_TYPE) != qemount
+ 		&& $(HAIKU_BUILD_TYPE) != minimum
+ 		&& $(HAIKU_BUILD_TYPE) != test {
+ 	packages += [ FFilterByBuildFeatures
+@@ -46,7 +52,7 @@
+ 		}
+ 	}
+ }
+-if $(webPositiveIsAvailable) {
++if $(HAIKU_BUILD_TYPE) != qemount && $(webPositiveIsAvailable) {
+ 	packages += webpositive ;
+ }
+ 

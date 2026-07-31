@@ -1,7 +1,7 @@
 ---
 title: Haiku Cross-Compiler
 build_requires:
-  - sources/haiku-qemount.tar.gz
+  - sources/haiku-qemount-2026-07-31.tar.gz
 provides:
   - docker:builder/compiler/haiku
 ---

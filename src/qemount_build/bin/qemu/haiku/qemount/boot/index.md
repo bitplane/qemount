@@ -4,7 +4,7 @@ env:
   BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
-  - bin/qemu/${ARCH}-haiku/qemount/system/haiku-minimum.image
+  - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
   - bin/${ARCH}-haiku/simple9p
 provides:
   - bin/qemu/${ARCH}-haiku/qemount/boot/haiku.image
