@@ -3,7 +3,7 @@ title: Haiku qemount Guest
 env:
   ARCH: x86_64
   BUILDER: builder/compiler/haiku
-  HAIKU_IMAGE_SIZE: "64"
+  HAIKU_IMAGE_SIZE: "7"
   HAIKU_REVISION: hrev59919+1
   JOBS: "1"
 requires:

@@ -1,6 +1,6 @@
 # Content of the qemount Haiku appliance image.
 
-SYSTEM_BIN = mountvolume ;
+SYSTEM_BIN = ;
 SYSTEM_APPS = ;
 DESKBAR_APPLICATIONS = ;
 DESKBAR_DESKTOP_APPLETS = ;
@@ -12,16 +12,7 @@ rule HaikuImageGetSystemLibs
 {
 	return
 		[ MultiArchDefaultGristFiles libroot.so : revisioned ]
-		[ Libstdc++ForImage ]
-		[ MultiArchDefaultGristFiles
-			libbe.so
-			libbnetapi.so
-			libbsd.so
-			libnetwork.so
-			libtextencoding.so
-			libtracker.so
-			libtranslation.so
-		]
+		[ BuildFeatureAttribute gcc_syslibs : libgcc_s.so.1 ]
 		;
 }
 
@@ -32,11 +23,7 @@ rule HaikuImageGetPrivateSystemLibs
 }
 
 
-SYSTEM_SERVERS =
-	launch_daemon
-	mount_server
-	registrar
-;
+SYSTEM_SERVERS = ;
 
 SYSTEM_NETWORK_DEVICES = ;
 SYSTEM_NETWORK_DATALINK_PROTOCOLS = ;
@@ -77,7 +64,6 @@ SYSTEM_ADD_ONS_FILE_SYSTEMS =
 	iso9660
 	ntfs
 	packagefs
-	ramfs
 	reiserfs
 	udf
 ;

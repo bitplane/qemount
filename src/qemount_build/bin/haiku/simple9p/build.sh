@@ -31,3 +31,24 @@ make -C "$SIMPLE9P_SOURCE" \
 
 install -m 755 "$SIMPLE9P_SOURCE/build/simple9p" \
     "$OUTPUT_DIR/simple9p"
+
+make -C "$SIMPLE9P_SOURCE" clean
+make -C "$SIMPLE9P_SOURCE" \
+    CC="${TOOL_PREFIX}gcc" \
+    CFLAGS="-Os -g0 -D_XOPEN_SOURCE=600 -DSIMPLE9P_NO_NETWORK -Ilibixp/include" \
+    LDFLAGS= \
+    LIBS="build/libixp.a -lpthread"
+
+"${TOOL_PREFIX}strip" --strip-unneeded \
+    "$SIMPLE9P_SOURCE/build/simple9p"
+
+"${TOOL_PREFIX}readelf" -d "$SIMPLE9P_SOURCE/build/simple9p" \
+    | grep -q "Shared library: \\[libroot.so\\]"
+if "${TOOL_PREFIX}readelf" -d "$SIMPLE9P_SOURCE/build/simple9p" \
+        | grep -q "Shared library: \\[libnetwork.so\\]"; then
+    echo "Stream-only simple9p unexpectedly links libnetwork" >&2
+    exit 1
+fi
+
+install -m 755 "$SIMPLE9P_SOURCE/build/simple9p" \
+    "$OUTPUT_DIR/simple9p-stream"

@@ -5,7 +5,7 @@ env:
 requires:
   - docker:${BUILDER}
   - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
-  - bin/${ARCH}-haiku/simple9p
+  - bin/${ARCH}-haiku/simple9p-stream
 provides:
   - bin/qemu/${ARCH}-haiku/qemount/boot/haiku.image
 ---

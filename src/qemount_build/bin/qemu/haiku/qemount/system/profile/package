@@ -1,5 +1,10 @@
 local haikuPackage = haiku.hpkg ;
 HaikuPackage $(haikuPackage) ;
+HAIKU_CONTAINER_STRIP_EXECUTABLES on $(haikuPackage) = 1 ;
+
+local qemountLaunchDaemon = <qemount-prebuilt>launch_daemon ;
+SEARCH on $(qemountLaunchDaemon)
+	= [ FDirName $(HAIKU_TOP) build qemount init ] ;
 
 
 # Boot and storage modules for the QEMU PC appliance.
@@ -49,23 +54,9 @@ AddDriversToPackage ports : pc_serial ;
 AddFilesToPackage : <revisioned>kernel_$(TARGET_ARCH) ;
 AddLibrariesToPackage lib
 	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
-AddFilesToPackage servers : $(SYSTEM_SERVERS) ;
+AddFilesToPackage servers : $(qemountLaunchDaemon) : launch_daemon ;
 AddFilesToPackage : runtime_loader ;
 AddFilesToPackage bin : $(SYSTEM_BIN) ;
-
-# Only the services used by this headless appliance are declared.
-local systemLaunch = <qemount-launch>system ;
-SEARCH on $(systemLaunch) = [ FDirName $(HAIKU_TOP) build qemount ] ;
-AddFilesToPackage data launch : $(systemLaunch) ;
-
-# Userland disk-system modules used by mountvolume for discovery.
-AddFilesToPackage add-ons disk_systems :
-	<disk_system>fat
-	<disk_system>intel
-	<disk_system>gpt
-	<disk_system>bfs
-	<disk_system>ntfs
-	;
 
 AddBootModuleSymlinksToPackage
 	acpi@x86,x86_64

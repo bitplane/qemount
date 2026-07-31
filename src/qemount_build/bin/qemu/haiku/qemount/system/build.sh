@@ -5,6 +5,11 @@ OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-haiku/qemount/system
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 BUILD_JOBS=${JOBS:-1}
 CACHE_DIR=/host/build/cache/haiku/${ARCH}/${HAIKU_REVISION}/qemount-v2
+INIT_DIR=/src/haiku/build/qemount/init
+
+mkdir -p "$INIT_DIR"
+install -m 755 /host/build/bin/${ARCH}-haiku/qemount-init \
+    "$INIT_DIR/launch_daemon"
 
 mkdir -p "$CACHE_DIR"
 if [ ! -f "$CACHE_DIR/Jamfile" ]; then
