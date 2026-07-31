@@ -4,7 +4,7 @@ set -eu
 SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz
 SOURCE_DIR=/work/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
-PORTS_DIR=/opt/aros-portssources
+PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=/work/guest-build
 OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-aros/system
 SDK_OUTPUT=/host/build/lib/${ARCH}-aros/sdk.tar.gz
@@ -35,6 +35,12 @@ cd "$GUEST_BUILD_DIR"
     --with-theme=AmigaOS3.x \
     --with-iconset=Mason \
     --with-bootloader=grub2
+
+# Unlike the other fetched build inputs, AROS looks for pci.ids in its
+# generated-file directory rather than PORTSSOURCEDIR.
+PCI_IDS_DIR="$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/gen/rom/hidds/pci"
+mkdir -p "$PCI_IDS_DIR"
+cp "$PORTS_DIR/pci.ids" "$PCI_IDS_DIR/pci.ids"
 
 make -j"$BUILD_JOBS"
 make -j"$BUILD_JOBS" bootiso-pc-i386
