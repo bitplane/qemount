@@ -13,18 +13,22 @@ cp "$BASE_IMAGE" "$WORK_IMAGE"
 
 printf '%s\n' \
     'mkdir -p "/myfs/system/non-packaged/bin"' \
-    'mkdir -p "/myfs/home/config/settings/boot"' \
+    'mkdir -p "/myfs/system/non-packaged/data/launch"' \
+    'mkdir -p "/myfs/system/non-packaged/data/qemount"' \
     "cp -f :\"$SIMPLE9P\" \"/myfs/system/non-packaged/bin/simple9p\"" \
-    'cp -f :"/UserBootscript" "/myfs/home/config/settings/boot/UserBootscript"' \
+    'cp -f :"/UserBootscript" "/myfs/system/non-packaged/data/qemount/UserBootscript"' \
+    'cp -f :"/qemount.launch" "/myfs/system/non-packaged/data/launch/qemount"' \
     | bfs_shell "$WORK_IMAGE"
 
-rm -f /work/simple9p.verify /work/UserBootscript.verify
+rm -f /work/simple9p.verify /work/UserBootscript.verify /work/qemount.launch.verify
 printf '%s\n' \
     'cp "/myfs/system/non-packaged/bin/simple9p" :"/work/simple9p.verify"' \
-    'cp "/myfs/home/config/settings/boot/UserBootscript" :"/work/UserBootscript.verify"' \
+    'cp "/myfs/system/non-packaged/data/qemount/UserBootscript" :"/work/UserBootscript.verify"' \
+    'cp "/myfs/system/non-packaged/data/launch/qemount" :"/work/qemount.launch.verify"' \
     | bfs_shell "$WORK_IMAGE"
 cmp "$SIMPLE9P" /work/simple9p.verify
 cmp /UserBootscript /work/UserBootscript.verify
+cmp /qemount.launch /work/qemount.launch.verify
 test -x /work/simple9p.verify
 test -x /work/UserBootscript.verify
 

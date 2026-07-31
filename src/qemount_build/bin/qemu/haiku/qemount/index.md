@@ -5,6 +5,7 @@ env:
   BUILDER: builder/compiler/haiku
   HAIKU_IMAGE_SIZE: "128"
   HAIKU_REVISION: hrev59919+1
+  JOBS: "1"
 requires:
   - docker:${BUILDER}
 ---

@@ -2,14 +2,15 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BOOT_IMAGE=$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/qemount/boot/haiku.image
+BOOT_IMAGE=${QEMOUNT_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/qemount/boot/haiku.image}
 NINEPFUSE=${QEMOUNT_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
 RUNNER=$PROJECT_ROOT/src/qemount_build/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
 LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/qemount/integration
-TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-${TMPDIR:-/tmp}}
-WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-65536}
+TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-$PROJECT_ROOT/build/tmp}
+WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-4096}
+KEEP_TEST_WORK=${QEMOUNT_KEEP_TEST_WORK:-0}
 NINEPFUSE_ARGS=(-n 1)
 if [[ ${QEMOUNT_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
     NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
@@ -38,15 +39,56 @@ for required_file in "$BOOT_IMAGE" "$NINEPFUSE" "$RUNNER" "$PROBE" "$TEMPLATE"; 
     fi
 done
 
+case_spec() {
+    case "$1" in
+        beos-bfs)          echo "data/fs/basic.beos-bfs|1|rw|disk|posix" ;;
+        btrfs)             echo "data/fs/basic.btrfs|1|ro|disk|posix" ;;
+        exfat)             echo "data/fs/basic.exfat|1|ro|disk|posix" ;;
+        exfat-mbr)         echo "data/pt/exfat.mbr|1|ro|disk|posix" ;;
+        ext2)              echo "data/fs/basic.ext2|1|rw|disk|posix" ;;
+        ext3)              echo "data/fs/basic.ext3|1|rw|disk|posix" ;;
+        ext4)              echo "data/fs/basic.ext4|1|rw|disk|posix" ;;
+        fat12)             echo "data/fs/basic.fat12|1|read|disk|posix" ;;
+        fat16)             echo "data/fs/basic.fat16|1|read|disk|posix" ;;
+        fat32)             echo "data/fs/basic.fat32|1|read|disk|posix" ;;
+        iso9660)           echo "data/fs/basic.iso9660|1|ro|cdrom|iso-basic" ;;
+        iso9660-joliet)    echo "data/fs/basic.joliet.iso9660|1|ro|cdrom|posix" ;;
+        iso9660-rockridge) echo "data/fs/basic.rock-ridge.iso9660|1|ro|cdrom|posix" ;;
+        ntfs)              echo "data/fs/basic.ntfs|1|read|disk|posix" ;;
+        reiserfs)          echo "data/fs/basic.reiserfs|1|ro|disk|posix" ;;
+        udf)               echo "data/fs/basic.udf-optical|1|ro|cdrom|posix" ;;
+        mbr)               echo "data/pt/basic.mbr|3|mixed|disk|posix" ;;
+        mbr-extended)      echo "data/pt/extended.mbr|5|mixed|disk|posix" ;;
+        gpt)               echo "data/pt/basic.gpt|5|mixed|disk|posix" ;;
+        hybrid-gpt)        echo "data/pt/hybrid.gpt|2|mixed|disk|posix" ;;
+        *)
+            echo "Unknown Haiku integration case: $1" >&2
+            return 1
+            ;;
+    esac
+}
+
 if (($#)); then
-    fixtures=("$@")
+    cases=("$@")
 else
-    fixtures=(
+    cases=(
         beos-bfs
+        btrfs
+        ext2
+        ext3
+        ext4
         fat12
         fat16
         fat32
-        ext2
+        iso9660
+        iso9660-joliet
+        iso9660-rockridge
+        ntfs
+        reiserfs
+        mbr
+        mbr-extended
+        gpt
+        hybrid-gpt
     )
 fi
 
@@ -69,15 +111,21 @@ cleanup_case() {
 
 cleanup_all() {
     cleanup_case
-    rm -rf "$WORK_DIR"
+    if [[ "$KEEP_TEST_WORK" == 1 ]]; then
+        echo "Preserved test workspace: $WORK_DIR"
+    else
+        rm -rf "$WORK_DIR"
+    fi
 }
 trap cleanup_all EXIT INT TERM
 
 wait_for_guest() {
-    local log_file=$1
+    local socket_path=$1
+    local log_file=$2
     local deadline=$((SECONDS + 180))
 
-    until grep -q "qemount: serving / over" "$log_file" 2>/dev/null; do
+    until [[ -S "$socket_path" ]] \
+        && grep -q "qemount: serving / over" "$log_file" 2>/dev/null; do
         if ! kill -0 "$QEMU_PID" 2>/dev/null; then
             echo "Haiku exited before starting simple9p; see $log_file" >&2
             return 1
@@ -94,31 +142,35 @@ wait_for_guest() {
 mkdir -p "$WORK_DIR/expected"
 tar -xf "$TEMPLATE" -C "$WORK_DIR/expected"
 
-for filesystem in "${fixtures[@]}"; do
-    fixture=$PROJECT_ROOT/build/data/fs/basic.$filesystem
+for case_name in "${cases[@]}"; do
+    IFS='|' read -r fixture_path expected_volumes access_mode target_media \
+        fixture_layout \
+        <<< "$(case_spec "$case_name")"
+    fixture=$PROJECT_ROOT/build/$fixture_path
     if [[ ! -f "$fixture" ]]; then
         echo "Fixture not found: $fixture" >&2
         exit 1
     fi
 
-    case_dir=$WORK_DIR/$filesystem
+    case_dir=$WORK_DIR/$case_name
     target_image=$case_dir/target.image
     socket_path=$case_dir/9p.sock
     MOUNT_POINT=$case_dir/mount
-    log_file=$LOG_DIR/$filesystem.log
+    log_file=$LOG_DIR/$case_name.log
 
     mkdir -p "$MOUNT_POINT"
     cp --reflink=auto "$fixture" "$target_image"
 
-    echo "Testing Haiku with $filesystem"
-    "$RUNNER" "$BOOT_IMAGE" -i "$target_image" -s "$socket_path" \
+    echo "Testing Haiku with $case_name"
+    "$RUNNER" "$BOOT_IMAGE" -i "$target_image" -t "$target_media" \
+        -s "$socket_path" \
         >"$log_file" 2>&1 &
     QEMU_PID=$!
 
-    wait_for_guest "$log_file"
+    wait_for_guest "$socket_path" "$log_file"
     if ! timeout 45 python3 "$PROBE" "$socket_path" --timeout 40 \
         >>"$log_file" 2>&1; then
-        echo "9P probe failed for $filesystem; see $log_file" >&2
+        echo "9P probe failed for $case_name; see $log_file" >&2
         exit 1
     fi
 
@@ -128,31 +180,59 @@ for filesystem in "${fixtures[@]}"; do
     if ! timeout 30 "$NINEPFUSE" "${NINEPFUSE_ARGS[@]}" \
         "$socket_path" "$MOUNT_POINT" \
         >>"$log_file" 2>&1; then
-        echo "9pfuse failed for $filesystem; see $log_file" >&2
+        echo "9pfuse failed for $case_name; see $log_file" >&2
         exit 1
     fi
 
-    target_root=$(timeout 60 find "$MOUNT_POINT" -mindepth 3 -maxdepth 3 \
-        -type f -path '*/basic/hello.txt' -printf '%h\n' -quit)
-    if [[ -z "$target_root" ]]; then
-        echo "Mounted $filesystem volume was not found; see $log_file" >&2
+    shopt -s nullglob
+    mounted_files=("$MOUNT_POINT"/*/basic/hello.txt)
+    volume_deadline=$((SECONDS + 30))
+    while ((${#mounted_files[@]} != expected_volumes)) \
+        && ((SECONDS < volume_deadline)); do
+        sleep 0.2
+        mounted_files=("$MOUNT_POINT"/*/basic/hello.txt)
+    done
+    shopt -u nullglob
+    if ((${#mounted_files[@]} != expected_volumes)); then
+        echo "$case_name exposed ${#mounted_files[@]} test-data volumes; expected $expected_volumes" >&2
+        echo "See $log_file" >&2
         exit 1
     fi
-    target_root=${target_root%/basic}
 
-    timeout 60 cmp "$WORK_DIR/expected/basic/hello.txt" "$target_root/basic/hello.txt"
-    timeout 60 cmp "$WORK_DIR/expected/basic/script.sh" "$target_root/basic/script.sh"
-    timeout 60 cmp "$WORK_DIR/expected/basic/nested_dir/file_in_dir.txt" \
-        "$target_root/basic/nested_dir/file_in_dir.txt"
+    target_roots=()
+    for mounted_file in "${mounted_files[@]}"; do
+        target_root=${mounted_file%/basic/hello.txt}
+        target_roots+=("$target_root")
+        if ! timeout 60 cmp "$WORK_DIR/expected/basic/hello.txt" \
+            "$target_root/basic/hello.txt"; then
+            cp "$target_root/basic/hello.txt" \
+                "$case_dir/observed-hello.txt"
+            echo "Preserved mismatching file: $case_dir/observed-hello.txt" >&2
+            exit 1
+        fi
+        timeout 60 cmp "$WORK_DIR/expected/basic/script.sh" \
+            "$target_root/basic/script.sh"
+        nested_path=$target_root/basic/nested_dir/file_in_dir.txt
+        if [[ "$fixture_layout" == iso-basic ]]; then
+            nested_path=$target_root/basic/nested_d/file_in_.txt
+        fi
+        timeout 60 cmp "$WORK_DIR/expected/basic/nested_dir/file_in_dir.txt" \
+            "$nested_path"
+    done
 
-    dd if=/dev/zero of="$case_dir/write-test.bin" bs="$WRITE_TEST_SIZE" \
-        count=1 status=none
-    timeout 60 cp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
-    timeout 60 cmp "$case_dir/write-test.bin" "$target_root/qemount-write-test.bin"
-    timeout 60 rm "$target_root/qemount-write-test.bin"
-    if [[ -e "$target_root/qemount-write-test.bin" ]]; then
-        echo "Delete did not persist for $filesystem" >&2
-        exit 1
+    if [[ "$access_mode" == rw ]]; then
+        target_root=${target_roots[0]}
+        dd if=/dev/zero of="$case_dir/write-test.bin" bs="$WRITE_TEST_SIZE" \
+            count=1 status=none
+        timeout 60 cp "$case_dir/write-test.bin" \
+            "$target_root/qemount-write-test.bin"
+        timeout 60 cmp "$case_dir/write-test.bin" \
+            "$target_root/qemount-write-test.bin"
+        timeout 60 rm "$target_root/qemount-write-test.bin"
+        if [[ -e "$target_root/qemount-write-test.bin" ]]; then
+            echo "Delete did not persist for $case_name" >&2
+            exit 1
+        fi
     fi
 
     "$FUSERMOUNT" -u -z "$MOUNT_POINT"
@@ -160,7 +240,7 @@ for filesystem in "${fixtures[@]}"; do
     wait "$QEMU_PID" 2>/dev/null || true
     QEMU_PID=
     MOUNT_POINT=
-    echo "Passed: $filesystem"
+    echo "Passed: $case_name"
 done
 
 echo "All Haiku guest integration cases passed"

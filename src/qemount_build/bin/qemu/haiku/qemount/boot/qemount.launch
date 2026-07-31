@@ -1,0 +1,5 @@
+job qemount {
+	launch /bin/sh /system/non-packaged/data/qemount/UserBootscript
+	requires x-vnd.Haiku-registrar
+	on initial_volumes_mounted
+}

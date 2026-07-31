@@ -1,8 +1,7 @@
 #!/bin/sh
 
 LOG=/boot/home/qemount.log
-DEBUG_SERIAL=/dev/ports/pc_serial0
-SERIAL=/dev/ports/pc_serial1
+SERIAL=/dev/ports/pc_serial0
 SIMPLE9P=/boot/system/non-packaged/bin/simple9p
 
 exec >>"$LOG" 2>&1
@@ -10,9 +9,7 @@ exec >>"$LOG" 2>&1
 qemount_log()
 {
     echo "qemount: $*"
-    if [ -e "$DEBUG_SERIAL" ]; then
-        echo "qemount: $*" > "$DEBUG_SERIAL"
-    fi
+    echo "qemount: $*" > /dev/dprintf
 }
 
 qemount_log "UserBootscript started"
@@ -20,14 +17,16 @@ for port in /dev/ports/*; do
     qemount_log "serial device $port"
 done
 
-qemount_log "waiting for second serial port"
+qemount_log "waiting for serial port"
 while [ ! -e "$SERIAL" ]; do
     sleep 1
 done
 
 qemount_log "mounting detected volumes"
-/bin/mountvolume -all
-/bin/mountvolume -l
+(
+    /bin/mountvolume -all
+    /bin/mountvolume -all -ro
+) &
 
 while true; do
     qemount_log "serving / over $SERIAL"

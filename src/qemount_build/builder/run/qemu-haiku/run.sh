@@ -3,10 +3,11 @@ set -euo pipefail
 
 usage() {
     cat <<EOF
-Usage: $0 <boot-image> -i <target-image> [-s <socket>] [-- extra_qemu_args]
+Usage: $0 <boot-image> -i <target-image> [-t <media>] [-s <socket>] [-- extra_qemu_args]
 
 Options:
   -i <image>    Attach the single filesystem image to inspect
+  -t <media>    Target media: disk or cdrom (default: disk)
   -s <socket>   9P serial socket path (default: /tmp/qemount-haiku-9p.sock)
 EOF
 }
@@ -20,6 +21,7 @@ BOOT_IMAGE=$1
 shift
 
 TARGET_IMAGE=
+TARGET_MEDIA=disk
 SOCKET_PATH=/tmp/qemount-haiku-9p.sock
 EXTRA_ARGS=()
 
@@ -35,6 +37,14 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             TARGET_IMAGE=$2
+            shift 2
+            ;;
+        -t)
+            if [[ $# -lt 2 ]]; then
+                echo "Missing value for -t" >&2
+                exit 1
+            fi
+            TARGET_MEDIA=$2
             shift 2
             ;;
         -s)
@@ -71,6 +81,10 @@ if [[ ! -f "$TARGET_IMAGE" ]]; then
     echo "Target image not found: $TARGET_IMAGE" >&2
     exit 1
 fi
+if [[ "$TARGET_MEDIA" != disk && "$TARGET_MEDIA" != cdrom ]]; then
+    echo "Invalid target media: $TARGET_MEDIA" >&2
+    exit 1
+fi
 if [[ "$SOCKET_PATH" == / || -d "$SOCKET_PATH" ]]; then
     echo "Invalid socket path: $SOCKET_PATH" >&2
     exit 1
@@ -84,8 +98,6 @@ QEMU_ARGS=(
     -smp 2
     -m 1024
     -drive "file=$BOOT_IMAGE,format=raw,if=ide,index=0,snapshot=on"
-    -drive "file=$TARGET_IMAGE,format=raw,if=none,id=target"
-    -device virtio-blk-pci,drive=target
     -display none
     -monitor none
     -no-reboot
@@ -93,6 +105,15 @@ QEMU_ARGS=(
     -chardev "socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off"
     -serial chardev:p9channel
 )
+if [[ "$TARGET_MEDIA" == cdrom ]]; then
+    QEMU_ARGS+=(
+        -drive "file=$TARGET_IMAGE,format=raw,if=ide,index=1,media=cdrom,readonly=on"
+    )
+else
+    QEMU_ARGS+=(
+        -drive "file=$TARGET_IMAGE,format=raw,if=ide,index=1"
+    )
+fi
 QEMU_ARGS+=("${EXTRA_ARGS[@]}")
 
 echo "9P socket: $SOCKET_PATH"
