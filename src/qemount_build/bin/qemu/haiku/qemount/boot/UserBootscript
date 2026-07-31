@@ -24,8 +24,10 @@ done
 
 qemount_log "mounting detected volumes"
 (
-    /bin/mountvolume -all
-    /bin/mountvolume -all -ro
+    /bin/mountvolume -all > /dev/dprintf 2>&1
+    qemount_log "read-write mount pass exited with status $?"
+    /bin/mountvolume -all -ro > /dev/dprintf 2>&1
+    qemount_log "read-only mount pass exited with status $?"
 ) &
 
 while true; do
