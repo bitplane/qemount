@@ -13,45 +13,55 @@ format on the host.
 
 MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
 
-Currently, there are:
+Currently, there's:
 
-* Linux 2.6, Linux 6.12, NetBSD 10.0, AROS i386 and Haiku x86_64 guests
-* 9P2000.U support in both a simple9p server and 9pfuse client
-* Platform filesystem discovery: `/` on POSIX guests and a synthetic root
-  containing mounted DOS volumes on AROS
-* A roughly 3 MiB allowlisted AROS guest for Amiga OFS, FFS, SFS and PFS volumes
-* A current Haiku guest serving mounted volumes over a serial 9P connection
-* A collection of filesystems to play with
-* A build system that isolates everything inside containers, so it actually
-  builds easily
-* A way to archive everything, inputs, outputs and containers, so the
-  archive.org dumps will work long after the sources go offline
+* Linux 2.6, Linux 6.12, NetBSD 10.0, AROS and Haiku guests (currently x86 only)
+* 9P2000.U support via a simple9p server and 9pfuse client.
+* A huge collection of test data fixtures, with many custom mkfs and archive and
+  compression tools.
+* A Python-based podman-isolated build system that runs rootless and dodges
+  dependency hell.
+* A Rust library to detect and extract filesystems from many image formats.
+* Full archival: sources, outputs and containers used to build everything,
+  saved on archive.org for future historians. 
 
 ### Building
 
-Install `podman`, `fuse`, `make` and `qemu`; install `xz` too if you want to
-create archival builds. The catalogue exposes individual build targets:
+Install: 
+
+* `podman`, `make`, `python3` + venv + pip to build.
+* `fuse` to mount images with the 9p client.
+* `xz` if you want to archive the lot.
+
+Everything else is installed in containers, use the `qemount_build` module or
+script to build stuff. It might take a while.
 
 ```sh
-python -m qemount_build outputs
-python -m qemount_build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
-python -m qemount_build build bin/qemu/x86_64-netbsd/10.0/boot/boot.img
-python -m qemount_build build bin/qemu/i386-aros/boot/aros.iso
-python -m qemount_build build bin/qemu/x86_64-haiku/qemount/boot/haiku.image
-python -m qemount_build build bin/x86_64-linux-musl/9pfuse
+# install
+make dev
+source .venv/bin/activate
+
+# list targets
+qemount_build outputs
+
+# pick one and build it
+qemount_build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
+
+make help  # for a full list of targets.
+# make     # or just build the world!
 ```
 
-`make archive` performs a separate clean build inside a privileged outer
-container, then exports that complete environment as a compressed time capsule.
-It includes the source history, downloaded inputs, outputs, logs, caches, and
-the nested Podman image store containing all builder toolchains.
+Guest and transport selection, the detection engine and launch layer are still
+under construction, see the [todo list](src/qemount_build/docs/todo.md). There's
+`./scripts` for data recovery though.
 
-The guest-selection and launch layer is still under construction, see the
-[todo list](src/qemount_build/docs/todo.md).
+Catalogue and format encyclopedia can be found is in the `src/qemount_build/`
+tree - there's no html builder yet.
 
 ## Format support
 
-This is what works so far, sometimes with a bit of connect script tweaking.
+Guest operating systems are the smallest thing I could get running with broadest
+support. This is what works so far; YMMV.
 
 ### Partition tables
 
