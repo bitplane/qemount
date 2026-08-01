@@ -1,5 +1,4 @@
-.PHONY: help all install test dev coverage clean \
-		pre-commit update-pre-commit build archive cloc
+.PHONY: help all install test dev coverage clean build archive cloc
 
 PROJECT_NAME := qemount_build
 
@@ -15,7 +14,7 @@ all: build  ## build all outputs
 
 install: .venv/.installed  ## install the venv and project packages
 
-dev: .venv/.installed-dev pre-commit  ## prepare local repo and venv for dev
+dev: .venv/.installed-dev  ## prepare local repo and venv for dev
 
 test: .venv/.installed-dev  ## run the project's tests
 	scripts/test.sh $(PROJECT_NAME)
@@ -28,11 +27,6 @@ build: .venv/.installed-dev scripts/build.sh  ## build all outputs
 
 clean:  ## delete caches and the venv
 	scripts/clean.sh
-
-pre-commit: .git/hooks/pre-commit  ## install pre-commit into the git repo
-
-update-pre-commit: scripts/update-pre-commit.sh  ## autoupdate pre-commit
-	scripts/update-pre-commit.sh
 
 dist: scripts/dist.sh  ## build the distributable files
 	scripts/dist.sh $(PROJECT_NAME)
@@ -52,9 +46,6 @@ archive: scripts/archive.sh scripts/Dockerfile.archive scripts/archive-build.sh 
 
 .venv/bin/activate:
 	scripts/venv.sh
-
-.git/hooks/pre-commit: scripts/install-pre-commit.sh
-	scripts/install-pre-commit.sh
 
 cloc: .venv/bin/cloc  ## count lines of code
 	.venv/bin/cloc --vcs=git .
