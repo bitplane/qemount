@@ -99,7 +99,7 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | **exFAT**       | ✅         | ❌        | ❌        | ❌        | ✅ ro        |                                   |
 | **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | ✅           |                                   |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅        | ✅           | Several variants tested           |
-| **UDF**         | ✅         | ✅        | ✅        | ❌        | ❌           | DVD/Blu-ray                       |
+| **UDF**         | ✅         | ✅        | ✅        | ❌        | ✅ ro        | DVD/Blu-ray                       |
 | **HFS**         | ✅         | ✅        | ✅        | ❌        | ❌           | Classic Mac                       |
 | **HFS+**        | ✅         | ✅        | ❌        | ❌        | ❌           | hfsplus                           |
 | **UFS/FFS**     | 💩         | 💩        | ✅        | ❌        | ❌           | Linux UFS is limited              |

@@ -4,7 +4,7 @@ ARG ARCH
 
 WORKDIR /src
 RUN mkdir haiku && \
-    tar xzf /host/build/sources/haiku-qemount-2026-08-01.tar.gz \
+    tar xzf /host/build/sources/haiku-qemount-2026-08-01-2.tar.gz \
         -C haiku --strip-components=1
 
 WORKDIR /src/haiku
