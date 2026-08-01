@@ -7,3 +7,4 @@ provides:
 # NetBSD 10.0 Kernel
 
 Kernel build with QEMOUNT config. Unstripped for mdsetimage to embed ramdisk.
+The kernel object tree is retained in the build cache for incremental rebuilds.

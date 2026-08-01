@@ -1,9 +1,23 @@
 #!/bin/sh
-set -e
+set -eu
 
-cd /work
-tar -xf /host/build/sources/linux-2.6.39.4.tar.xz
-cd linux-2.6.39.4
+SOURCE_ARCHIVE=/host/build/sources/linux-2.6.39.4.tar.xz
+SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
+CACHE_DIR=/host/build/cache/linux/${ARCH}/2.6/kernel-v1/${SOURCE_HASH}
+SOURCE_DIR=$CACHE_DIR/source
+
+if [ ! -f "$SOURCE_DIR/.qemount-source-ready" ]; then
+    EXTRACT_DIR=$CACHE_DIR/source.tmp.$$
+    rm -rf "$SOURCE_DIR"
+    mkdir -p "$EXTRACT_DIR"
+    trap 'rm -rf "$EXTRACT_DIR"' EXIT HUP INT TERM
+    tar -xf "$SOURCE_ARCHIVE" -C "$EXTRACT_DIR" --strip-components=1
+    touch "$EXTRACT_DIR/.qemount-source-ready"
+    mv "$EXTRACT_DIR" "$SOURCE_DIR"
+    trap - EXIT HUP INT TERM
+fi
+
+cd "$SOURCE_DIR"
 
 # Copy config files
 cp /kernel.config /filesystems.config .
@@ -22,7 +36,7 @@ fi
 make ARCH=$KERNEL_ARCH defconfig
 cat kernel.config filesystems.config >> .config
 yes "" | make ARCH=$KERNEL_ARCH oldconfig
-make ARCH=$KERNEL_ARCH -j${JOBS}
+make ARCH=$KERNEL_ARCH -j"${JOBS}"
 
 # Copy kernel image
 mkdir -p /host/build/bin/qemu/${ARCH}-linux/2.6

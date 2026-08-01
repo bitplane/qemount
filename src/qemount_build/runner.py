@@ -128,6 +128,10 @@ def build_image(
     if no_cache:
         cmd.append("--no-cache")
 
+    cache_dir = build_dir / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cmd.extend(["--volume", f"{cache_dir.absolute()}:/host/build/cache:rw"])
+
     # Mount build_requires as volumes
     for req in build_requires:
         src = build_dir / req

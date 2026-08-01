@@ -8,4 +8,5 @@ provides:
 
 # Linux 2.6 Kernel
 
-Kernel build for the 2.6 guest. Only supports x86/x86_64.
+Kernel build for the 2.6 guest. Only supports x86/x86_64. The source and object
+tree is retained in the build cache for incremental rebuilds.

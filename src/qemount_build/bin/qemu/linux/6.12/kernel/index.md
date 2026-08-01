@@ -8,4 +8,5 @@ provides:
 
 # Linux 6.12 Kernel
 
-Kernel build for the 6.12 guest. Supports x86_64 and aarch64.
+Kernel build for the 6.12 guest. Supports x86_64 and aarch64. The source and
+object tree is retained in the build cache for incremental rebuilds.

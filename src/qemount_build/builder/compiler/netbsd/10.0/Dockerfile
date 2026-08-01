@@ -61,14 +61,26 @@ RUN if [ "$ARCH" = "x86_64" ]; then \
         echo "$ARCH" > /tmp/nbgnutriple; \
     fi
 
-# Build cross-compilation toolchain
-# This takes 30-60 minutes on first build
-RUN NBARCH=$(cat /tmp/nbarch) && \
-    ./build.sh -O /usr/obj -T /usr/tools -U -j$(nproc) -m $NBARCH tools
-
-# Build distribution (includes rescue binaries needed for ramdisk)
-RUN NBARCH=$(cat /tmp/nbarch) && \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m $NBARCH distribution
+# Build the cross-compilation toolchain and distribution. /usr/obj and
+# /usr/tools use the host-backed cache while build.sh runs, then are copied
+# into the image so child build stages remain self-contained.
+RUN set -eu; \
+    SOURCE_HASH=$(sha256sum \
+        /host/build/sources/netbsd-10.0-src.tgz \
+        /host/build/sources/netbsd-10.0-syssrc.tgz \
+        /host/build/sources/netbsd-10.0-sharesrc.tgz \
+        /host/build/sources/netbsd-10.0-gnusrc.tgz \
+        | sha256sum | cut -d ' ' -f 1); \
+    CACHE_DIR=/host/build/cache/netbsd/${ARCH}/10.0/compiler-v1/${SOURCE_HASH}; \
+    mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
+    ln -s "$CACHE_DIR/obj" /usr/obj; \
+    ln -s "$CACHE_DIR/tools" /usr/tools; \
+    NBARCH=$(cat /tmp/nbarch); \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m "$NBARCH" tools; \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m "$NBARCH" distribution; \
+    rm /usr/obj /usr/tools; \
+    cp -a "$CACHE_DIR/obj" /usr/obj; \
+    cp -a "$CACHE_DIR/tools" /usr/tools
 
 # Set up environment for cross-compilation
 # Child images can use these for building binaries
@@ -79,4 +91,3 @@ ENV NETBSD_TOOLS=/usr/tools
 # Create standard directories
 RUN mkdir -p /build /outputs /host/build
 WORKDIR /build
-
