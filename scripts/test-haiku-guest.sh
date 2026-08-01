@@ -17,7 +17,7 @@ if [[ ${QEMOUNT_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
     NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
 fi
 
-for command in qemu-system-x86_64 python3 timeout cmp tar cp find grep mountpoint dd; do
+for command in qemu-system-x86_64 python3 timeout cmp tar cp find grep mountpoint dd stat; do
     if ! command -v "$command" >/dev/null; then
         echo "Required command not found: $command" >&2
         exit 1
@@ -58,6 +58,7 @@ case_spec() {
         ntfs)              echo "data/fs/basic.ntfs|1|read|disk|posix" ;;
         reiserfs)          echo "data/fs/basic.reiserfs|1|ro|disk|posix" ;;
         udf)               echo "data/fs/basic.udf-optical|1|ro|cdrom|posix" ;;
+        udf-efe)           echo "data/fs/basic.udf-optical-efe|1|ro|cdrom|posix" ;;
         mbr)               echo "data/pt/basic.mbr|3|mixed|disk|posix" ;;
         mbr-extended)      echo "data/pt/extended.mbr|5|mixed|disk|posix" ;;
         gpt)               echo "data/pt/basic.gpt|5|mixed|disk|posix" ;;
@@ -88,6 +89,8 @@ else
         iso9660-rockridge
         ntfs
         reiserfs
+        udf
+        udf-efe
         mbr
         mbr-extended
         gpt
@@ -253,6 +256,19 @@ for case_name in "${cases[@]}"; do
         fi
         timeout 60 cmp "$WORK_DIR/expected/basic/nested_dir/file_in_dir.txt" \
             "$nested_path"
+
+        expected_file=$WORK_DIR/expected/basic/hello.txt
+        observed_file=$target_root/basic/hello.txt
+        dd if="$expected_file" of="$case_dir/expected-range" bs=1 skip=2 \
+            count=5 status=none
+        timeout 60 dd if="$observed_file" of="$case_dir/observed-range" \
+            bs=1 skip=2 count=5 status=none
+        cmp "$case_dir/expected-range" "$case_dir/observed-range"
+
+        file_size=$(stat -c %s "$expected_file")
+        timeout 60 dd if="$observed_file" of="$case_dir/observed-eof" \
+            bs=1 skip="$file_size" count=1 status=none
+        test ! -s "$case_dir/observed-eof"
     done
 
     if [[ "$access_mode" == rw ]]; then
@@ -271,6 +287,18 @@ for case_name in "${cases[@]}"; do
             echo "Delete did not persist for $case_name" >&2
             exit 1
         fi
+    elif [[ "$access_mode" == ro ]]; then
+        target_root=${target_roots[0]}
+        set +e
+        timeout 30 sh -c 'printf test > "$1"' sh \
+            "$target_root/qemount-write-test.txt" 2>>"$log_file"
+        write_status=$?
+        set -e
+        if [[ "$write_status" == 0 || "$write_status" == 124 ]]; then
+            echo "Read-only write did not fail cleanly for $case_name" >&2
+            exit 1
+        fi
+        test ! -e "$target_root/qemount-write-test.txt"
     fi
 
     "$FUSERMOUNT" -u -z "$MOUNT_POINT"
