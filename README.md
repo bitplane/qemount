@@ -96,7 +96,7 @@ This is what works so far, sometimes with a bit of connect script tweaking.
 | **ext4**        | ✅         | ✅        | ❌        | ❌        | ✅           |                                   |
 | **FAT12**       | ✅         | ✅        | ✅        | ✅        | ✅           |                                   |
 | **FAT16/32**    | ✅         | ✅        | ✅        | ✅        | ✅           |                                   |
-| **exFAT**       | ✅         | ❌        | ❌        | ❌        | ❌           |                                   |
+| **exFAT**       | ✅         | ❌        | ❌        | ❌        | ✅ ro        |                                   |
 | **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | ❌        | ✅           |                                   |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅        | ✅           | Several variants tested           |
 | **UDF**         | ✅         | ✅        | ✅        | ❌        | ❌           | DVD/Blu-ray                       |

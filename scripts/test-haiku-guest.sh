@@ -75,6 +75,8 @@ else
     cases=(
         beos-bfs
         btrfs
+        exfat
+        exfat-mbr
         ext2
         ext3
         ext4
