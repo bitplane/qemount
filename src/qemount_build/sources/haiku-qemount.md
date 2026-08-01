@@ -1,10 +1,10 @@
 ---
-title: Haiku qemount 2026-07-31
-version: qemount-2026-07-31
+title: Haiku qemount 2026-08-01
+version: qemount-2026-08-01
 urls:
-  - git+https://github.com/bitplane/Haiku.git#qemount-2026-07-31
+  - git+https://github.com/bitplane/Haiku.git#qemount-2026-08-01
 provides:
-  - sources/haiku-qemount-2026-07-31.tar.gz
+  - sources/haiku-qemount-2026-08-01.tar.gz
 ---
 
 # Haiku
@@ -14,4 +14,4 @@ immutable dated tag.[^bugfixes]
 
 [^bugfixes]: Includes fixes for Haiku [ticket #20220](https://dev.haiku-os.org/ticket/20220)
     (`pc_serial`) and [ticket #20221](https://dev.haiku-os.org/ticket/20221)
-    (FAT/NTFS file-cache cleanup).
+    (FAT/NTFS file-cache cleanup), plus empty exFAT volume-label handling.
