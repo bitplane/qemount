@@ -55,7 +55,6 @@ cd /
 mkdir -p /Volumes/QEMOUNT/dev /Volumes/QEMOUNT/Volumes
 cp /Volumes/PAYLOAD/simple9p /Volumes/QEMOUNT/usr/bin/simple9p
 cp /Volumes/PAYLOAD/stream64 /Volumes/QEMOUNT/usr/bin/stream64
-cp /Volumes/PAYLOAD/kernel /Volumes/QEMOUNT/System/Library/Kernels/kernel
 chmod 755 /Volumes/QEMOUNT/usr/bin/simple9p /Volumes/QEMOUNT/usr/bin/stream64
 sync
 /sbin/umount /Volumes/PAYLOAD

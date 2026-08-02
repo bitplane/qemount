@@ -12,7 +12,6 @@ requires:
   - bin/${ARCH}-darwin/simple9p
   - bin/${ARCH}-darwin/stream64
   - bin/qemu/${ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
-  - bin/qemu/${ARCH}-darwin/puredarwin/system/kernel.tar.gz
 provides:
   - bin/qemu/${ARCH}-darwin/puredarwin/appliance/puredarwin.raw
 ---
@@ -25,8 +24,7 @@ filesystem so ownership, modes, links and HFS+ metadata are preserved. The
 host installs the published image's generic Chameleon boot stages after the
 new volume has been unmounted cleanly.
 
-A temporary HFS payload disk carries the Linux-built Darwin 17.4 kernel,
-simple9p and stream64 binaries into the guest during provisioning. It is not
-part of the published appliance. The published PureDarwin driver set remains
-in place because it is the compatibility set used by that kernel and boot
-environment.
+A temporary HFS payload disk carries simple9p and stream64 into the guest
+during provisioning. It is not part of the published appliance. The published
+PureDarwin kernel and driver set remain together as their matching compatibility
+substrate.
