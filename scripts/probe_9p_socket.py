@@ -12,6 +12,8 @@ RVERSION = 101
 TATTACH = 104
 RATTACH = 105
 RERROR = 107
+TWALK = 110
+RWALK = 111
 TOPEN = 112
 ROPEN = 113
 TREAD = 116
@@ -36,7 +38,7 @@ def request(sock: socket.socket, message_type: int, tag: int, payload: bytes) ->
     response_type, response_tag = struct.unpack_from("<BH", response)
     if response_type == RERROR:
         error_length = struct.unpack_from("<H", response, 3)[0]
-        error = response[5:5 + error_length].decode(errors="replace")
+        error = response[5 : 5 + error_length].decode(errors="replace")
         raise RuntimeError(f"9P error for tag {response_tag}: {error}")
     if response_tag != tag:
         raise RuntimeError(f"response tag {response_tag} does not match {tag}")
@@ -83,7 +85,18 @@ def main() -> None:
         default=0,
         help="seconds to wait between successful 9P requests",
     )
+    parser.add_argument(
+        "--read-file",
+        help="walk from the exported root and read this file",
+    )
+    parser.add_argument(
+        "--expect-hex",
+        help="require the file contents to equal these hexadecimal bytes",
+    )
     args = parser.parse_args()
+
+    if args.expect_hex and not args.read_file:
+        parser.error("--expect-hex requires --read-file")
 
     time.sleep(args.connect_delay)
     with connect(args.socket, args.timeout) as sock:
@@ -99,7 +112,7 @@ def main() -> None:
             raise RuntimeError(f"expected Rversion, received type {response[0]}")
         msize = struct.unpack_from("<I", response, 3)[0]
         version_length = struct.unpack_from("<H", response, 7)[0]
-        version = response[9:9 + version_length].decode()
+        version = response[9 : 9 + version_length].decode()
         print(f"negotiated {version} with msize {msize}", flush=True)
         time.sleep(args.request_delay)
 
@@ -107,17 +120,32 @@ def main() -> None:
             sock,
             TATTACH,
             1,
-            struct.pack("<II", 1, NOFID)
-            + p9_string("none")
-            + p9_string("")
-            + struct.pack("<I", NOFID),
+            struct.pack("<II", 1, NOFID) + p9_string("none") + p9_string("") + struct.pack("<I", NOFID),
         )
         if response[0] != RATTACH:
             raise RuntimeError(f"expected Rattach, received type {response[0]}")
         print("attached root fid", flush=True)
         time.sleep(args.request_delay)
 
-        response = request(sock, TOPEN, 2, struct.pack("<IB", 1, 0))
+        if args.read_file:
+            names = [name for name in args.read_file.split("/") if name]
+            if not names:
+                raise RuntimeError("the file path contains no names")
+            response = request(
+                sock,
+                TWALK,
+                2,
+                struct.pack("<IIH", 1, 2, len(names)) + b"".join(p9_string(name) for name in names),
+            )
+            if response[0] != RWALK:
+                raise RuntimeError(f"expected Rwalk, received type {response[0]}")
+            walked = struct.unpack_from("<H", response, 3)[0]
+            if walked != len(names):
+                raise RuntimeError(f"walked {walked} of {len(names)} path elements")
+            print(f"walked {args.read_file}", flush=True)
+            time.sleep(args.request_delay)
+
+        response = request(sock, TOPEN, 3, struct.pack("<IB", 1, 0))
         if response[0] != ROPEN:
             raise RuntimeError(f"expected Ropen, received type {response[0]}")
         print("opened root fid", flush=True)
@@ -126,7 +154,7 @@ def main() -> None:
         response = request(
             sock,
             TREAD,
-            3,
+            4,
             struct.pack("<IQI", 1, 0, min(msize - 24, 8168)),
         )
         if response[0] != RREAD:
@@ -134,13 +162,37 @@ def main() -> None:
         count = struct.unpack_from("<I", response, 3)[0]
         data = response[7:]
         if count != len(data) or count == 0:
-            raise RuntimeError(
-                f"invalid root read: declared {count} bytes, received {len(data)}"
-            )
+            raise RuntimeError(f"invalid root read: declared {count} bytes, received {len(data)}")
 
         print(f"read {count} bytes from the attached root directory")
 
-        response = request(sock, TCLUNK, 4, struct.pack("<I", 1))
+        if args.read_file:
+            response = request(sock, TOPEN, 5, struct.pack("<IB", 2, 0))
+            if response[0] != ROPEN:
+                raise RuntimeError(f"expected Ropen, received type {response[0]}")
+
+            response = request(
+                sock,
+                TREAD,
+                6,
+                struct.pack("<IQI", 2, 0, min(msize - 24, 8168)),
+            )
+            if response[0] != RREAD:
+                raise RuntimeError(f"expected Rread, received type {response[0]}")
+            file_count = struct.unpack_from("<I", response, 3)[0]
+            file_data = response[7:]
+            if file_count != len(file_data):
+                raise RuntimeError(f"invalid file read: declared {file_count} bytes, received {len(file_data)}")
+            if args.expect_hex and file_data != bytes.fromhex(args.expect_hex):
+                raise RuntimeError(f"unexpected contents for {args.read_file}: {file_data!r}")
+            print(f"read {file_count} bytes from {args.read_file}: {file_data!r}")
+
+            response = request(sock, TCLUNK, 7, struct.pack("<I", 2))
+            if response[0] != RCLUNK:
+                raise RuntimeError(f"expected Rclunk, received type {response[0]}")
+            print("clunked file fid")
+
+        response = request(sock, TCLUNK, 8, struct.pack("<I", 1))
         if response[0] != RCLUNK:
             raise RuntimeError(f"expected Rclunk, received type {response[0]}")
         print("clunked root fid")

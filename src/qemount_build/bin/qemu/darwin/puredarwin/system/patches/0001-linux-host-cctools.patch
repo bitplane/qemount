@@ -1,0 +1,143 @@
+diff --git a/tools/cctools/ld64/src/3rd/helper.c b/tools/cctools/ld64/src/3rd/helper.c
+index a4ddf3c..fb0383d 100644
+--- a/tools/cctools/ld64/src/3rd/helper.c
++++ b/tools/cctools/ld64/src/3rd/helper.c
+@@ -41,7 +41,7 @@ void __assert_rtn(const char *func, const char *file, int line, const char *msg)
+     __assert(msg, file, line, func);
+ #elif defined(__NetBSD__) || defined(__OpenBSD__) || defined(__CYGWIN__)
+     __assert(msg, line, file);
+-#elif defined(__GLIBC__) || defined(__MINGW32__)
++#elif defined(__MINGW32__)
+     __assert(msg, file, line);
+ #else
+     fprintf(stderr, "Assertion failed: %s (%s: %s: %d)\n", msg, file, func, line);
+diff --git a/tools/cctools/ld64/src/ld/CMakeLists.txt b/tools/cctools/ld64/src/ld/CMakeLists.txt
+index 3566457..3f3a314 100644
+--- a/tools/cctools/ld64/src/ld/CMakeLists.txt
++++ b/tools/cctools/ld64/src/ld/CMakeLists.txt
+@@ -20,17 +20,21 @@ target_sources(host_ld PRIVATE
+ )
+ 
+ target_compile_definitions(host_ld PRIVATE __DARWIN_UNIX03)
+-target_compile_options(host_ld PRIVATE "-Wno-#warnings" -Wno-deprecated)
++target_compile_options(host_ld PRIVATE "-Wno-#warnings" -Wno-deprecated -fblocks)
+ target_link_libraries(host_ld PRIVATE
+     host_libxar host_ld_helper host_ld_BlocksRuntime host_ld_libparsers host_ld_libpasses host_libstuff
+     OpenSSL::SSL OpenSSL::Crypto
+-    host_commoncrypto_static
+-    host_commoncrypto_private_headers
+-    host_commoncrypto_headers
+     host_corecrypto_headers
+ )
++if(APPLE)
++    target_link_libraries(host_ld PRIVATE
++        host_commoncrypto_static
++        host_commoncrypto_private_headers
++        host_commoncrypto_headers
++    )
++endif()
+ set_property(TARGET host_ld PROPERTY OUTPUT_NAME ld)
+-set_property(TARGET host_ld PROPERTY CXX_STANDARD 11)
++set_property(TARGET host_ld PROPERTY CXX_STANDARD 17)
+ target_include_directories(host_ld PRIVATE
+     ../../../include
+     ../../../include/foreign
+diff --git a/tools/cctools/ld64/src/ld/InputFiles.cpp b/tools/cctools/ld64/src/ld/InputFiles.cpp
+index 73f9e6b..3327e11 100644
+--- a/tools/cctools/ld64/src/ld/InputFiles.cpp
++++ b/tools/cctools/ld64/src/ld/InputFiles.cpp
+@@ -44,7 +44,6 @@
+ #include <dlfcn.h>
+ #include <mach-o/dyld.h>
+ #include <mach-o/fat.h>
+-#include <sys/sysctl.h>
+ #include <libkern/OSAtomic.h>
+ 
+ #include <string>
+diff --git a/tools/cctools/ld64/src/ld/OutputFile.cpp b/tools/cctools/ld64/src/ld/OutputFile.cpp
+index 8713480..d3237e4 100644
+--- a/tools/cctools/ld64/src/ld/OutputFile.cpp
++++ b/tools/cctools/ld64/src/ld/OutputFile.cpp
+@@ -27,7 +27,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <sys/param.h>
+ #include <sys/mount.h>
+ #include <signal.h> // ld64-port
+diff --git a/tools/cctools/ld64/src/ld/ld.cpp b/tools/cctools/ld64/src/ld/ld.cpp
+index 4124db9..a92da01 100644
+--- a/tools/cctools/ld64/src/ld/ld.cpp
++++ b/tools/cctools/ld64/src/ld/ld.cpp
+@@ -32,7 +32,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/libcodedirectory.c b/tools/cctools/ld64/src/ld/libcodedirectory.c
+index 8356be4..3310836 100644
+--- a/tools/cctools/ld64/src/ld/libcodedirectory.c
++++ b/tools/cctools/ld64/src/ld/libcodedirectory.c
+@@ -10,6 +10,10 @@
+ #include <errno.h>
+ 
+ #include <arpa/inet.h>
++#ifndef __APPLE__
++#include <endian.h>
++#define htonll(value) htobe64(value)
++#endif
+ 
+ #include <sys/mman.h>
+ #include <sys/queue.h>
+diff --git a/tools/cctools/ld64/src/ld/libcodedirectory.h b/tools/cctools/ld64/src/ld/libcodedirectory.h
+index e17ac11..7e68976 100644
+--- a/tools/cctools/ld64/src/ld/libcodedirectory.h
++++ b/tools/cctools/ld64/src/ld/libcodedirectory.h
+@@ -5,6 +5,10 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++#ifndef __unused
++#define __unused __attribute__((unused))
++#endif
++
+ #if 0 // __has_include(<Kernel/kern/cs_blobs.h>)
+ #include <Kernel/kern/cs_blobs.h>
+ #else
+diff --git a/tools/cctools/libstuff/CMakeLists.txt b/tools/cctools/libstuff/CMakeLists.txt
+index 7451b02..cde2472 100644
+--- a/tools/cctools/libstuff/CMakeLists.txt
++++ b/tools/cctools/libstuff/CMakeLists.txt
+@@ -49,6 +49,10 @@ target_compile_definitions(host_libstuff PRIVATE
+     __DARWIN_UNIX03
+     PROGRAM_PREFIX=\"\"
+ )
++if(NOT APPLE)
++    target_compile_definitions(host_libstuff PRIVATE
++        EMULATED_HOST_CPU_TYPE=16777223 EMULATED_HOST_CPU_SUBTYPE=3)
++endif()
+ target_include_directories(host_libstuff PRIVATE
+     ${CMAKE_CURRENT_SOURCE_DIR}/../include
+     ${CMAKE_CURRENT_SOURCE_DIR}/../include/foreign
+diff --git a/tools/cctools/misc/CMakeLists.txt b/tools/cctools/misc/CMakeLists.txt
+index 2dc5a43..2a8336f 100644
+--- a/tools/cctools/misc/CMakeLists.txt
++++ b/tools/cctools/misc/CMakeLists.txt
+@@ -6,6 +6,9 @@ endmacro()
+ 
+ cctools_misc_executable(checksyms)
+ cctools_misc_executable(lipo)
++if(NOT APPLE)
++    target_link_libraries(host_lipo PRIVATE m)
++endif()
+ cctools_misc_executable(size)
+ cctools_misc_executable(strings)
+ cctools_misc_executable(nm)

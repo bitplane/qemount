@@ -1,0 +1,13 @@
+diff --git a/src/Kernel/xnu/libkern/libkern/Makefile b/src/Kernel/xnu/libkern/libkern/Makefile
+index 2a5e0f4..e300915 100644
+--- a/src/Kernel/xnu/libkern/libkern/Makefile
++++ b/src/Kernel/xnu/libkern/libkern/Makefile
+@@ -96,7 +96,7 @@ EXPORT_MI_DIR = libkern
+ 
+ version.h: version.h.template $(SRCROOT)/config/MasterVersion
+ 	@$(LOG_GENERATE) "libkern/$@$(Color0) from $(ColorF)$<"
+-	$(_v)install $(DATA_INSTALL_FLAGS) $< $@
++	$(_v)$(INSTALL) $(DATA_INSTALL_FLAGS) $< $@
+ 	$(_v)$(NEWVERS) $@ > /dev/null
+ 
+ include $(MakeInc_rule)

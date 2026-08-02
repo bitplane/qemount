@@ -1,0 +1,34 @@
+diff --git a/tools/xar/CMakeLists.txt b/tools/xar/CMakeLists.txt
+index 383c2a0..fe16074 100644
+--- a/tools/xar/CMakeLists.txt
++++ b/tools/xar/CMakeLists.txt
+@@ -34,6 +34,11 @@ set_property(TARGET host_libxar PROPERTY OUTPUT_NAME xar)
+ target_include_directories(host_libxar PUBLIC include)
+ target_include_directories(host_libxar PRIVATE ${OPENSSL_INCLUDE_DIR} ${LIBXML2_INCLUDE_DIR})
++target_compile_definitions(host_libxar PRIVATE _GNU_SOURCE)
+ target_link_libraries(host_libxar PRIVATE ZLIB::ZLIB LibXml2::LibXml2)
++if(NOT APPLE)
++    find_library(ACL_LIBRARY acl REQUIRED)
++    target_link_libraries(host_libxar PRIVATE ${ACL_LIBRARY})
++endif()
+ suppress_all_warnings(host_libxar)
+ 
+ add_executable(host_xar)
+diff --git a/tools/xar/lib/config.h b/tools/xar/lib/config.h
+index 589ef08..e69ef90 100644
+--- a/tools/xar/lib/config.h
++++ b/tools/xar/lib/config.h
+@@ -35,3 +35,13 @@
+ #define DEV_STRING PRId32
+ #define DEV_HEXSTRING PRIx32
+ #define DEV_CAST (uint32_t)
++
++#ifdef __linux__
++#undef HAVE_GETATTRLIST
++#undef HAVE_SETATTRLIST
++#undef HAVE_CHFLAGS
++#undef HAVE_STRUCT_STAT_ST_FLAGS
++#undef HAVE_STRUCT_STATFS_F_FSTYPENAME
++#undef HAVE_LCHMOD
++#undef HAVE_STRMODE
++#endif

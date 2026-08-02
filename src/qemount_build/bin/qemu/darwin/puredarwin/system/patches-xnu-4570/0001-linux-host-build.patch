@@ -1,0 +1,730 @@
+diff --git a/src/Kernel/xnu/CMakeLists.txt b/src/Kernel/xnu/CMakeLists.txt
+index 5dd3a3c..6410960 100644
+--- a/src/Kernel/xnu/CMakeLists.txt
++++ b/src/Kernel/xnu/CMakeLists.txt
+@@ -2,6 +2,7 @@ find_program(dsymutil_path NAMES dsymutil llvm-dsymutil REQUIRED)
+ 
+ set(PUREDARWIN_BUILD_JOBS 1 CACHE STRING "Parallel XNU build jobs")
+ set(xnu_make_environment
++    PUREDARWIN_USE_CONFIGURED_MAKEINC=1
+     SYSCTL_HW_PHYSICALCPU=${PUREDARWIN_BUILD_JOBS}
+     SYSCTL_HW_LOGICALCPU=${PUREDARWIN_BUILD_JOBS}
+     MAKEJOBS=--jobs=${PUREDARWIN_BUILD_JOBS}
+@@ -14,6 +15,7 @@ set(xnu_make_environment
+     PUREDARWIN_HOST_LIBMACHO=$<TARGET_FILE:host_libmacho>
+     PUREDARWIN_HOST_LIBSTUFF=$<TARGET_FILE:host_libstuff>
+     HOST_GM4=m4
++    PYTHON=true
+     SHELL=/bin/bash
+     PUREDARWIN_TARGET_TRIPLE=${PUREDARWIN_TARGET_TRIPLE}
+ )
+@@ -109,7 +111,7 @@ externalproject_add(xnu
+             -D DSYMUTIL_PATH=${dsymutil_path}
+             -D FIREHOSE_KERNEL_LIBRARY_PATH=$<TARGET_FILE:libfirehose_kernel>
+             -D FIREHOSE_KERNEL_HEADER_PATH=$<TARGET_PROPERTY:libfirehose_kernel,INTERFACE_INCLUDE_DIRECTORIES>
+-            -D PROFILE_RUNTIME_LIBRARY_PATH=$<TARGET_FILE:compiler_rt_profile>
++            -D PROFILE_RUNTIME_LIBRARY_PATH=${PUREDARWIN_PROFILE_RUNTIME_LIBRARY}
+             -D PTHREAD_HEADER_PATH=$<TARGET_PROPERTY:pthread_common_headers,INTERFACE_INCLUDE_DIRECTORIES>
+             -P ${CMAKE_CURRENT_SOURCE_DIR}/preprocess_files.cmake
+     COMMAND
+@@ -124,7 +126,7 @@ externalproject_add(xnu
+     USES_TERMINAL_BUILD TRUE
+ )
+ add_dependencies(xnu
+-    xnu_headers libfirehose_kernel compiler_rt_profile host_codesign_allocate host_ctfconvert host_ctfmerge
++    xnu_headers libfirehose_kernel host_codesign_allocate host_ctfconvert host_ctfmerge
+     migcom host_strip host_lipo host_nm unifdef host_nmedit availability.pl host_ld
+     dyld_availability_headers
+ )
+diff --git a/src/Kernel/xnu/SETUP/decomment/decomment.c b/src/Kernel/xnu/SETUP/decomment/decomment.c
+index f95bdb6..f3790b1 100644
+--- a/src/Kernel/xnu/SETUP/decomment/decomment.c
++++ b/src/Kernel/xnu/SETUP/decomment/decomment.c
+@@ -29,8 +29,8 @@
+  */
+  
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <ctype.h>	/* for isspace */
+-#include <libc.h>
+ 
+ /*
+  * State of input scanner.
+diff --git a/src/Kernel/xnu/SETUP/installfile/installfile.c b/src/Kernel/xnu/SETUP/installfile/installfile.c
+index d7fc765..746ef3e 100644
+--- a/src/Kernel/xnu/SETUP/installfile/installfile.c
++++ b/src/Kernel/xnu/SETUP/installfile/installfile.c
+@@ -34,14 +34,55 @@
+ #include <sys/param.h>
+ #include <sys/time.h>
+ 
+-#include <copyfile.h>
++#ifdef O_SYMLINK
++#define INSTALL_OPEN_FLAGS (O_RDONLY | O_SYMLINK)
++#else
++#define INSTALL_OPEN_FLAGS (O_RDONLY | O_NOFOLLOW)
++#endif
+ 
+ void usage(void);
+ 
++static const char *program_name;
++
++static int
++copy_file(int srcfd, int dstfd)
++{
++	char buffer[64 * 1024];
++	ssize_t count;
++
++	while ((count = read(srcfd, buffer, sizeof(buffer))) != 0) {
++		ssize_t offset = 0;
++
++		if (count < 0) {
++			if (errno == EINTR) {
++				continue;
++			}
++			return -1;
++		}
++
++		while (offset < count) {
++			ssize_t written = write(dstfd, buffer + offset, count - offset);
++
++			if (written < 0) {
++				if (errno == EINTR) {
++					continue;
++				}
++				return -1;
++			}
++			if (written == 0) {
++				errno = EIO;
++				return -1;
++			}
++			offset += written;
++		}
++	}
++
++	return 0;
++}
++
+ int main(int argc, char * argv[])
+ {
+ 	struct stat sb;
+-	void *mset;
+ 	mode_t mode;
+ 	bool gotmode = false;
+ 	int ch;
+@@ -51,21 +92,26 @@ int main(int argc, char * argv[])
+ 	const char *dst = NULL;
+ 	char dsttmpname[MAXPATHLEN];
+ 
++	program_name = argv[0];
++
+ 	while ((ch = getopt(argc, argv, "cSm:")) != -1) {
+ 		switch(ch) {
+ 			case 'c':
+ 			case 'S':
+ 				/* ignored for compatibility */
+ 				break;
+-			case 'm':
++			case 'm': {
++				char *end;
++				unsigned long value;
++
+ 				gotmode = true;
+-				mset = setmode(optarg);
+-				if (!mset)
++				errno = 0;
++				value = strtoul(optarg, &end, 8);
++				if (errno != 0 || end == optarg || *end != '\0' || value > 07777)
+ 					errx(EX_USAGE, "Unrecognized mode %s", optarg);
+-
+-				mode = getmode(mset, 0);
+-				free(mset);
++				mode = (mode_t)value;
+ 				break;
++			}
+ 			case '?':
+ 			default:
+ 				usage();
+@@ -82,7 +128,7 @@ int main(int argc, char * argv[])
+ 	src = argv[0];
+ 	dst = argv[1];
+ 
+-	srcfd = open(src, O_RDONLY | O_SYMLINK, 0);
++	srcfd = open(src, INSTALL_OPEN_FLAGS, 0);
+ 	if (srcfd < 0)
+ 		err(EX_NOINPUT, "open(%s)", src);
+ 
+@@ -99,10 +145,9 @@ int main(int argc, char * argv[])
+ 	if (dstfd < 0)
+ 		err(EX_UNAVAILABLE, "mkstemp(%s)", dsttmpname);
+ 
+-	ret = fcopyfile(srcfd, dstfd, NULL,
+-					COPYFILE_DATA);
++	ret = copy_file(srcfd, dstfd);
+ 	if (ret < 0)
+-		err(EX_UNAVAILABLE, "fcopyfile(%s, %s)", src, dsttmpname);
++		err(EX_UNAVAILABLE, "copyfile(%s, %s)", src, dsttmpname);
+ 
+ 	ret = futimes(dstfd, NULL);
+ 	if (ret < 0)
+@@ -132,6 +177,6 @@ int main(int argc, char * argv[])
+ void usage(void)
+ {
+ 	fprintf(stderr, "Usage: %s [-c] [-S] [-m <mode>] <src> <dst>\n",
+-			getprogname());
++			program_name);
+ 	exit(EX_USAGE);
+ }
+diff --git a/src/Kernel/xnu/SETUP/kextsymboltool/Makefile b/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
+index af6cdca..ab5766a 100644
+--- a/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
++++ b/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
+@@ -9,14 +9,20 @@ include $(MakeInc_def)
+ OBJS = kextsymboltool.o
+ 
+ CFLAGS = -isysroot $(HOST_SDKROOT) -mmacosx-version-min=$(HOST_OS_VERSION) -g -O0 -I$(SOURCE) -I.
++ifneq ($(PUREDARWIN_HOST_CCTOOLS_INCLUDE),)
++CFLAGS += -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE) -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE)/foreign
++endif
+ 
+ WARNFLAGS = -Wall
+ 
+ LDFLAGS = -isysroot $(HOST_SDKROOT) -mmacosx-version-min=$(HOST_OS_VERSION) -lstdc++
++ifneq ($(PUREDARWIN_HOST_LIBMACHO),)
++LDLIBS = $(PUREDARWIN_HOST_LIBMACHO) $(PUREDARWIN_HOST_LIBSTUFF) -luuid
++endif
+ 
+ kextsymboltool: $(OBJS)
+ 	@echo "$(ColorH)HOST_LD$(Color0)       $(ColorF)$@$(Color0)"
+-	$(_v)$(HOST_CC) $(LDFLAGS) -o $@ $^
++	$(_v)$(HOST_CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+ 	@echo "$(ColorH)HOST_CODESIGN$(Color0) $(ColorF)$@$(Color0)"
+ 	$(_v)env CODESIGN_ALLOCATE=$(HOST_CODESIGN_ALLOCATE) $(HOST_CODESIGN) -s - $@
+ 
+diff --git a/src/Kernel/xnu/SETUP/kextsymboltool/kextsymboltool.c b/src/Kernel/xnu/SETUP/kextsymboltool/kextsymboltool.c
+index edb6dfa..6906f02 100644
+--- a/src/Kernel/xnu/SETUP/kextsymboltool/kextsymboltool.c
++++ b/src/Kernel/xnu/SETUP/kextsymboltool/kextsymboltool.c
+@@ -20,7 +20,11 @@
+  * 
+  * @APPLE_LICENSE_HEADER_END@
+  */
+-#include <libc.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
+ #include <errno.h>
+ #include <ctype.h>
+ 
+@@ -112,7 +116,7 @@ __private_extern__ ToolError
+ readFile(const char *path, vm_offset_t * objAddr, vm_size_t * objSize)
+ {
+     ToolError err = kErrorFileAccess;
+-    int fd;
++	int fd = -1;
+     struct stat stat_buf;
+ 
+     *objAddr = 0;
+@@ -994,4 +998,3 @@ finish:
+         exit(0);
+     return(0);
+ }
+-
+diff --git a/src/Kernel/xnu/SETUP/replacecontents/replacecontents.c b/src/Kernel/xnu/SETUP/replacecontents/replacecontents.c
+index 3e72b2d..fcbfca7 100644
+--- a/src/Kernel/xnu/SETUP/replacecontents/replacecontents.c
++++ b/src/Kernel/xnu/SETUP/replacecontents/replacecontents.c
+@@ -37,6 +37,8 @@
+ 
+ void usage(void);
+ 
++static const char *program_name;
++
+ int main(int argc, char * argv[])
+ {
+ 	struct stat sb;
+@@ -48,6 +50,9 @@ int main(int argc, char * argv[])
+ 	const char *dst = NULL;
+ 	ssize_t readsize, writesize;
+ 	int i;
++	char *cursor;
++
++	program_name = argv[0];
+ 
+ 	if (argc < 2) {
+ 		usage();
+@@ -64,16 +69,15 @@ int main(int argc, char * argv[])
+ 	if (newcontent == NULL)
+ 		err(EX_UNAVAILABLE, "malloc() failed");
+ 
+-	newcontent[0] = '\0';
+-
++	cursor = newcontent;
+ 	for (i=2; i < argc; i++) {
+-		strlcat(newcontent, argv[i], newcontentlength);
+-		if (i < argc - 1) {
+-			strlcat(newcontent, " ", newcontentlength);
+-		} else {
+-			strlcat(newcontent, "\n", newcontentlength);
+-		}
++		size_t length = strlen(argv[i]);
++
++		memcpy(cursor, argv[i], length);
++		cursor += length;
++		*cursor++ = i < argc - 1 ? ' ' : '\n';
+ 	}
++	*cursor = '\0';
+ 
+ 	dstfd = open(dst, O_RDWR | O_CREAT | O_APPEND, DEFFILEMODE);
+ 	if (dstfd < 0)
+@@ -132,6 +136,6 @@ replace:
+ void usage(void)
+ {
+ 	fprintf(stderr, "Usage: %s <dst> <new> <contents> <...>\n",
+-			getprogname());
++			program_name);
+ 	exit(EX_USAGE);
+ }
+diff --git a/src/Kernel/xnu/SETUP/setsegname/Makefile b/src/Kernel/xnu/SETUP/setsegname/Makefile
+index 7e9224e..966aa48 100644
+--- a/src/Kernel/xnu/SETUP/setsegname/Makefile
++++ b/src/Kernel/xnu/SETUP/setsegname/Makefile
+@@ -9,6 +9,9 @@ include $(MakeInc_def)
+ OBJS = setsegname.o
+ 
+ CFLAGS = -isysroot $(HOST_SDKROOT) -mmacosx-version-min=$(HOST_OS_VERSION) -g -O0 -I$(SOURCE) -I.
++ifneq ($(PUREDARWIN_HOST_CCTOOLS_INCLUDE),)
++CFLAGS += -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE) -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE)/foreign
++endif
+ 
+ WARNFLAGS = -Wall
+ 
+diff --git a/src/Kernel/xnu/SETUP/setsegname/setsegname.c b/src/Kernel/xnu/SETUP/setsegname/setsegname.c
+index ab3dd41..9c0554b 100644
+--- a/src/Kernel/xnu/SETUP/setsegname/setsegname.c
++++ b/src/Kernel/xnu/SETUP/setsegname/setsegname.c
+@@ -20,7 +20,11 @@
+  *
+  * @APPLE_LICENSE_HEADER_END@
+  */
+-#include <libc.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
+ #include <errno.h>
+ 
+ #include <sys/stat.h>
+@@ -31,6 +35,8 @@
+ 
+ #include <stdbool.h>
+ 
++static const char *program_name;
++
+ /*********************************************************************
+ *********************************************************************/
+ static int
+@@ -55,7 +61,7 @@ static int
+ readFile(const char *path, vm_offset_t * objAddr, vm_size_t * objSize)
+ {
+     int error = -1;
+-    int fd;
++    int fd = -1;
+     struct stat stat_buf;
+ 
+     *objAddr = 0;
+@@ -108,7 +114,7 @@ readFile(const char *path, vm_offset_t * objAddr, vm_size_t * objSize)
+ static void
+ usage(void)
+ {
+-    fprintf(stderr, "Usage: %s [-s OLDSEGNAME] -n NEWSEGNAME input -o output\n", getprogname());
++    fprintf(stderr, "Usage: %s [-s OLDSEGNAME] -n NEWSEGNAME input -o output\n", program_name);
+     exit(1);
+ }
+ 
+@@ -136,7 +142,7 @@ int main(int argc, char * argv[])
+     segname_t             * names = NULL;
+     int                     ch;
+ 
+-
++    program_name = argv[0];
+     while ((ch = getopt(argc, argv, "s:n:o:")) != -1) {
+         switch (ch) {
+             case 's':
+diff --git a/src/Kernel/xnu/bsd/kern/makekdebugevents.py b/src/Kernel/xnu/bsd/kern/makekdebugevents.py
+index 73b2db4..092ea28 100755
+--- a/src/Kernel/xnu/bsd/kern/makekdebugevents.py
++++ b/src/Kernel/xnu/bsd/kern/makekdebugevents.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/python3
+ #
+ # This script scans the trace.codes file, containing a mapping of event id to
+ # event name for all events, and writes to stdout a C declaration for a table
+@@ -15,24 +15,23 @@ if (len(sys.argv) < 2):
+ trace_code_file = sys.argv[1]
+ 
+ # regular expression pattern to match <hex_id> <string>
+-id_name_pattern = re.compile('0x([0-9a-fA-F]+)\s+([^\s]*)')
++id_name_pattern = re.compile(r'0x([0-9a-fA-F]+)\s+(\S*)')
+ code_table = []
+ 
+ # scan file to generate internal table
+ with open(trace_code_file, 'rt') as codes:
+     for line in codes:
+-	m = id_name_pattern.match(line)
+-	if m:
++        m = id_name_pattern.match(line)
++        if m:
+             code_table += [(int(m.group(1),base=16), m.group(2))]
+ 
+ # emit typedef:
+-print "typedef struct {"
+-print "        uint32_t   id;"
+-print "        const char *name;"
+-print "} kd_event_t;"
++print("typedef struct {")
++print("        uint32_t   id;")
++print("        const char *name;")
++print("} kd_event_t;")
+ # emit structure declaration and sorted initialization:
+-print "kd_event_t kd_events[] = {"
++print("kd_event_t kd_events[] = {")
+ for mapping in sorted(code_table, key=lambda x: x[0]):
+-        print "        {0x%x, \"%s\"}," % mapping
+-print "};"
+-
++        print("        {0x%x, \"%s\"}," % mapping)
++print("};")
+diff --git a/src/Kernel/xnu/bsd/sys/Makefile b/src/Kernel/xnu/bsd/sys/Makefile
+index 88c3a51..14441fd 100644
+--- a/src/Kernel/xnu/bsd/sys/Makefile
++++ b/src/Kernel/xnu/bsd/sys/Makefile
+@@ -230,7 +230,7 @@ _posix_availability.h: $(MAKE_POSIX_AVAILABILITY)
+ 	@echo "[$(CMD_MC)] $(ColorH)GENERATING$(Color0) $(ColorLF)bsd/sys/$@$(Color0)";
+ 	$(_v)$(MAKE_POSIX_AVAILABILITY) "$@"
+ 
+-MAKE_SYMBOL_ALIASING = $(SRCROOT)/bsd/sys/make_symbol_aliasing.sh
++MAKE_SYMBOL_ALIASING = $(OBJROOT)/bsd/sys/make_symbol_aliasing.sh
+ _symbol_aliasing.h: $(MAKE_SYMBOL_ALIASING)
+ 	@echo "[$(CMD_MC)] $(ColorH)GENERATING$(Color0) $(ColorLF)bsd/sys/$@$(Color0)";
+ 	$(_v)$(MAKE_SYMBOL_ALIASING) "$(SDKROOT)" "$@"
+diff --git a/src/Kernel/xnu/bsd/sys/make_posix_availability.sh b/src/Kernel/xnu/bsd/sys/make_posix_availability.sh
+index 3fb652b..57f005a 100755
+--- a/src/Kernel/xnu/bsd/sys/make_posix_availability.sh
++++ b/src/Kernel/xnu/bsd/sys/make_posix_availability.sh
+@@ -22,7 +22,7 @@
+ # @APPLE_OSREFERENCE_LICENSE_HEADER_END@
+ #
+ 
+-function usage() {
++usage() {
+     echo "Usage: $0 <output>" 1>&2
+     exit 1
+ }
+@@ -79,4 +79,3 @@ for value in ${POSIX_VALUES} ; do
+     echo
+ done
+ } > "$OUTPUT"
+-
+diff --git a/src/Kernel/xnu/cmake/MakeInc.cmd.in b/src/Kernel/xnu/cmake/MakeInc.cmd.in
+index ef6609c..9d34a4c 100644
+--- a/src/Kernel/xnu/cmake/MakeInc.cmd.in
++++ b/src/Kernel/xnu/cmake/MakeInc.cmd.in
+@@ -269,6 +269,12 @@ endif
+ ifeq ($(HOST_BISON),)
+ 	export HOST_BISON	:= bison
+ endif
++ifeq ($(HOST_CODESIGN),)
++	export HOST_CODESIGN	:= true
++endif
++ifeq ($(HOST_CODESIGN_ALLOCATE),)
++	export HOST_CODESIGN_ALLOCATE	:= @CODESIGN_ALLOCATE_PATH@
++endif
+ ifeq ($(HOST_GM4),)
+ 	export HOST_GM4		:= gm4
+ endif
+diff --git a/src/Kernel/xnu/cmake/MakeInc.def.in b/src/Kernel/xnu/cmake/MakeInc.def.in
+index deade9c..deff7ef 100644
+--- a/src/Kernel/xnu/cmake/MakeInc.def.in
++++ b/src/Kernel/xnu/cmake/MakeInc.def.in
+@@ -113,7 +113,7 @@ endif
+ #
+ # Standard defines list
+ #
+-DEFINES = -DAPPLE -DKERNEL -DKERNEL_PRIVATE -DXNU_KERNEL_PRIVATE \
++DEFINES = -DAPPLE -DKERNEL -DKERNEL_PRIVATE -DXNU_KERNEL_PRIVATE -DOS_FIREHOSE_SPI=1 \
+ 	-DPRIVATE -D__MACHO__=1 -Dvolatile=__volatile -DXNU_KERN_EVENT_DATA_IS_VLA \
+ 	$(CONFIG_DEFINES) $(SEED_DEFINES)
+ 
+@@ -576,8 +576,8 @@ LDFLAGS_KERNEL_RELEASEX86_64 = \
+ 	-Wl,-sectalign,__HIB,__llvm_prf_data,0x1000 \
+ 	-Wl,-sectalign,__HIB,__textcoal_nt,0x1000 \
+ 	-Wl,-sectalign,__HIB,__cstring,0x1000 \
+-	-Wl,-rename_section,__DATA,__const,__DATA_CONST,__const \
+-	-Wl,-segprot,__DATA_CONST,r--,r-- \
++	-Wl,-rename_section,__DATA,__const,__CONST,__constdata \
++	-Wl,-no_data_const \
+ 	-Wl,-no_zero_fill_sections \
+ 	$(LDFLAGS_NOSTRIP_FLAG)
+ 
+diff --git a/src/Kernel/xnu/config/Makefile b/src/Kernel/xnu/config/Makefile
+index 36b16f2..7a619a0 100644
+--- a/src/Kernel/xnu/config/Makefile
++++ b/src/Kernel/xnu/config/Makefile
+@@ -56,7 +56,7 @@ $(OBJPATH)/allsymbols: $(OBJPATH)/$(KERNEL_FILE_NAME)
+ $(SYMBOL_SET_BUILD): $(OBJPATH)/%.symbolset :  %.exports %.$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports $(OBJPATH)/allsymbols $(KEXT_CREATE_SYMBOL_SET)
+ 	@echo "$(ColorH)SYMBOLSET$(Color0)  $(ColorF)$*$(Color0) \"($(ColorLF)$(CURRENT_ARCH_CONFIG_LC)$(Color0))\""
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)					\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))			\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))		\
+ 		-import $(OBJPATH)/allsymbols				\
+ 		-export $(SOURCE)/$*.exports				\
+ 		-export $(SOURCE)/$*.$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports	\
+@@ -66,19 +66,20 @@ $(SYMBOL_SET_BUILD): $(OBJPATH)/%.symbolset :  %.exports %.$(EXPORT_SOURCE_ARCH_
+ 
+ check_all_exports: $(OBJPATH)/allsymbols $(KEXT_CREATE_SYMBOL_SET)
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)					\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))			\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))		\
+ 		-import $(OBJPATH)/allsymbols				\
+ 		$(foreach symbolset,$(filter-out Private,$(SYMBOL_COMPONENT_LIST)),	\
+ 			-export $(SOURCE)/$(symbolset).exports		\
+ 			-export $(SOURCE)/$(symbolset).$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports)	\
+-		-output /dev/null $(_vstdout)
++		-output $(OBJPATH)/check_all_exports.tmp $(_vstdout)
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)					\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))			\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))		\
+ 		-import $(OBJPATH)/allsymbols				\
+ 		$(foreach symbolset,$(filter-out Unsupported,$(SYMBOL_COMPONENT_LIST)),	\
+ 			-export $(SOURCE)/$(symbolset).exports		\
+ 			-export $(SOURCE)/$(symbolset).$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports)	\
+-		-output /dev/null $(_vstdout)
++		-output $(OBJPATH)/check_all_exports.tmp $(_vstdout)
++	$(_v)$(RM) $(OBJPATH)/check_all_exports.tmp
+ 
+ $(OBJPATH)/$(MD_SUPPORTED_KPI_FILENAME): $(EXPORTS_FILES)
+ 	@echo "$(ColorH)SUPPORTED_KPI$(Color0) \"($(ColorLF)$(CURRENT_ARCH_CONFIG_LC)$(Color0))\""
+diff --git a/src/Kernel/xnu/libkern/c++/OSKext.cpp b/src/Kernel/xnu/libkern/c++/OSKext.cpp
+index feb99ab..e006428 100644
+--- a/src/Kernel/xnu/libkern/c++/OSKext.cpp
++++ b/src/Kernel/xnu/libkern/c++/OSKext.cpp
+@@ -5272,7 +5272,8 @@ OSKext::loadExecutable()
+     }
+ 
+     /* <rdar://problem/21444003> all callers must be entitled */
+-    if (FALSE == IOTaskHasEntitlement(current_task(), "com.apple.rootless.kext-management")) {
++    if (current_task() != kernel_task &&
++        FALSE == IOTaskHasEntitlement(current_task(), "com.apple.rootless.kext-management")) {
+         OSKextLog(this,
+                   kOSKextLogErrorLevel | kOSKextLogLoadFlag,
+                   "Not entitled to link kext '%s'",
+diff --git a/src/Kernel/xnu/libkern/c++/OSRuntime.cpp b/src/Kernel/xnu/libkern/c++/OSRuntime.cpp
+index e6cf48b..b4307af 100644
+--- a/src/Kernel/xnu/libkern/c++/OSRuntime.cpp
++++ b/src/Kernel/xnu/libkern/c++/OSRuntime.cpp
+@@ -526,9 +526,6 @@ __END_DECLS
+ *********************************************************************/
+ void *
+ operator new(size_t size)
+-#if __cplusplus >= 201103L
+-								noexcept
+-#endif
+ {
+     void * result;
+ 
+@@ -548,9 +545,6 @@ operator delete(void * addr)
+ 
+ void *
+ operator new[](unsigned long sz)
+-#if __cplusplus >= 201103L
+-								noexcept
+-#endif
+ {
+     if (sz == 0) sz = 1;
+     return kern_os_malloc(sz);
+@@ -584,4 +578,3 @@ __throw_length_error(const char *msg __unused)
+ }
+ 
+ };
+-
+diff --git a/src/Kernel/xnu/libkern/libkern/Makefile b/src/Kernel/xnu/libkern/libkern/Makefile
+index e1c7b3a..ee9e893 100644
+--- a/src/Kernel/xnu/libkern/libkern/Makefile
++++ b/src/Kernel/xnu/libkern/libkern/Makefile
+@@ -82,7 +82,7 @@ EXPORT_MI_DIR = libkern
+ 
+ version.h: version.h.template $(SRCROOT)/config/MasterVersion
+ 	@echo "[$(CMD_MC)] $(ColorH)GENERATING$(Color0) $(ColorLF)libkern/$@$(Color0) from $(ColorF)$<$(Color0)";
+-	$(_v)install $(DATA_INSTALL_FLAGS) $< $@
++	$(_v)$(INSTALL) $(DATA_INSTALL_FLAGS) $< $@
+ 	$(_v)$(NEWVERS) $@ > /dev/null;
+ 
+ include $(MakeInc_rule)
+diff --git a/src/Kernel/xnu/makedefs/MakeInc.cmd b/src/Kernel/xnu/makedefs/MakeInc.cmd
+index a70a2d8..7fea6af 100644
+--- a/src/Kernel/xnu/makedefs/MakeInc.cmd
++++ b/src/Kernel/xnu/makedefs/MakeInc.cmd
+@@ -1,4 +1,7 @@
+ # -*- mode: makefile;-*-
++ifeq ($(PUREDARWIN_USE_CONFIGURED_MAKEINC),1)
++include $(OBJROOT)/makedefs/MakeInc.cmd
++else
+ #
+ # Copyright (C) 1999-2016 Apple Inc. All rights reserved.
+ #
+@@ -329,3 +332,4 @@ sequence = $(if $(wordlist 1,$(1),$(NUM32)),$(call sequence,$(call decrement,$(1
+ reverse = $(if $(word 2,$(1)),$(call reverse,$(wordlist 2,$(words $(1)),$(1)))) $(word 1,$(1))
+ 
+ # vim: set ft=make:
++endif
+diff --git a/src/Kernel/xnu/makedefs/MakeInc.def b/src/Kernel/xnu/makedefs/MakeInc.def
+index 8c49bd7..951f806 100644
+--- a/src/Kernel/xnu/makedefs/MakeInc.def
++++ b/src/Kernel/xnu/makedefs/MakeInc.def
+@@ -1,4 +1,7 @@
+ # -*- mode: makefile;-*-
++ifeq ($(PUREDARWIN_USE_CONFIGURED_MAKEINC),1)
++include $(OBJROOT)/makedefs/MakeInc.def
++else
+ #
+ # Copyright (C) 1999-2017 Apple Inc. All rights reserved.
+ #
+@@ -710,3 +713,4 @@ INSTALL_KASAN_ONLY = 1
+ endif
+ 
+ # vim: set ft=make:
++endif
+diff --git a/src/Kernel/xnu/makedefs/MakeInc.kernel b/src/Kernel/xnu/makedefs/MakeInc.kernel
+index 0885b3f..fb27327 100644
+--- a/src/Kernel/xnu/makedefs/MakeInc.kernel
++++ b/src/Kernel/xnu/makedefs/MakeInc.kernel
+@@ -90,7 +90,7 @@ $(TARGET)/$(KERNEL_FILE_NAME).unstripped: $(addprefix $(TARGET)/,$(foreach compo
+ 	$(_v)${MAKE} -f $(firstword $(MAKEFILE_LIST)) version.o
+ 	@echo "$(ColorL)LD$(Color0)  $(ColorLF)$(@F)$(Color0)"
+ 	$(_v)$(CAT) $(filter %.filelist,$+) < /dev/null > link.filelist
+-	$(_v)$(LD) $(LDFLAGS_KERNEL) -filelist link.filelist version.o $(filter %.o,$+) -o $@ $(LD_KERNEL_LIBS)
++	$(_v)$(LD) $(LDFLAGS_KERNEL) -filelist link.filelist version.o $(filter %.o,$+) -o $@ $(LD_KERNEL_LIBS) $(LD_KERNEL_ARCHIVES)
+ 
+ -include version.d
+ version.o: .CFLAGS $(filter %/MakeInc.kernel,$(MAKEFILE_LIST))
+diff --git a/src/Kernel/xnu/osfmk/i386/atomic.h b/src/Kernel/xnu/osfmk/i386/atomic.h
+index ef4652d..2c01685 100644
+--- a/src/Kernel/xnu/osfmk/i386/atomic.h
++++ b/src/Kernel/xnu/osfmk/i386/atomic.h
+@@ -61,6 +61,7 @@ atomic_compare_exchange(uintptr_t *target, uintptr_t oldval, uintptr_t newval,
+ 
+ #endif // ATOMIC_PRIVATE
+ 
++#ifndef os_atomic_rmw_loop
+ #define os_atomic_rmw_loop(p, ov, nv, m, ...)  ({ \
+ 		bool _result = false; \
+ 		typeof(p) _p = (p); \
+@@ -74,7 +75,10 @@ atomic_compare_exchange(uintptr_t *target, uintptr_t oldval, uintptr_t newval,
+ 		} while (__builtin_expect(!_result, 0)); \
+ 		_result; \
+ 	})
++#endif
+ 
++#ifndef os_atomic_rmw_loop_give_up
+ #define os_atomic_rmw_loop_give_up(expr) ({ expr; __builtin_trap(); })
++#endif
+ 
+ #endif // _I386_ATOMIC_H_
+diff --git a/src/Kernel/xnu/osfmk/i386/cpu_topology.c b/src/Kernel/xnu/osfmk/i386/cpu_topology.c
+index e079e6e..0a51e23 100644
+--- a/src/Kernel/xnu/osfmk/i386/cpu_topology.c
++++ b/src/Kernel/xnu/osfmk/i386/cpu_topology.c
+@@ -37,6 +37,7 @@
+ #include <i386/cpu_data.h>
+ #include <i386/lapic.h>
+ #include <i386/machine_routines.h>
++#include <stddef.h>
+ 
+ __private_extern__ void qsort(
+     void * array,
+@@ -289,4 +290,3 @@ ml_cpu_cache_sharing(unsigned int level)
+ 		return 0;
+ 	}
+ }
+-
+diff --git a/src/Kernel/xnu/osfmk/i386/locks.h b/src/Kernel/xnu/osfmk/i386/locks.h
+index 3d337a1..fbbe609 100644
+--- a/src/Kernel/xnu/osfmk/i386/locks.h
++++ b/src/Kernel/xnu/osfmk/i386/locks.h
+@@ -176,7 +176,6 @@ typedef struct __lck_mtx_ext_t__	lck_mtx_ext_t;
+ #endif
+ 
+ #ifdef	MACH_KERNEL_PRIVATE
+-#pragma pack(1)		/* Make sure the structure stays as we defined it */
+ typedef union _lck_rw_t_internal_ {
+ 	struct {
+ 		volatile uint16_t	lck_rw_shared_count;	/* No. of accepted readers */
+@@ -199,7 +198,6 @@ typedef union _lck_rw_t_internal_ {
+ 		uint32_t		lck_rw_pad12;
+ 	};
+ } lck_rw_t;
+-#pragma pack()
+ 
+ #define LCK_RW_SHARED_SHIFT	 0
+ #define LCK_RW_INTERLOCK_BIT	16
+diff --git a/src/Kernel/xnu/osfmk/vm/vm_object.h b/src/Kernel/xnu/osfmk/vm/vm_object.h
+index 1ef5779..d844376 100644
+--- a/src/Kernel/xnu/osfmk/vm/vm_object.h
++++ b/src/Kernel/xnu/osfmk/vm/vm_object.h
+@@ -171,7 +171,7 @@ struct vm_object {
+ 	int			ref_count;	/* Number of references */
+ 	unsigned int		resident_page_count;
+ 						/* number of resident pages */
+-	const unsigned int	wired_page_count; /* number of wired pages
++	unsigned int		wired_page_count; /* number of wired pages
+ 						     use VM_OBJECT_WIRED_PAGE_UPDATE macros to update */
+ 	unsigned int		reusable_page_count;
+ 
+diff --git a/src/Kernel/xnu/osfmk/x86_64/idt64.s b/src/Kernel/xnu/osfmk/x86_64/idt64.s
+index 13f3f02..615696a 100644
+--- a/src/Kernel/xnu/osfmk/x86_64/idt64.s
++++ b/src/Kernel/xnu/osfmk/x86_64/idt64.s
+@@ -455,8 +455,8 @@ L_dispatch_64bit:
+ 	/*
+ 	 * Save segment regs - for completeness since theyre not used.
+ 	 */
+-	movl	%fs, R64_FS(%r15)
+-	movl	%gs, R64_GS(%r15)
++	mov	%fs, R64_FS(%r15)
++	mov	%gs, R64_GS(%r15)
+ 
+ 	/* Save general-purpose registers */
+ 	mov	%rax, R64_RAX(%r15)
+@@ -509,10 +509,10 @@ L_dispatch_U32: /* 32-bit user task */
+ 	/*
+ 	 * Save segment regs
+ 	 */
+-	movl	%ds, R32_DS(%r15)
+-	movl	%es, R32_ES(%r15)
+-	movl	%fs, R32_FS(%r15)
+-	movl	%gs, R32_GS(%r15)
++	mov	%ds, R32_DS(%r15)
++	mov	%es, R32_ES(%r15)
++	mov	%fs, R32_FS(%r15)
++	mov	%gs, R32_GS(%r15)
+ 
+ 	/*
+ 	 * Save general 32-bit registers
+diff --git a/src/Kernel/xnu/san/Makefile b/src/Kernel/xnu/san/Makefile
+index a2f25e8..2b7bc5e 100644
+--- a/src/Kernel/xnu/san/Makefile
++++ b/src/Kernel/xnu/san/Makefile
+@@ -58,7 +58,7 @@ endif
+ $(OBJPATH)/%.symbolset: $(SOURCE)/%.exports
+ 	@echo "$(ColorH)SYMBOLSET$(Color0)  $(ColorF)$*$(Color0) \"($(ColorLF)$(CURRENT_ARCH_CONFIG_LC)$(Color0))\""
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)			\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))	\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG)) \
+ 		-import $(OBJPATH)/allsymbols		\
+ 		-export $<		                \
+ 		-output $@ $(_vstdout)

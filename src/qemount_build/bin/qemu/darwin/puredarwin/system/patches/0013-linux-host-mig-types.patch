@@ -1,0 +1,16 @@
+diff --git a/tools/mig/type.h b/tools/mig/type.h
+index 892c2c2..aed834d 100644
+--- a/tools/mig/type.h
++++ b/tools/mig/type.h
+@@ -40,11 +40,7 @@
+ #include <mach/boolean.h>
+ #include "strdefs.h"
+ 
+-#ifdef linux
+-#include <linux/types.h>
+-#else /* linux */
+ #include <sys/types.h>
+-#endif /* linux */
+ typedef u_int ipc_flags_t;
+ 
+ /*

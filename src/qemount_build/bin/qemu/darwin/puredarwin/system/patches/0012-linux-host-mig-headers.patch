@@ -1,0 +1,14 @@
+diff --git a/tools/mig/CMakeLists.txt b/tools/mig/CMakeLists.txt
+index 2c4b3f9..474d223 100644
+--- a/tools/mig/CMakeLists.txt
++++ b/tools/mig/CMakeLists.txt
+@@ -21,4 +21,8 @@
+-target_include_directories(migcom PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
++target_include_directories(migcom PRIVATE
++    ${CMAKE_CURRENT_SOURCE_DIR}
++    ../cctools/include
++    ../cctools/include/foreign
++)
+ 
+ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/y.tab.c
+     COMMAND yacc -d -b "${CMAKE_CURRENT_BINARY_DIR}/y" ${CMAKE_CURRENT_SOURCE_DIR}/parser.y

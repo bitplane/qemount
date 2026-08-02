@@ -1,0 +1,68 @@
+#!/bin/sh
+set -eu
+
+mode=
+format=
+output=
+input=
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -lint)
+            mode=lint
+            shift
+            ;;
+        -convert)
+            mode=convert
+            format=$2
+            shift 2
+            ;;
+        -o)
+            output=$2
+            shift 2
+            ;;
+        -s)
+            shift
+            ;;
+        -*)
+            echo "plutil: unsupported option: $1" >&2
+            exit 2
+            ;;
+        *)
+            if [ -n "$input" ]; then
+                echo "plutil: multiple input files are not supported" >&2
+                exit 2
+            fi
+            input=$1
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$input" ]; then
+    echo "plutil: no input file" >&2
+    exit 2
+fi
+
+case "$mode:$format" in
+    lint:)
+        exec plistutil -i "$input" -o /dev/null
+        ;;
+    convert:binary1)
+        if [ -z "$output" ]; then
+            output=$input
+        fi
+        if [ "$output" != "$input" ]; then
+            exec plistutil -i "$input" -o "$output" -f bin
+        fi
+        temporary=$(mktemp "${output}.XXXXXX")
+        trap 'rm -f "$temporary"' EXIT HUP INT TERM
+        plistutil -i "$input" -o "$temporary" -f bin
+        mv "$temporary" "$output"
+        trap - EXIT HUP INT TERM
+        ;;
+    *)
+        echo "plutil: unsupported operation" >&2
+        exit 2
+        ;;
+esac

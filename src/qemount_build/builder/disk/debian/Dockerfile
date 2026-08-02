@@ -18,6 +18,7 @@ RUN apt-get update && \
         parted \
         python3 \
         qemu-utils \
+        xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

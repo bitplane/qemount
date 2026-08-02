@@ -1,0 +1,39 @@
+diff --git a/src/Kernel/xnu/CMakeLists.txt b/src/Kernel/xnu/CMakeLists.txt
+index a82c5b5..21306b0 100644
+--- a/src/Kernel/xnu/CMakeLists.txt
++++ b/src/Kernel/xnu/CMakeLists.txt
+@@ -11,5 +11,6 @@ set(xnu_make_environment
+     PLATFORM=MacOSX
+     HOST_OS_VERSION=11.0
++    PUREDARWIN_HOST_CCTOOLS_INCLUDE=${PUREDARWIN_SOURCE_DIR}/tools/cctools/include
+ )
+ 
+ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/xnu_header_install)
+diff --git a/src/Kernel/xnu/SETUP/kextsymboltool/Makefile b/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
+index 7aa899d..b95e4dc 100644
+--- a/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
++++ b/src/Kernel/xnu/SETUP/kextsymboltool/Makefile
+@@ -9,6 +9,9 @@ include $(MakeInc_def)
+ OBJS = kextsymboltool.o
+ 
+ CFLAGS = -isysroot $(HOST_SDKROOT) -mmacosx-version-min=$(HOST_OS_VERSION) -g -O0 -I$(SOURCE) -I.
++ifneq ($(PUREDARWIN_HOST_CCTOOLS_INCLUDE),)
++CFLAGS += -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE) -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE)/foreign
++endif
+ 
+ WARNFLAGS = -Wall
+ 
+diff --git a/src/Kernel/xnu/SETUP/setsegname/Makefile b/src/Kernel/xnu/SETUP/setsegname/Makefile
+index b655bdf..06c69f9 100644
+--- a/src/Kernel/xnu/SETUP/setsegname/Makefile
++++ b/src/Kernel/xnu/SETUP/setsegname/Makefile
+@@ -9,6 +9,9 @@ include $(MakeInc_def)
+ OBJS = setsegname.o
+ 
+ CFLAGS = -isysroot $(HOST_SDKROOT) -mmacosx-version-min=$(HOST_OS_VERSION) -g -O0 -I$(SOURCE) -I.
++ifneq ($(PUREDARWIN_HOST_CCTOOLS_INCLUDE),)
++CFLAGS += -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE) -I$(PUREDARWIN_HOST_CCTOOLS_INCLUDE)/foreign
++endif
+ 
+ WARNFLAGS = -Wall
+ 

@@ -8,3 +8,5 @@ provides:
 
 Debian-based image with filesystem tools for creating disk images that
 don't require mount access. Includes tools for romfs, HFS, and UFS.
+It also provides QEMU image conversion and XZ archive handling for published
+disk-image artifacts.

@@ -1,0 +1,16 @@
+diff --git a/src/Kernel/xnu/osfmk/i386/i386_init.c b/src/Kernel/xnu/osfmk/i386/i386_init.c
+index 1b33c036..fd63ec86 100644
+--- a/src/Kernel/xnu/osfmk/i386/i386_init.c
++++ b/src/Kernel/xnu/osfmk/i386/i386_init.c
+@@ -955,8 +955,11 @@ i386_init(void)
+ 	max_cpus_from_firmware = acpi_count_enabled_logical_processors();
+ 
+ 	if (PE_parse_boot_argn("cpus", &cpus, sizeof(cpus))) {
+ 		if ((0 < cpus) && (cpus < max_ncpus)) {
+ 			max_ncpus = cpus;
++			if (max_cpus_from_firmware == 0) {
++				max_cpus_from_firmware = cpus;
++			}
+ 		}
+ 	}
+ 

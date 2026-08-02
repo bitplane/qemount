@@ -1,0 +1,138 @@
+diff --git a/tools/cctools/include/stuff/port.h b/tools/cctools/include/stuff/port.h
+--- a/tools/cctools/include/stuff/port.h
++++ b/tools/cctools/include/stuff/port.h
+@@ -8,7 +8,13 @@ void strmode(/* mode_t */ int mode, char *p);
+ #endif /* !__APPLE__ */
+ 
+ #ifndef HAVE_REALLOCF
++#ifdef __cplusplus
++extern "C" {
++#endif
+ void *reallocf(void *ptr, size_t size);
++#ifdef __cplusplus
++}
++#endif
+ #elif defined(HAVE_BSD_STDLIB_H)
+ #include <bsd/stdlib.h>
+ #endif /* !HAVE_REALLOCF */
+diff --git a/tools/cctools/ld64/src/ld/libcodedirectory.c b/tools/cctools/ld64/src/ld/libcodedirectory.c
+--- a/tools/cctools/ld64/src/ld/libcodedirectory.c
++++ b/tools/cctools/ld64/src/ld/libcodedirectory.c
+@@ -17,9 +17,13 @@
+ #include <sys/mman.h>
+ #include <sys/queue.h>
+ 
++#ifdef __APPLE__
+ #include <corecrypto/ccdigest.h>
+ #include <corecrypto/ccsha1.h>
+ #include <corecrypto/ccsha2.h>
++#else
++#include <openssl/sha.h>
++#endif
+ 
+ #define LIBCD_HAS_PLATFORM_VERSION 1
+ #include "libcodedirectory.h"
+@@ -457,19 +461,44 @@ void libcd_set_exec_seg (libcd *s, uint64_t base, uint64_t limit, uint64_t flags
+ 
+ struct _hash_info {
+     size_t hash_len;
++#ifdef __APPLE__
+     const struct ccdigest_info *(*di)(void);
++#else
++    unsigned char *(*digest)(const unsigned char *, size_t, unsigned char *);
++#endif
+ };
+ 
+ static const struct _hash_info _known_hash_types[] = {
+     { 0, NULL },
++#ifdef __APPLE__
+     { CS_SHA1_LEN, ccsha1_di }, // CS_HASHTYPE_SHA1
+     { CS_SHA256_LEN, ccsha256_di }, // CS_HASHTYPE_SHA256
++#else
++    { CS_SHA1_LEN, SHA1 }, // CS_HASHTYPE_SHA1
++    { CS_SHA256_LEN, SHA256 }, // CS_HASHTYPE_SHA256
++#endif
+     // { 0, NULL }, // CS_HASHTYPE_SHA256_TRUNCATED, unsupported
+     // { 0, NULL }, // CS_HASHTYPE_SHA384, unsupported
+ };
+ static const size_t _max_known_hash_len = CS_SHA256_LEN;
+ static const int _known_hash_types_count = sizeof(_known_hash_types)/sizeof(_known_hash_types[0]);
+ 
++static void
++_libcd_hash(struct _hash_info const *hi, const void *data, size_t length,
++            uint8_t *digest)
++{
++#ifdef __APPLE__
++    struct ccdigest_info const *di = hi->di();
++    ccdigest_di_decl(di, ctx);
++
++    ccdigest_init(di, ctx);
++    ccdigest_update(di, ctx, length, data);
++    ccdigest_final(di, ctx, digest);
++#else
++    hi->digest((const unsigned char *)data, length, digest);
++#endif
++}
++
+ static struct _hash_info const *
+ _libcd_get_hash_info (int hash_type)
+ {
+@@ -779,9 +808,6 @@ _libcd_hash_page(libcd *s,
+     uint8_t page_hash[_max_known_hash_len] = {0};
+     const unsigned int page_no = (unsigned int)page_idx;
+ 
+-    struct ccdigest_info const *di = hi->di();
+-    ccdigest_di_decl(di, ctx);
+-
+     const size_t pos = page_idx * _cs_page_bytes;
+     uint8_t page[_cs_page_bytes] = {0};
+     size_t read_bytes = s->read_page(s, page_no, pos, _cs_page_bytes, page);
+@@ -792,9 +818,7 @@ _libcd_hash_page(libcd *s,
+         return LIBCD_SERIALIZE_READ_PAGE_ERROR;
+     }
+ 
+-    ccdigest_init(di, ctx);
+-    ccdigest_update(di, ctx, read_bytes, page);
+-    ccdigest_final(di, ctx, page_hash);
++    _libcd_hash(hi, page, read_bytes, page_hash);
+ 
+     memcpy(hash_destination, page_hash, hi->hash_len);
+ 
+@@ -892,16 +916,12 @@ _libcd_serialize_cd (libcd *s, uint32_t hash_type)
+     //// code directory hashes
+     {
+         if (s->special_slot_count > 0) {
+-            struct ccdigest_info const *di = hi->di();
+-            ccdigest_di_decl(di, ctx);
+-
+             uint8_t *special_slot_buf = calloc(s->special_slot_count, hi->hash_len);
+ 
+             struct _sslot_data *sslot = NULL;
+             SLIST_FOREACH(sslot, &s->sslot_data, entries) {
+-                ccdigest_init(di, ctx);
+-                ccdigest_update(di, ctx, sslot->len, sslot->data);
+-                ccdigest_final(di, ctx, special_slot_buf + (s->special_slot_count-sslot->slot)*hi->hash_len);
++                _libcd_hash(hi, sslot->data, sslot->len,
++                    special_slot_buf + (s->special_slot_count-sslot->slot)*hi->hash_len);
+             }
+             memcpy(cursor, special_slot_buf, s->special_slot_count*hi->hash_len);
+             cursor += s->special_slot_count*hi->hash_len;
+@@ -947,17 +967,13 @@ _libcd_serialize_cd (libcd *s, uint32_t hash_type)
+ 
+     //Record the cdhash for this codedirectory
+     {
+-        struct ccdigest_info const *di = hi->di();
+-        ccdigest_di_decl(di, ctx);
+         uint8_t *cdhash_buf = calloc(1, hi->hash_len);
+         if (cdhash_buf == NULL) {
+             _libcd_err("Failed to allocated memory for cdhash");
+             free(cd_mem);
+             return LIBCD_SERIALIZE_NO_MEM;
+         }
+-        ccdigest_init(di, ctx);
+-        ccdigest_update(di, ctx, cd_size, cd_mem);
+-        ccdigest_final(di, ctx, cdhash_buf);
++        _libcd_hash(hi, cd_mem, cd_size, cdhash_buf);
+ 
+         for (size_t i = 0; i < s->hash_types_count; i++) {
+             if (s->cdhashes[i].set) {

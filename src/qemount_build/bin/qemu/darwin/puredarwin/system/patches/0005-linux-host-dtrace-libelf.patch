@@ -1,0 +1,63 @@
+diff --git a/tools/dtrace_ctf/libelf/CMakeLists.txt b/tools/dtrace_ctf/libelf/CMakeLists.txt
+index 75ecf8f..c8bfe4c 100644
+--- a/tools/dtrace_ctf/libelf/CMakeLists.txt
++++ b/tools/dtrace_ctf/libelf/CMakeLists.txt
+@@ -30,4 +30,12 @@ target_sources(libelf.host PRIVATE
+     ../include/gelf.h
+ )
+ set_property(TARGET libelf.host PROPERTY OUTPUT_NAME elf)
+-target_include_directories(libelf.host PRIVATE ../include ../include/sys)
++target_include_directories(libelf.host PRIVATE
++    ../include
++    ../include/sys
++    ../../cctools/include
++    ../../cctools/include/foreign
++)
++target_compile_definitions(libelf.host PRIVATE
++    PUREDARWIN_HOST_CPU_TYPE=CPU_TYPE_X86_64
++)
+diff --git a/tools/dtrace_ctf/libelf/begin.c b/tools/dtrace_ctf/libelf/begin.c
+index 2869dba..9895900 100644
+--- a/tools/dtrace_ctf/libelf/begin.c
++++ b/tools/dtrace_ctf/libelf/begin.c
+@@ -40,21 +40,30 @@
+ 
+ static const char	armag[] = ARMAG;
+ 
++#include <mach-o/loader.h>
++#include <mach-o/fat.h>
++#ifndef PUREDARWIN_HOST_CPU_TYPE
+ #include <crt_externs.h>
+ #include <mach/mach.h>
+-#include <mach-o/loader.h>
+ #include <mach-o/dyld.h>
+-#include <mach-o/fat.h>
+ #include <sys/sysctl.h>
++#endif
+ 
+ static cpu_type_t current_program_arch(void)
+ {
++#ifdef PUREDARWIN_HOST_CPU_TYPE
++        return PUREDARWIN_HOST_CPU_TYPE;
++#else
+         cpu_type_t current_arch = (_NSGetMachExecuteHeader())->cputype;
+         return current_arch;
++#endif
+ }
+ 
+ static cpu_type_t current_kernel_arch(void)
+ {
++#ifdef PUREDARWIN_HOST_CPU_TYPE
++        return PUREDARWIN_HOST_CPU_TYPE;
++#else
+         struct host_basic_info  hi;
+         unsigned int            size;
+         kern_return_t           kret;
+@@ -83,6 +92,7 @@ static cpu_type_t current_kernel_arch(void)
+                 current_arch |= CPU_ARCH_ABI64;
+         }
+         return current_arch;
++#endif
+ }
+ 
+ static Elf *

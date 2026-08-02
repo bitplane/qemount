@@ -1,0 +1,12 @@
+diff --git a/src/Kernel/xnu/CMakeLists.txt b/src/Kernel/xnu/CMakeLists.txt
+index cab7e7e..891b24c 100644
+--- a/src/Kernel/xnu/CMakeLists.txt
++++ b/src/Kernel/xnu/CMakeLists.txt
+@@ -14,6 +14,7 @@ set(xnu_make_environment
+     PUREDARWIN_HOST_CCTOOLS_INCLUDE=${PUREDARWIN_SOURCE_DIR}/tools/cctools/include
+     PUREDARWIN_HOST_LIBMACHO=$<TARGET_FILE:host_libmacho>
+     PUREDARWIN_HOST_LIBSTUFF=$<TARGET_FILE:host_libstuff>
++    HOST_GM4=m4
+ )
+ 
+ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/xnu_header_install)

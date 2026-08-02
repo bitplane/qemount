@@ -1,0 +1,52 @@
+diff --git a/tools/cctools/ld64/src/3rd/helper.c b/tools/cctools/ld64/src/3rd/helper.c
+--- a/tools/cctools/ld64/src/3rd/helper.c
++++ b/tools/cctools/ld64/src/3rd/helper.c
+@@ -50,6 +50,7 @@ void __assert_rtn(const char *func, const char *file, int line, const char *msg)
+ #endif /* __FreeBSD__ */
+ }
+ 
++__attribute__((weak))
+ int _NSGetExecutablePath(char *epath, unsigned int *size)
+ {
+ #if defined(__FreeBSD__) || defined(__DragonFly__)
+@@ -137,11 +138,13 @@ int _dyld_find_unwind_sections(void *i, struct dyld_unwind_sections* sec)
+     return 0;
+ }
+ 
++__attribute__((weak))
+ mach_port_t mach_host_self(void)
+ {
+     return 0;
+ }
+ 
++__attribute__((weak))
+ kern_return_t host_statistics(host_t host_priv, host_flavor_t flavor,
+                               host_info_t host_info_out,
+                               mach_msg_type_number_t *host_info_outCnt)
+@@ -149,6 +152,7 @@ kern_return_t host_statistics(host_t host_priv, host_flavor_t flavor,
+     return ENOTSUP;
+ }
+ 
++__attribute__((weak))
+ uint64_t mach_absolute_time(void)
+ {
+     struct timeval tv;
+@@ -157,6 +161,7 @@ uint64_t mach_absolute_time(void)
+     return (tv.tv_sec*1000000ULL)+tv.tv_usec;
+ }
+ 
++__attribute__((weak))
+ kern_return_t mach_timebase_info(mach_timebase_info_t info)
+ {
+     info->numer = 1000;
+diff --git a/tools/cctools/ld64/src/3rd/strlcpy.c b/tools/cctools/ld64/src/3rd/strlcpy.c
+--- a/tools/cctools/ld64/src/3rd/strlcpy.c
++++ b/tools/cctools/ld64/src/3rd/strlcpy.c
+@@ -25,6 +25,7 @@
+ 
+ #include <string.h>
+ 
++__attribute__((weak))
+ size_t
+ strlcpy(char * restrict dst, const char * restrict src, size_t maxlen) {
+     const size_t srclen = strlen(src);

@@ -1,0 +1,126 @@
+diff --git a/tools/dtrace_ctf/include/llvm-ADT/DenseMapInfo.h b/tools/dtrace_ctf/include/llvm-ADT/DenseMapInfo.h
+index 2ab6f50..edacac0 100644
+--- a/tools/dtrace_ctf/include/llvm-ADT/DenseMapInfo.h
++++ b/tools/dtrace_ctf/include/llvm-ADT/DenseMapInfo.h
+@@ -13,6 +13,7 @@
+ #ifndef LLVM_ADT_DENSEMAPINFO_H
+ #define LLVM_ADT_DENSEMAPINFO_H
+ 
++#include <cstring>
+ #include <memory>
+ 
+ namespace llvm {
+@@ -34,7 +35,16 @@ struct DenseMapInfo<const char *> {
+     return reinterpret_cast<const char *>(-2);
+   }
+   static unsigned getHashValue(const char *s) {
++#ifdef PUREDARWIN_HOST
++    unsigned hash = 2166136261U;
++    while (*s != '\0') {
++      hash ^= static_cast<unsigned char>(*s++);
++      hash *= 16777619U;
++    }
++    return hash;
++#else
+-    return std::__murmur2_or_cityhash<size_t>()(s, strlen(s));
++    return std::__murmur2_or_cityhash<size_t>()(s, std::strlen(s));
++#endif
+   }
+   static bool isEqual(const char *LHS, const char *RHS) {
+     if (LHS == RHS)
+@@ -43,7 +53,7 @@ struct DenseMapInfo<const char *> {
+       return false;
+     if (LHS == getTombstoneKey() || RHS == getTombstoneKey())
+       return false;
+-    return strcmp(LHS, RHS) == 0;
++    return std::strcmp(LHS, RHS) == 0;
+   }
+ };
+ 
+diff --git a/tools/dtrace_ctf/tools/CMakeLists.txt b/tools/dtrace_ctf/tools/CMakeLists.txt
+index f262810..7f14e20 100644
+--- a/tools/dtrace_ctf/tools/CMakeLists.txt
++++ b/tools/dtrace_ctf/tools/CMakeLists.txt
+@@ -94,3 +94,11 @@ target_include_directories(host_ctfmerge PRIVATE ../include ../include/sys ../li
+ target_link_libraries(host_ctfmerge PRIVATE libelf.host libdwarf.host libctf.host ${ZLIB_LIBRARY_RELEASE})
+ set_property(TARGET host_ctfmerge PROPERTY CXX_STANDARD 14)
+ suppress_all_warnings(host_ctfmerge)
++
++if(NOT APPLE)
++    find_package(Threads REQUIRED)
++    foreach(target host_ctfconvert host_ctfdump host_ctfmerge)
++        target_compile_definitions(${target} PRIVATE PUREDARWIN_HOST _GNU_SOURCE)
++        target_link_libraries(${target} PRIVATE Threads::Threads)
++    endforeach()
++endif()
+diff --git a/tools/dtrace_ctf/tools/alist.cpp b/tools/dtrace_ctf/tools/alist.cpp
+index 8cd7efa..399f4a1 100644
+--- a/tools/dtrace_ctf/tools/alist.cpp
++++ b/tools/dtrace_ctf/tools/alist.cpp
+@@ -64,8 +64,9 @@ struct alist : public llvm::DenseMap<void *, void *, alistDenseMapInfo> {
+ 	}
+ 
+ 	void
+-	stats(int verbose __unused)
++	stats(int verbose)
+ 	{
++		(void)verbose;
+ 		printf("Alist statistics\n");
+ 		printf(" Items  : %d\n", size());
+ 	}
+diff --git a/tools/dtrace_ctf/tools/array.c b/tools/dtrace_ctf/tools/array.c
+index 8d7d971..7fd3f1e 100644
+--- a/tools/dtrace_ctf/tools/array.c
++++ b/tools/dtrace_ctf/tools/array.c
+@@ -55,13 +55,25 @@ array_get(const array_t *a, int n)
+ 	return a->a_array[n];
+ }
+ 
++static int
++array_fls(unsigned int value)
++{
++	int bit = 0;
++
++	while (value != 0) {
++		bit++;
++		value >>= 1;
++	}
++	return bit;
++}
++
+ static int
+ array_alloc_size(int n)
+ {
+ 	if (n < 16) {
+ 		return 16;
+ 	}
+-	int inc = 1 << (fls(n) - 2);
++	int inc = 1 << (array_fls(n) - 2);
+ 	int size = inc;
+ 	while (size < n) size += inc;
+ 	return size;
+@@ -176,8 +188,13 @@ array_filter(array_t *a, int (*cb)(void *, void *), void *priv)
+ 	return count - w;
+ }
+ 
++#ifdef PUREDARWIN_HOST
++static int
++array_cmp(const void *e1, const void *e2, void *priv)
++#else
+ static int
+ array_cmp(void *priv, const void *e1, const void *e2)
++#endif
+ {
+ 	int (*fun)(void *, void *) = priv;
+ 	return fun(*(void **)e1, *(void **)e2);
+@@ -189,6 +206,10 @@ array_sort(array_t *a, int (*cmp)(void *, void *))
+ 	int count = array_count(a);
+ 	if (count && !a->a_sorted) {
+ 		a->a_sorted = true;
++#ifdef PUREDARWIN_HOST
++		qsort_r(a->a_array, count, sizeof(void *), array_cmp, cmp);
++#else
+ 		qsort_r(a->a_array, count, sizeof(void *), cmp, array_cmp);
++#endif
+ 	}
+ }

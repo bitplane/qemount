@@ -1,0 +1,13 @@
+diff --git a/cmake/kext.cmake b/cmake/kext.cmake
+index 0b18695..6025722 100644
+--- a/cmake/kext.cmake
++++ b/cmake/kext.cmake
+@@ -12,7 +12,7 @@ function(add_kext_bundle name)
+     set_property(TARGET ${name} PROPERTY SUFFIX "")
+ 
+     target_compile_definitions(${name} PRIVATE TARGET_OS_OSX KERNEL)
+-    target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fapple-kext>)
++    target_compile_options(${name} PRIVATE -mno-red-zone $<$<COMPILE_LANGUAGE:CXX>:-fapple-kext>)
+     target_link_options(${name} PRIVATE "LINKER:-kext")
+     target_link_options(${name} PRIVATE "SHELL:-undefined dynamic_lookup")
+ 

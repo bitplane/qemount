@@ -1,0 +1,48 @@
+diff --git a/tools/dtrace_ctf/libctf/ctf_impl.h b/tools/dtrace_ctf/libctf/ctf_impl.h
+index a273e73..b736d3b 100644
+--- a/tools/dtrace_ctf/libctf/ctf_impl.h
++++ b/tools/dtrace_ctf/libctf/ctf_impl.h
+@@ -51,6 +51,7 @@
+ #else	/* _KERNEL */
+ 
+ #include <strings.h>
++#include <string.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+diff --git a/tools/dtrace_ctf/libctf/CMakeLists.txt b/tools/dtrace_ctf/libctf/CMakeLists.txt
+index 29862f4..fab440e 100644
+--- a/tools/dtrace_ctf/libctf/CMakeLists.txt
++++ b/tools/dtrace_ctf/libctf/CMakeLists.txt
+@@ -17,5 +17,10 @@ target_sources(libctf.host PRIVATE
+ )
+ 
+ set_property(TARGET libctf.host PROPERTY OUTPUT_NAME ctf)
+-target_include_directories(libctf.host PRIVATE ../include ../include/sys)
++target_include_directories(libctf.host PRIVATE
++    ../include
++    ../include/sys
++    ../../cctools/include
++    ../../cctools/include/foreign
++)
+-target_compile_definitions(libctf.host PRIVATE CTF_OLD_VERSIONS)
++target_compile_definitions(libctf.host PRIVATE CTF_OLD_VERSIONS PUREDARWIN_HOST)
+diff --git a/tools/dtrace_ctf/libctf/ctf_lookup.c b/tools/dtrace_ctf/libctf/ctf_lookup.c
+index 8992189..0fa3343 100644
+--- a/tools/dtrace_ctf/libctf/ctf_lookup.c
++++ b/tools/dtrace_ctf/libctf/ctf_lookup.c
+@@ -285,12 +285,12 @@ ctf_func_info(ctf_file_t *fp, unsigned long symidx, ctf_funcinfo_t *fip)
+ 		/*
+ 		 * On Darwin, we do not have symbol type information
+ 		 */
+-#if !defined(__APPLE__)
++#if !defined(__APPLE__) && !defined(PUREDARWIN_HOST)
+ 		if (ELF32_ST_TYPE(symp->st_info) != STT_FUNC)
+ 			return (ctf_set_errno(fp, ECTF_NOTFUNC));
+ #endif
+ 	} else {
+-#if !defined(__APPLE__)
++#if !defined(__APPLE__) && !defined(PUREDARWIN_HOST)
+ 		if (ELF64_ST_TYPE(symp->st_info) != STT_FUNC)
+ 			return (ctf_set_errno(fp, ECTF_NOTFUNC));
+ #endif

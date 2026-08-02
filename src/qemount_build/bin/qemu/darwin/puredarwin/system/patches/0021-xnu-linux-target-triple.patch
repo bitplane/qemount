@@ -1,0 +1,127 @@
+diff --git a/src/Kernel/xnu/cmake/MakeInc.def.in b/src/Kernel/xnu/cmake/MakeInc.def.in
+index 78f038c..efadcd8 100644
+--- a/src/Kernel/xnu/cmake/MakeInc.def.in
++++ b/src/Kernel/xnu/cmake/MakeInc.def.in
+@@ -230,8 +230,16 @@ endef
+ #
+ # Default ARCH_FLAGS, for use with compiler/linker/assembler/mig drivers
+ 
++ifneq ($(PUREDARWIN_TARGET_TRIPLE),)
++ARCH_FLAGS_X86_64	  = -target $(PUREDARWIN_TARGET_TRIPLE)
++ARCH_FLAGS_X86_64H	  = -target $(PUREDARWIN_TARGET_TRIPLE)
++else
+ ARCH_FLAGS_X86_64	  = -arch x86_64
+ ARCH_FLAGS_X86_64H	  = -arch x86_64h
++endif
++
++KEXT_ARCH_FLAGS_X86_64	  = -arch x86_64
++KEXT_ARCH_FLAGS_X86_64H	  = -arch x86_64h
+ 
+ ifneq ($(filter ARM ARM64,$(CURRENT_ARCH_CONFIG)),)
+ 
+diff --git a/cmake/crosscompile.cmake b/cmake/crosscompile.cmake
+--- a/cmake/crosscompile.cmake
++++ b/cmake/crosscompile.cmake
+@@ -1,7 +1,15 @@
++function(target_darwin_platform name)
++    if(PUREDARWIN_TARGET_TRIPLE)
++        target_compile_options(${name} PRIVATE --target=${PUREDARWIN_TARGET_TRIPLE})
++        target_link_options(${name} PRIVATE --target=${PUREDARWIN_TARGET_TRIPLE})
++    endif()
++endfunction()
++
+ function(add_darwin_executable name)
+     cmake_parse_arguments(SL "NO_STANDARD_LIBRARIES;USE_HOST_SDK" "MACOSX_VERSION_MIN" "" ${ARGN})
+ 
+     add_executable(${name})
++    target_darwin_platform(${name})
+     add_dependencies(${name} host_ld)
+     target_compile_definitions(${name} PRIVATE __PUREDARWIN__)
+     target_link_options(${name} PRIVATE -fuse-ld=$<TARGET_FILE:host_ld>)
+@@ -27,6 +35,7 @@ function(add_darwin_static_library name)
+     cmake_parse_arguments(SL "USE_HOST_SDK" "MACOSX_VERSION_MIN" "" ${ARGN})
+ 
+     add_library(${name} STATIC)
++    target_darwin_platform(${name})
+     add_dependencies(${name} host_libtool)
+     target_compile_definitions(${name} PRIVATE __PUREDARWIN__)
+ 
+@@ -52,6 +61,7 @@ function(add_darwin_shared_library name)
+     else()
+         add_library(${name} SHARED)
+     endif()
++    target_darwin_platform(${name})
+ 
+     add_dependencies(${name} host_ld)
+     target_link_options(${name} PRIVATE -fuse-ld=$<TARGET_FILE:host_ld>)
+@@ -101,6 +111,7 @@ function(add_darwin_object_library name)
+     cmake_parse_arguments(SL "USE_HOST_SDK" "MACOSX_VERSION_MIN" "" ${ARGN})
+ 
+     add_library(${name} OBJECT)
++    target_darwin_platform(${name})
+     set_property(TARGET ${name} PROPERTY LINKER_LANGUAGE C)
+     target_compile_definitions(${name} PRIVATE __PUREDARWIN__)
+ 
+diff --git a/src/Kernel/xnu/CMakeLists.txt b/src/Kernel/xnu/CMakeLists.txt
+--- a/src/Kernel/xnu/CMakeLists.txt
++++ b/src/Kernel/xnu/CMakeLists.txt
+@@ -15,6 +15,8 @@ set(xnu_make_environment
+     PUREDARWIN_HOST_LIBMACHO=$<TARGET_FILE:host_libmacho>
+     PUREDARWIN_HOST_LIBSTUFF=$<TARGET_FILE:host_libstuff>
+     HOST_GM4=m4
++    SHELL=/bin/bash
++    PUREDARWIN_TARGET_TRIPLE=${PUREDARWIN_TARGET_TRIPLE}
+ )
+ 
+ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/xnu_header_install)
+diff --git a/src/Kernel/xnu/config/Makefile b/src/Kernel/xnu/config/Makefile
+index 5e583ae..1dc639e 100644
+--- a/src/Kernel/xnu/config/Makefile
++++ b/src/Kernel/xnu/config/Makefile
+@@ -64,7 +64,7 @@ $(OBJPATH)/$(1).symbolset: MY_EXPORTS_ARGS := $$(foreach file,$$($(1)_EXPORTS),-
+ $(OBJPATH)/$(1).symbolset: $$($(1)_EXPORTS) $(OBJPATH)/allsymbols $(KEXT_CREATE_SYMBOL_SET)
+ 	@$$(LOG_SYMBOLSET) "$(ColorF)$(1)$(Color0) ($(ColorLF)$(CURRENT_ARCH_CONFIG_LC)$(Color0))"
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)			\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))	\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))	\
+ 		-import $(OBJPATH)/allsymbols		\
+ 		$$(MY_EXPORTS_ARGS)			\
+ 		-output $$@ $(_vstdout)
+@@ -93,19 +93,20 @@ $(OBJPATH)/allsymbols: $(OBJPATH)/$(KERNEL_FILE_NAME)
+ 
+ check_all_exports: $(OBJPATH)/allsymbols $(KEXT_CREATE_SYMBOL_SET)
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)					\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))			\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))		\
+ 		-import $(OBJPATH)/allsymbols				\
+ 		$(foreach symbolset,$(filter-out Private,$(SYMBOL_COMPONENT_LIST)),	\
+ 			-export $(SOURCE)/$(symbolset).exports		\
+ 			-export $(SOURCE)/$(symbolset).$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports)	\
+-		-output /dev/null $(_vstdout)
++		-output $(OBJPATH)/check_all_exports.tmp $(_vstdout)
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)					\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))			\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))		\
+ 		-import $(OBJPATH)/allsymbols				\
+ 		$(foreach symbolset,$(filter-out Unsupported,$(SYMBOL_COMPONENT_LIST)),	\
+ 			-export $(SOURCE)/$(symbolset).exports		\
+ 			-export $(SOURCE)/$(symbolset).$(EXPORT_SOURCE_ARCH_CONFIG_LC).exports)	\
+-		-output /dev/null $(_vstdout)
++		-output $(OBJPATH)/check_all_exports.tmp $(_vstdout)
++	$(_v)$(RM) $(OBJPATH)/check_all_exports.tmp
+ 
+ $(OBJPATH)/$(MD_SUPPORTED_KPI_FILENAME): $(EXPORTS_FILES)
+ 	@$(LOG_SUPPORTED_KPI) "$(CURRENT_ARCH_CONFIG_LC)"
+diff --git a/src/Kernel/xnu/san/Makefile b/src/Kernel/xnu/san/Makefile
+index 44c8554..1fcf884 100644
+--- a/src/Kernel/xnu/san/Makefile
++++ b/src/Kernel/xnu/san/Makefile
+@@ -63,7 +63,7 @@ ifneq ($(RC_ProjectName),xnu_libraries)
+ $(OBJPATH)/%.symbolset: $(SOURCE)/%.exports
+ 	@$(LOG_SYMBOLSET) "$*$(Color0) ($(ColorLF)$(CURRENT_ARCH_CONFIG_LC)$(Color0))"
+ 	$(_v)$(KEXT_CREATE_SYMBOL_SET)			\
+-		$(ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))	\
++		$(KEXT_ARCH_FLAGS_$(CURRENT_ARCH_CONFIG))	\
+ 		-import $(OBJPATH)/allsymbols		\
+ 		-export $<		                \
+ 		-output $@ $(_vstdout)

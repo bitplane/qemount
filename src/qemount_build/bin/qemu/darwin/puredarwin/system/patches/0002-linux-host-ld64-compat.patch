@@ -1,0 +1,165 @@
+diff --git a/tools/cctools/ld64/src/ld/InputFiles.h b/tools/cctools/ld64/src/ld/InputFiles.h
+index 0be005a..ef40faa 100644
+--- a/tools/cctools/ld64/src/ld/InputFiles.h
++++ b/tools/cctools/ld64/src/ld/InputFiles.h
+@@ -31,7 +31,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/Options.cpp b/tools/cctools/ld64/src/ld/Options.cpp
+index 97898b2..b9da830 100644
+--- a/tools/cctools/ld64/src/ld/Options.cpp
++++ b/tools/cctools/ld64/src/ld/Options.cpp
+@@ -1374,7 +1374,7 @@ std::vector<const char*> Options::exportsData() const
+ std::vector<const char*> Options::SetWithWildcards::data() const
+ {
+ 	std::vector<const char*> data;
+-	for (NameSet::iterator it=regularBegin(); it != regularEnd(); ++it) {
++	for (NameSet::const_iterator it=regularBegin(); it != regularEnd(); ++it) {
+ 		data.push_back(*it);
+ 	}
+ 	for (std::vector<const char*>::const_iterator it=fWildCard.begin(); it != fWildCard.end(); ++it) {
+@@ -5570,6 +5570,7 @@ void Options::reconfigureDefaults()
+ 				fPlatforms.updateSDKVersion(ld::Platform::macOS, (0x000A0000 + (minor << 8)));
+ 			}
+ #else
++			) {
+ 			fPlatforms.updateSDKVersion(ld::Platform::macOS, parseVersionNumber32("10.6")); // ld64-port: claim we are on 10.6
+ #endif
+ 		}
+@@ -6057,7 +6058,7 @@ void Options::checkIllegalOptionCombinations()
+ 
+ 	// make sure all required exported symbols exist
+ 	std::vector<const char*> impliedExports;
+-	for (NameSet::iterator it=fExportSymbols.regularBegin(); it != fExportSymbols.regularEnd(); ++it) {
++	for (NameSet::const_iterator it=fExportSymbols.regularBegin(); it != fExportSymbols.regularEnd(); ++it) {
+ 		const char* name = *it;
+ 		const int len = strlen(name);
+ 		if ( (strcmp(&name[len-3], ".eh") == 0) || (strncmp(name, ".objc_category_name_", 20) == 0) ) {
+@@ -6089,7 +6090,7 @@ void Options::checkIllegalOptionCombinations()
+ 	}
+ 
+ 	// make sure all required re-exported symbols exist
+-	for (NameSet::iterator it=fReExportSymbols.regularBegin(); it != fReExportSymbols.regularEnd(); ++it) {
++	for (NameSet::const_iterator it=fReExportSymbols.regularBegin(); it != fReExportSymbols.regularEnd(); ++it) {
+ 		fInitialUndefines.push_back(*it);
+ 	}
+ 	
+diff --git a/tools/cctools/ld64/src/ld/LinkEdit.hpp b/tools/cctools/ld64/src/ld/LinkEdit.hpp
+index 38bca8b..8b9b89c 100644
+--- a/tools/cctools/ld64/src/ld/LinkEdit.hpp
++++ b/tools/cctools/ld64/src/ld/LinkEdit.hpp
+@@ -31,7 +31,9 @@
+ #include <limits.h>
+ #include <unistd.h>
+ #include <CommonCrypto/CommonDigest.h>
++#ifdef __APPLE__
+ #include <CommonCrypto/CommonDigestSPI.h>
++#endif
+ 
+ #include <vector>
+ #include <unordered_map>
+diff --git a/tools/cctools/ld64/src/ld/Options.h b/tools/cctools/ld64/src/ld/Options.h
+index 9d69791..0bf074d 100644
+--- a/tools/cctools/ld64/src/ld/Options.h
++++ b/tools/cctools/ld64/src/ld/Options.h
+@@ -568,8 +568,8 @@ private:
+ 		bool					containsNonWildcard(const char*) const;
+ 		bool					empty() const			{ return fRegular.empty() && fWildCard.empty(); }
+ 		bool					hasWildCards() const	{ return !fWildCard.empty(); }
+-		NameSet::iterator		regularBegin() const	{ return fRegular.begin(); }
+-		NameSet::iterator		regularEnd() const		{ return fRegular.end(); }
++		NameSet::const_iterator	regularBegin() const	{ return fRegular.begin(); }
++		NameSet::const_iterator	regularEnd() const		{ return fRegular.end(); }
+ 		void					remove(const NameSet&); 
+ 		std::vector<const char*>		data() const;
+ 	private:
+diff --git a/tools/cctools/ld64/src/ld/OutputFile.h b/tools/cctools/ld64/src/ld/OutputFile.h
+index 7eff2c6..71a0d4c 100644
+--- a/tools/cctools/ld64/src/ld/OutputFile.h
++++ b/tools/cctools/ld64/src/ld/OutputFile.h
+@@ -29,7 +29,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/Resolver.cpp b/tools/cctools/ld64/src/ld/Resolver.cpp
+index 8b165f1..2c81673 100644
+--- a/tools/cctools/ld64/src/ld/Resolver.cpp
++++ b/tools/cctools/ld64/src/ld/Resolver.cpp
+@@ -27,7 +27,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/Resolver.h b/tools/cctools/ld64/src/ld/Resolver.h
+index ae4abe4..9e54d3b 100644
+--- a/tools/cctools/ld64/src/ld/Resolver.h
++++ b/tools/cctools/ld64/src/ld/Resolver.h
+@@ -29,7 +29,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/ResponseFiles.cpp b/tools/cctools/ld64/src/ld/ResponseFiles.cpp
+index 1465435..860bb9e 100644
+--- a/tools/cctools/ld64/src/ld/ResponseFiles.cpp
++++ b/tools/cctools/ld64/src/ld/ResponseFiles.cpp
+@@ -32,6 +32,8 @@ extern void warning(const char* format, ...) __attribute__((format(printf, 1, 2)
+ #include <sys/stat.h>
+ #include <unistd.h>
+ 
++#include <stuff/port.h>
++
+ enum expand_result {
+   EXPAND_ERROR = -1,
+   EXPAND_COMPLETE = 0,
+diff --git a/tools/cctools/ld64/src/ld/SymbolTable.cpp b/tools/cctools/ld64/src/ld/SymbolTable.cpp
+index 0174b8f..387077a 100644
+--- a/tools/cctools/ld64/src/ld/SymbolTable.cpp
++++ b/tools/cctools/ld64/src/ld/SymbolTable.cpp
+@@ -27,7 +27,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>
+diff --git a/tools/cctools/ld64/src/ld/SymbolTable.h b/tools/cctools/ld64/src/ld/SymbolTable.h
+index 84ec132..e3d3bb0 100644
+--- a/tools/cctools/ld64/src/ld/SymbolTable.h
++++ b/tools/cctools/ld64/src/ld/SymbolTable.h
+@@ -29,7 +29,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/mman.h>
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
++#endif
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <limits.h>

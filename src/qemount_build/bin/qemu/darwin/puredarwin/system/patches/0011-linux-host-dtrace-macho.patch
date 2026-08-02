@@ -1,0 +1,129 @@
+diff --git a/tools/dtrace_ctf/tools/CMakeLists.txt b/tools/dtrace_ctf/tools/CMakeLists.txt
+index 7f14e20..53a6fea 100644
+--- a/tools/dtrace_ctf/tools/CMakeLists.txt
++++ b/tools/dtrace_ctf/tools/CMakeLists.txt
+@@ -27,7 +27,8 @@ target_sources(host_ctfconvert PRIVATE
+ )
+ 
+ set_property(TARGET host_ctfconvert PROPERTY OUTPUT_NAME "ctfconvert")
+-target_include_directories(host_ctfconvert PRIVATE ../include ../include/sys ../libelf)
++target_include_directories(host_ctfconvert PRIVATE ../include ../include/sys ../libelf
++    ../../cctools/include ../../cctools/include/foreign)
+ target_link_libraries(host_ctfconvert PRIVATE libelf.host libdwarf.host libctf.host ${ZLIB_LIBRARY_RELEASE})
+ set_property(TARGET host_ctfconvert PROPERTY CXX_STANDARD 14)
+ suppress_all_warnings(host_ctfconvert)
+@@ -57,7 +58,8 @@ target_sources(host_ctfdump PRIVATE
+ )
+ 
+ set_property(TARGET host_ctfdump PROPERTY OUTPUT_NAME "ctfdump")
+-target_include_directories(host_ctfdump PRIVATE ../include ../include/sys ../libelf)
++target_include_directories(host_ctfdump PRIVATE ../include ../include/sys ../libelf
++    ../../cctools/include ../../cctools/include/foreign)
+ target_link_libraries(host_ctfdump PRIVATE libelf.host libctf.host ${ZLIB_LIBRARY_RELEASE})
+ set_property(TARGET host_ctfdump PROPERTY CXX_STANDARD 14)
+ suppress_all_warnings(host_ctfdump)
+@@ -90,7 +92,8 @@ target_sources(host_ctfmerge PRIVATE
+ )
+ 
+ set_property(TARGET host_ctfmerge PROPERTY OUTPUT_NAME ctfmerge)
+-target_include_directories(host_ctfmerge PRIVATE ../include ../include/sys ../libelf)
++target_include_directories(host_ctfmerge PRIVATE ../include ../include/sys ../libelf
++    ../../cctools/include ../../cctools/include/foreign)
+ target_link_libraries(host_ctfmerge PRIVATE libelf.host libdwarf.host libctf.host ${ZLIB_LIBRARY_RELEASE})
+ set_property(TARGET host_ctfmerge PROPERTY CXX_STANDARD 14)
+ suppress_all_warnings(host_ctfmerge)
+diff --git a/tools/dtrace_ctf/tools/ctf.c b/tools/dtrace_ctf/tools/ctf.c
+index af72898..0105b6e 100644
+--- a/tools/dtrace_ctf/tools/ctf.c
++++ b/tools/dtrace_ctf/tools/ctf.c
+@@ -41,7 +41,7 @@
+ #include "strtab.h"
+ #include "memory.h"
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ #include <libkern/OSByteOrder.h>
+ #define SWAP16(v)		v = OSSwapInt16(v)
+ #define SWAP32(v)		v = OSSwapInt32(v)
+diff --git a/tools/dtrace_ctf/tools/dwarf.c b/tools/dtrace_ctf/tools/dwarf.c
+index 2070d72..a309917 100644
+--- a/tools/dtrace_ctf/tools/dwarf.c
++++ b/tools/dtrace_ctf/tools/dwarf.c
+@@ -533,7 +533,7 @@ die_isdecl(dwarf_t *dw, Dwarf_Die die)
+ 	return (die_bool(dw, die, DW_AT_declaration, &val, 0) && val);
+ }
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ static atom_t *
+ die_linkage_name(dwarf_t *dw, Dwarf_Die die)
+ {
+@@ -1234,7 +1234,7 @@ die_sou_resolve(tdesc_t *tdp, tdesc_t **tdpp, void *private)
+ 
+ 	for (ml = tdp->t_members; ml != NULL; ml = ml->ml_next) {
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ 		// Check for NULL mt before the size check.
+ 		// Seeing lots of crashes due to mt being NULL in
+ 		// the code below.
+@@ -1262,7 +1262,7 @@ die_sou_resolve(tdesc_t *tdp, tdesc_t **tdpp, void *private)
+ 			return (1);
+ 		}
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ #else
+ 		if ((mt = tdesc_basetype(ml->ml_type)) == NULL) {
+ 			dw->dw_nunres++;
+@@ -1744,7 +1744,7 @@ die_function_create(dwarf_t *dw, Dwarf_Die die, Dwarf_Off off, tdesc_t *tdp)
+ 		}
+ 	}
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ 	if (die_isdecl(dw, die)) {
+ 		return; /* Prototype. */
+ 	}
+@@ -1795,12 +1795,12 @@ die_function_create(dwarf_t *dw, Dwarf_Die die, Dwarf_Off off, tdesc_t *tdp)
+ 
+ 		if (die_tag(dw, arg) != DW_TAG_formal_parameter)
+ 			continue;
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ 		if (die_attr(dw, die, DW_AT_type, 0) == NULL)
+ 			continue; /* C++ "this" and "meta" can land here. */
+ #endif /* __APPLE__ */
+ 
+-#if !defined(__APPLE__)
++#if !defined(__APPLE__) && !defined(PUREDARWIN_HOST)
+ 		if ((tmp = die_name(dw, arg)) == ATOM_NULL) {
+ 			terminate("die %llu: func arg %d has no name\n",
+ 			    off, ii->ii_nargs + 1);
+@@ -1836,7 +1836,7 @@ die_function_create(dwarf_t *dw, Dwarf_Die die, Dwarf_Off off, tdesc_t *tdp)
+ 		    arg = die_sibling(dw, arg)) {
+ 			if (die_tag(dw, arg) != DW_TAG_formal_parameter)
+ 				continue;
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ 			if (die_attr(dw, die, DW_AT_type, 0) == NULL)
+ 				continue; /* C++ "this" and "meta" can land here. */
+ #endif /* __APPLE__ */
+@@ -1847,7 +1847,7 @@ die_function_create(dwarf_t *dw, Dwarf_Die die, Dwarf_Off off, tdesc_t *tdp)
+ 
+ 	iidesc_add(dw->dw_td->td_iihash, ii);
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ 	if (spec_die)
+ 		dwarf_dealloc(dw->dw_dw, spec_die, DW_DLA_DIE);
+ #endif /* __APPLE__ */
+@@ -1981,7 +1981,7 @@ die_create_one(dwarf_t *dw, Dwarf_Die die)
+ 	if (tdp != NULL)
+ 		tdp->t_name = die_name(dw, die);
+ 
+-#if defined(__APPLE__)
++#if defined(__APPLE__) || defined(PUREDARWIN_HOST)
+ #warning BOGUS workaround (nameless base die emitted by gcc)!
+ 	/* gcc 5402 emits nameless die that are base types. Workaround imminent failure. */
+ 	if (tdp != NULL && ATOM_NULL == tdp->t_name && dc->dc_create == die_base_create)
