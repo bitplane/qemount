@@ -1,7 +1,8 @@
 ---
 format: arc/freearc
 requires:
-  - docker:builder/disk/debian
+  - docker:builder/compiler/freearc
+  - bin/${HOST_ARCH}-linux-gnu/freearc
   - data/templates/basic.tar
 provides:
   - data/arc/basic.freearc
@@ -9,5 +10,4 @@ provides:
 
 # FreeArc Test Archive
 
-Test archive in FreeArc format. Uses the original i386 Linux binary from
-SourceForge (FreeArc 0.51) running under 32-bit compat libs.
+Test archive in FreeArc format, created by a native build of FreeArc 0.51.

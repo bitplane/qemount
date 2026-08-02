@@ -1,0 +1,319 @@
+diff --git a/Compression/CompressionLib.hs b/Compression/CompressionLib.hs
+--- a/Compression/CompressionLib.hs
++++ b/Compression/CompressionLib.hs
+@@ -130 +130 @@
+-    action c_callback c_callback
++    fromIntegral <$> action c_callback c_callback
+@@ -191 +191 @@
+-foreign import ccall threadsafe  "Compression.h Compress"
++foreign import ccall safe  "Compression.h Compress"
+@@ -192 +192 @@
+-   c_compress             :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO Int
++   c_compress             :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO CInt
+@@ -195 +195 @@
+-foreign import ccall threadsafe  "Compression.h Decompress"
++foreign import ccall safe  "Compression.h Decompress"
+@@ -196 +196 @@
+-   c_decompress           :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO Int
++   c_decompress           :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO CInt
+@@ -199 +199 @@
+-foreign import ccall threadsafe  "Compression.h CompressWithHeader"
++foreign import ccall safe  "Compression.h CompressWithHeader"
+@@ -200 +200 @@
+-   c_CompressWithHeader   :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO Int
++   c_CompressWithHeader   :: CMethod -> FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO CInt
+@@ -203 +203 @@
+-foreign import ccall threadsafe  "Compression.h DecompressWithHeader"
++foreign import ccall safe  "Compression.h DecompressWithHeader"
+@@ -204 +204 @@
+-   c_DecompressWithHeader ::            FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO Int
++   c_DecompressWithHeader ::            FunPtr CALLBACK_FUNC -> FunPtr CALLBACK_FUNC -> IO CInt
+@@ -212 +212 @@
+-foreign import ccall threadsafe  "Compression.h CompressMem"
++foreign import ccall safe  "Compression.h CompressMem"
+@@ -216 +216 @@
+-foreign import ccall threadsafe  "Compression.h DecompressMem"
++foreign import ccall safe  "Compression.h DecompressMem"
+@@ -220 +220 @@
+-foreign import ccall threadsafe  "Compression.h CompressMemWithHeader"
++foreign import ccall safe  "Compression.h CompressMemWithHeader"
+@@ -224 +224 @@
+-foreign import ccall threadsafe  "Compression.h DecompressMemWithHeader"
++foreign import ccall safe  "Compression.h DecompressMemWithHeader"
+@@ -281 +281 @@
+-foreign import ccall threadsafe  "PPMD/C_PPMD.h ppmd_compress"
++foreign import ccall safe  "PPMD/C_PPMD.h ppmd_compress"
+@@ -285 +285 @@
+-foreign import ccall threadsafe  "PPMD/C_PPMD.h ppmd_decompress"
++foreign import ccall safe  "PPMD/C_PPMD.h ppmd_decompress"
+@@ -289 +289 @@
+-foreign import ccall threadsafe  "LZP/C_LZP.h lzp_compress"
++foreign import ccall safe  "LZP/C_LZP.h lzp_compress"
+@@ -293 +293 @@
+-foreign import ccall threadsafe  "LZP/C_LZP.h lzp_decompress"
++foreign import ccall safe  "LZP/C_LZP.h lzp_decompress"
+@@ -297 +297 @@
+-foreign import ccall threadsafe  "LZMA/C_LZMA.h lzma_compress"
++foreign import ccall safe  "LZMA/C_LZMA.h lzma_compress"
+@@ -301 +301 @@
+-foreign import ccall threadsafe  "LZMA/C_LZMA.h lzma_decompress"
++foreign import ccall safe  "LZMA/C_LZMA.h lzma_decompress"
+@@ -305 +305 @@
+-foreign import ccall threadsafe  "GRZip/C_GRZip.h grzip_compress"
++foreign import ccall safe  "GRZip/C_GRZip.h grzip_compress"
+@@ -309 +309 @@
+-foreign import ccall threadsafe  "GRZip/C_GRZip.h grzip_decompress"
++foreign import ccall safe  "GRZip/C_GRZip.h grzip_decompress"
+@@ -323 +323 @@
+-foreign import ccall threadsafe "wrapper"
++foreign import ccall safe "wrapper"
+diff --git a/Compression/Tornado/EntropyCoder.cpp b/Compression/Tornado/EntropyCoder.cpp
+--- a/Compression/Tornado/EntropyCoder.cpp
++++ b/Compression/Tornado/EntropyCoder.cpp
+@@ -608 +608 @@
+-    TCounter (unsigned _n);
++    TCounter (unsigned _n = NUM);
+@@ -636 +636 @@
+-TCounter<type> :: TCounter (unsigned _n = NUM)
++TCounter<type> :: TCounter (unsigned _n)
+diff --git a/Process.hs b/Process.hs
+--- a/Process.hs
++++ b/Process.hs
+@@ -94 +94 @@
+-                            `catch` (\e -> do killThread parent_id; throwIO e)
++                            `catch` (\(e :: SomeException) -> do killThread parent_id; throwIO e)
+diff --git a/UTF8Z.hs b/UTF8Z.hs
+--- a/UTF8Z.hs
++++ b/UTF8Z.hs
+@@ -22,5 +22,5 @@ import Data.Char
+ import Data.Word
+ import GHC.Exts
+-import GHC.IOBase
++import GHC.IO
+ import GHC.Word
+ import Foreign.C.Types
+@@ -132,3 +132,3 @@
+-      | ch `eqChar#` '\x00'# =  e
+-      | ch `leChar#` '\x7F'# =  ch `f` unpack (nh +# 1#)
+-      | ch `leChar#` '\xDF'# =
++      | isTrue# (ch `eqChar#` '\x00'#) =  e
++      | isTrue# (ch `leChar#` '\x7F'#) =  ch `f` unpack (nh +# 1#)
++      | isTrue# (ch `leChar#` '\xDF'#) =
+@@ -138 +138 @@
+-      | ch `leChar#` '\xEF'# =
++      | isTrue# (ch `leChar#` '\xEF'#) =
+@@ -157,3 +157,3 @@
+-      | nh ==# count  = e
+-      | ch `leChar#` '\x7F'# = let n = (f e ch) in n `seq` unpack (nh +# 1#) n
+-      | ch `leChar#` '\xDF'# =
++      | isTrue# (nh ==# count) = e
++      | isTrue# (ch `leChar#` '\x7F'#) = let n = (f e ch) in n `seq` unpack (nh +# 1#) n
++      | isTrue# (ch `leChar#` '\xDF'#) =
+@@ -162 +162 @@
+-      | ch `leChar#` '\xEF'# =
++      | isTrue# (ch `leChar#` '\xEF'#) =
+diff --git a/Utils.hs b/Utils.hs
+--- a/Utils.hs
++++ b/Utils.hs
+@@ -18 +18 @@
+-import Data.List
++import Data.List hiding (sortOn)
+@@ -204 +204 @@
+-  x <- try acquire
++  x <- tryAny acquire
+@@ -208,0 +209,3 @@
++tryAny :: IO a -> IO (Either SomeException a)
++tryAny = try
++
+@@ -223 +226 @@
+-ignoreErrors  =  handle doNothing
++ignoreErrors  =  handle (\(_ :: SomeException) -> return ())
+@@ -460 +463,2 @@
++contains :: Eq a => [a] -> a -> Bool
+ contains = flip elem
+diff --git a/Files.hs b/Files.hs
+--- a/Files.hs
++++ b/Files.hs
+@@ -31 +31 @@
+-import System.Posix.Internals
++import System.Posix.Internals hiding (CFilePath)
+diff --git a/Charsets.hs b/Charsets.hs
+--- a/Charsets.hs
++++ b/Charsets.hs
+@@ -157 +157 @@
+-modifyConfigFile file f = handle (\e->return []) (readConfigFile file) >>== f >>= saveConfigFile file
++modifyConfigFile file f = handle (\(_ :: SomeException)->return []) (readConfigFile file) >>== f >>= saveConfigFile file
+@@ -394 +394 @@
+-  localeInfo <- readConfigFile localeFile `catch` \e -> return ["0000=English"]
++  localeInfo <- readConfigFile localeFile `catch` \(_ :: SomeException) -> return ["0000=English"]
+diff --git a/Errors.hs b/Errors.hs
+--- a/Errors.hs
++++ b/Errors.hs
+@@ -138 +138 @@
+-  handle (\e -> do onException; throwIO e) $ do
++  handle (\(e :: SomeException) -> do onException; throwIO e) $ do
+@@ -442,3 +442,3 @@
+-tryOpen filename = catchJust ioErrors
++tryOpen filename = catch
+                      (fileOpen filename >>== Just)
+-                     (\e -> do registerWarning$ CANT_OPEN_FILE filename; return Nothing)
++                     (\(_ :: IOException) -> do registerWarning$ CANT_OPEN_FILE filename; return Nothing)
+diff --git a/FileInfo.hs b/FileInfo.hs
+--- a/FileInfo.hs
++++ b/FileInfo.hs
+@@ -208 +208,2 @@
+-    \e -> do registerWarning$ CANT_GET_FILEINFO filename
++    \(_ :: SomeException) -> do
++      registerWarning (CANT_GET_FILEINFO filename);
+@@ -274 +275 @@
+-  handleJust ioErrors $ \e -> do
++  handle $ \(_ :: IOException) -> do
+diff --git a/ByteStream.hs b/ByteStream.hs
+--- a/ByteStream.hs
++++ b/ByteStream.hs
+@@ -297,2 +296,0 @@
+-  {-# NOINLINE read #-}
+-  {-# NOINLINE write #-}
+diff --git a/Compression.hs b/Compression.hs
+--- a/Compression.hs
++++ b/Compression.hs
+@@ -39 +39 @@
+-isFakeMethod             =  any_function [==aFAKE_COMPRESSION, ==aCRC_ONLY_COMPRESSION] . method_name
++isFakeMethod             =  any_function [(==aFAKE_COMPRESSION), (==aCRC_ONLY_COMPRESSION)] . method_name
+@@ -57 +57 @@
+-isFastDecMethod          =  not . any_function [=="ppmd", =="ppmm", =="pmm", isEXTERNAL_Method] . method_name
++isFastDecMethod          =  not . any_function [(=="ppmd"), (=="ppmm"), (=="pmm"), isEXTERNAL_Method] . method_name
+@@ -384 +384 @@
+-    x : xs@ (('$':_):_) ->  ("",x) : map (split2 '=') xs   -- m1/$type=m2...
++    x : xs@(('$':_):_) ->  ("",x) : map (split2 '=') xs   -- m1/$type=m2...
+diff --git a/Cmdline.hs b/Cmdline.hs
+--- a/Cmdline.hs
++++ b/Cmdline.hs
+@@ -56 +56 @@
+-                         | otherwise  -> getEnv aCONFIG_ENV_VAR  `catch`  (\e -> return "")
++                         | otherwise  -> getEnv aCONFIG_ENV_VAR  `catch`  (\(_ :: IOException) -> return "")
+@@ -457 +457 @@
+-      size_filter op option = [`op` parseSize option]
++      size_filter op option = [(`op` parseSize option)]
+@@ -461 +461 @@
+-      time_filter op time = [`op` (time.$makeCalendarTime.$toClockTime.$convert_ClockTime_to_CTime)]
++      time_filter op time = [(`op` (time.$makeCalendarTime.$toClockTime.$convert_ClockTime_to_CTime))]
+@@ -483 +483 @@
+-      oldness_filter op time = [`op` (time.$calcDiff.$(`addToClockTime` current_time).$convert_ClockTime_to_CTime)]
++      oldness_filter op time = [(`op` (time.$calcDiff.$(`addToClockTime` current_time).$convert_ClockTime_to_CTime))]
+@@ -547 +547 @@
+-  mvar_unpack_passwords  <-  newMVar$ deleteIfs [=="",=="?",=="-",=="--"]$ op_opt ++ findReqList o "OldPassword" ++ findReqList o "password" ++ findReqList o "HeadersPassword"
++  mvar_unpack_passwords  <-  newMVar$ deleteIfs [(==""),(=="?"),(=="-"),(=="--")]$ op_opt ++ findReqList o "OldPassword" ++ findReqList o "password" ++ findReqList o "HeadersPassword"
+@@ -621 +621 @@
+-                 .$anyf [==aNO_COMPRESSION, isFakeCompressor, isVeryFastCompressor]
++                 .$anyf [(==aNO_COMPRESSION), isFakeCompressor, isVeryFastCompressor]
+@@ -766 +766 @@
+-            split xs       = spanBreak (anyf [isDigit, =='e']) xs
++            split xs       = spanBreak (anyf [isDigit, (=='e')]) xs
+diff --git a/Options.hs b/Options.hs
+--- a/Options.hs
++++ b/Options.hs
+@@ -17 +17 @@
+-import Data.List
++import Data.List hiding (sortOn)
+diff --git a/ArhiveFileList.hs b/ArhiveFileList.hs
+--- a/ArhiveFileList.hs
++++ b/ArhiveFileList.hs
+@@ -13 +13 @@
+-import Data.List
++import Data.List hiding (sortOn)
+diff --git a/FileManPanel.hs b/FileManPanel.hs
+--- a/FileManPanel.hs
++++ b/FileManPanel.hs
+@@ -12 +12 @@
+-import Data.List
++import Data.List hiding (sortOn)
+diff --git a/UIBase.hs b/UIBase.hs
+--- a/UIBase.hs
++++ b/UIBase.hs
+@@ -18,0 +19 @@
++import System.IO.Unsafe (unsafePerformIO)
+@@ -85,0 +87 @@
++aProgressIndicatorState :: IORef (Indicator, IndicatorType, FilePath, String, FileSize, FileSize -> IO FileSize, IO FileSize)
+diff --git a/UI.hs b/UI.hs
+--- a/UI.hs
++++ b/UI.hs
+@@ -60 +60 @@
+-uiStartArchive command @ Command {
++uiStartArchive command@Command {
+@@ -265 +265 @@
+-  ui_state @ UI_State { total_files   = total_files
++  ui_state@UI_State { total_files   = total_files
+@@ -371 +371 @@
+-    ui_state @ UI_State {rw_ops=rw_ops0}  <-  val ref_ui_state
++    ui_state@UI_State {rw_ops=rw_ops0}  <-  val ref_ui_state
+@@ -383 +383 @@
+-    modifyIORef ref_ui_state $ \ui_state @ UI_State {rw_ops=rw_ops} ->
++    modifyIORef ref_ui_state $ \ui_state@UI_State {rw_ops=rw_ops} ->
+@@ -390 +390 @@
+-      ui_state @ UI_State {r_bytes=r_bytes0, rnum_bytes=rnum_bytes0, rw_ops=rw_ops0}  <-  val ref_ui_state
++      ui_state@UI_State {r_bytes=r_bytes0, rnum_bytes=rnum_bytes0, rw_ops=rw_ops0}  <-  val ref_ui_state
+diff --git a/ArcExtract.hs b/ArcExtract.hs
+--- a/ArcExtract.hs
++++ b/ArcExtract.hs
+@@ -192 +192 @@
+-archiveList command @ Command{ cmd_name = cmd, cmd_arcname = arcname }
++archiveList command@Command{ cmd_name = cmd, cmd_arcname = arcname }
+@@ -194 +194 @@
+-            arc @ ArchiveInfo{ arcDirectory = directory } = do
++            arc@ArchiveInfo{ arcDirectory = directory } = do
+diff --git a/ArhiveStructure.hs b/ArhiveStructure.hs
+--- a/ArhiveStructure.hs
++++ b/ArhiveStructure.hs
+@@ -237 +237 @@
+-archiveReadFooterBlock footer @ ArchiveBlock {
++archiveReadFooterBlock footer@ArchiveBlock {
+@@ -338 +338 @@
+-                    block @ ArchiveBlock {
++                    block@ArchiveBlock {
+diff --git a/ArhiveFileList.hs b/ArhiveFileList.hs
+--- a/ArhiveFileList.hs
++++ b/ArhiveFileList.hs
+@@ -415 +415 @@
+-isWholeSolidBlock files @ (CompressedFile {cfArcBlock=solidBlock, cfPos=pos}:_) =
++isWholeSolidBlock files@(CompressedFile {cfArcBlock=solidBlock, cfPos=pos}:_) =
+diff --git a/ArcCreate.hs b/ArcCreate.hs
+--- a/ArcCreate.hs
++++ b/ArcCreate.hs
+@@ -205 +205,2 @@
+-                                 `catch` (\_-> do condPrintLineLn "n"$ "Copying temporary archive "++tempname++" to "++filename
++                                 `catch` (\(_ :: SomeException) -> do
++                                                  condPrintLineLn "n"$ "Copying temporary archive "++tempname++" to "++filename
+@@ -313 +313 @@
+-                          `catch` (\e -> registerError$ GENERAL_ERROR ["0315 can't open SFX module %1", sfxname]))
++                          `catch` (\(_ :: SomeException) -> registerError$ GENERAL_ERROR ["0315 can't open SFX module %1", sfxname]))
+diff --git a/Arc.hs b/Arc.hs
+--- a/Arc.hs
++++ b/Arc.hs
+@@ -36,0 +37 @@
++import GHC.Conc (setUncaughtExceptionHandler)
+@@ -86,4 +87,5 @@
+-      case ex of
+-        Deadlock    -> ["0011 No threads to run: infinite loop or deadlock?"]
+-        ErrorCall s -> [s]
+-        other       -> [show ex]
++      case (fromException ex :: Maybe Deadlock) of
++        Just Deadlock -> ["0011 No threads to run: infinite loop or deadlock?"]
++        Nothing -> case (fromException ex :: Maybe ErrorCall) of
++          Just (ErrorCall s) -> [s]
++          Nothing            -> [show ex]
+@@ -93 +95 @@
+-run command @ Command
++run command@Command
+@@ -130 +132 @@
+-              command @ Command {cmd_arcspec = arcspec} = do
++              command@Command {cmd_arcspec = arcspec} = do
+@@ -165 +167 @@
+-run_join cmd @ Command { cmd_filespecs = filespecs
++run_join cmd@Command { cmd_filespecs = filespecs
+diff --git a/ArcRecover.hs b/ArcRecover.hs
+--- a/ArcRecover.hs
++++ b/ArcRecover.hs
+@@ -382 +382 @@
+-          eitherM_ (try$ valJIT original')
++          eitherM_ (try (valJIT original') :: IO (Either SomeException File))
