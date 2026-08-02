@@ -356,17 +356,63 @@ def resolve_output(path: str, output: str, catalogue: dict, context: dict) -> di
 
 def build_provides_index(catalogue: dict, context: dict) -> dict:
     """
-    Build index mapping outputs to the paths that provide them.
+    Build the available output-to-provider index for this context.
 
     Returns dict: {output: catalogue_path}
     """
+    outputs = build_output_index(catalogue, context)
+    return {
+        output: record["provider"]
+        for output, record in outputs.items()
+        if record["buildable"]
+    }
+
+
+def build_output_index(catalogue: dict, context: dict) -> dict:
+    """Describe every output and whether it is buildable in this context."""
     index = {}
+    host_arch = context.get("HOST_ARCH")
+
     for path in catalogue["paths"]:
         meta = resolve_path(path, catalogue, context)
+        build_hosts = meta.get("build_hosts", {})
+        buildable = not build_hosts or host_arch in build_hosts
+        reason = None
+        if not buildable:
+            supported = ", ".join(build_hosts)
+            reason = f"host architecture {host_arch} is not in build_hosts ({supported})"
+
         for output in meta.get("provides", {}):
             if output in index:
-                raise ValueError(f"Duplicate provider for {output}: {index[output]} and {path}")
-            index[output] = path
+                raise ValueError(
+                    f"Duplicate provider for {output}: "
+                    f"{index[output]['provider']} and {path}"
+                )
+            index[output] = {
+                "provider": path,
+                "buildable": buildable,
+                "reason": reason,
+            }
+
+    changed = True
+    while changed:
+        changed = False
+        for output, record in index.items():
+            if not record["buildable"]:
+                continue
+            meta = resolve_output(record["provider"], output, catalogue, context)
+            for requirement in meta.get("requires", {}):
+                dependency = index.get(requirement)
+                if dependency is None or dependency["buildable"]:
+                    continue
+                record["buildable"] = False
+                record["reason"] = (
+                    f"requires unavailable output {requirement}: "
+                    f"{dependency['reason']}"
+                )
+                changed = True
+                break
+
     return index
 
 
@@ -384,10 +430,17 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
     File dependencies that exist in build_dir are allowed even without
     a catalogue provider (e.g., catalogue.json).
     """
-    index = build_provides_index(catalogue, context)
+    outputs = build_output_index(catalogue, context)
+    index = {
+        output: record["provider"]
+        for output, record in outputs.items()
+        if record["buildable"]
+    }
 
     for target in targets:
         if target not in index:
+            if target in outputs:
+                raise KeyError(f"Not buildable: {target}: {outputs[target]['reason']}")
             raise KeyError(f"No provider for target: {target}")
 
     nodes = {}
@@ -397,6 +450,8 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
 
     def visit(output: str, chain: list):
         if output not in index:
+            if output in outputs:
+                raise KeyError(f"Not buildable: {output}: {outputs[output]['reason']}")
             # Allow file dependencies that exist in build_dir
             if (build_dir / output).exists():
                 return

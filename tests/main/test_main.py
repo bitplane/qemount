@@ -2,7 +2,6 @@
 
 import json
 from argparse import Namespace
-from io import StringIO
 
 from qemount_build.main import (
     normalize_target,
@@ -103,7 +102,7 @@ def test_cmd_outputs(capsys):
     """cmd_outputs lists all output paths."""
     cat = make_catalogue(["data/fs/fat32", "data/fs/ext4"])
     ctx = {"ARCH": "x86_64"}
-    args = Namespace(verbose=False)
+    args = Namespace(verbose=False, all=False)
 
     cmd_outputs(args, cat, ctx)
 
@@ -117,12 +116,25 @@ def test_cmd_outputs_verbose(capsys):
     """cmd_outputs -v shows provider path."""
     cat = make_catalogue(["data/fs/fat32"])
     ctx = {"ARCH": "x86_64"}
-    args = Namespace(verbose=True)
+    args = Namespace(verbose=True, all=False)
 
     cmd_outputs(args, cat, ctx)
 
     out = capsys.readouterr().out
     assert "data/fs/fat32\tdata/fs/fat32" in out
+
+
+def test_cmd_outputs_all_shows_unavailable_reason(capsys):
+    cat = make_catalogue(["legacy-output"])
+    cat["paths"]["legacy-output"]["meta"]["build_hosts"] = {"x86_64": {}}
+    ctx = {"ARCH": "aarch64", "HOST_ARCH": "aarch64"}
+    args = Namespace(verbose=True, all=True)
+
+    cmd_outputs(args, cat, ctx)
+
+    out = capsys.readouterr().out
+    assert "legacy-output\tlegacy-output\tunavailable:" in out
+    assert "host architecture aarch64" in out
 
 
 def test_cmd_deps(capsys):

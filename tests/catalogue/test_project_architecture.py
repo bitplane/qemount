@@ -68,3 +68,17 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
 
     assert "bin/aros/simple9p" in aros["nodes"]
     assert "bin/darwin/simple9p" in darwin["nodes"]
+
+
+def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
+    context = {
+        "ARCH": "aarch64",
+        "HOST_ARCH": "aarch64",
+        "JOBS": "1",
+    }
+    providers = build_provides_index(project_catalogue(), context)
+
+    assert "docker:builder/compiler/linux/2" not in providers
+    assert "bin/qemu/aarch64-linux/2.6/kernel" not in providers
+    assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
+    assert "data/fs/basic.reiserfs" not in providers

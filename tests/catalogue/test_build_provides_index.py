@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from qemount_build.catalogue import load, build_provides_index
+from qemount_build.catalogue import build_output_index, build_provides_index, load
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -43,3 +43,19 @@ def test_build_provides_index_duplicate_provider():
 
     with pytest.raises(ValueError, match="Duplicate provider"):
         build_provides_index(cat, ctx)
+
+
+def test_build_host_filter_propagates_to_dependents():
+    cat = load(DATA_DIR / "deps")
+    cat["paths"]["b"]["meta"]["build_hosts"] = {"x86_64": {}}
+    ctx = {"HOST_ARCH": "aarch64", "ARCH": "aarch64"}
+
+    outputs = build_output_index(cat, ctx)
+    providers = build_provides_index(cat, ctx)
+
+    assert outputs["root-output"]["buildable"]
+    assert not outputs["b-output"]["buildable"]
+    assert not outputs["a-output"]["buildable"]
+    assert "host architecture aarch64" in outputs["b-output"]["reason"]
+    assert "requires unavailable output b-output" in outputs["a-output"]["reason"]
+    assert set(providers) == {"root-output"}

@@ -1,5 +1,7 @@
 ---
 title: Linux 2.6 Compiler
+build_hosts:
+  - x86_64
 provides:
   - docker:builder/compiler/linux/2
 ---

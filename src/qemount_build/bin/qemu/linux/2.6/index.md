@@ -1,5 +1,7 @@
 ---
 title: Linux 2.6 Guest
+build_hosts:
+  - x86_64
 env:
   BUILDER: builder/compiler/linux/2
 requires:

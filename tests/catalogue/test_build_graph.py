@@ -57,6 +57,16 @@ def test_build_graph_missing_target():
             build_graph(["nonexistent"], cat, ctx, Path(tmp))
 
 
+def test_build_graph_unavailable_target():
+    cat = load(DATA_DIR / "deps")
+    cat["paths"]["b"]["meta"]["build_hosts"] = {"x86_64": {}}
+    ctx = {"HOST_ARCH": "aarch64", "ARCH": "aarch64"}
+
+    with tempfile.TemporaryDirectory() as tmp:
+        with pytest.raises(KeyError, match="Not buildable.*a-output"):
+            build_graph(["a-output"], cat, ctx, Path(tmp))
+
+
 def test_build_graph_missing_dependency():
     """Missing dependency raises KeyError with context."""
     cat = load(DATA_DIR / "deps")

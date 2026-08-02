@@ -14,10 +14,9 @@ import json
 import logging
 import os
 import platform
-import sys
 from pathlib import Path
 
-from .catalogue import load, build_provides_index, build_graph
+from .catalogue import build_graph, build_output_index, build_provides_index, load
 from .runner import run_build
 from .cache import load_cache, save_cache, hash_file
 from . import log as logsetup
@@ -51,10 +50,19 @@ def cmd_dump(args, catalogue, context):
 
 def cmd_outputs(args, catalogue, context):
     """List all outputs (provides)."""
-    index = build_provides_index(catalogue, context)
-    for output in sorted(index.keys()):
+    outputs = build_output_index(catalogue, context)
+    if not getattr(args, "all", False):
+        outputs = {
+            output: record
+            for output, record in outputs.items()
+            if record["buildable"]
+        }
+    for output, record in sorted(outputs.items()):
         if args.verbose:
-            print(f"{output}\t{index[output]}")
+            line = f"{output}\t{record['provider']}"
+            if not record["buildable"]:
+                line += f"\tunavailable: {record['reason']}"
+            print(line)
         else:
             print(output)
 
@@ -184,6 +192,9 @@ def main():
     outputs_parser = subparsers.add_parser("outputs", help="List all outputs")
     outputs_parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show provider path"
+    )
+    outputs_parser.add_argument(
+        "--all", action="store_true", help="Include outputs unavailable on this host"
     )
     outputs_parser.set_defaults(func=cmd_outputs)
 
