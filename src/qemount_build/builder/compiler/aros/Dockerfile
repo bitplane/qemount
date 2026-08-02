@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     flex \
     gawk \
-    gcc-multilib \
     genisoimage \
     git \
     gperf \

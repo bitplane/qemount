@@ -1,6 +1,7 @@
 ---
 title: simple9p for Darwin
 env:
+  ARCH: x86_64
   BUILDER: builder/compiler/puredarwin
 requires:
   - docker:builder/compiler/puredarwin

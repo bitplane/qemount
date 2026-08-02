@@ -18,12 +18,12 @@ def project_catalogue():
     return load(PACKAGE_DIR)
 
 
-def graph_for(target: str):
+def graph_for(target: str, context: dict = CONTEXT):
     with tempfile.TemporaryDirectory() as tmp:
         return build_graph(
             [target],
             project_catalogue(),
-            CONTEXT,
+            context,
             Path(tmp),
         )
 
@@ -47,3 +47,24 @@ def test_only_amiga_fixtures_depend_on_amiga_manifest():
         "data/fs/basic.ext4",
     ):
         assert "data/templates/amiga" not in graph_for(target)["nodes"]
+
+
+def test_fixed_arch_guests_resolve_on_arm_hosts():
+    context = {
+        "ARCH": "aarch64",
+        "HOST_ARCH": "aarch64",
+        "JOBS": "1",
+    }
+    providers = build_provides_index(project_catalogue(), context)
+
+    assert providers["bin/i386-aros/simple9p"] == "bin/aros/simple9p"
+    assert providers["bin/x86_64-darwin/simple9p"] == "bin/darwin/simple9p"
+
+    aros = graph_for("bin/qemu/i386-aros/boot/aros.iso", context)
+    darwin = graph_for(
+        "bin/qemu/x86_64-darwin/puredarwin/appliance/puredarwin.raw",
+        context,
+    )
+
+    assert "bin/aros/simple9p" in aros["nodes"]
+    assert "bin/darwin/simple9p" in darwin["nodes"]
