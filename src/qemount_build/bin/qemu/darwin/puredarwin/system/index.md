@@ -5,7 +5,7 @@ requires:
   - sources/bootstrap_cmds-98.tar.gz
   - sources/libdispatch-913.30.4.tar.gz
   - sources/libplatform-161.20.1.tar.gz
-  - sources/puredarwin-main.tar.gz
+  - sources/puredarwin-linux-build.tar.gz
   - sources/xnu-4570.41.2.tar.gz
 provides:
   - bin/qemu/${ARCH}-darwin/puredarwin/system/kernel.tar.gz

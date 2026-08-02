@@ -1,8 +1,7 @@
 diff --git a/src/Kernel/xnu/CMakeLists.txt b/src/Kernel/xnu/CMakeLists.txt
-index 5dd3a3c..6410960 100644
 --- a/src/Kernel/xnu/CMakeLists.txt
 +++ b/src/Kernel/xnu/CMakeLists.txt
-@@ -2,6 +2,7 @@ find_program(dsymutil_path NAMES dsymutil llvm-dsymutil REQUIRED)
+@@ -3,6 +3,7 @@ find_program(bash_path NAMES bash REQUIRED)
  
  set(PUREDARWIN_BUILD_JOBS 1 CACHE STRING "Parallel XNU build jobs")
  set(xnu_make_environment
@@ -10,32 +9,23 @@ index 5dd3a3c..6410960 100644
      SYSCTL_HW_PHYSICALCPU=${PUREDARWIN_BUILD_JOBS}
      SYSCTL_HW_LOGICALCPU=${PUREDARWIN_BUILD_JOBS}
      MAKEJOBS=--jobs=${PUREDARWIN_BUILD_JOBS}
-@@ -14,6 +15,7 @@ set(xnu_make_environment
+@@ -15,6 +16,7 @@ set(xnu_make_environment
      PUREDARWIN_HOST_LIBMACHO=$<TARGET_FILE:host_libmacho>
      PUREDARWIN_HOST_LIBSTUFF=$<TARGET_FILE:host_libstuff>
      HOST_GM4=m4
 +    PYTHON=true
-     SHELL=/bin/bash
+     SHELL=${bash_path}
      PUREDARWIN_TARGET_TRIPLE=${PUREDARWIN_TARGET_TRIPLE}
  )
 @@ -109,7 +111,7 @@ externalproject_add(xnu
              -D DSYMUTIL_PATH=${dsymutil_path}
              -D FIREHOSE_KERNEL_LIBRARY_PATH=$<TARGET_FILE:libfirehose_kernel>
              -D FIREHOSE_KERNEL_HEADER_PATH=$<TARGET_PROPERTY:libfirehose_kernel,INTERFACE_INCLUDE_DIRECTORIES>
--            -D PROFILE_RUNTIME_LIBRARY_PATH=$<TARGET_FILE:compiler_rt_profile>
+-            -D PROFILE_RUNTIME_LIBRARY_PATH=${profile_runtime_library_path}
 +            -D PROFILE_RUNTIME_LIBRARY_PATH=${PUREDARWIN_PROFILE_RUNTIME_LIBRARY}
              -D PTHREAD_HEADER_PATH=$<TARGET_PROPERTY:pthread_common_headers,INTERFACE_INCLUDE_DIRECTORIES>
              -P ${CMAKE_CURRENT_SOURCE_DIR}/preprocess_files.cmake
      COMMAND
-@@ -124,7 +126,7 @@ externalproject_add(xnu
-     USES_TERMINAL_BUILD TRUE
- )
- add_dependencies(xnu
--    xnu_headers libfirehose_kernel compiler_rt_profile host_codesign_allocate host_ctfconvert host_ctfmerge
-+    xnu_headers libfirehose_kernel host_codesign_allocate host_ctfconvert host_ctfmerge
-     migcom host_strip host_lipo host_nm unifdef host_nmedit availability.pl host_ld
-     dyld_availability_headers
- )
 diff --git a/src/Kernel/xnu/SETUP/decomment/decomment.c b/src/Kernel/xnu/SETUP/decomment/decomment.c
 index f95bdb6..f3790b1 100644
 --- a/src/Kernel/xnu/SETUP/decomment/decomment.c

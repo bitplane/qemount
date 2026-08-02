@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/puredarwin-main.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/puredarwin-linux-build.tar.gz
 XNU_ARCHIVE=/host/build/sources/xnu-4570.41.2.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
 LIBDISPATCH_ARCHIVE=/host/build/sources/libdispatch-913.30.4.tar.gz
@@ -68,8 +68,8 @@ if [ ! -f "$BOOTSTRAP_CMDS_DIR/.source-unpacked" ]; then
     touch "$BOOTSTRAP_CMDS_DIR/.source-unpacked"
 fi
 
-# Keep the downloaded source pristine and make the qemount integration patch
-# set reproducible. The build objects remain in BUILD_DIR across iterations.
+# Keep the downloaded source pristine. The build objects remain in BUILD_DIR
+# across iterations.
 git -C "$SOURCE_DIR" reset --hard HEAD
 git -C "$SOURCE_DIR" clean -fdx
 # Use the MIG generator paired with XNU 4570. The current generator emits
@@ -79,9 +79,6 @@ cp -p "$BOOTSTRAP_CMDS_DIR"/migcom.tproj/*.c \
     "$BOOTSTRAP_CMDS_DIR"/migcom.tproj/lexxer.l \
     "$BOOTSTRAP_CMDS_DIR"/migcom.tproj/parser.y \
     "$SOURCE_DIR/tools/mig/"
-for patch_file in /patches/*.patch; do
-    git -C "$SOURCE_DIR" apply "$patch_file"
-done
 git -C "$LIBDISPATCH_DIR" reset --hard HEAD
 git -C "$LIBDISPATCH_DIR" clean -fdx
 for patch_file in /patches-libdispatch-913/*.patch; do
