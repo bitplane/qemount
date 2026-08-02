@@ -2,6 +2,7 @@
 format: arc/rar
 requires:
   - docker:builder/disk/debian
+  - bin/${HOST_ARCH}-linux-musl/rars
   - data/templates/basic.tar
 provides:
   - data/arc/basic.rar
@@ -9,4 +10,6 @@ provides:
 
 # RAR Test Archive
 
-Test archive in RAR format. Uses non-free `rar` from Debian.
+Test archive in RAR 5 format, created with the free `rars` implementation.
+Symlinks from the shared template are omitted because its writer deliberately
+refuses to follow them.
