@@ -9,6 +9,12 @@
 TARGET=$1
 OUTDIR=$2
 
+# qemount uses Darwin as the canonical OS name; Zig spells it "macos".
+ZIG_TARGET=$TARGET
+case "$TARGET" in
+    *-darwin) ZIG_TARGET="${TARGET%-darwin}-macos" ;;
+esac
+
 # Per-target prefix dir holding our cross-built static deps and any
 # generated import libraries. The cc/c++ wrappers rewrite
 # -print-search-dirs to advertise this so meson's cc.find_library() can
@@ -92,12 +98,12 @@ for arg in "\$@"; do
             echo "LLD 20.1.2 (compatible with GNU linkers)"
             exit 0 ;;
         -print-search-dirs|--print-search-dirs)
-            $ZIG cc -target $TARGET $EXTRA_CFLAGS "\$@" \\
+            $ZIG cc -target $ZIG_TARGET $EXTRA_CFLAGS "\$@" \\
                 | sed "s|^libraries: =|libraries: =$PREFIX/lib$EXTRA_LIB_DIRS:|"
             exit 0 ;;
     esac
 done
-exec $ZIG cc -target $TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
+exec $ZIG cc -target $ZIG_TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
 EOF
 
 cat > $OUTDIR/c++ << EOF
@@ -108,12 +114,12 @@ for arg in "\$@"; do
             echo "LLD 20.1.2 (compatible with GNU linkers)"
             exit 0 ;;
         -print-search-dirs|--print-search-dirs)
-            $ZIG c++ -target $TARGET $EXTRA_CFLAGS "\$@" \\
+            $ZIG c++ -target $ZIG_TARGET $EXTRA_CFLAGS "\$@" \\
                 | sed "s|^libraries: =|libraries: =$PREFIX/lib$EXTRA_LIB_DIRS:|"
             exit 0 ;;
     esac
 done
-exec $ZIG c++ -target $TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
+exec $ZIG c++ -target $ZIG_TARGET $EXTRA_CFLAGS \$($OUTDIR/_expand "\$@") $EXTRA_LDFLAGS
 EOF
 
 # Meson passes 'T' flag to ar requesting thin archives, but zig's lld

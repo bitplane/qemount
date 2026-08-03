@@ -1,5 +1,7 @@
 """Architecture invariants for the real project catalogue."""
 
+import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -32,6 +34,30 @@ def graph_for(target: str, context: dict = CONTEXT):
             context,
             Path(tmp),
         )
+
+
+def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    zig = bin_dir / "zig"
+    zig.write_text("#!/bin/sh\nexit 0\n")
+    zig.chmod(0o755)
+    wrappers = tmp_path / "wrappers"
+
+    subprocess.run(
+        [
+            "bash",
+            PACKAGE_DIR / "builder/qemu/zig-wrapper.sh",
+            "x86_64-darwin",
+            wrappers,
+        ],
+        env={**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"},
+        check=True,
+    )
+
+    compiler = (wrappers / "cc").read_text()
+    assert "-target x86_64-macos" in compiler
+    assert "/opt/x86_64-darwin" in compiler
 
 
 def test_amiga_manifest_has_separate_provider_from_generic_template():
