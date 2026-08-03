@@ -60,6 +60,33 @@ def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
     assert "/opt/x86_64-darwin" in compiler
 
 
+def test_qemu_linux_architecture_profiles():
+    helper = PACKAGE_DIR / "builder/disk/qemu/qemu-linux-arch.sh"
+    expected = {
+        "x86_64": "qemu-system-x86_64||ttyS0",
+        "aarch64": "qemu-system-aarch64|-machine virt -cpu cortex-a57|ttyAMA0",
+        "arm": "qemu-system-arm|-machine virt -cpu cortex-a15|ttyAMA0",
+    }
+
+    for arch, profile in expected.items():
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                'source "$1"; set_qemu_linux_arch_profile "$2"; '
+                'printf "%s|%s|%s" "$QEMU_BIN" '
+                '"${QEMU_MACHINE_ARGS[*]}" "$QEMU_CONSOLE"',
+                "qemu-profile",
+                helper,
+                arch,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert result.stdout == profile
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 

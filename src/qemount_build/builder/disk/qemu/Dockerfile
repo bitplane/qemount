@@ -33,5 +33,6 @@ RUN cd /tmp && \
 RUN apk add --no-cache libaio keyutils-libs lz4-libs zstd-libs userspace-rcu libsodium eudev-libs
 
 WORKDIR /build
+COPY qemu-linux-arch.sh /build/qemu-linux-arch.sh
 COPY --chmod=755 build.sh /build/build.sh
 ENTRYPOINT ["/build/build.sh"]

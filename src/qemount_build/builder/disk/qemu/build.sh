@@ -9,6 +9,9 @@ KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.12"')
 KERNEL="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
 ROOTFS="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
 
+source /build/qemu-linux-arch.sh
+set_qemu_linux_arch_profile "$BUILD_ARCH"
+
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do
     base_name=$(basename "$output" | sed 's/\.[^.]*$//')
@@ -31,21 +34,15 @@ for output in $(echo "$META" | jq -r '.provides | keys[]'); do
     truncate -s "${img_size}M" /tmp/source.ext2
     mke2fs -t ext2 -d /tmp/template /tmp/source.ext2
 
-    # Map architecture to QEMU binary
-    case "$BUILD_ARCH" in
-        x86_64) QEMU_BIN="qemu-system-x86_64" ;;
-        aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-        *) echo "Unsupported architecture: $BUILD_ARCH"; exit 1 ;;
-    esac
-
     # Boot QEMU to duplicate files from source to target
     timeout 120 "$QEMU_BIN" \
+        "${QEMU_MACHINE_ARGS[@]}" \
         -m 256 \
         -kernel "$KERNEL" \
         -drive "file=$ROOTFS,format=raw,if=virtio,readonly=on" \
         -drive "file=/tmp/source.ext2,format=raw,if=virtio,readonly=on" \
         -drive "file=/tmp/target.img,format=raw,if=virtio" \
-        -append "root=/dev/vda ro console=ttyS0 mode=duplicate quiet" \
+        -append "root=/dev/vda ro console=$QEMU_CONSOLE mode=duplicate quiet" \
         -nographic \
         -no-reboot
 

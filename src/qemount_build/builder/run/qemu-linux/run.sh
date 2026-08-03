@@ -25,6 +25,10 @@ KERNEL="$2"
 BOOT_IMG="$3"
 shift 3
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/../../disk/qemu/qemu-linux-arch.sh"
+set_qemu_linux_arch_profile "$OUTPUT_ARCH"
+
 # Default values
 IMAGES=()
 MODE="sh"
@@ -63,16 +67,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Map architecture to QEMU binary
-case "$OUTPUT_ARCH" in
-    x86_64) QEMU_BIN="qemu-system-x86_64" ;;
-    aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-    arm) QEMU_BIN="qemu-system-arm" ;;
-    *) echo "Unsupported architecture: $OUTPUT_ARCH"; exit 1 ;;
-esac
-
 # Build QEMU command
 QEMU_ARGS=(
+    "${QEMU_MACHINE_ARGS[@]}"
     -m 128
     -kernel "$KERNEL"
     -drive "file=$BOOT_IMG,format=raw,if=virtio,readonly=on"
@@ -81,7 +78,7 @@ QEMU_ARGS=(
 
 # Add kernel command line (mode is always passed to guest)
 # root=/dev/vda = our boot.img, user disk will be vdb
-QEMU_ARGS+=(-append "root=/dev/vda ro console=ttyS0 mode=$MODE")
+QEMU_ARGS+=(-append "root=/dev/vda ro console=$QEMU_CONSOLE mode=$MODE")
 
 # Add user's disk images (become vdb, vdc, vdd, ...)
 for img in "${IMAGES[@]}"; do
