@@ -4,7 +4,7 @@
 
 # Create a 64MB image (reiser4 needs at least ~33MB)
 truncate -s 64M "$2"
-mkfs.reiser4 -f -y "$2"
+mkfs.reiser4 --block-size 4096 -f -y "$2"
 
 # Populate using reiser4-busy (userspace tool, no kernel mount needed)
 # Path format: device:/path for reiser4, ^/path for host filesystem

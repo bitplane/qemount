@@ -87,6 +87,12 @@ def test_qemu_linux_architecture_profiles():
         assert result.stdout == profile
 
 
+def test_reiser4_fixture_uses_portable_block_size():
+    build_script = (PACKAGE_DIR / "data/fs/reiser4/buildfs.sh").read_text()
+
+    assert "mkfs.reiser4 --block-size 4096" in build_script
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 
