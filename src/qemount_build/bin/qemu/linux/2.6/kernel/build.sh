@@ -11,7 +11,8 @@ if [ ! -f "$SOURCE_DIR/.qemount-source-ready" ]; then
     rm -rf "$SOURCE_DIR"
     mkdir -p "$EXTRACT_DIR"
     trap 'rm -rf "$EXTRACT_DIR"' EXIT HUP INT TERM
-    tar -xf "$SOURCE_ARCHIVE" -C "$EXTRACT_DIR" --strip-components=1
+    tar --no-same-owner -xf "$SOURCE_ARCHIVE" \
+        -C "$EXTRACT_DIR" --strip-components=1
     touch "$EXTRACT_DIR/.qemount-source-ready"
     mv "$EXTRACT_DIR" "$SOURCE_DIR"
     trap - EXIT HUP INT TERM

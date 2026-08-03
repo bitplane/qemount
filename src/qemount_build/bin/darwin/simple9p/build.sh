@@ -13,7 +13,7 @@ TARGET=x86_64-apple-macos10.13
 
 if [ ! -d "$SDK" ]; then
     mkdir -p "$SDK_CACHE"
-    tar -xJf "$SDK_ARCHIVE" -C "$SDK_CACHE"
+    tar --no-same-owner -xJf "$SDK_ARCHIVE" -C "$SDK_CACHE"
 fi
 
 rm -rf "$SOURCE" "$OBJECTS"
