@@ -26,6 +26,11 @@ from . import log as logsetup
 log = logging.getLogger(__name__)
 
 
+ARCH_COMPATIBILITY = {
+    "x86_64": {"x86_64", "i386"},
+}
+
+
 def get_default_arch():
     """Get the canonical architecture of the build machine."""
     machine = platform.machine()
@@ -55,6 +60,11 @@ def build_context(build_platform: str) -> dict:
     }
 
 
+def compatible_output_arches(build_arch: str) -> set[str]:
+    """Return architectures selected by default for a build architecture."""
+    return ARCH_COMPATIBILITY.get(build_arch, {build_arch})
+
+
 def get_jobs():
     """Calculate parallel jobs based on RAM and CPU cores.
 
@@ -75,8 +85,11 @@ def cmd_outputs(args, catalogue, context):
     """List all outputs (provides)."""
     outputs = build_output_index(catalogue, context, Path("build").absolute())
     selected_platforms = set(getattr(args, "output_platform", []) or [])
+    selected_arches = set(getattr(args, "output_arch", []) or [])
     all_platforms = getattr(args, "all_platforms", False)
     include_unavailable = getattr(args, "include_unavailable", False)
+    if not all_platforms and not selected_platforms and not selected_arches:
+        selected_arches = compatible_output_arches(context["BUILD_ARCH"])
     outputs = {
         output: record
         for output, record in outputs.items()
@@ -84,7 +97,7 @@ def cmd_outputs(args, catalogue, context):
             all_platforms
             or record["output_platform"] is None
             or record["output_platform"] in selected_platforms
-            or (not selected_platforms and record["native"])
+            or record["context"]["OUTPUT_ARCH"] in selected_arches
         )
         and (include_unavailable or record["buildable"])
     }
@@ -231,6 +244,12 @@ def main():
     outputs_parser = subparsers.add_parser("outputs", help="List all outputs")
     outputs_parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show provider path"
+    )
+    outputs_parser.add_argument(
+        "--output-arch",
+        action="append",
+        default=[],
+        help="Select an output architecture (repeatable)",
     )
     outputs_parser.add_argument(
         "--output-platform",

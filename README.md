@@ -48,6 +48,7 @@ qemount-build outputs
 qemount-build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
 
 # inspect or explicitly request cross-platform outputs
+qemount-build outputs --output-arch i386
 qemount-build outputs --output-platform x86_64-windows-gnu
 qemount-build outputs --all-platforms
 
@@ -58,8 +59,9 @@ make help  # for a full list of targets.
 # make     # or just build the world!
 ```
 
-Ordinary builds select architecture-neutral data and outputs for the build
-machine's architecture (for example `aarch64`, regardless of the guest OS).
+Ordinary builds select architecture-neutral data and outputs compatible with
+the build machine's architecture, regardless of the guest OS. An x86_64 build
+also includes i386 outputs; other cross-architecture outputs remain explicit.
 Exact targets and globs remain explicit, and dependencies may pull a fixed
 guest architecture when required.
 A build directory can be moved between machines and used sequentially so each

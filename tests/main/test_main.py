@@ -9,6 +9,7 @@ from qemount_build.main import (
     get_jobs,
     get_default_arch,
     build_context,
+    compatible_output_arches,
     cmd_dump,
     cmd_outputs,
     cmd_deps,
@@ -92,6 +93,11 @@ def test_build_context_splits_canonical_platform():
     assert context["BUILD_OS"] == "linux"
 
 
+def test_compatible_output_arches_include_32_bit_x86():
+    assert compatible_output_arches("x86_64") == {"x86_64", "i386"}
+    assert compatible_output_arches("aarch64") == {"aarch64"}
+
+
 def test_cmd_dump(capsys):
     """cmd_dump outputs catalogue as JSON."""
     cat = make_catalogue(["data/fs/fat32"])
@@ -131,7 +137,7 @@ def test_cmd_outputs_verbose(capsys):
     assert "data/fs/fat32\tdata/fs/fat32" in out
 
 
-def test_cmd_outputs_selects_native_and_neutral_by_default(capsys):
+def test_cmd_outputs_selects_compatible_and_neutral_by_default(capsys):
     cat = {
         "paths": {
             "neutral": {"meta": {"provides": {"data/file": {}}}, "sources": []},
@@ -141,6 +147,7 @@ def test_cmd_outputs_selects_native_and_neutral_by_default(capsys):
                         "x86_64-linux-musl": {
                             "provides": ["bin/x86_64-linux-musl/tool"]
                         },
+                        "i386-aros": {"provides": ["bin/i386-aros/tool"]},
                         "aarch64-linux-musl": {
                             "provides": ["bin/aarch64-linux-musl/tool"]
                         },
@@ -156,6 +163,37 @@ def test_cmd_outputs_selects_native_and_neutral_by_default(capsys):
     assert "data/file" in lines
     assert "bin/aarch64-linux-musl/tool" in lines
     assert "bin/x86_64-linux-musl/tool" not in lines
+    assert "bin/i386-aros/tool" not in lines
+
+    cmd_outputs(args, cat, build_context("x86_64-linux"))
+    lines = capsys.readouterr().out.splitlines()
+    assert "data/file" in lines
+    assert "bin/x86_64-linux-musl/tool" in lines
+    assert "bin/i386-aros/tool" in lines
+    assert "bin/aarch64-linux-musl/tool" not in lines
+
+
+def test_cmd_outputs_selects_explicit_output_arch(capsys):
+    cat = {
+        "paths": {
+            "tools": {
+                "meta": {
+                    "output_platforms": {
+                        "i386-aros": {"provides": ["bin/i386-aros/tool"]},
+                        "aarch64-linux-musl": {
+                            "provides": ["bin/aarch64-linux-musl/tool"]
+                        },
+                    }
+                },
+                "sources": [],
+            }
+        }
+    }
+    args = Namespace(verbose=False, output_arch=["i386"])
+    cmd_outputs(args, cat, build_context("aarch64-linux"))
+    lines = capsys.readouterr().out.splitlines()
+    assert "bin/i386-aros/tool" in lines
+    assert "bin/aarch64-linux-musl/tool" not in lines
 
 
 def test_cmd_outputs_selects_guest_os_by_architecture(capsys):

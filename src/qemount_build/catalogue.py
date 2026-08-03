@@ -419,20 +419,6 @@ def output_meta(record: dict, output: str) -> dict:
     return merge_meta(meta, specific) if specific else meta
 
 
-def is_native_output(record: dict, context: dict) -> bool:
-    """Return whether an output targets the build machine's architecture.
-
-    Guest operating systems are intentionally independent of the build OS:
-    an x86_64 Linux host should select x86_64 Haiku, NetBSD and Darwin guests
-    without treating them as cross-architecture builds.
-    """
-    platform = record.get("output_platform")
-    if not platform:
-        return True
-    parts = split_platform(platform)
-    return parts["OUTPUT_ARCH"] == context.get("BUILD_ARCH")
-
-
 def build_provides_index(
     catalogue: dict, context: dict, build_dir: Path | None = None
 ) -> dict:
@@ -480,7 +466,6 @@ def build_output_index(
                     "buildable": buildable,
                     "reason": reason,
                 }
-                record["native"] = is_native_output(record, context)
                 index[output] = record
 
     changed = True

@@ -48,7 +48,7 @@ or awkward, fix it immediately rather than accumulating cruft.
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                          Guests                                  │
+│                          Guests                                 │
 │  Linux 6.12 │ Linux 2.6 │ NetBSD 10 │ (future: AROS, Haiku...)  │
 │  Minimal VMs with busybox + 9P server, run via QEMU             │
 └─────────────────────────────────────────────────────────────────┘
@@ -263,6 +263,9 @@ Providers declare `output_platforms` independently from `build_platforms`.
 The former describes the artefacts they produce; the latter constrains which
 machines can run the build. One catalogue path may therefore have several
 provider instances without conflating host and target architecture.
+Default output selection follows architecture compatibility (`x86_64` also
+selects `i386`); `--output-arch` and `--output-platform` provide explicit
+selection without changing provider identity or buildability.
 
 ## Current State
 
