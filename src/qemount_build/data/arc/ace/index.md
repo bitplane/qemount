@@ -9,7 +9,6 @@ provides:
 
 # ACE Test Archive
 
-Test archive in ACE format, built with Commandline ACE 2.6 (Marcel Lemke /
-e-merge GmbH) running under Wine. The distributed ace26.exe is itself
-an ACE self-extracting archive - we extract it at build time using the
-acefile Python library and use the Win32 console build (ACE32.EXE).
+ACE 2.0 test archive using the format's stored (uncompressed) method. Built by
+a small architecture-independent Python writer and validated against both the
+`acefile` reader and Commandline ACE 2.6.
