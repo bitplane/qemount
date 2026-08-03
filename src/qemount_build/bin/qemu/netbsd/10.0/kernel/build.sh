@@ -2,6 +2,7 @@
 set -eu
 
 NBARCH=$(cat /tmp/nbarch)
+NBMACHINEARCH=$(cat /tmp/nbmachinearch)
 NBKERNARCH=$(cat /tmp/nbkernarch)
 SOURCE_HASH=$(sha256sum \
     /host/build/sources/netbsd-10.0-src.tgz \
@@ -19,7 +20,7 @@ cp /QEMOUNT /usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT
 # Build the kernel
 mkdir -p "$OBJ_DIR"
 ./build.sh -O "$OBJ_DIR" -T /usr/tools -U -u -j"${JOBS}" \
-    -m "$NBARCH" kernel=QEMOUNT
+    -m "$NBARCH" -a "$NBMACHINEARCH" kernel=QEMOUNT
 
 # Copy unstripped kernel (needed for mdsetimage)
 mkdir -p /host/build/bin/qemu/${ARCH}-netbsd/10.0/kernel

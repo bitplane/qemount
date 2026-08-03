@@ -17,5 +17,5 @@ tools and object trees are retained in the build cache and copied into the
 resulting compiler image.
 
 Architecture mapping:
-- x86_64 → amd64
-- aarch64 → evbarm
+- x86_64 → amd64/x86_64
+- aarch64 → evbarm/aarch64

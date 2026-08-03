@@ -44,19 +44,21 @@ RUN mkdir -p /usr/src && \
 
 WORKDIR /usr/src
 
-# Map architecture names and store in files for later stages
-# ARCH comes in as x86_64, NetBSD uses amd64
+# Map qemount architecture names to NetBSD MACHINE and MACHINE_ARCH values.
 # GNU triple prefix is used for cross tools (x86_64--netbsd-strip, etc)
 RUN if [ "$ARCH" = "x86_64" ]; then \
         echo "amd64" > /tmp/nbarch; \
+        echo "x86_64" > /tmp/nbmachinearch; \
         echo "amd64" > /tmp/nbkernarch; \
         echo "x86_64" > /tmp/nbgnutriple; \
     elif [ "$ARCH" = "aarch64" ]; then \
         echo "evbarm" > /tmp/nbarch; \
+        echo "aarch64" > /tmp/nbmachinearch; \
         echo "evbarm" > /tmp/nbkernarch; \
         echo "aarch64" > /tmp/nbgnutriple; \
     else \
         echo "$ARCH" > /tmp/nbarch; \
+        echo "$ARCH" > /tmp/nbmachinearch; \
         echo "$ARCH" > /tmp/nbkernarch; \
         echo "$ARCH" > /tmp/nbgnutriple; \
     fi
@@ -76,8 +78,11 @@ RUN set -eu; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
     NBARCH=$(cat /tmp/nbarch); \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m "$NBARCH" tools; \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) -m "$NBARCH" distribution; \
+    NBMACHINEARCH=$(cat /tmp/nbmachinearch); \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) \
+        -m "$NBARCH" -a "$NBMACHINEARCH" tools; \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) \
+        -m "$NBARCH" -a "$NBMACHINEARCH" distribution; \
     rm /usr/obj /usr/tools; \
     cp -a "$CACHE_DIR/obj" /usr/obj; \
     cp -a "$CACHE_DIR/tools" /usr/tools

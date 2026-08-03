@@ -1,5 +1,7 @@
 ---
 title: NetBSD 10.0 Guest
+build_hosts:
+  - x86_64
 env:
   BUILDER: builder/compiler/netbsd/10.0
 requires:

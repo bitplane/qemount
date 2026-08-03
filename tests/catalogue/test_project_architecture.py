@@ -97,3 +97,19 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     assert "bin/x86_64-haiku/qemount-init" not in providers
     assert "bin/qemu/x86_64-haiku/qemount/boot/haiku.image" not in providers
     assert "data/fs/basic.beos-bfs" not in providers
+
+
+def test_netbsd_tools_remain_available_without_arm_guest():
+    context = {
+        "ARCH": "aarch64",
+        "HOST_ARCH": "aarch64",
+        "JOBS": "1",
+    }
+    providers = build_provides_index(project_catalogue(), context)
+
+    assert providers["docker:builder/compiler/netbsd/10.0"] == "builder/compiler/netbsd/10.0"
+    assert providers["docker:builder/disk/netbsd"] == "builder/disk/netbsd"
+    assert providers["data/fs/basic.v7"] == "data/fs/v7"
+    assert providers["data/pt/basic.disklabel"] == "data/pt/disklabel"
+    assert "bin/qemu/aarch64-netbsd/10.0/kernel/netbsd.gdb" not in providers
+    assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers

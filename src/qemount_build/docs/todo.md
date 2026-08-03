@@ -8,6 +8,10 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
+  - [ ] guest architecture coverage
+    - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
+    - [ ] build Haiku guests natively on aarch64 hosts
+    - [ ] define fallback policy for guests that only support x86
 
 ## 2. Link it in
 
