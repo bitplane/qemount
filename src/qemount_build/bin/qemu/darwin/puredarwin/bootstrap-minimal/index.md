@@ -4,13 +4,13 @@ env:
   BUILDER: builder/disk/puredarwin
 requires:
   - docker:builder/disk/puredarwin
-  - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
+  - bin/qemu-system/${BUILD_ARCH}-linux-musl/qemu-system-x86_64
   - bin/qemu-system/firmware/bios-256k.bin
   - bin/qemu-system/firmware/vgabios-stdvga.bin
   - bin/qemu-system/firmware/kvmvapic.bin
-  - bin/qemu/${ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
 provides:
-  - bin/qemu/${ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
 ---
 
 # Minimal PureDarwin 17.4 Bootstrap

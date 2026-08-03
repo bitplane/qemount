@@ -22,5 +22,5 @@ LDFLAGS="--sysroot=$SYSROOT -static" \
 make -j${JOBS}
 $STRIP socat || true
 
-mkdir -p /host/build/bin/${ARCH}-netbsd
-cp -v socat /host/build/bin/${ARCH}-netbsd/
+mkdir -p /host/build/bin/${OUTPUT_ARCH}-netbsd
+cp -v socat /host/build/bin/${OUTPUT_ARCH}-netbsd/

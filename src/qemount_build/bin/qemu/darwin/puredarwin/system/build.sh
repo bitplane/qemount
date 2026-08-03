@@ -8,12 +8,12 @@ COMPILER_RT_HASH=$(sha256sum "$COMPILER_RT_ARCHIVE" | cut -d ' ' -f 1)
 INPUT_HASH=$(printf '%s\n' \
     "$SOURCE_HASH" \
     "$COMPILER_RT_HASH" | sha256sum | cut -d ' ' -f 1)
-CACHE_DIR=/host/build/cache/puredarwin/${ARCH}/system-v2/${INPUT_HASH}
+CACHE_DIR=/host/build/cache/puredarwin/${BUILD_PLATFORM}/${OUTPUT_ARCH}/system-v2/${INPUT_HASH}
 SOURCE_DIR=$CACHE_DIR/source
 COMPILER_RT_DIR=$CACHE_DIR/compiler-rt
 BUILD_DIR=$CACHE_DIR/build-llvm14
 ROOT_DIR=$CACHE_DIR/root-llvm14
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/system
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/system
 OUTPUT_ARCHIVE=$OUTPUT_DIR/kernel.tar.gz
 BUILD_JOBS=${JOBS:-1}
 

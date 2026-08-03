@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR=/host/build/bin/${ARCH}-haiku
-TOOL_PREFIX=/tools/cross-tools-${ARCH}/bin/${ARCH}-unknown-haiku-
+OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-haiku
+TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
 OUTPUT=$OUTPUT_DIR/qemount-init
 
 mkdir -p "$OUTPUT_DIR"

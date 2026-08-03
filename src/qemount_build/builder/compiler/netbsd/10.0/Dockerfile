@@ -1,7 +1,7 @@
-ARG ARCH
+ARG OUTPUT_ARCH
 
 FROM debian:bookworm-slim AS builder
-ARG ARCH
+ARG OUTPUT_ARCH
 
 # Install build dependencies for NetBSD build.sh
 # Using Debian because musl libc (Alpine) has conflicts with old texinfo code
@@ -46,21 +46,21 @@ WORKDIR /usr/src
 
 # Map qemount architecture names to NetBSD MACHINE and MACHINE_ARCH values.
 # GNU triple prefix is used for cross tools (x86_64--netbsd-strip, etc)
-RUN if [ "$ARCH" = "x86_64" ]; then \
+RUN if [ "$OUTPUT_ARCH" = "x86_64" ]; then \
         echo "amd64" > /tmp/nbarch; \
         echo "x86_64" > /tmp/nbmachinearch; \
         echo "amd64" > /tmp/nbkernarch; \
         echo "x86_64" > /tmp/nbgnutriple; \
-    elif [ "$ARCH" = "aarch64" ]; then \
+    elif [ "$OUTPUT_ARCH" = "aarch64" ]; then \
         echo "evbarm" > /tmp/nbarch; \
         echo "aarch64" > /tmp/nbmachinearch; \
         echo "evbarm" > /tmp/nbkernarch; \
         echo "aarch64" > /tmp/nbgnutriple; \
     else \
-        echo "$ARCH" > /tmp/nbarch; \
-        echo "$ARCH" > /tmp/nbmachinearch; \
-        echo "$ARCH" > /tmp/nbkernarch; \
-        echo "$ARCH" > /tmp/nbgnutriple; \
+        echo "$OUTPUT_ARCH" > /tmp/nbarch; \
+        echo "$OUTPUT_ARCH" > /tmp/nbmachinearch; \
+        echo "$OUTPUT_ARCH" > /tmp/nbkernarch; \
+        echo "$OUTPUT_ARCH" > /tmp/nbgnutriple; \
     fi
 
 # Build the cross-compilation toolchain and distribution. /usr/obj and
@@ -73,7 +73,7 @@ RUN set -eu; \
         /host/build/sources/netbsd-10.0-sharesrc.tgz \
         /host/build/sources/netbsd-10.0-gnusrc.tgz \
         | sha256sum | cut -d ' ' -f 1); \
-    CACHE_DIR=/host/build/cache/netbsd/${ARCH}/10.0/compiler-v1/${SOURCE_HASH}; \
+    CACHE_DIR=/host/build/cache/netbsd/${OUTPUT_ARCH}/10.0/compiler-v1/${SOURCE_HASH}; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \

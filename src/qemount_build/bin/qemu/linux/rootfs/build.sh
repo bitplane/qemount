@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-BINDIR="/host/build/bin/${ARCH}-linux-${ENV}"
+BINDIR="/host/build/bin/${OUTPUT_ARCH}-linux-${ENV}"
 ROOT="/work/root"
 
 # Start with overlay from image
@@ -35,5 +35,5 @@ truncate -s "$IMG_SIZE" /work/rootfs.img
 mke2fs -t ext2 -d "$ROOT" /work/rootfs.img
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/${ARCH}-linux/rootfs
-cp /work/rootfs.img /host/build/bin/qemu/${ARCH}-linux/rootfs/
+mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-linux/rootfs
+cp /work/rootfs.img /host/build/bin/qemu/${OUTPUT_ARCH}-linux/rootfs/

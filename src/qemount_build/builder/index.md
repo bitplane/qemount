@@ -1,8 +1,6 @@
 ---
 title: Builders
 env:
-  HOST_ARCH: ${HOST_ARCH}
-  ARCH: ${ARCH}
   SELF: ${SELF}
 ---
 

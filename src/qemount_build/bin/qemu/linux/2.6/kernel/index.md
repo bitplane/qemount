@@ -3,7 +3,7 @@ title: Linux 2.6 Kernel
 requires:
   - sources/linux-2.6.39.4.tar.xz
 provides:
-  - bin/qemu/${ARCH}-linux/2.6/kernel
+  - bin/qemu/${OUTPUT_ARCH}-linux/2.6/kernel
 ---
 
 # Linux 2.6 Kernel

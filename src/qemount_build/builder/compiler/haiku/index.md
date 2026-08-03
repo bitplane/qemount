@@ -1,7 +1,9 @@
 ---
 title: Haiku Cross-Compiler
-build_hosts:
-  - x86_64
+build_platforms:
+  x86_64-linux: {}
+env:
+  OUTPUT_ARCH: x86_64
 build_requires:
   - sources/haiku-qemount-2026-08-01-2.tar.gz
 provides:

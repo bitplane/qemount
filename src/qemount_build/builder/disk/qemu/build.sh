@@ -4,10 +4,10 @@ set -e
 # QEMU disk builder - boots Linux VM to duplicate files between filesystems
 # Requires kernel and rootfs.img in /host/build
 
-HOST_ARCH="${HOST_ARCH:-x86_64}"
+BUILD_ARCH="${BUILD_ARCH:-x86_64}"
 KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.12"')
-KERNEL="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
-ROOTFS="/host/build/bin/qemu/${HOST_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
+KERNEL="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
+ROOTFS="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
 
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do
@@ -32,10 +32,10 @@ for output in $(echo "$META" | jq -r '.provides | keys[]'); do
     mke2fs -t ext2 -d /tmp/template /tmp/source.ext2
 
     # Map architecture to QEMU binary
-    case "$HOST_ARCH" in
+    case "$BUILD_ARCH" in
         x86_64) QEMU_BIN="qemu-system-x86_64" ;;
         aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-        *) echo "Unsupported architecture: $HOST_ARCH"; exit 1 ;;
+        *) echo "Unsupported architecture: $BUILD_ARCH"; exit 1 ;;
     esac
 
     # Boot QEMU to duplicate files from source to target

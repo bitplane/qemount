@@ -12,7 +12,7 @@ provides:
 macOS 11.3 SDK extracted from Xcode, used as the sysroot for cross-compiling
 mac binaries with zig. Provides libSystem (.tbd stubs), C/POSIX headers, and
 ~200 system frameworks (CoreFoundation, IOKit, Foundation, Hypervisor,
-ApplicationServices, etc.) for both `x86_64-macos` and `arm64-macos` targets.
+ApplicationServices, etc.) for both `x86_64-darwin` and `aarch64-darwin` targets.
 
 Apple does not permit redistribution of the SDK, so it is not bundled with
 this project — the downloader fetches it on demand. Users are responsible

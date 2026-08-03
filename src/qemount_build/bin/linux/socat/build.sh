@@ -9,5 +9,5 @@ cd socat-1.7.4.4
 make -j${JOBS}
 strip socat || true
 
-mkdir -p /host/build/bin/${ARCH}-linux-${ENV}
-cp -v socat /host/build/bin/${ARCH}-linux-${ENV}/
+mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
+cp -v socat /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/

@@ -45,15 +45,15 @@ for arch in x86_64 aarch64; do
 done
 
 # Windows
-if want "bin/x86_64-windows/detect"; then
+if want "bin/x86_64-windows-gnu/detect"; then
     $ZIG cc -target x86_64-windows-gnu \
         -O2 \
         -I${INCLUDE} \
-        -L${LIB}/x86_64-windows \
+        -L${LIB}/x86_64-windows-gnu \
         ${SRCS} -lqemount -lunwind \
         -o detect.exe
-    mkdir -p ${OUT}/x86_64-windows
-    mv detect.exe ${OUT}/x86_64-windows/
+    mkdir -p ${OUT}/x86_64-windows-gnu
+    mv detect.exe ${OUT}/x86_64-windows-gnu/
 fi
 
 # macOS

@@ -8,7 +8,7 @@ mkdir -p /tmp/template
 tar -xf "$INPUT" -C /tmp/template
 
 cd /tmp/template/basic
-/host/build/bin/${HOST_ARCH}-linux-musl/lzx c output.lzx hello.txt script.sh
+/host/build/bin/${BUILD_ARCH}-linux-musl/lzx c output.lzx hello.txt script.sh
 
 mkdir -p "$(dirname "/host/build/$OUTPUT_PATH")"
 cp output.lzx "/host/build/$OUTPUT_PATH"

@@ -9,11 +9,10 @@ from qemount_build.cache import (
     hash_file,
     hash_files,
     hash_path_inputs,
+    hash_source_inputs,
     strip_ref_prefix,
     is_output_dirty,
-    is_image_dirty,
     update_output_hash,
-    update_image_hash,
 )
 
 
@@ -21,7 +20,7 @@ def test_load_cache_missing():
     """Loading from non-existent file returns empty dict."""
     with tempfile.TemporaryDirectory() as tmp:
         cache = load_cache(Path(tmp))
-        assert cache == {}
+        assert cache == {"__schema__": 2}
 
 
 def test_save_and_load_cache():
@@ -151,44 +150,6 @@ def test_is_output_dirty_output_requires_changed():
         assert is_output_dirty("foo", "abc123", cache, build_dir, ["dep.bin"])
 
 
-def test_is_image_dirty_no_cache():
-    """Image with no cache is dirty."""
-    assert is_image_dirty("my/image", "abc", {}, lambda x: True, "x86_64")
-
-
-def test_is_image_dirty_hash_changed():
-    """Image with changed input_hash is dirty."""
-    cache = {
-        "docker:my/image:x86_64": {
-            "input_hash": "old_hash",
-            "hash": "sha256:abc",
-        }
-    }
-    assert is_image_dirty("my/image", "new_hash", cache, lambda x: True, "x86_64")
-
-
-def test_is_image_dirty_image_missing():
-    """Image that doesn't exist is dirty."""
-    cache = {
-        "docker:my/image:x86_64": {
-            "input_hash": "abc",
-            "hash": "sha256:abc",
-        }
-    }
-    assert is_image_dirty("my/image", "abc", cache, lambda x: False, "x86_64")
-
-
-def test_is_image_dirty_clean():
-    """Image with matching hash and existing is clean."""
-    cache = {
-        "docker:my/image:x86_64": {
-            "input_hash": "abc",
-            "hash": "sha256:abc",
-        }
-    }
-    assert not is_image_dirty("my/image", "abc", cache, lambda x: True, "x86_64")
-
-
 def test_update_output_hash():
     """update_output_hash stores hash state in cache."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -206,22 +167,53 @@ def test_update_output_hash():
         assert "size" in entry
 
 
-def test_update_image_hash():
-    """update_image_hash stores build state in cache."""
-    cache = {}
-    update_image_hash(cache, "my/image", "input_hash", "sha256:abc", "x86_64")
-    assert cache["docker:my/image:x86_64"] == {
-        "input_hash": "input_hash",
-        "hash": "sha256:abc",
-    }
-
-
 def test_hash_files_nonexistent():
     """Hashing non-existent directory returns consistent empty hash."""
     cache = {}
     h1 = hash_files(Path("/nonexistent/path/that/does/not/exist"), cache)
     h2 = hash_files(Path("/another/nonexistent/path"), cache)
     assert h1 == h2  # Both return hash of empty content
+
+
+def test_source_hash_ignores_transfer_environment():
+    first = {
+        "urls": {"https://example.test/source.tar": {}},
+        "provides": {"sources/source.tar": {}},
+        "env": {"BUILD_PLATFORM": "x86_64-linux"},
+        "requires": {"docker:builder/downloader": {}},
+    }
+    second = {
+        **first,
+        "env": {"BUILD_PLATFORM": "aarch64-linux"},
+        "requires": {"docker:builder/new-downloader": {}},
+    }
+    assert hash_source_inputs(first) == hash_source_inputs(second)
+
+
+def test_source_hash_changes_with_url():
+    first = {
+        "urls": {"https://example.test/one.tar": {}},
+        "provides": {"sources/source.tar": {}},
+    }
+    second = {
+        "urls": {"https://example.test/two.tar": {}},
+        "provides": {"sources/source.tar": {}},
+    }
+    assert hash_source_inputs(first) != hash_source_inputs(second)
+
+
+def test_output_cache_survives_build_directory_relocation(tmp_path):
+    original = tmp_path / "first" / "build"
+    original.mkdir(parents=True)
+    (original / "artifact").write_text("content")
+    cache = {}
+    update_output_hash(cache, "artifact", "inputs", original)
+
+    relocated = tmp_path / "second" / "build"
+    relocated.parent.mkdir()
+    original.rename(relocated)
+
+    assert not is_output_dirty("artifact", "inputs", cache, relocated)
 
 
 def test_hash_path_inputs_context():

@@ -1,5 +1,15 @@
 ---
 title: Linux binaries
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-linux-musl:
+    build_platforms:
+      x86_64-linux: {}
+  aarch64-linux-musl:
+    build_platforms:
+      aarch64-linux: {}
 env:
   BUILDER: builder/compiler/linux/6
   ENV: musl

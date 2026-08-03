@@ -1,11 +1,11 @@
 ---
 title: Linux 2.6 Boot
 requires:
-  - bin/qemu/${ARCH}-linux/2.6/kernel
-  - bin/qemu/${ARCH}-linux/rootfs/rootfs.img
+  - bin/qemu/${OUTPUT_ARCH}-linux/2.6/kernel
+  - bin/qemu/${OUTPUT_ARCH}-linux/rootfs/rootfs.img
 provides:
-  - bin/qemu/${ARCH}-linux/2.6/boot/kernel
-  - bin/qemu/${ARCH}-linux/2.6/boot/rootfs.img
+  - bin/qemu/${OUTPUT_ARCH}-linux/2.6/boot/kernel
+  - bin/qemu/${OUTPUT_ARCH}-linux/2.6/boot/rootfs.img
 support:
   # filesystems
   - format/fs/ext2

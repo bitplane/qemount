@@ -1,5 +1,5 @@
 FROM alpine:3.23
-ARG ARCH
+ARG OUTPUT_ARCH
 
 # Install build tools
 RUN apk add --no-cache \

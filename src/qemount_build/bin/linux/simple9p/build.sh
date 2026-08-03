@@ -30,5 +30,5 @@ gcc -static -I$LIBIXP/include -o simple9p \
 strip simple9p
 
 # Copy to output
-mkdir -p /host/build/bin/${ARCH}-linux-${ENV}
-cp -v simple9p /host/build/bin/${ARCH}-linux-${ENV}/
+mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
+cp -v simple9p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/

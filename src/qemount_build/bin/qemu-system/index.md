@@ -17,8 +17,8 @@ which the host cannot.
 ## Host Platforms
 
 - **x86_64-linux-musl** - Linux x86_64 (static musl)
-- **x86_64-windows** - Windows x86_64
-- **x86_64-macos** - macOS x86_64
+- **x86_64-windows-gnu** - Windows x86_64
+- **x86_64-darwin** - macOS x86_64
 
 ## Usage
 

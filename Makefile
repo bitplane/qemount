@@ -2,12 +2,9 @@
 
 PROJECT_NAME := qemount_build
 
-# Default architecture if not set
-ARCH ?= $(shell ./scripts/canonical_arch.sh)
-PLATFORM ?= $(shell ./scripts/arch_to_platform.sh $(ARCH))
+BUILD_PLATFORM ?= $(shell ./scripts/canonical_arch.sh)-linux
 REGISTRY ?= localhost
-export ARCH
-export PLATFORM
+export BUILD_PLATFORM
 export REGISTRY
 
 all: build  ## build all outputs

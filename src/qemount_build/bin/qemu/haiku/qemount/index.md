@@ -1,7 +1,10 @@
 ---
 title: Haiku qemount Guest
+build_platforms:
+  x86_64-linux: {}
+output_platforms:
+  x86_64-haiku: {}
 env:
-  ARCH: x86_64
   BUILDER: builder/compiler/haiku
   HAIKU_IMAGE_SIZE: "7"
   HAIKU_REVISION: hrev59919+1

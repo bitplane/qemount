@@ -5,7 +5,10 @@ SOURCE_DIR=/src
 CAPSULE_DIR=/time-capsule
 
 cd "$SOURCE_DIR"
-make
+make dev
+"$SOURCE_DIR/.venv/bin/qemount-build" outputs --all-platforms \
+    | xargs -r "$SOURCE_DIR/.venv/bin/qemount-build" build
+"$SOURCE_DIR/.venv/bin/qemount-build" inventory
 
 mkdir -p "$CAPSULE_DIR"
 
@@ -22,6 +25,7 @@ dpkg-query -W -f='${binary:Package}\t${Version}\n' \
 python3 --version > "$CAPSULE_DIR/python-version.txt" 2>&1
 
 "$SOURCE_DIR/.venv/bin/qemount-build" outputs \
+    --all-platforms --include-unavailable \
     > "$CAPSULE_DIR/qemount-outputs.txt"
 find "$SOURCE_DIR/build" -type f -printf '%s\t%TY-%Tm-%TdT%TH:%TM:%TSZ\t%p\n' \
     | sort -k3 > "$CAPSULE_DIR/build-files.tsv"

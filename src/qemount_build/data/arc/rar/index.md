@@ -2,7 +2,7 @@
 format: arc/rar
 requires:
   - docker:builder/disk/debian
-  - bin/${HOST_ARCH}-linux-musl/rars
+  - bin/${BUILD_ARCH}-linux-musl/rars
   - data/templates/basic.tar
 provides:
   - data/arc/basic.rar

@@ -42,14 +42,29 @@ make dev
 source .venv/bin/activate
 
 # list targets
-qemount_build outputs
+qemount-build outputs
 
 # pick one and build it
-qemount_build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
+qemount-build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
+
+# inspect or explicitly request cross-platform outputs
+qemount-build outputs --output-platform x86_64-windows-gnu
+qemount-build outputs --all-platforms
+
+# record the catalogue artefacts currently present
+qemount-build inventory
 
 make help  # for a full list of targets.
 # make     # or just build the world!
 ```
+
+Ordinary builds select architecture-neutral data and outputs for the build
+machine's architecture (for example `aarch64`, regardless of the guest OS).
+Exact targets and globs remain explicit, and dependencies may pull a fixed
+guest architecture when required.
+A build directory can be moved between machines and used sequentially so each
+machine can contribute the targets it supports; concurrent writers are not
+supported.
 
 Guest and transport selection, the detection engine and launch layer are still
 under construction, see the [todo list](src/qemount_build/docs/todo.md). There's

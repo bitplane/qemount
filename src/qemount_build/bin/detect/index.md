@@ -1,32 +1,46 @@
 ---
 title: detect
 env:
-  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig/${BUILD_PLATFORM}
 requires:
   - docker:builder/compiler/rust
   - lib/include/qemount.h
-provides:
-  bin/x86_64-linux-musl/detect:
+output_platforms:
+  x86_64-linux-musl:
     requires:
       - lib/x86_64-linux-musl/libqemount.a
-  bin/x86_64-linux-gnu/detect:
+    provides:
+      - bin/x86_64-linux-musl/detect
+  x86_64-linux-gnu:
     requires:
       - lib/x86_64-linux-gnu/libqemount.a
-  bin/aarch64-linux-musl/detect:
+    provides:
+      - bin/x86_64-linux-gnu/detect
+  aarch64-linux-musl:
     requires:
       - lib/aarch64-linux-musl/libqemount.a
-  bin/aarch64-linux-gnu/detect:
+    provides:
+      - bin/aarch64-linux-musl/detect
+  aarch64-linux-gnu:
     requires:
       - lib/aarch64-linux-gnu/libqemount.a
-  bin/x86_64-windows/detect.exe:
+    provides:
+      - bin/aarch64-linux-gnu/detect
+  x86_64-windows-gnu:
     requires:
-      - lib/x86_64-windows/qemount.lib
-  bin/x86_64-darwin/detect:
+      - lib/x86_64-windows-gnu/qemount.lib
+    provides:
+      - bin/x86_64-windows-gnu/detect.exe
+  x86_64-darwin:
     requires:
       - lib/x86_64-darwin/libqemount.a
-  bin/aarch64-darwin/detect:
+    provides:
+      - bin/x86_64-darwin/detect
+  aarch64-darwin:
     requires:
       - lib/aarch64-darwin/libqemount.a
+    provides:
+      - bin/aarch64-darwin/detect
 ---
 
 # detect

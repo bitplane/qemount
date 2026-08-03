@@ -2,7 +2,7 @@
 set -eu
 
 SOURCE=/host/build/sources/puredarwin-17.4.vmdk.xz
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/bootstrap
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap
 VMDK_TMP=$OUTPUT_DIR/puredarwin.vmdk.tmp
 OUTPUT_TMP=$OUTPUT_DIR/puredarwin.raw.tmp
 OUTPUT=$OUTPUT_DIR/puredarwin.raw

@@ -1,6 +1,6 @@
-ARG ARCH
+ARG OUTPUT_ARCH
 FROM ghcr.io/haiku/toolchain-worker-master@sha256:b89005bb884ee4b127e59169ce28924460bfe7765f79d1ac186fb55fa5944ee6
-ARG ARCH
+ARG OUTPUT_ARCH
 
 WORKDIR /src
 RUN mkdir haiku && \
@@ -10,4 +10,4 @@ RUN mkdir haiku && \
 WORKDIR /src/haiku
 RUN mkdir -p generated && \
     cd generated && \
-    ../configure --cross-tools-prefix /toolchains/cross-tools-${ARCH}/bin/${ARCH}-unknown-haiku-
+    ../configure --cross-tools-prefix /toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-

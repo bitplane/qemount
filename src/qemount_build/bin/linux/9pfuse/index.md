@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/9pfuse-qemount-0.3.tar.gz
 provides:
-  - bin/${ARCH}-linux-${ENV}/9pfuse
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/9pfuse
 ---
 
 # 9pfuse

@@ -1,10 +1,10 @@
 ---
 title: AROS PC i386 Guest
 requires:
-  - bin/qemu/${ARCH}-aros/system/aros.iso
-  - bin/${ARCH}-aros/simple9p
+  - bin/qemu/${OUTPUT_ARCH}-aros/system/aros.iso
+  - bin/${OUTPUT_ARCH}-aros/simple9p
 provides:
-  - bin/qemu/${ARCH}-aros/boot/aros.iso
+  - bin/qemu/${OUTPUT_ARCH}-aros/boot/aros.iso
 ---
 
 # AROS PC i386 Guest

@@ -6,8 +6,8 @@ SOURCE_DIR=/work/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=/work/guest-build
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-aros/system
-SDK_OUTPUT=/host/build/lib/${ARCH}-aros/sdk.tar.gz
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system
+SDK_OUTPUT=/host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
 BUILD_JOBS=${JOBS:-1}
 
 # Port archives are produced by several upstream systems and can contain owner

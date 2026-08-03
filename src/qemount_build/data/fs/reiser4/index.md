@@ -1,12 +1,12 @@
 ---
 format: fs/reiser4
 build_requires:
-  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiser4
-  - bin/${HOST_ARCH}-linux-gnu/reiser4-busy
+  - bin/${BUILD_ARCH}-linux-gnu/mkfs.reiser4
+  - bin/${BUILD_ARCH}-linux-gnu/reiser4-busy
 requires:
   - docker:builder/disk/qemu
-  - bin/qemu/${HOST_ARCH}-linux/6.12/boot/kernel
-  - bin/qemu/${HOST_ARCH}-linux/6.12/boot/rootfs.img
+  - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
+  - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/rootfs.img
   - data/templates/basic.tar
 provides:
   - data/fs/basic.reiser4

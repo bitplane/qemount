@@ -1,7 +1,11 @@
 ---
 title: simple9p for Darwin
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-darwin: {}
 env:
-  ARCH: x86_64
   BUILDER: builder/compiler/puredarwin
 requires:
   - docker:builder/compiler/puredarwin
@@ -9,8 +13,8 @@ requires:
   - sources/simple9p-qemount-0.5.tar.gz
   - sources/libixp-qemount-0.2.tar.gz
 provides:
-  - bin/${ARCH}-darwin/simple9p
-  - bin/${ARCH}-darwin/stream64
+  - bin/${OUTPUT_ARCH}-darwin/simple9p
+  - bin/${OUTPUT_ARCH}-darwin/stream64
 ---
 
 # simple9p for Darwin

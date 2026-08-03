@@ -9,7 +9,7 @@ tar -xf "$INPUT" -C /tmp/template
 
 cd /tmp/template
 find . -type l -delete
-/host/build/bin/${HOST_ARCH}-linux-musl/rars \
+/host/build/bin/${BUILD_ARCH}-linux-musl/rars \
     a --format rar50 /tmp/output.rar *
 
 mkdir -p "$(dirname "/host/build/$OUTPUT_PATH")"

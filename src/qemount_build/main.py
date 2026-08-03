@@ -14,10 +14,12 @@ import json
 import logging
 import os
 import platform
+import sys
 from pathlib import Path
 
 from .catalogue import build_graph, build_output_index, build_provides_index, load
 from .runner import run_build
+from .inventory import create_inventory, write_inventory
 from .cache import load_cache, save_cache, hash_file
 from . import log as logsetup
 
@@ -25,11 +27,32 @@ log = logging.getLogger(__name__)
 
 
 def get_default_arch():
-    """Get default architecture from platform."""
+    """Get the canonical architecture of the build machine."""
     machine = platform.machine()
     return {"x86_64": "x86_64", "aarch64": "aarch64", "arm64": "aarch64"}.get(
         machine, machine
     )
+
+
+def get_default_build_platform():
+    """Get the canonical platform of the build machine."""
+    system = {"linux": "linux", "darwin": "darwin", "win32": "windows"}.get(
+        sys.platform, sys.platform
+    )
+    return f"{get_default_arch()}-{system}"
+
+
+def build_context(build_platform: str) -> dict:
+    """Create the immutable context shared by all provider variants."""
+    parts = build_platform.split("-")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid build platform: {build_platform}")
+    return {
+        "BUILD_PLATFORM": build_platform,
+        "BUILD_ARCH": parts[0],
+        "BUILD_OS": parts[1],
+        "JOBS": str(get_jobs()),
+    }
 
 
 def get_jobs():
@@ -50,16 +73,26 @@ def cmd_dump(args, catalogue, context):
 
 def cmd_outputs(args, catalogue, context):
     """List all outputs (provides)."""
-    outputs = build_output_index(catalogue, context)
-    if not getattr(args, "all", False):
-        outputs = {
-            output: record
-            for output, record in outputs.items()
-            if record["buildable"]
-        }
+    outputs = build_output_index(catalogue, context, Path("build").absolute())
+    selected_platforms = set(getattr(args, "output_platform", []) or [])
+    all_platforms = getattr(args, "all_platforms", False)
+    include_unavailable = getattr(args, "include_unavailable", False)
+    outputs = {
+        output: record
+        for output, record in outputs.items()
+        if (
+            all_platforms
+            or record["output_platform"] is None
+            or record["output_platform"] in selected_platforms
+            or (not selected_platforms and record["native"])
+        )
+        and (include_unavailable or record["buildable"])
+    }
     for output, record in sorted(outputs.items()):
         if args.verbose:
             line = f"{output}\t{record['provider']}"
+            if record["output_platform"]:
+                line += f"\t{record['output_platform']}"
             if not record["buildable"]:
                 line += f"\tunavailable: {record['reason']}"
             print(line)
@@ -146,7 +179,7 @@ def cmd_build(args, catalogue, context):
 
     # Update cache with new catalogue hash so dependents see the change
     cache = load_cache(build_dir)
-    hash_file(catalogue_file, cache)
+    hash_file(catalogue_file, cache, "build:catalogue.json")
     save_cache(build_dir, cache)
 
     success = run_build(
@@ -160,20 +193,26 @@ def cmd_build(args, catalogue, context):
     return 0 if success else 1
 
 
+def cmd_inventory(args, catalogue, context):
+    """Record the concrete catalogue artefacts currently present."""
+    build_dir = Path("build").absolute()
+    inventory, unknown = create_inventory(catalogue, context, build_dir)
+    destination = Path(args.output)
+    write_inventory(inventory, destination)
+    for path in unknown:
+        log.warning("Unknown build artefact: %s", path)
+    log.info("Wrote %d artefacts to %s", len(inventory["artefacts"]), destination)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="qemount_build",
         description="Catalogue inspection tool for qemount build system",
     )
     parser.add_argument(
-        "--arch",
-        default=get_default_arch(),
-        help="Target architecture (default: %(default)s)",
-    )
-    parser.add_argument(
-        "--host-arch",
-        default=get_default_arch(),
-        help="Host architecture (default: %(default)s)",
+        "--build-platform",
+        default=os.environ.get("BUILD_PLATFORM", get_default_build_platform()),
+        help="Build machine platform (default: %(default)s)",
     )
     parser.add_argument(
         "--log-level",
@@ -194,7 +233,20 @@ def main():
         "-v", "--verbose", action="store_true", help="Show provider path"
     )
     outputs_parser.add_argument(
-        "--all", action="store_true", help="Include outputs unavailable on this host"
+        "--output-platform",
+        action="append",
+        default=[],
+        help="Select an output platform (repeatable)",
+    )
+    outputs_parser.add_argument(
+        "--all-platforms",
+        action="store_true",
+        help="Select every output platform buildable here",
+    )
+    outputs_parser.add_argument(
+        "--include-unavailable",
+        action="store_true",
+        help="Include selected outputs unavailable on this build platform",
     )
     outputs_parser.set_defaults(func=cmd_outputs)
 
@@ -214,6 +266,14 @@ def main():
     )
     build_parser.set_defaults(func=cmd_build)
 
+    inventory_parser = subparsers.add_parser(
+        "inventory", help="Inventory catalogue artefacts present in build/"
+    )
+    inventory_parser.add_argument(
+        "--output", default="build/inventory.json", help="Inventory destination"
+    )
+    inventory_parser.set_defaults(func=cmd_inventory)
+
     args = parser.parse_args()
 
     # Configure logging
@@ -224,11 +284,7 @@ def main():
     catalogue = load(pkg_dir)
 
     # Build context
-    context = {
-        "ARCH": args.arch,
-        "HOST_ARCH": args.host_arch,
-        "JOBS": str(get_jobs()),
-    }
+    context = build_context(args.build_platform)
 
     # Run command
     result = args.func(args, catalogue, context)

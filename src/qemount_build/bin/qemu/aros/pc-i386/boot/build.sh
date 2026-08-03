@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-BASE_ISO=/host/build/bin/qemu/${ARCH}-aros/system/aros.iso
-SIMPLE9P=/host/build/bin/${ARCH}-aros/simple9p
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-aros/boot
+BASE_ISO=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system/aros.iso
+SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-aros/simple9p
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/boot
 OUTPUT_TMP=$OUTPUT_DIR/aros.iso.tmp
 STAGING_DIR=/work/iso
 

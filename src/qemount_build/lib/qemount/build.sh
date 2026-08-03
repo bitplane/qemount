@@ -34,11 +34,11 @@ for arch in x86_64 aarch64; do
 done
 
 # Windows (x86_64 only - aarch64-pc-windows-gnu not a supported Rust target)
-if want "lib/x86_64-windows/"; then
+if want "lib/x86_64-windows-gnu/"; then
     cargo zigbuild --release --target x86_64-pc-windows-gnu -j $JOBS
-    mkdir -p ${OUT}/x86_64-windows
-    cp ${TARGET}/x86_64-pc-windows-gnu/release/qemount.dll ${OUT}/x86_64-windows/
-    cp ${TARGET}/x86_64-pc-windows-gnu/release/libqemount.a ${OUT}/x86_64-windows/qemount.lib
+    mkdir -p ${OUT}/x86_64-windows-gnu
+    cp ${TARGET}/x86_64-pc-windows-gnu/release/qemount.dll ${OUT}/x86_64-windows-gnu/
+    cp ${TARGET}/x86_64-pc-windows-gnu/release/libqemount.a ${OUT}/x86_64-windows-gnu/qemount.lib
 fi
 
 # macOS
@@ -52,10 +52,10 @@ for arch in x86_64 aarch64; do
 done
 
 # WASM
-if want "lib/wasm32/"; then
+if want "lib/wasm32-wasi/"; then
     cargo zigbuild --release --target wasm32-wasip1 -j $JOBS
-    mkdir -p ${OUT}/wasm32
-    cp ${TARGET}/wasm32-wasip1/release/qemount.wasm ${OUT}/wasm32/
+    mkdir -p ${OUT}/wasm32-wasi
+    cp ${TARGET}/wasm32-wasip1/release/qemount.wasm ${OUT}/wasm32-wasi/
 fi
 
 # C header (always needed if any lib is built)

@@ -14,6 +14,6 @@ CFLAGS="-Wno-unterminated-string-initialization" ./configure \
 
 make -j${JOBS}
 
-mkdir -p /host/build/bin/${ARCH}-linux-${ENV}
-cp -v src/strace /host/build/bin/${ARCH}-linux-${ENV}/
-strip /host/build/bin/${ARCH}-linux-${ENV}/strace || true
+mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
+cp -v src/strace /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/
+strip /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/strace || true

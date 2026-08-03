@@ -1,7 +1,10 @@
 ---
 title: Linux 2.6 Guest
-build_hosts:
-  - x86_64
+-output_platforms: true
+output_platforms:
+  x86_64-linux: {}
+build_platforms:
+  x86_64-linux: {}
 env:
   BUILDER: builder/compiler/linux/2
 requires:

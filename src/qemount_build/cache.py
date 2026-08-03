@@ -14,6 +14,7 @@ from .log import timed
 
 
 CACHE_FILE = "cache/build_cache.json"
+CACHE_SCHEMA = 2
 
 
 def stable_json(value) -> str:
@@ -33,26 +34,30 @@ def load_cache(build_dir: Path) -> dict:
     """Load hash cache from disk."""
     path = build_dir / CACHE_FILE
     if path.exists():
-        return json.loads(path.read_text())
-    return {}
+        cache = json.loads(path.read_text())
+        cache["__schema__"] = CACHE_SCHEMA
+        return cache
+    return {"__schema__": CACHE_SCHEMA}
 
 
 def save_cache(build_dir: Path, cache: dict):
     """Save hash cache to disk atomically."""
     path = build_dir / CACHE_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
+    cache["__schema__"] = CACHE_SCHEMA
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(cache, indent=2, sort_keys=True))
     tmp.rename(path)
 
 
-def hash_file(path: Path, cache: dict) -> str:
+def hash_file(path: Path, cache: dict, cache_path: str | None = None) -> str:
     """
     Hash a file, using cached hash if mtime+size unchanged.
 
-    Returns content hash (md5). Caches by absolute path with mtime+size.
+    Returns content hash (md5). ``cache_path`` gives relocatable callers a
+    logical identity; other callers retain an absolute-path cache entry.
     """
-    key = f"file:{path.absolute()}"
+    key = f"file:{cache_path}" if cache_path else f"file:{path.absolute()}"
     stat = path.stat()
     mtime = stat.st_mtime
     size = stat.st_size
@@ -71,7 +76,9 @@ def hash_file(path: Path, cache: dict) -> str:
 
 
 @timed
-def hash_files(directory: Path, cache: dict) -> str:
+def hash_files(
+    directory: Path, cache: dict, cache_prefix: str | None = None
+) -> str:
     """Hash all files in a directory recursively."""
     h = hashlib.md5()
     if not directory.exists():
@@ -81,7 +88,8 @@ def hash_files(directory: Path, cache: dict) -> str:
         if f.is_file():
             rel = f.relative_to(directory)
             h.update(str(rel).encode())
-            h.update(hash_file(f, cache).encode())
+            key = f"{cache_prefix}/{rel}" if cache_prefix else None
+            h.update(hash_file(f, cache, key).encode())
 
     return h.hexdigest()
 
@@ -109,7 +117,7 @@ def hash_path_inputs(
 
     # Hash all files in build context
     context_dir = pkg_dir / path
-    h.update(hash_files(context_dir, cache).encode())
+    h.update(hash_files(context_dir, cache, f"context:{path}").encode())
 
     # Hash resolved metadata. Build scripts consume this through META, and
     # single-file catalogue entries may not have a matching context directory.
@@ -124,7 +132,7 @@ def hash_path_inputs(
         else:
             req_path = build_dir / req
             if req_path.exists():
-                h.update(hash_file(req_path, cache).encode())
+                h.update(hash_file(req_path, cache, f"build:{req}").encode())
 
     # Hash build_requires (mounted during docker build)
     for req in sorted(resolved.get("build_requires", {}).keys()):
@@ -132,9 +140,9 @@ def hash_path_inputs(
         req_path = build_dir / req
         if req_path.exists():
             if req_path.is_file():
-                h.update(hash_file(req_path, cache).encode())
+                h.update(hash_file(req_path, cache, f"build:{req}").encode())
             else:
-                h.update(hash_files(req_path, cache).encode())
+                h.update(hash_files(req_path, cache, f"build:{req}").encode())
 
     # Hash env vars
     env = resolved.get("env", {})
@@ -142,6 +150,34 @@ def hash_path_inputs(
         h.update(json.dumps(sorted(env.items())).encode())
 
     return h.hexdigest()
+
+
+def hash_source_inputs(resolved: dict) -> str:
+    """Hash the declaration of a fetched source, not its transfer mechanism.
+
+    Downloader code, container images and build-platform metadata must not
+    invalidate already fetched upstream artefacts. Changing an output name or
+    URL still creates a new identity.
+    """
+    declaration = {
+        "provides": sorted(resolved.get("provides", {})),
+        # Preserve mirror order and any per-URL integrity metadata.
+        "urls": list(resolved.get("urls", {}).items()),
+    }
+    return hashlib.md5(stable_json(declaration).encode()).hexdigest()
+
+
+def cached_output_intact(output: str, cache: dict, build_dir: Path) -> bool:
+    """Return whether an existing output still matches its cached bytes."""
+    path = build_dir / output
+    cached = cache.get(output)
+    if not path.exists() or not cached:
+        return False
+    digest = hashlib.md5()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest() == cached.get("hash")
 
 
 def hash_output_inputs(
@@ -159,7 +195,7 @@ def hash_output_inputs(
         h.update(req.encode())
         req_path = build_dir / req
         if req_path.exists():
-            h.update(hash_file(req_path, cache).encode())
+            h.update(hash_file(req_path, cache, f"build:{req}").encode())
     return h.hexdigest()
 
 
@@ -187,35 +223,7 @@ def is_output_dirty(
     if cached.get("mtime") == stat.st_mtime and cached.get("size") == stat.st_size:
         return False
 
-    return hash_file(output_path, cache) != cached.get("hash")
-
-
-def is_image_dirty(
-    tag: str,
-    input_hash: str,
-    cache: dict,
-    image_exists_fn,
-    host_arch: str,
-) -> bool:
-    """
-    Check if a docker image needs rebuilding.
-
-    Returns True if input_hash changed or image doesn't exist.
-    Cache key includes host_arch to separate per-arch builds.
-    """
-    cache_key = f"docker:{tag}:{host_arch}"
-    cached = cache.get(cache_key)
-
-    if cached is None:
-        return True
-
-    if cached.get("input_hash") != input_hash:
-        return True
-
-    if not image_exists_fn(cached.get("hash", "")):
-        return True
-
-    return False
+    return hash_file(output_path, cache, f"build:{output}") != cached.get("hash")
 
 
 def update_output_hash(
@@ -224,11 +232,12 @@ def update_output_hash(
     input_hash: str,
     build_dir: Path,
     output_requires: list[str] | None = None,
+    provenance: dict | None = None,
 ):
     """Record hash state for a built file output."""
     path = build_dir / output
     # Update file cache entry so downstream deps see the new hash
-    file_hash = hash_file(path, cache)
+    file_hash = hash_file(path, cache, f"build:{output}")
     stat = path.stat()
     # Include per-output requires in stored hash
     full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
@@ -237,12 +246,5 @@ def update_output_hash(
         "hash": file_hash,
         "mtime": stat.st_mtime,
         "size": stat.st_size,
-    }
-
-
-def update_image_hash(cache: dict, tag: str, input_hash: str, image_id: str, host_arch: str):
-    """Record hash state for a docker image."""
-    cache[f"docker:{tag}:{host_arch}"] = {
-        "input_hash": input_hash,
-        "hash": image_id,
+        **({"provenance": provenance} if provenance else {}),
     }

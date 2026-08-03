@@ -1,12 +1,22 @@
 ---
 title: mkfs.reiser4
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-linux-gnu:
+    build_platforms:
+      x86_64-linux: {}
+  aarch64-linux-gnu:
+    build_platforms:
+      aarch64-linux: {}
 build_requires:
   - sources/libaal-1.0.7.tar.gz
   - sources/reiser4progs-1.2.2.tar.gz
 requires: []
 provides:
-  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiser4
-  - bin/${HOST_ARCH}-linux-gnu/reiser4-busy
+  - bin/${OUTPUT_ARCH}-linux-gnu/mkfs.reiser4
+  - bin/${OUTPUT_ARCH}-linux-gnu/reiser4-busy
 ---
 
 # mkfs.reiser4

@@ -20,7 +20,7 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-ARCH="$1"
+OUTPUT_ARCH="$1"
 BOOT_IMAGE="$2"
 shift 2
 
@@ -67,10 +67,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Map architecture to QEMU binary
-case "$ARCH" in
+case "$OUTPUT_ARCH" in
     x86_64) QEMU_BIN="qemu-system-x86_64" ;;
     aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-    *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
+    *) echo "Unsupported architecture: $OUTPUT_ARCH"; exit 1 ;;
 esac
 
 # Build QEMU command

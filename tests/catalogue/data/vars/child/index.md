@@ -1,13 +1,13 @@
 ---
 title: Child
 env:
-  BUILDER: builder/${HOST_ARCH}
+  BUILDER: builder/${BUILD_ARCH}
 requires:
   - docker:${BUILDER}
 provides:
-  - output/${ARCH}/thing
+  - output/${OUTPUT_ARCH}/thing
 ---
 
 # Child
 
-Defines BUILDER from inherited HOST_ARCH.
+Defines BUILDER from inherited BUILD_ARCH.

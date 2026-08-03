@@ -5,15 +5,15 @@ env:
   PUREDARWIN_IMAGE_SIZE: 256M
 requires:
   - docker:builder/disk/puredarwin
-  - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
+  - bin/qemu-system/${BUILD_ARCH}-linux-musl/qemu-system-x86_64
   - bin/qemu-system/firmware/bios-256k.bin
   - bin/qemu-system/firmware/vgabios-stdvga.bin
   - bin/qemu-system/firmware/kvmvapic.bin
-  - bin/${ARCH}-darwin/simple9p
-  - bin/${ARCH}-darwin/stream64
-  - bin/qemu/${ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
+  - bin/${OUTPUT_ARCH}-darwin/simple9p
+  - bin/${OUTPUT_ARCH}-darwin/stream64
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
 provides:
-  - bin/qemu/${ARCH}-darwin/puredarwin/appliance/puredarwin.raw
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/appliance/puredarwin.raw
 ---
 
 # PureDarwin qemount Appliance

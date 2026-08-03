@@ -1,8 +1,6 @@
 ---
 title: Sources
 env:
-  HOST_ARCH: ${HOST_ARCH}
-  ARCH: ${ARCH}
   META: ${META}
 requires:
   - docker:builder/downloader

@@ -1,5 +1,9 @@
 ---
 title: NetBSD 10.0 Compiler
+build_platforms:
+  x86_64-linux: {}
+env:
+  OUTPUT_ARCH: x86_64
 build_requires:
   - sources/netbsd-10.0-src.tgz
   - sources/netbsd-10.0-syssrc.tgz

@@ -1,9 +1,9 @@
 ---
 title: Haiku qemount Appliance System
 requires:
-  - bin/${ARCH}-haiku/qemount-init
+  - bin/${OUTPUT_ARCH}-haiku/qemount-init
 provides:
-  - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
+  - bin/qemu/${OUTPUT_ARCH}-haiku/qemount/system/haiku.image
 ---
 
 # Haiku qemount Appliance System

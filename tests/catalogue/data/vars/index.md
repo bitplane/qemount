@@ -4,8 +4,11 @@ no_inherit:
   - provides
   - build_requires
 env:
-  HOST_ARCH: ${HOST_ARCH}
-  ARCH: ${ARCH}
+  BUILD_ARCH: ${BUILD_ARCH}
+  OUTPUT_ARCH: ${OUTPUT_ARCH}
+output_platforms:
+  x86_64-test: {}
+  aarch64-test: {}
 ---
 
 # Root

@@ -4,12 +4,8 @@ set -ex
 QEMU_TARGETS="x86_64-softmmu,aarch64-softmmu,m68k-softmmu"
 JOBS=${JOBS:-$(nproc)}
 
-# Host platforms to build for
-PLATFORMS=(
-    "x86_64-linux-musl"
-    "x86_64-windows-gnu"
-    "x86_64-macos"
-)
+# A provider instance normally supplies exactly one host platform.
+PLATFORMS=("${OUTPUT_PLATFORM:?OUTPUT_PLATFORM is required}")
 
 platforms_from_targets() {
     local platforms=()
@@ -45,7 +41,7 @@ fi
 autotools_host() {
     case "$1" in
         *-windows-gnu) echo "x86_64-w64-mingw32" ;;
-        *-macos)       echo "x86_64-apple-darwin" ;;
+        *-darwin)      echo "x86_64-apple-darwin" ;;
         *)             echo "$1" ;;
     esac
 }
@@ -53,7 +49,7 @@ autotools_host() {
 platform_system() {
     case "$1" in
         *-windows-gnu) echo "windows" ;;
-        *-macos|*-darwin) echo "darwin" ;;
+        *-darwin) echo "darwin" ;;
         *) echo "linux" ;;
     esac
 }
@@ -94,7 +90,7 @@ platform_exe_ext() {
 
 platform_needs_exe_wrapper() {
     case "$1" in
-        *-windows-gnu|*-macos|*-darwin) echo "true" ;;
+        *-windows-gnu|*-darwin) echo "true" ;;
         *) echo "false" ;;
     esac
 }
@@ -113,7 +109,7 @@ meson_array() {
 
 ensure_macos_sdk() {
     local TARGET=$1
-    case "$TARGET" in *-macos|*-darwin) ;; *) return 0 ;; esac
+    case "$TARGET" in *-darwin) ;; *) return 0 ;; esac
     if [ ! -d /opt/macos-sdk/MacOSX11.3.sdk ]; then
         echo "--- Extracting macOS SDK ---"
         mkdir -p /opt/macos-sdk
@@ -350,7 +346,7 @@ build_deps_for_target() {
         # libiconv 1.17's iconv.c uses errno/E2BIG/EILSEQ but doesn't
         # include <errno.h>, relying on transitive includes that don't
         # exist via stdlib.h on macOS.
-        if [[ $TARGET == *"macos"* || $TARGET == *"darwin"* ]]; then
+        if [[ $TARGET == *"darwin"* ]]; then
             grep -q "^#include <errno.h>" lib/iconv.c || \
                 sed -i '/^#include <iconv.h>/a #include <errno.h>' lib/iconv.c
         fi
@@ -422,7 +418,7 @@ build_qemu_for_target() {
     # SDK 11.3 only has IOMasterPort (renamed to IOMainPort in macOS 12).
     # On real macOS 12+, IOMasterPort is still an alias, so binaries
     # built against the older symbol run fine on newer systems.
-    if [[ $TARGET == *"macos"* || $TARGET == *"darwin"* ]]; then
+    if [[ $TARGET == *"darwin"* ]]; then
         sed -i 's/\bIOMainPort\b/IOMasterPort/g' block/file-posix.c
     fi
 
@@ -440,7 +436,7 @@ build_qemu_for_target() {
     # macOS forbids fully-static binaries — Apple only ships dynamic
     # libSystem stubs. Build dynamic on darwin, static elsewhere.
     local STATIC_FLAG="--static"
-    case "$TARGET" in *-macos|*-darwin) STATIC_FLAG="" ;; esac
+    case "$TARGET" in *-darwin) STATIC_FLAG="" ;; esac
 
     ./configure \
         --cross-prefix="" \
@@ -465,7 +461,7 @@ build_qemu_for_target() {
     # on their mac, or run via `xattr -d com.apple.quarantine`.
     local EXT="$(platform_exe_ext $TARGET)"
     local SUFFIX=""
-    case "$TARGET" in *-macos|*-darwin) SUFFIX="-unsigned" ;; esac
+    case "$TARGET" in *-darwin) SUFFIX="-unsigned" ;; esac
 
     cp build/qemu-system-x86_64$SUFFIX$EXT $OUTDIR/qemu-system-x86_64$EXT
     cp build/qemu-system-aarch64$SUFFIX$EXT $OUTDIR/qemu-system-aarch64$EXT
@@ -490,6 +486,7 @@ generate_cross_file() {
 
     local PREFIX=/opt/$TARGET
     local SYSTEM="$(platform_system $TARGET)"
+    local CPU="${TARGET%%-*}"
     local NEEDS_EXE_WRAPPER="$(platform_needs_exe_wrapper $TARGET)"
     local C_ARGS="-I$PREFIX/include $(platform_c_args $TARGET)"
     local LD_ARGS="-L$PREFIX/lib $(platform_ld_args $TARGET)"
@@ -518,8 +515,8 @@ needs_exe_wrapper = $NEEDS_EXE_WRAPPER
 
 [host_machine]
 system = '$SYSTEM'
-cpu_family = 'x86_64'
-cpu = 'x86_64'
+cpu_family = '$CPU'
+cpu = '$CPU'
 endian = 'little'
 EOF
 }

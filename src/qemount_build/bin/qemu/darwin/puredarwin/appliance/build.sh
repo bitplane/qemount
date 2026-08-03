@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-SOURCE=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
-SIMPLE9P=/host/build/bin/${ARCH}-darwin/simple9p
-STREAM64=/host/build/bin/${ARCH}-darwin/stream64
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/appliance
+SOURCE=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
+SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-darwin/simple9p
+STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/appliance
 WORK_IMAGE=$OUTPUT_DIR/puredarwin.work.raw
 PAYLOAD_IMAGE=$OUTPUT_DIR/payload.hfs
 OUTPUT_TMP=$OUTPUT_DIR/puredarwin.raw.tmp

@@ -4,7 +4,7 @@ requires:
   - sources/compiler-rt-14.0.6.src.tar.xz
   - sources/puredarwin-linux-build.tar.gz
 provides:
-  - bin/qemu/${ARCH}-darwin/puredarwin/system/kernel.tar.gz
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/system/kernel.tar.gz
 ---
 
 # PureDarwin XNU Kernel

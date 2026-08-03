@@ -1,5 +1,8 @@
 ---
 title: QEMU Cross-Compiler
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
 requires:
   - sources/qemu-10.2.0.tar.xz
   - sources/glib-2.82.4.tar.xz
@@ -7,16 +10,27 @@ requires:
   - sources/libffi-3.4.6.tar.gz
   - sources/libiconv-1.17.tar.gz
   - sources/MacOSX11.3.sdk.tar.xz
-provides:
-  - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
-  - bin/qemu-system/x86_64-linux-musl/qemu-system-aarch64
-  - bin/qemu-system/x86_64-linux-musl/qemu-system-m68k
-  - bin/qemu-system/x86_64-windows-gnu/qemu-system-x86_64.exe
-  - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
-  - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
-  - bin/qemu-system/x86_64-macos/qemu-system-x86_64
-  - bin/qemu-system/x86_64-macos/qemu-system-aarch64
-  - bin/qemu-system/x86_64-macos/qemu-system-m68k
+output_platforms:
+  x86_64-linux-musl:
+    provides:
+      - bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64
+      - bin/qemu-system/x86_64-linux-musl/qemu-system-aarch64
+      - bin/qemu-system/x86_64-linux-musl/qemu-system-m68k
+  aarch64-linux-musl:
+    provides:
+      - bin/qemu-system/aarch64-linux-musl/qemu-system-x86_64
+      - bin/qemu-system/aarch64-linux-musl/qemu-system-aarch64
+      - bin/qemu-system/aarch64-linux-musl/qemu-system-m68k
+  x86_64-windows-gnu:
+    provides:
+      - bin/qemu-system/x86_64-windows-gnu/qemu-system-x86_64.exe
+      - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
+      - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
+  x86_64-darwin:
+    provides:
+      - bin/qemu-system/x86_64-darwin/qemu-system-x86_64
+      - bin/qemu-system/x86_64-darwin/qemu-system-aarch64
+      - bin/qemu-system/x86_64-darwin/qemu-system-m68k
 ---
 
 # QEMU Cross-Compiler
@@ -35,5 +49,5 @@ QEMU emulator targets:
 ## Host Platforms
 
 - x86_64-linux-musl
-- x86_64-windows (mingw)
-- x86_64-macos (darwin)
+- x86_64-windows-gnu (MinGW)
+- x86_64-darwin

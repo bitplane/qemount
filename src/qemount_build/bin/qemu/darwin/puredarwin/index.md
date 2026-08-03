@@ -1,7 +1,11 @@
 ---
 title: PureDarwin qemount Guest
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-darwin: {}
 env:
-  ARCH: x86_64
   BUILDER: builder/compiler/puredarwin
 requires:
   - docker:${BUILDER}

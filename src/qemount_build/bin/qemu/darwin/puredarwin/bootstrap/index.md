@@ -6,7 +6,7 @@ requires:
   - docker:builder/disk/debian
   - sources/puredarwin-17.4.vmdk.xz
 provides:
-  - bin/qemu/${ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
+  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
 ---
 
 # PureDarwin 17.4 Bootstrap Image

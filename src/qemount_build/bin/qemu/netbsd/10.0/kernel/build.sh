@@ -10,7 +10,7 @@ SOURCE_HASH=$(sha256sum \
     /host/build/sources/netbsd-10.0-sharesrc.tgz \
     /host/build/sources/netbsd-10.0-gnusrc.tgz \
     | sha256sum | cut -d ' ' -f 1)
-OBJ_DIR=/host/build/cache/netbsd/${ARCH}/10.0/kernel-v1/${SOURCE_HASH}/obj
+OBJ_DIR=/host/build/cache/netbsd/${OUTPUT_ARCH}/10.0/kernel-v1/${SOURCE_HASH}/obj
 
 cd /usr/src
 
@@ -23,6 +23,6 @@ mkdir -p "$OBJ_DIR"
     -m "$NBARCH" -a "$NBMACHINEARCH" kernel=QEMOUNT
 
 # Copy unstripped kernel (needed for mdsetimage)
-mkdir -p /host/build/bin/qemu/${ARCH}-netbsd/10.0/kernel
+mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel
 cp "$OBJ_DIR/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb" \
-   /host/build/bin/qemu/${ARCH}-netbsd/10.0/kernel/netbsd.gdb
+   /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb

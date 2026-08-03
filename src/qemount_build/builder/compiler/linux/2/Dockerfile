@@ -1,7 +1,7 @@
 # Ubuntu Lucid-based compiler for Linux 2.6 kernel
 # Lucid (10.04) has GCC 4.4 which is compatible with 2.6.39
 FROM ubuntu:10.04
-ARG ARCH
+ARG OUTPUT_ARCH
 
 # Configure archive repositories (lucid is EOL)
 RUN sed -i 's|archive.ubuntu.com|old-releases.ubuntu.com|g' /etc/apt/sources.list && \

@@ -354,13 +354,94 @@ def resolve_output(path: str, output: str, catalogue: dict, context: dict) -> di
     return merge_meta(path_meta, output_meta)
 
 
-def build_provides_index(catalogue: dict, context: dict) -> dict:
+def split_platform(platform: str | None) -> dict:
+    """Return the canonical components of a target platform name."""
+    if not platform:
+        return {
+            "OUTPUT_PLATFORM": "",
+            "OUTPUT_ARCH": "",
+            "OUTPUT_OS": "",
+            "OUTPUT_ENV": "",
+        }
+
+    parts = platform.split("-")
+    if len(parts) < 2:
+        raise ValueError(f"Invalid output platform: {platform}")
+    return {
+        "OUTPUT_PLATFORM": platform,
+        "OUTPUT_ARCH": parts[0],
+        "OUTPUT_OS": parts[1],
+        "OUTPUT_ENV": "-".join(parts[2:]),
+    }
+
+
+def provider_instance(path: str, output_platform: str | None) -> str:
+    """Return a stable graph/cache identity for a provider variant."""
+    return f"{path}@{output_platform}" if output_platform else path
+
+
+def resolve_provider_instances(path: str, catalogue: dict, context: dict) -> list[dict]:
+    """Resolve every output-platform variant of a catalogue provider."""
+    base = resolve_path(path, catalogue, context)
+    variants = base.get("output_platforms")
+    platform_keys = list(variants) if variants else [None]
+    result = []
+
+    for platform_key in platform_keys:
+        output_platform = None if platform_key == "neutral" else platform_key
+        instance_context = {**context, **split_platform(output_platform)}
+        meta = resolve_path(path, catalogue, instance_context)
+        if platform_key is not None:
+            variant_meta = meta.get("output_platforms", {}).get(platform_key, {})
+            meta = merge_meta(
+                meta, variant_meta, no_merge={"provides", "build_platforms"}
+            )
+            if isinstance(meta.get("provides"), list):
+                meta["provides"] = normalize_list(meta["provides"])
+        meta.pop("output_platforms", None)
+        result.append(
+            {
+                "id": provider_instance(path, output_platform),
+                "provider": path,
+                "output_platform": output_platform,
+                "context": instance_context,
+                "meta": meta,
+            }
+        )
+
+    return result
+
+
+def output_meta(record: dict, output: str) -> dict:
+    """Merge an output's metadata into its resolved provider variant."""
+    meta = record["meta"]
+    specific = meta.get("provides", {}).get(output, {})
+    return merge_meta(meta, specific) if specific else meta
+
+
+def is_native_output(record: dict, context: dict) -> bool:
+    """Return whether an output targets the build machine's architecture.
+
+    Guest operating systems are intentionally independent of the build OS:
+    an x86_64 Linux host should select x86_64 Haiku, NetBSD and Darwin guests
+    without treating them as cross-architecture builds.
+    """
+    platform = record.get("output_platform")
+    if not platform:
+        return True
+    parts = split_platform(platform)
+    return parts["OUTPUT_ARCH"] == context.get("BUILD_ARCH")
+
+
+def build_provides_index(
+    catalogue: dict, context: dict, build_dir: Path | None = None
+) -> dict:
     """
     Build the available output-to-provider index for this context.
 
     Returns dict: {output: catalogue_path}
     """
-    outputs = build_output_index(catalogue, context)
+    outputs = build_output_index(catalogue, context, build_dir)
     return {
         output: record["provider"]
         for output, record in outputs.items()
@@ -368,31 +449,39 @@ def build_provides_index(catalogue: dict, context: dict) -> dict:
     }
 
 
-def build_output_index(catalogue: dict, context: dict) -> dict:
+def build_output_index(
+    catalogue: dict, context: dict, build_dir: Path | None = None
+) -> dict:
     """Describe every output and whether it is buildable in this context."""
     index = {}
-    host_arch = context.get("HOST_ARCH")
+    build_platform = context.get("BUILD_PLATFORM")
 
     for path in catalogue["paths"]:
-        meta = resolve_path(path, catalogue, context)
-        build_hosts = meta.get("build_hosts", {})
-        buildable = not build_hosts or host_arch in build_hosts
-        reason = None
-        if not buildable:
-            supported = ", ".join(build_hosts)
-            reason = f"host architecture {host_arch} is not in build_hosts ({supported})"
-
-        for output in meta.get("provides", {}):
-            if output in index:
-                raise ValueError(
-                    f"Duplicate provider for {output}: "
-                    f"{index[output]['provider']} and {path}"
+        for instance in resolve_provider_instances(path, catalogue, context):
+            meta = instance["meta"]
+            build_platforms = meta.get("build_platforms", {})
+            buildable = not build_platforms or build_platform in build_platforms
+            reason = None
+            if not buildable:
+                supported = ", ".join(build_platforms)
+                reason = (
+                    f"build platform {build_platform} is not in "
+                    f"build_platforms ({supported})"
                 )
-            index[output] = {
-                "provider": path,
-                "buildable": buildable,
-                "reason": reason,
-            }
+
+            for output in meta.get("provides", {}):
+                if output in index:
+                    raise ValueError(
+                        f"Duplicate provider for {output}: "
+                        f"{index[output]['provider']} and {path}"
+                    )
+                record = {
+                    **instance,
+                    "buildable": buildable,
+                    "reason": reason,
+                }
+                record["native"] = is_native_output(record, context)
+                index[output] = record
 
     changed = True
     while changed:
@@ -400,10 +489,17 @@ def build_output_index(catalogue: dict, context: dict) -> dict:
         for output, record in index.items():
             if not record["buildable"]:
                 continue
-            meta = resolve_output(record["provider"], output, catalogue, context)
+            meta = output_meta(record, output)
             for requirement in meta.get("requires", {}):
                 dependency = index.get(requirement)
-                if dependency is None or dependency["buildable"]:
+                if dependency is None:
+                    if build_dir is None or (build_dir / requirement).exists():
+                        continue
+                    record["buildable"] = False
+                    record["reason"] = f"requires output with no provider: {requirement}"
+                    changed = True
+                    break
+                if dependency["buildable"]:
                     continue
                 record["buildable"] = False
                 record["reason"] = (
@@ -421,18 +517,18 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
     Build dependency graph for one or more targets.
 
     Returns dict with:
-        - nodes: {path: resolved_meta}
+        - nodes: {provider_instance: resolved_record}
         - edges: [(from_path, to_path), ...]
-        - targets: list of catalogue paths that provide the targets
-        - order: topologically sorted list of paths (dependencies first)
-        - needed: {path: set of outputs needed from that path}
+        - targets: list of provider instances that provide the targets
+        - order: topologically sorted provider instances
+        - needed: {provider_instance: set of required outputs}
 
     File dependencies that exist in build_dir are allowed even without
     a catalogue provider (e.g., catalogue.json).
     """
-    outputs = build_output_index(catalogue, context)
+    outputs = build_output_index(catalogue, context, build_dir)
     index = {
-        output: record["provider"]
+        output: record["id"]
         for output, record in outputs.items()
         if record["buildable"]
     }
@@ -457,31 +553,32 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
                 return
             raise KeyError(f"No provider for: {output} (required by {chain[-1] if chain else 'root'})")
 
-        path = index[output]
+        instance_id = index[output]
+        record = outputs[output]
 
         # Track which output we actually need from this path
-        if path not in needed:
-            needed[path] = set()
-        needed[path].add(output)
+        if instance_id not in needed:
+            needed[instance_id] = set()
+        needed[instance_id].add(output)
 
         # Cycle detection must happen before visited check
-        if path in chain:
-            cycle = chain[chain.index(path):] + [path]
+        if instance_id in chain:
+            cycle = chain[chain.index(instance_id):] + [instance_id]
             raise ValueError(f"Dependency cycle: {' -> '.join(cycle)}")
 
         if output in visited:
             return
         visited.add(output)
 
-        meta = resolve_output(path, output, catalogue, context)
+        meta = output_meta(record, output)
 
         # Store path metadata only once (first output wins)
-        if path not in nodes:
-            nodes[path] = resolve_path(path, catalogue, context)
+        if instance_id not in nodes:
+            nodes[instance_id] = record
 
         for req in meta.get("requires", {}):
-            edges.append((path, index.get(req, req)))
-            visit(req, chain + [path])
+            edges.append((instance_id, index.get(req, req)))
+            visit(req, chain + [instance_id])
 
     for target in targets:
         visit(target, [])

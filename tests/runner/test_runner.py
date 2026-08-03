@@ -5,14 +5,18 @@ import sys
 
 import pytest
 
+from qemount_build.cache import save_cache, update_output_hash
 from qemount_build.runner import (
     build_log_path,
     get_image_tag,
     get_docker_provides,
     get_file_provides,
     image_needs_no_cache,
+    begin_output_transaction,
+    finish_output_transaction,
     run_streaming,
     validate_path_provides,
+    run_build,
 )
 
 
@@ -167,3 +171,86 @@ def test_validate_path_provides_no_provides():
         "mypath", [], [], has_dockerfile=False, runs_on_tag=None
     )
     assert result is None
+
+
+def test_failed_output_transaction_restores_previous_file(tmp_path):
+    output = tmp_path / "data/result"
+    output.parent.mkdir(parents=True)
+    output.write_text("previous")
+
+    backups = begin_output_transaction(tmp_path, ["data/result"])
+    output.write_text("partial")
+    finish_output_transaction(tmp_path, ["data/result"], backups, False)
+
+    assert output.read_text() == "previous"
+    assert not (output.parent / "result.qemount-previous").exists()
+
+
+def test_successful_output_transaction_discards_previous_file(tmp_path):
+    output = tmp_path / "result"
+    output.write_text("previous")
+
+    backups = begin_output_transaction(tmp_path, ["result"])
+    output.write_text("replacement")
+    finish_output_transaction(tmp_path, ["result"], backups, True)
+
+    assert output.read_text() == "replacement"
+    assert not (tmp_path / "result.qemount-previous").exists()
+
+
+def test_new_transaction_recovers_previous_file_after_interruption(tmp_path):
+    output = tmp_path / "result"
+    output.write_text("previous")
+    begin_output_transaction(tmp_path, ["result"])
+    output.write_text("partial")
+
+    backups = begin_output_transaction(tmp_path, ["result"])
+
+    assert not output.exists()
+    assert backups["result"].read_text() == "previous"
+    finish_output_transaction(tmp_path, ["result"], backups, False)
+    assert output.read_text() == "previous"
+
+
+def test_existing_source_is_adopted_without_running_downloader(tmp_path, monkeypatch):
+    build_dir = tmp_path / "build"
+    pkg_dir = tmp_path / "catalogue"
+    output = "sources/source.tar"
+    path = build_dir / output
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"already downloaded")
+    cache = {}
+    update_output_hash(cache, output, "legacy-input", build_dir)
+    save_cache(build_dir, cache)
+
+    catalogue = {
+        "paths": {
+            "source": {
+                "sources": ["source.md"],
+                "meta": {
+                    "urls": {"https://example.test/source.tar": {}},
+                    "runs_on": "docker:builder/downloader",
+                    "provides": {output: {}},
+                },
+            }
+        }
+    }
+
+    def unexpected_download(*args, **kwargs):
+        raise AssertionError("downloader should not run")
+
+    monkeypatch.setattr("qemount_build.runner.run_container", unexpected_download)
+    success = run_build(
+        [output],
+        catalogue,
+        {
+            "BUILD_PLATFORM": "x86_64-linux",
+            "BUILD_ARCH": "x86_64",
+            "BUILD_OS": "linux",
+        },
+        build_dir,
+        pkg_dir,
+    )
+
+    assert success
+    assert path.read_bytes() == b"already downloaded"

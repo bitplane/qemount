@@ -1,8 +1,6 @@
 ---
 title: Test Data
 env:
-  HOST_ARCH: ${HOST_ARCH}
-  ARCH: ${ARCH}
   SELF: ${SELF}
 ---
 

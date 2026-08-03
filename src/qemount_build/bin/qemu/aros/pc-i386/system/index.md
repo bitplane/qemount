@@ -25,8 +25,8 @@ requires:
   - sources/aros-ports/zlib.tar.gz
   - sources/aros-ports/zstd-1.5.7.tar.gz
 provides:
-  - bin/qemu/${ARCH}-aros/system/aros.iso
-  - lib/${ARCH}-aros/sdk.tar.gz
+  - bin/qemu/${OUTPUT_ARCH}-aros/system/aros.iso
+  - lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
 ---
 
 # AROS PC i386 System

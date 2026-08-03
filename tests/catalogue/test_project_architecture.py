@@ -8,14 +8,20 @@ from qemount_build.catalogue import build_graph, build_provides_index, load
 
 PACKAGE_DIR = Path(__file__).parents[2] / "src" / "qemount_build"
 CONTEXT = {
-    "ARCH": "x86_64",
-    "HOST_ARCH": "x86_64",
+    "BUILD_PLATFORM": "x86_64-linux",
+    "BUILD_ARCH": "x86_64",
+    "BUILD_OS": "linux",
     "JOBS": "1",
 }
 
 
 def project_catalogue():
     return load(PACKAGE_DIR)
+
+
+def buildable_providers(context: dict = CONTEXT):
+    with tempfile.TemporaryDirectory() as tmp:
+        return build_provides_index(project_catalogue(), context, Path(tmp))
 
 
 def graph_for(target: str, context: dict = CONTEXT):
@@ -29,7 +35,7 @@ def graph_for(target: str, context: dict = CONTEXT):
 
 
 def test_amiga_manifest_has_separate_provider_from_generic_template():
-    providers = build_provides_index(project_catalogue(), CONTEXT)
+    providers = buildable_providers()
 
     assert providers["data/templates/basic.tar"] == "data/templates"
     assert providers["data/templates/basic.amiga"] == "data/templates/amiga"
@@ -51,11 +57,12 @@ def test_only_amiga_fixtures_depend_on_amiga_manifest():
 
 def test_fixed_arch_guests_resolve_on_arm_hosts():
     context = {
-        "ARCH": "aarch64",
-        "HOST_ARCH": "aarch64",
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
         "JOBS": "1",
     }
-    providers = build_provides_index(project_catalogue(), context)
+    providers = buildable_providers(context)
 
     assert providers["bin/i386-aros/simple9p"] == "bin/aros/simple9p"
     assert providers["bin/x86_64-darwin/simple9p"] == "bin/darwin/simple9p"
@@ -66,17 +73,18 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
         context,
     )
 
-    assert "bin/aros/simple9p" in aros["nodes"]
-    assert "bin/darwin/simple9p" in darwin["nodes"]
+    assert "bin/aros/simple9p@i386-aros" in aros["nodes"]
+    assert "bin/darwin/simple9p@x86_64-darwin" in darwin["nodes"]
 
 
 def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     context = {
-        "ARCH": "aarch64",
-        "HOST_ARCH": "aarch64",
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
         "JOBS": "1",
     }
-    providers = build_provides_index(project_catalogue(), context)
+    providers = buildable_providers(context)
 
     assert "docker:builder/compiler/linux/2" not in providers
     assert "bin/qemu/aarch64-linux/2.6/kernel" not in providers
@@ -86,11 +94,12 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
 
 def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     context = {
-        "ARCH": "aarch64",
-        "HOST_ARCH": "aarch64",
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
         "JOBS": "1",
     }
-    providers = build_provides_index(project_catalogue(), context)
+    providers = buildable_providers(context)
 
     assert "docker:builder/compiler/haiku" not in providers
     assert "docker:builder/compiler/haiku/r1beta5-sdk" not in providers
@@ -99,17 +108,18 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     assert "data/fs/basic.beos-bfs" not in providers
 
 
-def test_netbsd_tools_remain_available_without_arm_guest():
+def test_netbsd_toolchain_and_dependents_are_unavailable_on_arm_hosts():
     context = {
-        "ARCH": "aarch64",
-        "HOST_ARCH": "aarch64",
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
         "JOBS": "1",
     }
-    providers = build_provides_index(project_catalogue(), context)
+    providers = buildable_providers(context)
 
-    assert providers["docker:builder/compiler/netbsd/10.0"] == "builder/compiler/netbsd/10.0"
-    assert providers["docker:builder/disk/netbsd"] == "builder/disk/netbsd"
-    assert providers["data/fs/basic.v7"] == "data/fs/v7"
-    assert providers["data/pt/basic.disklabel"] == "data/pt/disklabel"
+    assert "docker:builder/compiler/netbsd/10.0" not in providers
+    assert "docker:builder/disk/netbsd" not in providers
+    assert "data/fs/basic.v7" not in providers
+    assert "data/pt/basic.disklabel" not in providers
     assert "bin/qemu/aarch64-netbsd/10.0/kernel/netbsd.gdb" not in providers
     assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers

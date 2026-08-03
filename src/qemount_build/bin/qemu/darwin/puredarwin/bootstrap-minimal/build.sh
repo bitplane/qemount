@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-BOOTSTRAP=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
-OUTPUT_DIR=/host/build/bin/qemu/${ARCH}-darwin/puredarwin/bootstrap-minimal
+BOOTSTRAP=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap/puredarwin.raw
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal
 WORK_IMAGE=$OUTPUT_DIR/puredarwin.work.raw
 OUTPUT_TMP=$OUTPUT_DIR/puredarwin.raw.tmp
 OUTPUT=$OUTPUT_DIR/puredarwin.raw

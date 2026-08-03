@@ -7,13 +7,13 @@ STRIP=/opt/aros-toolchain/i386-aros-strip
 SDK=/work/sdk/Developer
 SIMPLE9P_SOURCE=/work/simple9p-source
 LIBIXP_SOURCE=/work/libixp-source
-OUTPUT_DIR=/host/build/bin/${ARCH}-aros
+OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-aros
 CFLAGS="--sysroot=$SDK -Os -fno-common -fno-asynchronous-unwind-tables -fno-unwind-tables -DVERSION=\"0.5\" -D_POSIX_C_SOURCE=200809L -DSIMPLE9P_NO_NETWORK -I$LIBIXP_SOURCE/include"
 
 mkdir -p \
     /work/sdk /work/objects/libixp \
     "$SIMPLE9P_SOURCE" "$LIBIXP_SOURCE" "$OUTPUT_DIR"
-tar -xzf /host/build/lib/${ARCH}-aros/sdk.tar.gz -C /work/sdk
+tar -xzf /host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz -C /work/sdk
 tar -xzf /host/build/sources/simple9p-qemount-0.5.tar.gz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 tar -xzf /host/build/sources/libixp-qemount-0.2.tar.gz \

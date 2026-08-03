@@ -1,7 +1,7 @@
 ---
 title: qemount init for Haiku
 provides:
-  - bin/${ARCH}-haiku/qemount-init
+  - bin/${OUTPUT_ARCH}-haiku/qemount-init
 ---
 
 # qemount init for Haiku

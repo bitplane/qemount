@@ -79,8 +79,13 @@ The build system resolves the dependency graph and builds in order.
 title: BusyBox
 requires:
   - sources/busybox-1.36.1.tar.bz2
-provides:
-  - bin/${ARCH}-linux-${ENV}/busybox
+output_platforms:
+  x86_64-linux-musl:
+    provides:
+      - bin/${OUTPUT_PLATFORM}/busybox
+  aarch64-linux-musl:
+    provides:
+      - bin/${OUTPUT_PLATFORM}/busybox
 ---
 ```
 
@@ -94,13 +99,13 @@ builds a container image. `requires: docker:...` means it needs that image.
 
 ```bash
 # Show what can be built
-python -m qemount_build outputs
+qemount-build outputs
 
 # Show dependency graph for a target
-python -m qemount_build deps bin/x86_64-linux-musl/busybox
+qemount-build deps bin/x86_64-linux-musl/busybox
 
 # Build a target (and all dependencies)
-python -m qemount_build build bin/x86_64-linux-musl/busybox
+qemount-build build bin/x86_64-linux-musl/busybox
 ```
 
 ### Build flow
@@ -245,18 +250,19 @@ Examples:
 - `bin/x86_64-linux-gnu/detect` - Linux dynamic binary
 - `bin/x86_64-netbsd/simple9p` - NetBSD (no env suffix)
 - `lib/x86_64-darwin/libqemount.dylib` - macOS
-- `lib/x86_64-windows/qemount.dll` - Windows
+- `lib/x86_64-windows-gnu/qemount.dll` - Windows
 
 **Environment variables:**
-- `ARCH` - Target architecture (x86_64, aarch64)
-- `HOST_ARCH` - Host machine architecture
+- `BUILD_PLATFORM` - Build machine platform (for example x86_64-linux)
+- `BUILD_ARCH`, `BUILD_OS` - Components of the build platform
+- `OUTPUT_PLATFORM` - Platform targeted by a provider instance
+- `OUTPUT_ARCH`, `OUTPUT_OS`, `OUTPUT_ENV` - Output platform components
 - `ENV` - libc environment (musl, gnu) - only for Linux
 
-**ARCH vs HOST_ARCH:** Some builders can't cross-compile, so they use `HOST_ARCH`
-to indicate "we can only build for the architecture we're running on". This is a
-builder limitation, not a statement about where the binary runs. Both produce
-the same type of output (e.g., static musl binaries), the variable just reflects
-cross-compilation capability.
+Providers declare `output_platforms` independently from `build_platforms`.
+The former describes the artefacts they produce; the latter constrains which
+machines can run the build. One catalogue path may therefore have several
+provider instances without conflating host and target architecture.
 
 ## Current State
 

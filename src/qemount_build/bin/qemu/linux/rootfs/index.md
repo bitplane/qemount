@@ -4,12 +4,12 @@ env:
   BUILDER: builder/compiler/linux/6
 requires:
   - docker:${BUILDER}
-  - bin/${ARCH}-linux-${ENV}/busybox
-  - bin/${ARCH}-linux-${ENV}/simple9p
-  - bin/${ARCH}-linux-${ENV}/socat
-  - bin/${ARCH}-linux-${ENV}/dropbearmulti
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/busybox
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/simple9p
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/socat
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/dropbearmulti
 provides:
-  - bin/qemu/${ARCH}-linux/rootfs/rootfs.img
+  - bin/qemu/${OUTPUT_ARCH}-linux/rootfs/rootfs.img
 ---
 
 # Linux Rootfs

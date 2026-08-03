@@ -1,5 +1,12 @@
 ---
 title: Linux QEMU Guests
+output_platforms:
+  x86_64-linux:
+    build_platforms:
+      x86_64-linux: {}
+  aarch64-linux:
+    build_platforms:
+      aarch64-linux: {}
 env:
   ENV: musl
 ---

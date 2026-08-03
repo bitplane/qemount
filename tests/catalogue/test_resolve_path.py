@@ -13,18 +13,18 @@ DATA_DIR = Path(__file__).parent / "data"
 def test_resolve_path_root():
     """Root path resolves env from external context."""
     cat = load(DATA_DIR / "vars")
-    ctx = {"HOST_ARCH": "x86_64", "ARCH": "x86_64"}
+    ctx = {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "x86_64"}
 
     meta = resolve_path("", cat, ctx)
 
-    assert meta["env"]["HOST_ARCH"] == "x86_64"
-    assert meta["env"]["ARCH"] == "x86_64"
+    assert meta["env"]["BUILD_ARCH"] == "x86_64"
+    assert meta["env"]["OUTPUT_ARCH"] == "x86_64"
 
 
 def test_resolve_path_child():
-    """Child resolves BUILDER using inherited HOST_ARCH."""
+    """Child resolves BUILDER using inherited BUILD_ARCH."""
     cat = load(DATA_DIR / "vars")
-    ctx = {"HOST_ARCH": "x86_64", "ARCH": "aarch64"}
+    ctx = {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "aarch64"}
 
     meta = resolve_path("child", cat, ctx)
 
@@ -36,7 +36,7 @@ def test_resolve_path_child():
 def test_resolve_path_leaf():
     """Leaf resolves using full inherited context."""
     cat = load(DATA_DIR / "vars")
-    ctx = {"HOST_ARCH": "x86_64", "ARCH": "aarch64"}
+    ctx = {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "aarch64"}
 
     meta = resolve_path("child/leaf", cat, ctx)
 
@@ -49,8 +49,8 @@ def test_resolve_path_different_arch():
     """Same path resolves differently with different context."""
     cat = load(DATA_DIR / "vars")
 
-    meta_x86 = resolve_path("child/leaf", cat, {"HOST_ARCH": "x86_64", "ARCH": "x86_64"})
-    meta_arm = resolve_path("child/leaf", cat, {"HOST_ARCH": "aarch64", "ARCH": "aarch64"})
+    meta_x86 = resolve_path("child/leaf", cat, {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "x86_64"})
+    meta_arm = resolve_path("child/leaf", cat, {"BUILD_ARCH": "aarch64", "OUTPUT_ARCH": "aarch64"})
 
     assert "output/x86_64/leaf" in meta_x86["provides"]
     assert "output/aarch64/leaf" in meta_arm["provides"]

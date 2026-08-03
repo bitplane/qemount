@@ -8,7 +8,7 @@ SDK=$SDK_CACHE/MacOSX11.3.sdk
 SOURCE=/work/simple9p
 LIBIXP=$SOURCE/libixp
 OBJECTS=/work/objects
-OUTPUT_DIR=/host/build/bin/${ARCH}-darwin
+OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
 TARGET=x86_64-apple-macos10.13
 
 if [ ! -d "$SDK" ]; then

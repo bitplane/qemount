@@ -8,6 +8,7 @@ from qemount_build.main import (
     expand_targets,
     get_jobs,
     get_default_arch,
+    build_context,
     cmd_dump,
     cmd_outputs,
     cmd_deps,
@@ -42,7 +43,7 @@ def make_catalogue(outputs):
 def test_expand_targets_literal():
     """Literal targets pass through."""
     cat = make_catalogue(["data/fs/fat32", "data/fs/ext4"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     result = expand_targets(["data/fs/fat32"], cat, ctx)
     assert result == ["data/fs/fat32"]
 
@@ -50,7 +51,7 @@ def test_expand_targets_literal():
 def test_expand_targets_glob():
     """Glob patterns expand against outputs."""
     cat = make_catalogue(["data/fs/fat32", "data/fs/ext4", "data/pt/mbr"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     result = expand_targets(["data/fs/*"], cat, ctx)
     assert result == ["data/fs/ext4", "data/fs/fat32"]
 
@@ -58,7 +59,7 @@ def test_expand_targets_glob():
 def test_expand_targets_strips_build():
     """Build prefix stripped before expansion."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     result = expand_targets(["build/data/fs/fat32"], cat, ctx)
     assert result == ["data/fs/fat32"]
 
@@ -66,7 +67,7 @@ def test_expand_targets_strips_build():
 def test_expand_targets_multiple():
     """Multiple patterns and literals combined."""
     cat = make_catalogue(["data/fs/fat32", "data/fs/ext4", "data/pt/mbr"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     result = expand_targets(["data/pt/mbr", "data/fs/*"], cat, ctx)
     assert result == ["data/pt/mbr", "data/fs/ext4", "data/fs/fat32"]
 
@@ -85,10 +86,16 @@ def test_get_default_arch_returns_string():
     assert len(arch) > 0
 
 
+def test_build_context_splits_canonical_platform():
+    context = build_context("aarch64-linux")
+    assert context["BUILD_ARCH"] == "aarch64"
+    assert context["BUILD_OS"] == "linux"
+
+
 def test_cmd_dump(capsys):
     """cmd_dump outputs catalogue as JSON."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     args = Namespace()
 
     cmd_dump(args, cat, ctx)
@@ -101,8 +108,8 @@ def test_cmd_dump(capsys):
 def test_cmd_outputs(capsys):
     """cmd_outputs lists all output paths."""
     cat = make_catalogue(["data/fs/fat32", "data/fs/ext4"])
-    ctx = {"ARCH": "x86_64"}
-    args = Namespace(verbose=False, all=False)
+    ctx = build_context("x86_64-linux")
+    args = Namespace(verbose=False)
 
     cmd_outputs(args, cat, ctx)
 
@@ -115,8 +122,8 @@ def test_cmd_outputs(capsys):
 def test_cmd_outputs_verbose(capsys):
     """cmd_outputs -v shows provider path."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
-    args = Namespace(verbose=True, all=False)
+    ctx = build_context("x86_64-linux")
+    args = Namespace(verbose=True)
 
     cmd_outputs(args, cat, ctx)
 
@@ -124,23 +131,81 @@ def test_cmd_outputs_verbose(capsys):
     assert "data/fs/fat32\tdata/fs/fat32" in out
 
 
+def test_cmd_outputs_selects_native_and_neutral_by_default(capsys):
+    cat = {
+        "paths": {
+            "neutral": {"meta": {"provides": {"data/file": {}}}, "sources": []},
+            "tools": {
+                "meta": {
+                    "output_platforms": {
+                        "x86_64-linux-musl": {
+                            "provides": ["bin/x86_64-linux-musl/tool"]
+                        },
+                        "aarch64-linux-musl": {
+                            "provides": ["bin/aarch64-linux-musl/tool"]
+                        },
+                    }
+                },
+                "sources": [],
+            },
+        }
+    }
+    args = Namespace(verbose=False)
+    cmd_outputs(args, cat, build_context("aarch64-linux"))
+    lines = capsys.readouterr().out.splitlines()
+    assert "data/file" in lines
+    assert "bin/aarch64-linux-musl/tool" in lines
+    assert "bin/x86_64-linux-musl/tool" not in lines
+
+
+def test_cmd_outputs_selects_guest_os_by_architecture(capsys):
+    cat = {
+        "paths": {
+            "guests": {
+                "meta": {
+                    "output_platforms": {
+                        "x86_64-haiku": {
+                            "provides": ["bin/qemu/x86_64-haiku/guest"]
+                        },
+                        "aarch64-haiku": {
+                            "provides": ["bin/qemu/aarch64-haiku/guest"]
+                        },
+                    }
+                },
+                "sources": [],
+            }
+        }
+    }
+    args = Namespace(verbose=False)
+    cmd_outputs(args, cat, build_context("x86_64-linux"))
+    lines = capsys.readouterr().out.splitlines()
+    assert "bin/qemu/x86_64-haiku/guest" in lines
+    assert "bin/qemu/aarch64-haiku/guest" not in lines
+
+
 def test_cmd_outputs_all_shows_unavailable_reason(capsys):
     cat = make_catalogue(["legacy-output"])
-    cat["paths"]["legacy-output"]["meta"]["build_hosts"] = {"x86_64": {}}
-    ctx = {"ARCH": "aarch64", "HOST_ARCH": "aarch64"}
-    args = Namespace(verbose=True, all=True)
+    cat["paths"]["legacy-output"]["meta"]["build_platforms"] = {
+        "x86_64-linux": {}
+    }
+    ctx = {
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
+    }
+    args = Namespace(verbose=True, include_unavailable=True)
 
     cmd_outputs(args, cat, ctx)
 
     out = capsys.readouterr().out
     assert "legacy-output\tlegacy-output\tunavailable:" in out
-    assert "host architecture aarch64" in out
+    assert "build platform aarch64-linux" in out
 
 
 def test_cmd_deps(capsys):
     """cmd_deps shows build order."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     args = Namespace(targets=["data/fs/fat32"], order=False)
 
     result = cmd_deps(args, cat, ctx)
@@ -153,7 +218,7 @@ def test_cmd_deps(capsys):
 def test_cmd_deps_order(capsys):
     """cmd_deps --order outputs one path per line."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     args = Namespace(targets=["data/fs/fat32"], order=True)
 
     result = cmd_deps(args, cat, ctx)
@@ -166,7 +231,7 @@ def test_cmd_deps_order(capsys):
 def test_cmd_deps_no_match():
     """cmd_deps returns error for non-matching glob."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     args = Namespace(targets=["data/pt/*"], order=False)
 
     result = cmd_deps(args, cat, ctx)
@@ -177,7 +242,7 @@ def test_cmd_deps_no_match():
 def test_cmd_deps_not_found():
     """cmd_deps returns error for missing target."""
     cat = make_catalogue(["data/fs/fat32"])
-    ctx = {"ARCH": "x86_64"}
+    ctx = build_context("x86_64-linux")
     args = Namespace(targets=["data/fs/ext4"], order=False)
 
     result = cmd_deps(args, cat, ctx)

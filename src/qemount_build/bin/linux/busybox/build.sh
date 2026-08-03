@@ -16,6 +16,6 @@ yes "" | make oldconfig || true
 make -j${JOBS} CC=$CC CONFIG_STATIC=y
 
 # Copy to output
-mkdir -p /host/build/bin/${ARCH}-linux-${ENV}
-cp -v busybox /host/build/bin/${ARCH}-linux-${ENV}/
-strip /host/build/bin/${ARCH}-linux-${ENV}/busybox
+mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
+cp -v busybox /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/
+strip /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/busybox

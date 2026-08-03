@@ -1,10 +1,20 @@
 ---
 title: mkfs.reiserfs
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-linux-gnu:
+    build_platforms:
+      x86_64-linux: {}
+  aarch64-linux-gnu:
+    build_platforms:
+      aarch64-linux: {}
 build_requires:
   - sources/reiserfsprogs-3.6.27.tar.xz
 requires: []
 provides:
-  - bin/${HOST_ARCH}-linux-gnu/mkfs.reiserfs
+  - bin/${OUTPUT_ARCH}-linux-gnu/mkfs.reiserfs
 ---
 
 # reiserfsprogs

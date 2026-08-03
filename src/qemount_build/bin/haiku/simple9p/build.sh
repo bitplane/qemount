@@ -2,8 +2,8 @@
 set -eu
 
 SIMPLE9P_SOURCE=/work/simple9p
-OUTPUT_DIR=/host/build/bin/${ARCH}-haiku
-TOOL_PREFIX=/tools/cross-tools-${ARCH}/bin/${ARCH}-unknown-haiku-
+OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-haiku
+TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
 
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE/libixp" "$OUTPUT_DIR"

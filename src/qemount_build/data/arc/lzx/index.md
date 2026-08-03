@@ -2,7 +2,7 @@
 format: arc/lzx
 requires:
   - docker:builder/disk/debian
-  - bin/${HOST_ARCH}-linux-musl/lzx
+  - bin/${BUILD_ARCH}-linux-musl/lzx
   - data/templates/basic.tar
 provides:
   - data/arc/basic.lzx

@@ -1,10 +1,10 @@
 ---
 title: NetBSD 10.0 Rootfs
 requires:
-  - bin/${ARCH}-netbsd/simple9p
-  - bin/${ARCH}-netbsd/socat
+  - bin/${OUTPUT_ARCH}-netbsd/simple9p
+  - bin/${OUTPUT_ARCH}-netbsd/socat
 provides:
-  - bin/qemu/${ARCH}-netbsd/10.0/rootfs/ramdisk.fs
+  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
 ---
 
 # NetBSD 10.0 Rootfs

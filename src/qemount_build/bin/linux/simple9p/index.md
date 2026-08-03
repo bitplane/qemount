@@ -5,7 +5,7 @@ requires:
   - sources/simple9p-qemount-0.5.tar.gz
   - sources/libixp-qemount-0.2.tar.gz
 provides:
-  - bin/${ARCH}-linux-${ENV}/simple9p
+  - bin/${OUTPUT_ARCH}-linux-${ENV}/simple9p
 ---
 
 # simple9p

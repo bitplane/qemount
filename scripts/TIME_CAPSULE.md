@@ -55,6 +55,8 @@ sha256sum -c /time-capsule/payload.sha256
 ```
 
 The qemount checkout is at `/src`, with build outputs under `/src/build`.
+`/src/build/inventory.json` records the catalogue artefacts that were actually
+present, including outputs contributed by other build platforms.
 The complete repository can also be reconstructed independently from its Git
 bundle:
 

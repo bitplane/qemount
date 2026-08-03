@@ -4,10 +4,10 @@ env:
   BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
-  - bin/qemu/${ARCH}-haiku/qemount/system/haiku.image
-  - bin/${ARCH}-haiku/simple9p
+  - bin/qemu/${OUTPUT_ARCH}-haiku/qemount/system/haiku.image
+  - bin/${OUTPUT_ARCH}-haiku/simple9p
 provides:
-  - bin/qemu/${ARCH}-haiku/qemount/boot/haiku.image
+  - bin/qemu/${OUTPUT_ARCH}-haiku/qemount/boot/haiku.image
 ---
 
 # Haiku qemount Guest Image

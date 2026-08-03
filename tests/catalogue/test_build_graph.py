@@ -43,8 +43,8 @@ def test_build_graph_nodes_have_meta():
     with tempfile.TemporaryDirectory() as tmp:
         graph = build_graph(["a-output"], cat, ctx, Path(tmp))
 
-    assert graph["nodes"]["a"]["title"] == "A"
-    assert graph["nodes"]["b"]["title"] == "B"
+    assert graph["nodes"]["a"]["meta"]["title"] == "A"
+    assert graph["nodes"]["b"]["meta"]["title"] == "B"
 
 
 def test_build_graph_missing_target():
@@ -59,8 +59,12 @@ def test_build_graph_missing_target():
 
 def test_build_graph_unavailable_target():
     cat = load(DATA_DIR / "deps")
-    cat["paths"]["b"]["meta"]["build_hosts"] = {"x86_64": {}}
-    ctx = {"HOST_ARCH": "aarch64", "ARCH": "aarch64"}
+    cat["paths"]["b"]["meta"]["build_platforms"] = {"x86_64-linux": {}}
+    ctx = {
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
+    }
 
     with tempfile.TemporaryDirectory() as tmp:
         with pytest.raises(KeyError, match="Not buildable.*a-output"):
@@ -76,7 +80,7 @@ def test_build_graph_missing_dependency():
     cat["paths"][""]["meta"]["provides"] = {}
 
     with tempfile.TemporaryDirectory() as tmp:
-        with pytest.raises(KeyError, match="No provider for.*required by"):
+        with pytest.raises(KeyError, match="Not buildable.*no provider"):
             build_graph(["a-output"], cat, ctx, Path(tmp))
 
 

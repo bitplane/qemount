@@ -1,11 +1,11 @@
 ---
 title: NetBSD 10.0 Boot Image
 requires:
-  - bin/qemu/${ARCH}-netbsd/10.0/kernel/netbsd.gdb
-  - bin/qemu/${ARCH}-netbsd/10.0/rootfs/ramdisk.fs
+  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
+  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
 provides:
-  - bin/qemu/${ARCH}-netbsd/10.0/boot/boot.img
-  - bin/qemu/${ARCH}-netbsd/10.0/boot/netbsd
+  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
+  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
 support:
   # filesystems
   - format/fs/ext2

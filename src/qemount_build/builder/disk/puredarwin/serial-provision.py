@@ -2,6 +2,7 @@
 
 import argparse
 import mmap
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -111,7 +112,8 @@ def main() -> None:
     if args.patch_serial:
         patch_boot_flags(image)
 
-    qemu = "/host/build/bin/qemu-system/x86_64-linux-musl/qemu-system-x86_64"
+    build_arch = os.environ.get("BUILD_ARCH", "x86_64")
+    qemu = f"/host/build/bin/qemu-system/{build_arch}-linux-musl/qemu-system-x86_64"
     firmware = "/host/build/bin/qemu-system/firmware"
     source_drive = f"format=raw,file={image},index=0"
     if args.target:

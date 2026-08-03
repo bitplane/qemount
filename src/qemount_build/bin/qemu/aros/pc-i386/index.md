@@ -1,7 +1,8 @@
 ---
 title: AROS PC i386 Guest
+output_platforms:
+  i386-aros: {}
 env:
-  ARCH: i386
   AROS_TARGET: pc-i386
   AROS_VARIANT: tiny
   BUILDER: builder/compiler/aros/pc-i386
