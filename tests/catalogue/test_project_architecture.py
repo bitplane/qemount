@@ -82,3 +82,18 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     assert "bin/qemu/aarch64-linux/2.6/kernel" not in providers
     assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
     assert "data/fs/basic.reiserfs" not in providers
+
+
+def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
+    context = {
+        "ARCH": "aarch64",
+        "HOST_ARCH": "aarch64",
+        "JOBS": "1",
+    }
+    providers = build_provides_index(project_catalogue(), context)
+
+    assert "docker:builder/compiler/haiku" not in providers
+    assert "docker:builder/compiler/haiku/r1beta5-sdk" not in providers
+    assert "bin/x86_64-haiku/qemount-init" not in providers
+    assert "bin/qemu/x86_64-haiku/qemount/boot/haiku.image" not in providers
+    assert "data/fs/basic.beos-bfs" not in providers

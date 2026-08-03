@@ -1,5 +1,7 @@
 ---
 title: Haiku Cross-Compiler
+build_hosts:
+  - x86_64
 build_requires:
   - sources/haiku-qemount-2026-08-01-2.tar.gz
 provides:
@@ -11,4 +13,5 @@ provides:
 Haiku build environment based on the official toolchain-worker image and the
 qemount integration source.
 
-Source is mounted during build via build_requires.
+Source is mounted during build via build_requires. The official toolchain-worker
+and application SDK images are currently published for amd64 hosts only.
