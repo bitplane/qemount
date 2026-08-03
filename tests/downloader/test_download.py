@@ -42,4 +42,35 @@ def test_clone_repo_publishes_complete_archive(tmp_path):
 
     with tarfile.open(destination, "r:gz") as archive:
         assert "repository-main/content.txt" in archive.getnames()
+
+    (repository / "content.txt").write_text("updated\n")
+    subprocess.run(["git", "add", "content.txt"], cwd=repository, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=qemount tests",
+            "-c",
+            "user.email=tests@qemount.invalid",
+            "commit",
+            "-m",
+            "updated fixture",
+        ],
+        cwd=repository,
+        check=True,
+    )
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    assert clone_repo(f"git+file://{repository}#{commit}", destination)
+
+    with tarfile.open(destination, "r:gz") as archive:
+        content = archive.extractfile(f"repository-{commit}/content.txt")
+        assert content is not None
+        assert content.read() == b"updated\n"
     assert list(destination.parent.glob("*.tmp")) == []

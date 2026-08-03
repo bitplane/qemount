@@ -6,7 +6,8 @@ Reads META env var, downloads from urls, writes to provides path.
 
 Supports:
 - http/https URLs: direct download
-- git+https://...#tag: clone at tag with submodules, export as tarball
+- git+https://...#ref: clone at a branch, tag, or commit with submodules,
+  then export as a tarball
 """
 
 import json
@@ -74,12 +75,12 @@ def download_file(url: str, dest: Path) -> bool:
 def clone_repo(url: str, dest: Path) -> bool:
     """Clone a git repo and export as tarball.
 
-    URL format: git+https://github.com/user/repo.git#tag
+    URL format: git+https://github.com/user/repo.git#ref
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
 
     if "#" not in url:
-        log.warning("Git URL missing #tag: %s", url)
+        log.warning("Git URL missing #ref: %s", url)
         return False
 
     repo_url, ref = url[4:].split("#", 1)  # Strip "git+" prefix
@@ -91,25 +92,28 @@ def clone_repo(url: str, dest: Path) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         clone_dir = Path(tmpdir) / export_name
 
-        result = subprocess.run(
+        commands = [
+            ["git", "init", str(clone_dir)],
+            ["git", "-C", str(clone_dir), "remote", "add", "origin", repo_url],
+            ["git", "-C", str(clone_dir), "fetch", "--depth", "1", "origin", ref],
+            ["git", "-C", str(clone_dir), "checkout", "--detach", "FETCH_HEAD"],
             [
                 "git",
-                "clone",
+                "-C",
+                str(clone_dir),
+                "submodule",
+                "update",
+                "--init",
+                "--recursive",
                 "--depth",
                 "1",
-                "--branch",
-                ref,
-                "--recurse-submodules",
-                "--shallow-submodules",
-                repo_url,
-                str(clone_dir),
             ],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            log.warning("Clone failed: %s", result.stderr.strip())
-            return False
+        ]
+        for command in commands:
+            result = subprocess.run(command, capture_output=True, text=True)
+            if result.returncode != 0:
+                log.warning("Git command failed: %s", result.stderr.strip())
+                return False
 
         log.info("Creating tarball: %s", dest)
         with temporary_output(dest) as tmp:
@@ -149,10 +153,6 @@ def main():
     # Get first provides key as output path
     output = next(iter(provides.keys()))
     dest = Path("/host/build") / output
-
-    if dest.exists():
-        log.info("Already exists: %s", dest)
-        return 0
 
     log.info("Downloading: %s", output)
     for url in urls:
