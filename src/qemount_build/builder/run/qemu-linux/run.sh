@@ -26,6 +26,8 @@ BOOT_IMG="$3"
 shift 3
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+PROJECT_ROOT=$(cd -- "$SCRIPT_DIR/../../../../.." && pwd)
+FIRMWARE_DIR=${QEMOUNT_QEMU_FIRMWARE:-$PROJECT_ROOT/build/bin/qemu-system/firmware}
 source "$SCRIPT_DIR/../../disk/qemu/qemu-linux-arch.sh"
 set_qemu_linux_arch_profile "$OUTPUT_ARCH"
 
@@ -70,6 +72,7 @@ done
 # Build QEMU command
 QEMU_ARGS=(
     "${QEMU_MACHINE_ARGS[@]}"
+    -L "$FIRMWARE_DIR"
     -m 128
     -kernel "$KERNEL"
     -drive "file=$BOOT_IMG,format=raw,if=virtio,readonly=on"

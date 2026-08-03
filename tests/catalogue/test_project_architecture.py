@@ -87,6 +87,21 @@ def test_qemu_linux_architecture_profiles():
         assert result.stdout == profile
 
 
+def test_qemu_runtime_firmware_is_complete():
+    providers = buildable_providers()
+    runner = (PACKAGE_DIR / "builder/run/qemu-linux/run.sh").read_text()
+
+    assert "bin/qemu-system/firmware/efi-virtio.rom" in providers
+    assert '-L "$FIRMWARE_DIR"' in runner
+
+
+def test_linux_rootfs_creates_runtime_mountpoints():
+    build_script = (PACKAGE_DIR / "bin/qemu/linux/rootfs/build.sh").read_text()
+
+    for path in ("dev", "mnt", "proc", "sys", "tmp"):
+        assert f'"$ROOT/{path}"' in build_script
+
+
 def test_reiser4_fixture_uses_portable_block_size():
     build_script = (PACKAGE_DIR / "data/fs/reiser4/buildfs.sh").read_text()
 

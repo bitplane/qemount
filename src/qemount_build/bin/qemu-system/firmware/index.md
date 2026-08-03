@@ -7,6 +7,7 @@ requires:
   - sources/qemu-10.2.0.tar.xz
 provides:
   - bin/qemu-system/firmware/bios-256k.bin
+  - bin/qemu-system/firmware/efi-virtio.rom
   - bin/qemu-system/firmware/vgabios-stdvga.bin
   - bin/qemu-system/firmware/kvmvapic.bin
 ---

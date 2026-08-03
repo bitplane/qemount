@@ -7,6 +7,9 @@ ROOT="/work/root"
 # Start with overlay from image
 cp -a /root "$ROOT"
 
+# Git does not preserve the empty directories used as runtime mountpoints.
+mkdir -p "$ROOT/dev" "$ROOT/mnt" "$ROOT/proc" "$ROOT/sys" "$ROOT/tmp"
+
 # Copy binaries
 mkdir -p "$ROOT/bin"
 cp -v "$BINDIR/busybox" "$ROOT/bin/"
