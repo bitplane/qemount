@@ -3,9 +3,14 @@ title: NetBSD 10.0 Boot Image
 requires:
   - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
   - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
-provides:
-  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
-  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
+output_platforms:
+  x86_64-netbsd:
+    provides:
+      - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
+      - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
+  aarch64-netbsd:
+    provides:
+      - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
 support:
   # filesystems
   - format/fs/ext2
@@ -35,14 +40,15 @@ support:
 
 # NetBSD 10.0 Boot Image
 
-Bootable disk image with kernel + embedded ramdisk.
+Bootable kernel with an embedded ramdisk. The amd64 variant also includes a
+BIOS boot disk; the evbarm variant is loaded directly by QEMU.
 
 ## Architecture
 
-- Boot disk with embedded ramdisk (md0)
+- Kernel with embedded ramdisk (md0)
 - Kernel: GENERIC + QEMOUNT customizations
 - Root filesystem: FFS v1 on memory disk
-- Console: Serial (com0)
+- Console: architecture-native serial console
 
 ## Kernel-Only Support
 

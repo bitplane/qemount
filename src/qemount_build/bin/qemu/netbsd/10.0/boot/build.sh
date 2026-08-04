@@ -21,20 +21,34 @@ echo "Embedding ramdisk into kernel..."
 echo "Stripping kernel..."
 $TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-strip -o /work/netbsd.stripped /work/netbsd.gdb
 
-# Create bootable disk image
-echo "Creating boot image..."
-mkdir -p /work/bootfs
-cp /work/netbsd.stripped /work/bootfs/netbsd
-cp $DESTDIR/usr/mdec/boot /work/bootfs/boot
-cp /boot.cfg /work/bootfs/boot.cfg
-
-$TOOLDIR/bin/nbmakefs -s 48m -t ffs -o version=1 /work/boot.img /work/bootfs
-$TOOLDIR/bin/nbdisklabel -M $NBARCH -R -F /work/boot.img /disklabel.proto
-$TOOLDIR/bin/nbinstallboot -m $NBARCH -o timeout=0 /work/boot.img $DESTDIR/usr/mdec/bootxx_ffsv1
-
 # Copy to output
 mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot
-cp /work/boot.img /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
 cp /work/netbsd.stripped /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
 
-echo "Done! Boot image: boot.img"
+case "$OUTPUT_ARCH" in
+    x86_64)
+        echo "Creating BIOS boot image..."
+        mkdir -p /work/bootfs
+        cp /work/netbsd.stripped /work/bootfs/netbsd
+        cp "$DESTDIR/usr/mdec/boot" /work/bootfs/boot
+        cp /boot.cfg /work/bootfs/boot.cfg
+
+        "$TOOLDIR/bin/nbmakefs" -s 48m -t ffs -o version=1 \
+            /work/boot.img /work/bootfs
+        "$TOOLDIR/bin/nbdisklabel" -M "$NBARCH" -R -F \
+            /work/boot.img /disklabel.proto
+        "$TOOLDIR/bin/nbinstallboot" -m "$NBARCH" -o timeout=0 \
+            /work/boot.img "$DESTDIR/usr/mdec/bootxx_ffsv1"
+        cp /work/boot.img \
+            /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
+        ;;
+    aarch64)
+        # QEMU's virt machine loads the kernel directly.
+        ;;
+    *)
+        echo "Unsupported NetBSD boot architecture: $OUTPUT_ARCH" >&2
+        exit 1
+        ;;
+esac
+
+echo "Done! Kernel: netbsd"

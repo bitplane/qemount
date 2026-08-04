@@ -2,15 +2,19 @@
 title: NetBSD 10.0 Compiler
 build_platforms:
   x86_64-linux: {}
-env:
-  OUTPUT_ARCH: x86_64
+  aarch64-linux: {}
+output_platforms:
+  x86_64-netbsd:
+    provides:
+      - docker:builder/compiler/netbsd/10.0/x86_64
+  aarch64-netbsd:
+    provides:
+      - docker:builder/compiler/netbsd/10.0/aarch64
 build_requires:
   - sources/netbsd-10.0-src.tgz
   - sources/netbsd-10.0-syssrc.tgz
   - sources/netbsd-10.0-sharesrc.tgz
   - sources/netbsd-10.0-gnusrc.tgz
-provides:
-  - docker:builder/compiler/netbsd/10.0
 ---
 
 # NetBSD 10.0 Compiler

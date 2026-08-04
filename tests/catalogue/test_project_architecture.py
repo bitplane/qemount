@@ -182,18 +182,49 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     assert "data/fs/basic.beos-bfs" not in providers
 
 
-def test_netbsd_toolchain_and_dependents_are_unavailable_on_arm_hosts():
-    context = {
+def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
+    arm_context = {
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
         "JOBS": "1",
     }
-    providers = buildable_providers(context)
 
-    assert "docker:builder/compiler/netbsd/10.0" not in providers
-    assert "docker:builder/disk/netbsd" not in providers
-    assert "data/fs/basic.v7" not in providers
-    assert "data/pt/basic.disklabel" not in providers
-    assert "bin/qemu/aarch64-netbsd/10.0/kernel/netbsd.gdb" not in providers
-    assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers
+    for context in (CONTEXT, arm_context):
+        providers = buildable_providers(context)
+        assert "docker:builder/compiler/netbsd/10.0/x86_64" in providers
+        assert "docker:builder/compiler/netbsd/10.0/aarch64" in providers
+        assert "docker:builder/disk/netbsd" in providers
+        assert "data/fs/basic.v7" in providers
+        assert "data/pt/basic.disklabel" in providers
+        assert "bin/x86_64-netbsd/simple9p" in providers
+        assert "bin/aarch64-netbsd/simple9p" in providers
+        assert "bin/qemu/x86_64-netbsd/10.0/boot/boot.img" in providers
+        assert "bin/qemu/aarch64-netbsd/10.0/boot/netbsd" in providers
+        assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers
+
+    arm_guest = graph_for(
+        "bin/qemu/aarch64-netbsd/10.0/boot/netbsd", CONTEXT
+    )
+    x86_guest = graph_for(
+        "bin/qemu/x86_64-netbsd/10.0/boot/netbsd", arm_context
+    )
+    arm_data = graph_for("data/fs/basic.v7", arm_context)
+
+    assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_guest["nodes"]
+    assert "builder/compiler/netbsd/10.0@x86_64-netbsd" in x86_guest["nodes"]
+    assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_data["nodes"]
+
+
+def test_netbsd_rootfs_uses_target_device_database():
+    build_script = (
+        PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/build.sh"
+    ).read_text()
+    init_script = (
+        PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/root/sbin/init"
+    ).read_text()
+
+    assert '$DESTDIR/dev/MAKEDEV' in build_script
+    assert "/bin/sh /MAKEDEV" in init_script
+    assert "kern.rawpartition" in init_script
+    assert "mknod /dev/ld" not in init_script

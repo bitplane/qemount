@@ -22,32 +22,22 @@ mount -t tmpfs tmpfs /tmp
 # Mount procfs for debugging
 mount -t procfs procfs /proc
 
-# Create device nodes
-# console=0,0  tty00/com0=8,0  tty01/com1=8,1  null=2,2
-# wd*=0,*  (IDE disks: wd0a=0,0  wd1a=0,8 - minor = unit*8 + partition)
-# sd*=4,*  (SCSI/virtio: sd0a=4,0)
-# ld*=19,* (virtio-blk: ld0a=19,0)
-mknod /dev/console c 0 0
-mknod /dev/tty00 c 8 0
-mknod /dev/tty01 c 8 1
-mknod /dev/null c 2 2
-# MAXPARTITIONS=16 on amd64: minor = unit*16 + partition
-mknod /dev/wd0a b 0 0
-mknod /dev/wd1a b 0 16
-mknod /dev/sd0a b 4 0
-mknod /dev/sd1a b 4 16
-# ld devices: major=19, minor = unit*16 + partition (MAXPARTITIONS=16 on amd64)
-# ld0 = boot disk, user disks (ld1+) created dynamically in mount loop
-mknod /dev/ld0a b 19 0
-# viocon (virtio console/serial): major=364, minor=16*unit+port
-mknod /dev/ttyVI00 c 364 0
+# Use the target distribution's MAKEDEV so device numbers and raw partition
+# letters follow the selected NetBSD architecture.
+(
+    cd /dev
+    /bin/sh /MAKEDEV std ttyVI \
+        ld0 ld1 ld2 ld3 ld4 ld5 ld6 ld7 ld8 ld9 ld10 ld11 ld12 ld13 ld14 ld15 \
+        dk0 dk1 dk2 dk3 dk4 dk5 dk6 dk7 dk8 dk9 dk10 dk11 dk12 dk13 dk14 dk15 \
+        dk16 dk17 dk18 dk19 dk20 dk21 dk22 dk23 dk24 dk25 dk26 dk27 dk28 dk29 \
+        dk30 dk31 dk32 dk33 dk34 dk35 dk36 dk37 dk38 dk39 dk40 dk41 dk42 dk43 \
+        dk44 dk45 dk46 dk47 dk48 dk49 dk50 dk51 dk52 dk53 dk54 dk55 dk56 dk57 \
+        dk58 dk59 dk60 dk61 dk62 dk63
+)
 
 # Need to hold fd open so stty options hold - device resets to echo mode on close
 exec 3<>/dev/ttyVI00
 stty -f /dev/ttyVI00 raw -echo -echoe -echoke -echoctl
-
-# Redirect to serial console
-exec >/dev/tty00 2>&1 </dev/tty00
 
 # Set up terminal
 export TERM=vt100
@@ -93,10 +83,19 @@ echo "[INIT] Scanning for disk images..."
 
 # NetBSD virtio-blk uses ld* devices
 # ld0 = boot disk, user disks start at ld1
-# Major: ld=19, dk=168
-# Minor: ld = unit*16 + partition, dk = unit number
+# Device nodes come from the target architecture's MAKEDEV.
 
-# Map unit number to letter for mount points (1->b, 2->c, etc to match Linux)
+RAW_PARTITION=$(sysctl -n kern.rawpartition 2>/dev/null || echo 3)
+case "$RAW_PARTITION" in
+    2) RAW_LETTER=c ;;
+    3) RAW_LETTER=d ;;
+    *)
+        echo "[INIT] Unsupported raw partition index: $RAW_PARTITION"
+        exit 1
+        ;;
+esac
+
+# Map the attachment number to a mount-point letter matching Linux.
 get_letter() {
     case $1 in
         1) echo b;; 2) echo c;; 3) echo d;; 4) echo e;; 5) echo f;;
@@ -105,13 +104,19 @@ get_letter() {
     esac
 }
 
-for unit in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-    base_minor=$((unit * 16))
+case "$(uname -p)" in
+    aarch64)
+        DISK_UNITS="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14"
+        LETTER_OFFSET=1
+        ;;
+    *)
+        DISK_UNITS="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
+        LETTER_OFFSET=0
+        ;;
+esac
 
-    # Create whole-disk device node (partition 'd' = index 3)
-    mknod /dev/ld${unit}d b 19 $((base_minor + 3)) 2>/dev/null || continue
-
-    letter=$(get_letter $unit)
+for unit in $DISK_UNITS; do
+    letter=$(get_letter $((unit + LETTER_OFFSET)))
 
     # Use dkctl to discover wedges (partitions) for this disk
     # Kernel auto-discovers GPT/Apple partitions via DKWEDGE_AUTODISCOVER
@@ -134,11 +139,6 @@ for unit in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
         while read offset line; do
             # Extract dk device name (everything before first colon)
             dk_name="${line%%:*}"
-            dk_unit="${dk_name#dk}"
-
-            # Create dk device node (major 168, minor = unit)
-            mknod "/dev/$dk_name" b 168 "$dk_unit" 2>/dev/null || true
-
             if try_mount "/dev/$dk_name" "${letter}${part_num}"; then
                 MOUNT_SUCCESS=1
             fi
@@ -147,7 +147,7 @@ for unit in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
         rm -f /tmp/wedges.$$
     else
         # No wedges - try whole disk (raw filesystem)
-        if try_mount "/dev/ld${unit}d" "$letter"; then
+        if try_mount "/dev/ld${unit}${RAW_LETTER}" "$letter"; then
             MOUNT_SUCCESS=1
         fi
     fi

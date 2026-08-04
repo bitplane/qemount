@@ -14,8 +14,14 @@ OBJ_DIR=/host/build/cache/netbsd/${OUTPUT_ARCH}/10.0/kernel-v1/${SOURCE_HASH}/ob
 
 cd /usr/src
 
-# Copy kernel config
-cp /QEMOUNT /usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT
+# The machine configurations are intentionally separate; only the surrounding
+# build pipeline is architecture-independent.
+case "$NBKERNARCH" in
+    amd64) CONFIG=/QEMOUNT ;;
+    evbarm) CONFIG=/QEMOUNT.evbarm ;;
+    *) echo "Unsupported NetBSD kernel architecture: $NBKERNARCH" >&2; exit 1 ;;
+esac
+cp "$CONFIG" /usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT
 
 # Build the kernel
 mkdir -p "$OBJ_DIR"

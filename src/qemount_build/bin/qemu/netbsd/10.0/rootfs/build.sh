@@ -54,6 +54,8 @@ chmod 755 /ramdisk/init.sh
 cp -v /root/init.9p /ramdisk/init.9p
 chmod 755 /ramdisk/init.9p
 cp -v /root/etc/* /ramdisk/etc/
+cp -v "$DESTDIR/dev/MAKEDEV" /ramdisk/MAKEDEV
+chmod 755 /ramdisk/MAKEDEV
 
 # Copy qemount tools from build
 if [ -f /host/build/bin/${OUTPUT_ARCH}-netbsd/simple9p ]; then

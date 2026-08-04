@@ -1,4 +1,5 @@
-FROM builder/compiler/netbsd/10.0 AS netbsd
+ARG BUILDER
+FROM ${BUILDER} AS netbsd
 
 FROM debian:bookworm-slim
 
