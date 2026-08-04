@@ -1,0 +1,370 @@
+--- a/Makefile
++++ b/Makefile
+@@ -101,7 +101,7 @@ BITGTS:=${BITGTS} ${BITGTS:S/^/build/} ${BITGTS:S/^/install/}
+ .ORDER: build-all install-all
+ 
+ _HOSTPATH=	/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/pkg/bin
+-MAKE=	PATH=${_HOSTPATH} make -m ${.CURDIR}/share/mk -f Makefile.inc1
++MAKE=	PATH=${_HOSTPATH} ${.MAKE} -m ${.CURDIR}/share/mk -f Makefile.inc1
+ 
+ #
+ # Handle the user-driven targets, using the source relative mk files.
+--- a/Makefile.inc1
++++ b/Makefile.inc1
+@@ -211,6 +211,9 @@ BMAKEENV=	MAKEOBJDIRPREFIX=${BTOOLSDEST} \
+ 		PATH=${BTOOLSPATH}:${PATH} \
+ 		M4=${BTOOLSDEST}/usr/bin/m4 \
+-		INSTALL="sh ${.CURDIR}/tools/install.sh"
++		INSTALL="sh ${.CURDIR}/tools/install.sh" \
++		CFLAGS="${HOST_CFLAGS}" \
++		HOST_LDADD="${HOST_LDADD}" \
++		YACC="${HOST_YACC}"
+ 
+ BMAKE=		${BMAKEENV} make -f Makefile.inc1 -DBOOTSTRAPPING \
+		-DNOMAN -DNOPIC -DNOPROFILE -DNOSHARED \
+@@ -279 +279,3 @@
+-		INSTALL="sh ${.CURDIR}/tools/install.sh" \
++		INSTALL="sh ${.CURDIR}/tools/install.sh" \
++		HOST_CFLAGS="${HOST_CFLAGS}" \
++		HOST_LDADD="${HOST_LDADD}" \
+@@ -316,10 +316,10 @@ _mtreetmp:
+ 	mkdir -p ${DESTDIRBASE} ${BTOOLSDEST} ${CTOOLSDEST} ${WORLDDEST}
+ .for _dir in ${WORLDDEST} ${BTOOLSDEST} ${CTOOLSDEST}
+-	mtree -deU -f ${.CURDIR}/etc/mtree/BSD.root.dist	\
++	mtree -deU -N ${.CURDIR}/etc -f ${.CURDIR}/etc/mtree/BSD.root.dist	\
+ 		-p ${_dir}/  > /dev/null
+-	mtree -deU -f ${.CURDIR}/etc/mtree/BSD.usr.dist		\
++	mtree -deU -N ${.CURDIR}/etc -f ${.CURDIR}/etc/mtree/BSD.usr.dist	\
+ 		-p ${_dir}/usr > /dev/null
+ .endfor
+-	mtree -deU -f ${.CURDIR}/etc/mtree/BSD.include.dist	\
++	mtree -deU -N ${.CURDIR}/etc -f ${.CURDIR}/etc/mtree/BSD.include.dist	\
+		-p ${WORLDDEST}/usr/include > /dev/null
+ 	${LN} -sf ${.CURDIR}/sys ${WORLDDEST}
+@@ -872 +872 @@ BSTRAPDIRS1= \
+-	bin/hostname bin/kill \
++	bin/kill \
+@@ -881 +881 @@ BSTRAPDIRS2= \
+-	usr.bin/sed usr.bin/uname usr.bin/touch \
++	usr.bin/sed usr.bin/touch \
+@@ -883 +883 @@ BSTRAPDIRS2= \
+-	usr.bin/tsort usr.bin/tr usr.bin/join usr.bin/wc usr.bin/basename \
++	usr.bin/join usr.bin/wc usr.bin/basename \
+@@ -884 +884 @@ BSTRAPDIRS2= \
+-	usr.bin/gencat usr.bin/chflags \
++	usr.bin/gencat \
+@@ -888 +888 @@ BSTRAPDIRS2= \
+-	usr.sbin/chown usr.sbin/mtree usr.sbin/config \
++	usr.sbin/chown usr.sbin/config \
+@@ -890 +890 @@ BSTRAPDIRS2= \
+-	gnu/usr.bin/grep usr.bin/sort usr.bin/gzip \
++	usr.bin/gzip \
+@@ -897,0 +898,10 @@ bootstrap-tools-before:
++	${LN} -fs /bin/true ${BTOOLSDEST}/usr/bin/chflags
++	${LN} -fs /bin/hostname ${BTOOLSDEST}/bin/hostname
++	${LN} -fs /usr/bin/egrep ${BTOOLSDEST}/usr/bin/egrep
++	${LN} -fs /usr/bin/fgrep ${BTOOLSDEST}/usr/bin/fgrep
++	${LN} -fs /usr/bin/grep ${BTOOLSDEST}/usr/bin/grep
++	${LN} -fs /usr/local/bin/mtree ${BTOOLSDEST}/usr/sbin/mtree
++	${LN} -fs /usr/bin/sort ${BTOOLSDEST}/usr/bin/sort
++	${LN} -fs /usr/bin/tr ${BTOOLSDEST}/usr/bin/tr
++	${LN} -fs /usr/bin/tsort ${BTOOLSDEST}/usr/bin/tsort
++	${LN} -fs /usr/bin/uname ${BTOOLSDEST}/usr/bin/uname
+--- a/lib/libc/db/db/db.c
++++ b/lib/libc/db/db/db.c
+@@ -60,0 +61 @@
++#ifndef BOOTSTRAPPING
+@@ -63,0 +65 @@
++#endif
+@@ -66,0 +69 @@
++#ifndef BOOTSTRAPPING
+@@ -69,0 +73 @@
++#endif
+--- a/usr.bin/cap_mkdb/Makefile
++++ b/usr.bin/cap_mkdb/Makefile
+@@ -6,0 +7,14 @@
++.if defined(BOOTSTRAPPING)
++.PATH: ${.CURDIR}/../../lib/libc/db/db \
++	${.CURDIR}/../../lib/libc/db/hash \
++	${.CURDIR}/../../lib/libc/db/mpool \
++	${.CURDIR}/../../lib/libc/gen
++SRCS+=	cap_mkdb.c db.c getcap.c hash.c hash_bigkey.c hash_buf.c \
++	hash_func.c \
++	hash_log2.c hash_page.c mpool.c
++CFLAGS+=	-DBOOTSTRAPPING -D__DBINTERFACE_PRIVATE \
++	-I/tmp/dragonfly-include \
++	-I${.CURDIR}/../../lib/libc/include \
++	-I${.CURDIR}/../../lib/libc/db/hash
++.endif
++
+--- a/usr.bin/find/function.c
++++ b/usr.bin/find/function.c
+@@ -37 +36,0 @@
+-#include <sys/ucred.h>
+--- a/usr.bin/m4/Makefile
++++ b/usr.bin/m4/Makefile
+@@ -9,5 +9,6 @@ CFLAGS+=-DEXTENDED -I${.CURDIR} -I${.CURDIR}/lib -I.
+-.if defined(BOOTSTRAPPING) && exists(${_SHLIBDIRPREFIX}/usr/lib/libl.a)
+-LDFLAGS+=	-L${_SHLIBDIRPREFIX}/usr/lib
+-.endif
+-DPADD=	${LIBY} ${LIBL} ${LIBM}
+-LDADD=	-ly -ll -lm
++.if defined(BOOTSTRAPPING)
++LDADD=	-lfl -lm
++.else
++DPADD=	${LIBY} ${LIBL} ${LIBM}
++LDADD=	-ly -ll -lm
++.endif
+--- a/usr.bin/xinstall/Makefile
++++ b/usr.bin/xinstall/Makefile
+@@ -12,9 +12,5 @@ CFLAGS+=        -DHAVE_NETDB_H -I${.CURDIR}/../../usr.sbin/mtree
+ .if defined(BOOTSTRAPPING)
+-.if ${WORLD_VERSION} < 500302 # pwcache(3) upgrades came in about here
+ .PATH: ${.CURDIR}/../../lib/libc/gen
+ SRCS+=	pwcache.c
+-CFLAGS+=-I${.CURDIR}/../../lib/libc/include
+-CFLAGS+=-include ${.CURDIR}/../../include/grp.h
+-CFLAGS+=-include ${.CURDIR}/../../include/pwd.h
+-.endif
++CFLAGS+=-I${.CURDIR}/../../lib/libc/gen -DEMBED_LIB_SRC
+ .endif
+--- a/stand/boot/common/misc.c
++++ b/stand/boot/common/misc.c
+@@ -98,4 +98,4 @@
+ kern_bzero(vm_offset_t dest, size_t len)
+ {
+-    char	    buf[256];
++    static char    buf[4096];
+     size_t	    chunk, resid;
+--- a/usr.sbin/config/Makefile
++++ b/usr.sbin/config/Makefile
+@@ -9,6 +9,6 @@
+-DPADD=	${LIBL}
+-LDADD=	-ll
+-
+-.if defined(BOOTSTRAPPING) && exists(${_SHLIBDIRPREFIX}/usr/lib/libl.a)
+-LDFLAGS+=	-L${_SHLIBDIRPREFIX}/usr/lib
++.if defined(BOOTSTRAPPING)
++LDADD=	-lfl
++.else
++DPADD=	${LIBL}
++LDADD=	-ll
+ .endif
+--- a/usr.sbin/tzsetup/tzsetup.c
++++ b/usr.sbin/tzsetup/tzsetup.c
+@@ -49 +49,3 @@
++#ifdef HAVE_DIALOG
+ #include <sys/sysctl.h>
++#endif
+--- a/usr.sbin/pwd_mkdb/Makefile
++++ b/usr.sbin/pwd_mkdb/Makefile
+@@ -9,0 +10,12 @@
++.if defined(BOOTSTRAPPING)
++.PATH: ${.CURDIR}/../../lib/libc/db/db \
++	${.CURDIR}/../../lib/libc/db/hash \
++	${.CURDIR}/../../lib/libc/db/mpool
++SRCS+=	db.c hash.c hash_bigkey.c hash_buf.c hash_func.c hash_log2.c \
++	hash_page.c mpool.c
++CFLAGS+=	-DBOOTSTRAPPING -DDRAGONFLY_PASSWD_TOOL \
++	-D__DBINTERFACE_PRIVATE -I/tmp/dragonfly-include \
++	-I${.CURDIR}/../../lib/libc/include \
++	-I${.CURDIR}/../../lib/libc/db/hash
++.endif
++
+--- a/usr.sbin/pwd_mkdb/pwd_mkdb.c
++++ b/usr.sbin/pwd_mkdb/pwd_mkdb.c
+@@ -35 +35,5 @@
++#ifdef BOOTSTRAPPING
++#include <endian.h>
++#else
+ #include <sys/endian.h>
++#endif
+--- a/usr.bin/xargs/xargs.c
++++ b/usr.bin/xargs/xargs.c
+@@ -44 +43,0 @@
+-#include <sys/limits.h>
+--- a/usr.bin/crunch/crunchide/exec_elf64.c
++++ b/usr.bin/crunch/crunchide/exec_elf64.c
+@@ -36 +36,5 @@
++#ifdef BOOTSTRAPPING
++#include <endian.h>
++#else
+ #include <sys/endian.h>
++#endif
+@@ -53 +57,5 @@
++#ifdef BOOTSTRAPPING
++#include <host-elf.h>
++#else
+ #include <sys/elf64.h>
++#endif
+@@ -60 +68,3 @@
++#ifndef BOOTSTRAPPING
+ #include <sys/elf_generic.h>
++#endif
+--- a/usr.bin/crunch/crunchide/Makefile
++++ b/usr.bin/crunch/crunchide/Makefile
+@@ -5,0 +6,4 @@
++.if defined(BOOTSTRAPPING)
++CFLAGS+=-DBOOTSTRAPPING -I/tmp
++.endif
++
+--- a/usr.bin/objformat/Makefile
++++ b/usr.bin/objformat/Makefile
+@@ -6,0 +7,7 @@
++.if defined(BOOTSTRAPPING)
++.PATH: ${.CURDIR}/../../lib/libc/gen
++SRCS=		objformat.c getobjformat.c
++CFLAGS+=	${HOST_CFLAGS} -I/tmp
++NO_WERROR=	YES
++.endif
++
+--- a/gnu/usr.bin/binutils234/block1/libiberty/config.h
++++ b/gnu/usr.bin/binutils234/block1/libiberty/config.h
+@@ -362,0 +363,4 @@
++#ifdef __linux__
++#undef HAVE_SYS_SYSCTL_H
++#endif
++
+--- a/share/mk/bsd.prog.mk
++++ b/share/mk/bsd.prog.mk
+@@ -21,6 +21,10 @@
+ .if defined(NOSHARED) && ( ${NOSHARED} != "no" && ${NOSHARED} != "NO" )
+ LDFLAGS+= -static
+ .endif
+ 
++.if defined(BOOTSTRAPPING)
++LDADD+=	${HOST_LDADD}
++.endif
++
+ .if defined(PROG_CXX)
+ PROG=	${PROG_CXX}
+ .endif
+--- a/gnu/usr.bin/cc47/cc_tools/libiberty/config.h
++++ b/gnu/usr.bin/cc47/cc_tools/libiberty/config.h
+@@ -327,0 +328,4 @@
++#ifdef __linux__
++#undef HAVE_SYS_SYSCTL_H
++#endif
++
+--- a/gnu/usr.bin/cc47/libiberty/config.h
++++ b/gnu/usr.bin/cc47/libiberty/config.h
+@@ -327,0 +328,4 @@
++#ifdef __linux__
++#undef HAVE_SYS_SYSCTL_H
++#endif
++
+--- a/gnu/usr.bin/cc80/support-libs/libcpp/config.h
++++ b/gnu/usr.bin/cc80/support-libs/libcpp/config.h
+@@ -59,0 +60,5 @@
++#ifdef __linux__
++#undef HAVE_DECL_BASENAME
++#define HAVE_DECL_BASENAME 1
++#endif
++
+--- a/gnu/usr.bin/cc80/support-libs/libiberty/config.h
++++ b/gnu/usr.bin/cc80/support-libs/libiberty/config.h
+@@ -359,0 +360,4 @@
++#ifdef __linux__
++#undef HAVE_SYS_SYSCTL_H
++#endif
++
+--- a/gnu/usr.bin/cc80/cc_prep/auto-host.h
++++ b/gnu/usr.bin/cc80/cc_prep/auto-host.h
+@@ -827 +827,5 @@
+-#define HAVE_DECL_BASENAME 0
++#ifdef __linux__
++#define HAVE_DECL_BASENAME 1
++#else
++#define HAVE_DECL_BASENAME 0
++#endif
+--- a/gnu/usr.bin/binutils234/block2/ld/Makefile
++++ b/gnu/usr.bin/binutils234/block2/ld/Makefile
+@@ -41,0 +42,4 @@
++.if defined(BOOTSTRAPPING)
++CFLAGS+=	-I/tmp -D__CONFIG_H__
++.endif
++
+--- a/share/mk/bsd.lib.mk
++++ b/share/mk/bsd.lib.mk
+@@ -124,0 +125 @@
++_TSORT=	tsort
+@@ -146 +147 @@
+-	${AR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | tsort -q` ${ARADD}
++	${AR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | ${_TSORT}` ${ARADD}
+@@ -160 +161 @@
+-	${AR} ${ARFLAGS} ${.TARGET} `lorder ${POBJS} | tsort -q` ${ARADD}
++	${AR} ${ARFLAGS} ${.TARGET} `lorder ${POBJS} | ${_TSORT}` ${ARADD}
+@@ -182 +183 @@
+-	    `lorder ${SOBJS} | tsort -q` ${LDADD}
++	    `lorder ${SOBJS} | ${_TSORT}` ${LDADD}
+--- a/share/mk/bsd.hostlib.mk
++++ b/share/mk/bsd.hostlib.mk
+@@ -27,0 +28 @@
++_TSORT=	tsort
+@@ -35 +36 @@
+-	${NXAR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | tsort -q` ${ARADD}
++	${NXAR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | ${_TSORT}` ${ARADD}
+--- a/gnu/usr.bin/cc80/Makefile.intcxx_lib
++++ b/gnu/usr.bin/cc80/Makefile.intcxx_lib
+@@ -20,0 +21 @@
++_TSORT=	tsort
+@@ -28 +29 @@
+-	${NXAR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | tsort -q` ${ARADD}
++	${NXAR} ${ARFLAGS} ${.TARGET} `lorder ${OBJS} ${STATICOBJS} | ${_TSORT}` ${ARADD}
+--- a/include/Makefile
++++ b/include/Makefile
+@@ -153 +153 @@
+-	mtree -deU -f ${.CURDIR}/../etc/mtree/BSD.include.dist \
++	mtree -deU -N ${.CURDIR}/../etc -f ${.CURDIR}/../etc/mtree/BSD.include.dist \
+--- a/lib/libmagic/mkmagic/Makefile
++++ b/lib/libmagic/mkmagic/Makefile
+@@ -12,0 +13,2 @@
++CFLAGS+=	-I/tmp
++LDADD+=		${HOST_LDADD}
+--- a/lib/libncurses/libtic/Makefile
++++ b/lib/libncurses/libtic/Makefile
+@@ -9,0 +10 @@
++CFLAGS+=	${HOST_CFLAGS}
+--- a/lib/libncurses/tic_next/Makefile
++++ b/lib/libncurses/tic_next/Makefile
+@@ -13,0 +14 @@
++CFLAGS+=	${HOST_CFLAGS}
+@@ -17,0 +19 @@
++LDADD+=		${HOST_LDADD}
+--- a/lib/libncurses/include/ncurses_cfg.h
++++ b/lib/libncurses/include/ncurses_cfg.h
+@@ -172 +172,5 @@
++#ifdef DRAGONFLY_LINUX_HOST
++#define HAVE_BSD_CGETENT 0
++#else
+ #define HAVE_BSD_CGETENT 1
++#endif
+--- a/stand/boot/pc32/btxld/Makefile
++++ b/stand/boot/pc32/btxld/Makefile
+@@ -6,0 +7,2 @@
++CFLAGS+=	${HOST_CFLAGS} -I/tmp
++LDADD+=		${HOST_LDADD}
+--- a/usr.bin/kdump/mkioctls
++++ b/usr.bin/kdump/mkioctls
+@@ -65,0 +66 @@
++	print "#include <sys/bus.h>"
+@@ -66,0 +68 @@
++	print "#include <netproto/802_11/ieee80211.h>"
+--- a/contrib/nvi2/common/common.h
++++ b/contrib/nvi2/common/common.h
+@@ -14,5 +14 @@
+-#ifdef __linux__
+-#include "/usr/include/db1/db.h"	/* Only include db1. */
+-#else
+-#include "/usr/include/db.h"	/* Only include db1. */
+-#endif
++#include <db.h>		/* Only include db1. */
+--- a/usr.bin/crunch/crunchgen/crunchgen.c
++++ b/usr.bin/crunch/crunchgen/crunchgen.c
+@@ -219,2 +218,0 @@
+-	snprintf(tempfname, sizeof(tempfname), "%s/crunchgen_%sXXXXXX",
+-		 getenv("TMPDIR") ? getenv("TMPDIR") : _PATH_TMP, confname);
+@@ -740,0 +739,3 @@
++	snprintf(tempfname, sizeof(tempfname), "%s/crunchgen_%sXXXXXX",
++	    getenv("TMPDIR") ? getenv("TMPDIR") : _PATH_TMP, confname);
++
