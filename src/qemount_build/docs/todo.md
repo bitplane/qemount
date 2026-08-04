@@ -50,6 +50,4 @@
 ## 4. Stretch goals
 
 - [ ] add more guests
-  - [ ] Haiku
   - [ ] Atari ST (STEEM?)
-  - [ ] OpenDarwin
