@@ -25,6 +25,7 @@ BOOT_ARTIFACT="$2"
 shift 2
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck disable=SC1091
 source "$SCRIPT_DIR/qemu-netbsd-arch.sh"
 set_qemu_netbsd_arch_profile "$OUTPUT_ARCH" "$BOOT_ARTIFACT"
 
@@ -76,7 +77,7 @@ QEMU_ARGS=(
     "${QEMU_MACHINE_ARGS[@]}"
     "${QEMU_BOOT_ARGS[@]}"
     -m 256
-    -fw_cfg name=opt/qemount/mode,string=$MODE
+    -fw_cfg "name=opt/qemount/mode,string=$MODE"
 )
 
 # Add user disk images (become ld1, ld2, ld3, ...)
@@ -87,8 +88,8 @@ done
 # Add networking if requested
 if [ -n "$ENABLE_NET" ]; then
     QEMU_ARGS+=(
-        -netdev user,id=net0,hostfwd=tcp::10022-:22,hostfwd=tcp::5640-:5640
-        -device virtio-net-pci,netdev=net0
+        -netdev "user,id=net0,hostfwd=tcp::10022-:22,hostfwd=tcp::5640-:5640"
+        -device "virtio-net-pci,netdev=net0"
     )
 fi
 
@@ -97,9 +98,9 @@ rm -f "$SOCKET_PATH"
 
 QEMU_ARGS+=(
     -nographic
-    -chardev socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off
+    -chardev "socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off"
     -device virtio-serial
-    -device virtconsole,chardev=p9channel,name=9pport
+    -device "virtconsole,chardev=p9channel,name=9pport"
 )
 
 echo "9P socket: $SOCKET_PATH"

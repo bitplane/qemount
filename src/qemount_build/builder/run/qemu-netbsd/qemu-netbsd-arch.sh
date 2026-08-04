@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034  # Profile variables are consumed by the caller.
 
 set_qemu_netbsd_arch_profile() {
     local arch=$1
