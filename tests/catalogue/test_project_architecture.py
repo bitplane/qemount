@@ -87,6 +87,35 @@ def test_qemu_linux_architecture_profiles():
         assert result.stdout == profile
 
 
+def test_qemu_netbsd_architecture_profiles():
+    helper = PACKAGE_DIR / "builder/run/qemu-netbsd/qemu-netbsd-arch.sh"
+    expected = {
+        "x86_64": (
+            "qemu-system-x86_64||"
+            "-drive file=boot,format=raw,if=virtio,readonly=on"
+        ),
+        "aarch64": "qemu-system-aarch64|-machine virt -cpu cortex-a57|-kernel boot",
+    }
+
+    for arch, profile in expected.items():
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                'source "$1"; set_qemu_netbsd_arch_profile "$2" boot; '
+                'printf "%s|%s|%s" "$QEMU_BIN" '
+                '"${QEMU_MACHINE_ARGS[*]}" "${QEMU_BOOT_ARGS[*]}"',
+                "qemu-profile",
+                helper,
+                arch,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert result.stdout == profile
+
+
 def test_qemu_runtime_firmware_is_complete():
     providers = buildable_providers()
     runner = (PACKAGE_DIR / "builder/run/qemu-linux/run.sh").read_text()

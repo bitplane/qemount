@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # NetBSD QEMU runner script
-# Usage: run-netbsd.sh <arch> <boot-image> [options]
+# Usage: run-netbsd.sh <arch> <boot-artifact> [options]
 # Options:
 #   -i <image>    Add a disk image (mounted as second drive)
 #   -m <mode>     Boot mode (9p, sshd, sh)
@@ -10,7 +10,7 @@ set -euo pipefail
 #   -n            Enable networking
 
 if [ $# -lt 2 ]; then
-    echo "Usage: $0 <arch> <boot-image> [options] [-- extra_qemu_args]"
+    echo "Usage: $0 <arch> <boot-artifact> [options] [-- extra_qemu_args]"
     echo "Options:"
     echo "  -i <image>    Add a disk image (mounted as second drive)"
     echo "  -m <mode>     Boot mode (9p, sshd, sh) - default: sh"
@@ -21,8 +21,12 @@ if [ $# -lt 2 ]; then
 fi
 
 OUTPUT_ARCH="$1"
-BOOT_IMAGE="$2"
+BOOT_ARTIFACT="$2"
 shift 2
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$SCRIPT_DIR/qemu-netbsd-arch.sh"
+set_qemu_netbsd_arch_profile "$OUTPUT_ARCH" "$BOOT_ARTIFACT"
 
 # Default values
 IMAGES=()
@@ -66,18 +70,11 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Map architecture to QEMU binary
-case "$OUTPUT_ARCH" in
-    x86_64) QEMU_BIN="qemu-system-x86_64" ;;
-    aarch64|arm64) QEMU_BIN="qemu-system-aarch64" ;;
-    *) echo "Unsupported architecture: $OUTPUT_ARCH"; exit 1 ;;
-esac
-
 # Build QEMU command
-# NetBSD boots from disk image with embedded bootloader
 # The kernel has an embedded md0 ramdisk for root
 QEMU_ARGS=(
-    -drive "file=$BOOT_IMAGE,format=raw,if=virtio"
+    "${QEMU_MACHINE_ARGS[@]}"
+    "${QEMU_BOOT_ARGS[@]}"
     -m 256
     -fw_cfg name=opt/qemount/mode,string=$MODE
 )
