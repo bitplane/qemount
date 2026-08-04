@@ -1,9 +1,10 @@
 # 🔌 qemount
 
-Mount anything by giving the image to an operating system that understands it,
-then exposing the result over 9P. qemount runs one small guest per image, using
-real kernels and filesystem implementations instead of reimplementing every
-format on the host.
+Mount anything by giving the image or data file to an operating system that
+understands it or has native tools for it, then exposing the result over 9P.
+qemount runs one small guest per image, using real kernels and filesystem
+implementations instead of reimplementing every format on the host. In future,
+it'll support archive formats and obscure data files too.
 
 ## ✅ STATUS
 
@@ -29,7 +30,7 @@ Currently, there's:
 
 Install: 
 
-* `podman`, `make`, `python3` + venv + pip to build.
+* `podman`, `make`, `python3` (+ venv + pip) to build.
 * `fuse` to mount images with the 9p client.
 * `xz` if you want to archive the lot.
 
@@ -59,14 +60,9 @@ make help  # for a full list of targets.
 # make     # or just build the world!
 ```
 
-Ordinary builds select architecture-neutral data and outputs compatible with
-the build machine's architecture, regardless of the guest OS. An x86_64 build
-also includes i386 outputs; other cross-architecture outputs remain explicit.
-Exact targets and globs remain explicit, and dependencies may pull a fixed
-guest architecture when required.
-A build directory can be moved between machines and used sequentially so each
-machine can contribute the targets it supports; concurrent writers are not
-supported.
+Ordinary builds default to outputs compatible with the build machine's
+architecture - an `x86_64` build includes `i386` outputs, but won't build
+`aarch64` ones.
 
 Guest and transport selection, the detection engine and launch layer are still
 under construction, see the [todo list](src/qemount_build/docs/todo.md). There's
