@@ -16,6 +16,8 @@
       downloader changes, source-ref changes, missing outputs, and failed
       atomic downloads separately
   - [ ] guest architecture coverage
+    - [ ] enable KVM in Linux-hosted QEMU builds for same-architecture guests,
+          retaining TCG as the portable and cross-architecture fallback
     - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
     - [ ] build Haiku guests natively on aarch64 hosts
     - [ ] define fallback policy for guests that only support x86
