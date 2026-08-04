@@ -18,7 +18,7 @@ fi
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$LIBIXP" "$OBJECTS/libixp" "$OUTPUT_DIR"
-tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.1.tar.xz \
     -C "$SOURCE" --strip-components=1
 
 CC="clang-14 --target=$TARGET -isysroot $SDK -mmacosx-version-min=10.13"

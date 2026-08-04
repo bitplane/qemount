@@ -8,7 +8,7 @@ TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
 
-tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.1.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 
 make -C "$SIMPLE9P_SOURCE" \

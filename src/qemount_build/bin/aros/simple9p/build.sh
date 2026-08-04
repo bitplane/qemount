@@ -14,7 +14,7 @@ mkdir -p \
     /work/sdk /work/objects/libixp \
     "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
 tar -xzf /host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz -C /work/sdk
-tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.1.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 
 for name in \

@@ -1,7 +1,7 @@
 ---
 title: simple9p
 requires:
-  - sources/simple9p-0.6.0.tar.xz
+  - sources/simple9p-0.6.1.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-netbsd/simple9p
 ---

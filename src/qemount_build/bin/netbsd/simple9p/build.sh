@@ -12,7 +12,7 @@ cd /work
 
 # Extract the complete release source.
 mkdir -p simple9p-source
-tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.1.tar.xz \
     -C simple9p-source --strip-components=1
 
 # Build the optimized static server using its pinned libixp tree.

@@ -2,7 +2,7 @@
 title: simple9p
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-0.6.0.tar.xz
+  - sources/simple9p-0.6.1.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-linux-${ENV}/simple9p
 ---
