@@ -10,7 +10,8 @@ SOURCE_HASH=$(sha256sum \
     /host/build/sources/netbsd-10.0-sharesrc.tgz \
     /host/build/sources/netbsd-10.0-gnusrc.tgz \
     | sha256sum | cut -d ' ' -f 1)
-OBJ_DIR=/host/build/cache/netbsd/${OUTPUT_ARCH}/10.0/kernel-v1/${SOURCE_HASH}/obj
+CACHE_DIR=/host/build/cache/netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0
+OBJ_DIR=$CACHE_DIR/kernel-v1/${SOURCE_HASH}/obj
 
 cd /usr/src
 

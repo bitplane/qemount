@@ -82,7 +82,7 @@ try_mount() {
 echo "[INIT] Scanning for disk images..."
 
 # NetBSD virtio-blk uses ld* devices
-# ld0 = boot disk, user disks start at ld1
+# amd64 uses ld0 for its BIOS boot disk; evbarm boots its kernel directly.
 # Device nodes come from the target architecture's MAKEDEV.
 
 RAW_PARTITION=$(sysctl -n kern.rawpartition 2>/dev/null || echo 3)

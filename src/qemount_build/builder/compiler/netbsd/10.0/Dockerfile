@@ -1,7 +1,11 @@
 ARG OUTPUT_ARCH
+ARG BUILD_PLATFORM
+ARG JOBS
 
 FROM debian:bookworm-slim AS builder
 ARG OUTPUT_ARCH
+ARG BUILD_PLATFORM
+ARG JOBS
 
 # Install build dependencies for NetBSD build.sh
 # Using Debian because musl libc (Alpine) has conflicts with old texinfo code
@@ -73,15 +77,16 @@ RUN set -eu; \
         /host/build/sources/netbsd-10.0-sharesrc.tgz \
         /host/build/sources/netbsd-10.0-gnusrc.tgz \
         | sha256sum | cut -d ' ' -f 1); \
-    CACHE_DIR=/host/build/cache/netbsd/${OUTPUT_ARCH}/10.0/compiler-v1/${SOURCE_HASH}; \
+    CACHE_DIR=/host/build/cache/netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0; \
+    CACHE_DIR=$CACHE_DIR/compiler-v1/${SOURCE_HASH}; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
     NBARCH=$(cat /tmp/nbarch); \
     NBMACHINEARCH=$(cat /tmp/nbmachinearch); \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
         -m "$NBARCH" -a "$NBMACHINEARCH" tools; \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j$(nproc) \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
         -m "$NBARCH" -a "$NBMACHINEARCH" distribution; \
     rm /usr/obj /usr/tools; \
     cp -a "$CACHE_DIR/obj" /usr/obj; \
