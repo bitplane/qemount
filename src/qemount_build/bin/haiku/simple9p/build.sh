@@ -6,17 +6,15 @@ OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-haiku
 TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
 
 rm -rf "$SIMPLE9P_SOURCE"
-mkdir -p "$SIMPLE9P_SOURCE/libixp" "$OUTPUT_DIR"
+mkdir -p "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
 
-tar -xzf /host/build/sources/simple9p-v0.5.0.tar.gz \
+tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
-tar -xzf /host/build/sources/libixp-qemount-0.2.tar.gz \
-    -C "$SIMPLE9P_SOURCE/libixp" --strip-components=1
 
 make -C "$SIMPLE9P_SOURCE" \
     NETWORK=0 \
     CC="${TOOL_PREFIX}gcc" \
-    CFLAGS="-Os -g0" \
+    CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
     LDFLAGS= \
     LIBS="build/libixp.a -lpthread"
 

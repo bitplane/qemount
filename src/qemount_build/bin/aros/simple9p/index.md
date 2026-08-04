@@ -2,8 +2,7 @@
 title: simple9p for AROS
 requires:
   - lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
-  - sources/simple9p-v0.5.0.tar.gz
-  - sources/libixp-qemount-0.2.tar.gz
+  - sources/simple9p-0.6.0.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-aros/simple9p
 ---

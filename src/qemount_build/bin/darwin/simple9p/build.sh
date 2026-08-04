@@ -18,13 +18,11 @@ fi
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$LIBIXP" "$OBJECTS/libixp" "$OUTPUT_DIR"
-tar -xzf /host/build/sources/simple9p-v0.5.0.tar.gz \
+tar -xf /host/build/sources/simple9p-0.6.0.tar.xz \
     -C "$SOURCE" --strip-components=1
-tar -xzf /host/build/sources/libixp-qemount-0.2.tar.gz \
-    -C "$LIBIXP" --strip-components=1
 
 CC="clang-14 --target=$TARGET -isysroot $SDK -mmacosx-version-min=10.13"
-CFLAGS="-Os -g0 -D_XOPEN_SOURCE=600 -DSIMPLE9P_NO_NETWORK"
+CFLAGS="-Os -g0 -D_XOPEN_SOURCE=600 -DSIMPLE9P_NO_NETWORK -DS9_PATH_MAX=1024"
 INCLUDES="-I$SOURCE -I$LIBIXP/include"
 
 for name in convert error map message request rpc server socket transport util \
@@ -34,12 +32,13 @@ for name in convert error map message request rpc server socket transport util \
 done
 llvm-ar-14 rcs "$OBJECTS/libixp.a" "$OBJECTS"/libixp/*.o
 
-for name in simple9p path namespace platform_posix fs_ops fs_io fs_stat fs_dir; do
+for name in simple9p alloc path namespace platform_posix fs_ops fs_io fs_stat fs_dir; do
     $CC $CFLAGS $INCLUDES -c "$SOURCE/$name.c" -o "$OBJECTS/$name.o"
 done
 
 $CC -fuse-ld=lld -Wl,-dead_strip -o "$OBJECTS/simple9p" \
     "$OBJECTS"/simple9p.o \
+    "$OBJECTS"/alloc.o \
     "$OBJECTS"/path.o \
     "$OBJECTS"/namespace.o \
     "$OBJECTS"/platform_posix.o \
