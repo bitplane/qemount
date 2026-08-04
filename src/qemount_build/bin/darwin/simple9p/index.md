@@ -10,7 +10,7 @@ env:
 requires:
   - docker:builder/compiler/puredarwin
   - sources/MacOSX11.3.sdk.tar.xz
-  - sources/simple9p-qemount-0.5.tar.gz
+  - sources/simple9p-v0.5.0.tar.gz
   - sources/libixp-qemount-0.2.tar.gz
 provides:
   - bin/${OUTPUT_ARCH}-darwin/simple9p

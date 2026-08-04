@@ -1,9 +1,9 @@
 ---
-title: 9pfuse qemount-0.3
+title: 9pfuse qemount-0.4
 urls:
-  - https://github.com/bitplane/9pfuse/archive/refs/tags/qemount-0.3.tar.gz
+  - https://github.com/bitplane/9pfuse/archive/refs/tags/qemount-0.4.tar.gz
 provides:
-  - sources/9pfuse-qemount-0.3.tar.gz
+  - sources/9pfuse-qemount-0.4.tar.gz
 ---
 
 # 9pfuse

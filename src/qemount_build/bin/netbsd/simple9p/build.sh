@@ -12,7 +12,7 @@ cd /work
 
 # Extract sources
 mkdir -p simple9p-source libixp-source
-tar -xf /host/build/sources/simple9p-qemount-0.5.tar.gz \
+tar -xf /host/build/sources/simple9p-v0.5.0.tar.gz \
     -C simple9p-source --strip-components=1
 tar -xf /host/build/sources/libixp-qemount-0.2.tar.gz \
     -C libixp-source --strip-components=1

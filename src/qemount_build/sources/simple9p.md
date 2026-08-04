@@ -1,9 +1,9 @@
 ---
-title: simple9p qemount-0.5
+title: simple9p v0.5.0
 urls:
-  - https://github.com/bitplane/simple9p/archive/refs/tags/qemount-0.5.tar.gz
+  - https://github.com/bitplane/simple9p/archive/refs/tags/v0.5.0.tar.gz
 provides:
-  - sources/simple9p-qemount-0.5.tar.gz
+  - sources/simple9p-v0.5.0.tar.gz
 ---
 
 # simple9p

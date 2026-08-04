@@ -8,7 +8,7 @@ TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE/libixp" "$OUTPUT_DIR"
 
-tar -xzf /host/build/sources/simple9p-qemount-0.5.tar.gz \
+tar -xzf /host/build/sources/simple9p-v0.5.0.tar.gz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 tar -xzf /host/build/sources/libixp-qemount-0.2.tar.gz \
     -C "$SIMPLE9P_SOURCE/libixp" --strip-components=1
