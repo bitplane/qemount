@@ -192,7 +192,11 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     assert "docker:builder/compiler/linux/2" not in providers
     assert "bin/qemu/aarch64-linux/2.6/kernel" not in providers
     assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
-    assert "data/fs/basic.reiserfs" not in providers
+    assert "data/fs/basic.reiserfs" in providers
+
+    reiserfs = graph_for("data/fs/basic.reiserfs", context)
+    assert "bin/qemu/linux/6.12/kernel@aarch64-linux" in reiserfs["nodes"]
+    assert "bin/qemu/linux/2.6/kernel@x86_64-linux" not in reiserfs["nodes"]
 
 
 def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
