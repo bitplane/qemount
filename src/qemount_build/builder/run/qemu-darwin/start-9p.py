@@ -9,7 +9,6 @@ import sys
 import time
 
 
-PROMPT = b"bash-3.2# "
 READY = b"QEMOUNT_9P_READY"
 STREAM_READY = b"Q9!\n"
 RECORD_PREFIX = b"Q9:"
@@ -134,28 +133,8 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=180)
     args = parser.parse_args()
 
-    command = b"""{
-root_partition=$(df / | awk 'NR == 2 { print $1 }')
-root_device=${root_partition%s1}
-target_device=
-for device in /dev/disk[0-9]; do
-    if [ "$device" != "$root_device" ]; then target_device=$device; fi
-done
-if [ -e "${target_device}s1" ]; then target_device=${target_device}s1; fi
-mkdir -p /Volumes/QEMOUNT_TARGET
-/sbin/mount_hfs -o rdonly "$target_device" /Volumes/QEMOUNT_TARGET || exit 1
-stty raw -echo
-printf 'QEMOUNT_9P_READY'
-exec /usr/bin/stream64 /dev/tty /usr/bin/simple9p -p - /Volumes/QEMOUNT_TARGET
-}
-"""
-
     with connect(args.backend_socket, args.timeout) as channel:
-        read_until(channel, PROMPT, args.timeout)
-        send_slow(channel, b"stty -echo\n")
-        read_until(channel, PROMPT, 10)
-        send_slow(channel, command)
-        read_until(channel, READY, 30)
+        read_until(channel, READY, args.timeout)
         read_until(channel, STREAM_READY, 10)
         channel.settimeout(None)
         print(flush=True)

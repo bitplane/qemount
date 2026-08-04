@@ -6,4 +6,5 @@ ENV PUREDARWIN_IMAGE_SIZE=${PUREDARWIN_IMAGE_SIZE}
 
 COPY --chmod=755 build.sh /build.sh
 COPY populate.sh /populate.sh
+COPY appliance.manifest /appliance.manifest
 ENTRYPOINT ["/build.sh"]

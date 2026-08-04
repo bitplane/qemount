@@ -4,6 +4,7 @@ set -eu
 SOURCE=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
 SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-darwin/simple9p
 STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
+QEMOUNT_INIT=/host/build/bin/${OUTPUT_ARCH}-darwin/qemount-init
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/appliance
 WORK_IMAGE=$OUTPUT_DIR/puredarwin.work.raw
 PAYLOAD_IMAGE=$OUTPUT_DIR/payload.hfs
@@ -23,6 +24,8 @@ hformat -l QEMOUNT_PAYLOAD "$PAYLOAD_IMAGE"
 hmount "$PAYLOAD_IMAGE"
 hcopy "$SIMPLE9P" :simple9p
 hcopy "$STREAM64" :stream64
+hcopy "$QEMOUNT_INIT" :qemount-init
+hcopy /appliance.manifest :appliance.manifest
 humount
 
 /serial-provision.py \

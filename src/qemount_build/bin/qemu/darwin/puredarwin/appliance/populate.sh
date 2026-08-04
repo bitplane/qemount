@@ -29,33 +29,35 @@ mkdir -p /Volumes/QEMOUNT
 mkdir -p /Volumes/PAYLOAD
 /sbin/mount_hfs -o rdonly "$payload_device" /Volumes/PAYLOAD
 
-rm -rf /private/var/log/* /private/var/run/* /private/var/tmp/*
-
 cd /
-/bin/pax -rw -pe \
-    APPLE_DRIVER_LICENSE.txt \
-    APPLE_LICENSE.txt \
-    Applications \
-    bin \
-    boot \
-    cores \
-    etc \
-    Extra \
-    Library \
-    Network \
-    private \
-    sbin \
-    System \
-    tmp \
-    usr \
-    Users \
-    var \
-    /Volumes/QEMOUNT
+while IFS= read -r path; do
+    case "$path" in
+        ''|'#'*) continue ;;
+    esac
+    if [ ! -e "$path" ] && [ ! -L "$path" ]; then
+        echo "Missing appliance path: $path" >&2
+        exit 1
+    fi
+    /bin/pax -rw -pe "$path" /Volumes/QEMOUNT
+done < /Volumes/PAYLOAD/appliance.manifest
 
-mkdir -p /Volumes/QEMOUNT/dev /Volumes/QEMOUNT/Volumes
+mkdir -p \
+    /Volumes/QEMOUNT/dev \
+    /Volumes/QEMOUNT/Volumes \
+    /Volumes/QEMOUNT/Volumes/QEMOUNT_TARGET \
+    /Volumes/QEMOUNT/private/tmp \
+    /Volumes/QEMOUNT/private/var/db \
+    /Volumes/QEMOUNT/private/var/log \
+    /Volumes/QEMOUNT/private/var/root \
+    /Volumes/QEMOUNT/private/var/run \
+    /Volumes/QEMOUNT/private/var/tmp \
+    /Volumes/QEMOUNT/sbin \
+    /Volumes/QEMOUNT/usr/bin
 cp /Volumes/PAYLOAD/simple9p /Volumes/QEMOUNT/usr/bin/simple9p
 cp /Volumes/PAYLOAD/stream64 /Volumes/QEMOUNT/usr/bin/stream64
+cp /Volumes/PAYLOAD/qemount-init /Volumes/QEMOUNT/sbin/launchd
 chmod 755 /Volumes/QEMOUNT/usr/bin/simple9p /Volumes/QEMOUNT/usr/bin/stream64
+chmod 755 /Volumes/QEMOUNT/sbin/launchd
 sync
 /sbin/umount /Volumes/PAYLOAD
 /sbin/umount /Volumes/QEMOUNT
