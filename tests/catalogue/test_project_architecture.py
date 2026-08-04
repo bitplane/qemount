@@ -243,6 +243,9 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@x86_64-netbsd" in x86_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_data["nodes"]
+    assert arm_guest["nodes"][
+        "builder/compiler/netbsd/10.0@aarch64-netbsd"
+    ]["meta"]["env"]["JOBS"] == "1"
 
 
 def test_netbsd_rootfs_uses_target_device_database():

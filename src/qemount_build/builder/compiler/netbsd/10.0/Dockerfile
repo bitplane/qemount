@@ -1,11 +1,11 @@
 ARG OUTPUT_ARCH
 ARG BUILD_PLATFORM
-ARG JOBS
+ARG JOBS=1
 
 FROM debian:bookworm-slim AS builder
 ARG OUTPUT_ARCH
 ARG BUILD_PLATFORM
-ARG JOBS
+ARG JOBS=1
 
 # Install build dependencies for NetBSD build.sh
 # Using Debian because musl libc (Alpine) has conflicts with old texinfo code
