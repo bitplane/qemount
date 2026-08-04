@@ -2,16 +2,18 @@
 set -e
 
 NBARCH=$(cat /tmp/nbarch)
-NBKERNARCH=$(cat /tmp/nbkernarch)
 NBGNUTRIPLE=$(cat /tmp/nbgnutriple)
 DESTDIR="/usr/obj/destdir.$NBARCH"
 TOOLDIR="/usr/tools"
+KERNEL_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel"
+ROOTFS_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs"
+OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot"
 
 echo "Assembling NetBSD boot image for $OUTPUT_ARCH..."
 
 # Copy kernel and ramdisk from build
-cp /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb /work/netbsd.gdb
-cp /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs /work/ramdisk.fs
+cp "$KERNEL_DIR/netbsd.gdb" /work/netbsd.gdb
+cp "$ROOTFS_DIR/ramdisk.fs" /work/ramdisk.fs
 
 # Embed ramdisk into kernel
 echo "Embedding ramdisk into kernel..."
@@ -19,11 +21,12 @@ echo "Embedding ramdisk into kernel..."
 
 # Strip the kernel
 echo "Stripping kernel..."
-$TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-strip -o /work/netbsd.stripped /work/netbsd.gdb
+"$TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-strip" \
+    -o /work/netbsd.stripped /work/netbsd.gdb
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot
-cp /work/netbsd.stripped /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
+mkdir -p "$OUTPUT_DIR"
+cp /work/netbsd.stripped "$OUTPUT_DIR/netbsd"
 
 case "$OUTPUT_ARCH" in
     x86_64)
@@ -39,8 +42,7 @@ case "$OUTPUT_ARCH" in
             /work/boot.img /disklabel.proto
         "$TOOLDIR/bin/nbinstallboot" -m "$NBARCH" -o timeout=0 \
             /work/boot.img "$DESTDIR/usr/mdec/bootxx_ffsv1"
-        cp /work/boot.img \
-            /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
+        cp /work/boot.img "$OUTPUT_DIR/boot.img"
         ;;
     aarch64)
         # QEMU's virt machine loads the kernel directly.

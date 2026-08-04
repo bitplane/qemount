@@ -25,7 +25,7 @@ mount -t procfs procfs /proc
 # Use the target distribution's MAKEDEV so device numbers and raw partition
 # letters follow the selected NetBSD architecture.
 (
-    cd /dev
+    cd /dev || exit
     /bin/sh /MAKEDEV std ttyVI \
         ld0 ld1 ld2 ld3 ld4 ld5 ld6 ld7 ld8 ld9 ld10 ld11 ld12 ld13 ld14 ld15 \
         dk0 dk1 dk2 dk3 dk4 dk5 dk6 dk7 dk8 dk9 dk10 dk11 dk12 dk13 dk14 dk15 \
@@ -126,7 +126,7 @@ for unit in $DISK_UNITS; do
     if [ -n "$wedge_list" ]; then
         # Disk has partitions - extract offset and sort, then mount each
         # Prepend offset for sorting: "1024 dk0: label, ..."
-        sorted_wedges=$(echo "$wedge_list" | while read line; do
+        sorted_wedges=$(echo "$wedge_list" | while read -r line; do
             # Extract offset from "at OFFSET," using expr
             offset=$(expr "$line" : '.*at \([0-9]*\),')
             echo "$offset $line"
@@ -136,7 +136,7 @@ for unit in $DISK_UNITS; do
         part_num=1
         # Use temp file to track success across subshell boundary
         echo "$sorted_wedges" > /tmp/wedges.$$
-        while read offset line; do
+        while read -r offset line; do
             # Extract dk device name (everything before first colon)
             dk_name="${line%%:*}"
             if try_mount "/dev/$dk_name" "${letter}${part_num}"; then

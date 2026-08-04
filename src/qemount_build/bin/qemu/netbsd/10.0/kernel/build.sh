@@ -22,7 +22,7 @@ case "$NBKERNARCH" in
     evbarm) CONFIG=/QEMOUNT.evbarm ;;
     *) echo "Unsupported NetBSD kernel architecture: $NBKERNARCH" >&2; exit 1 ;;
 esac
-cp "$CONFIG" /usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT
+cp "$CONFIG" "/usr/src/sys/arch/$NBKERNARCH/conf/QEMOUNT"
 
 # Build the kernel
 mkdir -p "$OBJ_DIR"
@@ -30,6 +30,7 @@ mkdir -p "$OBJ_DIR"
     -m "$NBARCH" -a "$NBMACHINEARCH" kernel=QEMOUNT
 
 # Copy unstripped kernel (needed for mdsetimage)
-mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel
+OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel"
+mkdir -p "$OUTPUT_DIR"
 cp "$OBJ_DIR/sys/arch/$NBKERNARCH/compile/QEMOUNT/netbsd.gdb" \
-   /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
+   "$OUTPUT_DIR/netbsd.gdb"

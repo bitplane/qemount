@@ -3,6 +3,8 @@ set -e
 
 NBARCH=$(cat /tmp/nbarch)
 DESTDIR="/usr/obj/destdir.$NBARCH"
+BIN_DIR="/host/build/bin/${OUTPUT_ARCH}-netbsd"
+OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs"
 
 echo "Building NetBSD ramdisk for $OUTPUT_ARCH..."
 
@@ -58,15 +60,15 @@ cp -v "$DESTDIR/dev/MAKEDEV" /ramdisk/MAKEDEV
 chmod 755 /ramdisk/MAKEDEV
 
 # Copy qemount tools from build
-if [ -f /host/build/bin/${OUTPUT_ARCH}-netbsd/simple9p ]; then
+if [ -f "$BIN_DIR/simple9p" ]; then
     echo "Adding simple9p..."
-    cp -v /host/build/bin/${OUTPUT_ARCH}-netbsd/simple9p /ramdisk/bin/
+    cp -v "$BIN_DIR/simple9p" /ramdisk/bin/
     chmod 755 /ramdisk/bin/simple9p
 fi
 
-if [ -f /host/build/bin/${OUTPUT_ARCH}-netbsd/socat ]; then
+if [ -f "$BIN_DIR/socat" ]; then
     echo "Adding socat..."
-    cp -v /host/build/bin/${OUTPUT_ARCH}-netbsd/socat /ramdisk/bin/
+    cp -v "$BIN_DIR/socat" /ramdisk/bin/
     chmod 755 /ramdisk/bin/socat
 fi
 
@@ -74,7 +76,7 @@ fi
 /usr/tools/bin/nbmakefs -s 16m -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Copy to output
-mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs
-cp /ramdisk.fs /host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
+mkdir -p "$OUTPUT_DIR"
+cp /ramdisk.fs "$OUTPUT_DIR/ramdisk.fs"
 
 echo "Done! Ramdisk: $(du -sh /ramdisk | cut -f1)"
