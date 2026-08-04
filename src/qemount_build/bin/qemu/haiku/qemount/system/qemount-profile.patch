@@ -224,3 +224,45 @@
 +		AddHaikuImageSystemPackages openssl3 ;
 +	}
  }
+--- a/src/apps/webpositive/Jamfile
++++ b/src/apps/webpositive/Jamfile
+@@ -87,2 +87,4 @@
+-		ExtractArchiveToHaikuImage home config settings WebPositive
+-			: $(SUBDIR)/bookmarks/WebPositiveBookmarks.zip ;
++		if $(HAIKU_BUILD_TYPE) != qemount {
++			ExtractArchiveToHaikuImage home config settings WebPositive
++				: $(SUBDIR)/bookmarks/WebPositiveBookmarks.zip ;
++		}
+--- a/build/jam/images/definitions/common-tail
++++ b/build/jam/images/definitions/common-tail
+@@ -4,2 +4,7 @@
++if $(HAIKU_BUILD_TYPE) = qemount {
++	AddDirectoryToHaikuImage system : system.rdef ;
++	AddDirectoryToHaikuImage system cache tmp ;
++	AddDirectoryToHaikuImage system non-packaged bin ;
++} else {
+ # create directories that may remain empty
+ AddDirectoryToHaikuImage home : home.rdef ;
+@@ -50,0 +55,1 @@
++}
+@@ -55,1 +61,3 @@
+-include [ FDirName $(HAIKU_BUILD_RULES_DIR) OptionalPackages ] ;
++if $(HAIKU_BUILD_TYPE) != qemount {
++	include [ FDirName $(HAIKU_BUILD_RULES_DIR) OptionalPackages ] ;
++}
+@@ -61,5 +69,7 @@
++if $(HAIKU_BUILD_TYPE) != qemount {
+-# add the root user and the root and users groups
+-AddUserToHaikuImage $(HAIKU_ROOT_USER_NAME:E=baron) : 0 : 0 : /boot/home
+-	: /bin/bash : $(HAIKU_ROOT_USER_REAL_NAME:E="Root User") ;
+-AddGroupToHaikuImage root : 0 : ;
+-AddGroupToHaikuImage users : 100 : ;
++# add the root user and the root and users groups
++AddUserToHaikuImage $(HAIKU_ROOT_USER_NAME:E=baron) : 0 : 0 : /boot/home
++	: /bin/bash : $(HAIKU_ROOT_USER_REAL_NAME:E="Root User") ;
++AddGroupToHaikuImage root : 0 : ;
++AddGroupToHaikuImage users : 100 : ;
++}
+@@ -71,1 +81,1 @@
+-if $(HAIKU_IMAGE_HOST_NAME) {
++if $(HAIKU_BUILD_TYPE) != qemount && $(HAIKU_IMAGE_HOST_NAME) {
