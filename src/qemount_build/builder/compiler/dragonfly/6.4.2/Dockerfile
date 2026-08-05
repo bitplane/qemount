@@ -53,6 +53,7 @@ RUN set -eux; \
 
 RUN set -eu; \
     test "$OUTPUT_ARCH" = x86_64; \
+    HOST_CPU_FAMILY=${BUILD_PLATFORM%%-*}; \
     SOURCE_HASH=$(sha256sum /host/build/sources/dragonfly-6.4.2.tar.gz \
         | cut -d ' ' -f 1); \
     PORT_HASH=$(sha256sum \
@@ -68,6 +69,7 @@ RUN set -eu; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     bmake -j"$JOBS" \
         BUILD_ARCH=x86_64 \
+        HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
         HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
         HOST_LDADD="/tmp/host-compat.o $(pkg-config --libs --static libbsd-overlay) -lresolv -ltirpc" \
         HOST_YACC=/usr/bin/byacc \
