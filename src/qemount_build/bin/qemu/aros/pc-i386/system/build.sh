@@ -8,7 +8,31 @@ PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=/work/guest-build
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system
 SDK_OUTPUT=/host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
+ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 BUILD_JOBS=${JOBS:-1}
+
+write_iso=false
+write_sdk=false
+
+if [ "$#" -eq 0 ]; then
+    write_iso=true
+    write_sdk=true
+else
+    for output in "$@"; do
+        case "/host/build/$output" in
+            "$ISO_OUTPUT")
+                write_iso=true
+                ;;
+            "$SDK_OUTPUT")
+                write_sdk=true
+                ;;
+            *)
+                echo "Unknown AROS system output: $output" >&2
+                exit 1
+                ;;
+        esac
+    done
+fi
 
 # Port archives are produced by several upstream systems and can contain owner
 # IDs that are not representable in a rootless container's user namespace.
@@ -45,10 +69,14 @@ cp "$PORTS_DIR/pci.ids" "$PCI_IDS_DIR/pci.ids"
 make -j"$BUILD_JOBS"
 make -j"$BUILD_JOBS" bootiso-pc-i386
 
-mkdir -p "$OUTPUT_DIR"
-cp "distfiles/aros-${AROS_VARIANT}-pc-i386.iso" "$OUTPUT_DIR/aros.iso"
+if [ "$write_iso" = true ]; then
+    mkdir -p "$OUTPUT_DIR"
+    cp "distfiles/aros-${AROS_VARIANT}-pc-i386.iso" "$ISO_OUTPUT"
+fi
 
-mkdir -p "$(dirname "$SDK_OUTPUT")"
-tar -czf "$SDK_OUTPUT" \
-    -C "$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/AROS" \
-    Developer
+if [ "$write_sdk" = true ]; then
+    mkdir -p "$(dirname "$SDK_OUTPUT")"
+    tar -czf "$SDK_OUTPUT" \
+        -C "$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/AROS" \
+        Developer
+fi
