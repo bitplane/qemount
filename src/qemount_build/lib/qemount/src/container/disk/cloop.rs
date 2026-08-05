@@ -3,7 +3,7 @@
 //! Parses cloop format used for live CD distributions like Knoppix.
 //! Blocks are zlib compressed with an offset table for random access.
 
-use crate::container::{Child, Container};
+use crate::container::{checked_table_size, invalid_data, Child, Container};
 use crate::detect::Reader;
 use flate2::read::ZlibDecoder;
 use std::io::{self, Read};
@@ -62,11 +62,14 @@ impl CloopReader {
         }
 
         // Read offset table (n_blocks + 1 entries, 8 bytes each)
-        let table_entries = n_blocks as usize + 1;
-        let table_bytes = table_entries * 8;
+        let table_entries = (n_blocks as u64)
+            .checked_add(1)
+            .ok_or_else(|| invalid_data("cloop table size overflow"))?;
+        let table_offset = HEADER_OFFSET + 8;
+        let table_bytes = checked_table_size(parent.as_ref(), table_offset, table_entries, 8)?;
         let mut table_data = vec![0u8; table_bytes];
 
-        if parent.read_at(HEADER_OFFSET + 8, &mut table_data)? != table_bytes {
+        if parent.read_at(table_offset, &mut table_data)? != table_bytes {
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
                 "short cloop offset table read",
@@ -83,6 +86,15 @@ impl CloopReader {
                 ])
             })
             .collect();
+
+        let table_end = table_offset + table_bytes as u64;
+        let image_size = parent.size();
+        if offsets.first().is_some_and(|&offset| offset < table_end)
+            || offsets.windows(2).any(|pair| pair[0] > pair[1])
+            || image_size.is_some_and(|size| offsets.last().is_some_and(|&offset| offset > size))
+        {
+            return Err(invalid_data("invalid cloop block offsets"));
+        }
 
         let virtual_size = n_blocks as u64 * block_size as u64;
 
@@ -104,11 +116,20 @@ impl CloopReader {
 
         let start = self.offsets[block_idx];
         let end = self.offsets[block_idx + 1];
-        let compressed_size = (end - start) as usize;
+        let compressed_size = end
+            .checked_sub(start)
+            .and_then(|size| usize::try_from(size).ok())
+            .filter(|&size| size <= zlib_bound(self.block_size as usize))
+            .ok_or_else(|| invalid_data("invalid cloop compressed block size"))?;
 
         // Read compressed data
         let mut compressed = vec![0u8; compressed_size];
-        self.parent.read_at(start, &mut compressed)?;
+        if self.parent.read_at(start, &mut compressed)? != compressed_size {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "short cloop block read",
+            ));
+        }
 
         // Decompress with zlib
         let mut decoder = ZlibDecoder::new(&compressed[..]);
@@ -148,3 +169,36 @@ impl Reader for CloopReader {
 // SAFETY: CloopReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for CloopReader {}
 unsafe impl Sync for CloopReader {}
+
+fn zlib_bound(size: usize) -> usize {
+    size + (size >> 12) + (size >> 14) + (size >> 25) + 13
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    fn image(offsets: &[u64]) -> Vec<u8> {
+        let mut data = vec![0u8; HEADER_OFFSET as usize];
+        data.extend_from_slice(&512u32.to_be_bytes());
+        data.extend_from_slice(&((offsets.len() - 1) as u32).to_be_bytes());
+        for offset in offsets {
+            data.extend_from_slice(&offset.to_be_bytes());
+        }
+        data
+    }
+
+    #[test]
+    fn rejects_table_larger_than_image() {
+        let mut data = image(&[144]);
+        data[132..136].copy_from_slice(&u32::MAX.to_be_bytes());
+        assert!(CloopReader::new(Arc::new(BytesReader::new(data))).is_err());
+    }
+
+    #[test]
+    fn rejects_descending_block_offsets() {
+        let data = image(&[152, 151]);
+        assert!(CloopReader::new(Arc::new(BytesReader::new(data))).is_err());
+    }
+}

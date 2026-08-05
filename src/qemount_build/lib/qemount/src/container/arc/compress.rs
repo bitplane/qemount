@@ -2,9 +2,9 @@
 //!
 //! The original Unix compress format using LZW compression.
 
-use crate::container::{read_all, BytesReader, Child, Container};
+use crate::container::{read_all, BytesReader, Child, Container, LimitedBuffer};
 use crate::detect::Reader;
-use std::io;
+use std::io::{self, Cursor};
 use std::sync::Arc;
 use weezl::{decode::Decoder, BitOrder};
 
@@ -47,9 +47,10 @@ impl Container for CompressContainer {
         // Decompress using LZW
         // Unix compress uses LSB-first bit order
         let mut decoder = Decoder::new(BitOrder::Lsb, max_bits);
-        let mut decompressed = Vec::new();
-
-        let result = decoder.decode_bytes(&compressed[3..], &mut decompressed);
+        let mut decompressed = LimitedBuffer::new();
+        let result = decoder
+            .into_stream(&mut decompressed)
+            .decode_all(Cursor::new(&compressed[3..]));
         match result.status {
             Ok(_) => {}
             Err(e) => return Err(io::Error::new(io::ErrorKind::InvalidData, e.to_string())),
@@ -58,7 +59,7 @@ impl Container for CompressContainer {
         Ok(vec![Child {
             index: 0,
             offset: u64::MAX, // Transformed data, not a slice
-            reader: Arc::new(BytesReader::new(decompressed)),
+            reader: Arc::new(BytesReader::new(decompressed.into_inner())),
         }])
     }
 }

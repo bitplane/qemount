@@ -2,7 +2,7 @@
 //!
 //! Parses Parallels HDD format and provides virtual disk access through BAT.
 
-use crate::container::{Child, Container};
+use crate::container::{checked_table_size, invalid_data, Child, Container};
 use crate::detect::Reader;
 use std::io;
 use std::sync::Arc;
@@ -79,11 +79,16 @@ impl ParallelsReader {
             header[40], header[41], header[42], header[43],
         ]);
 
-        let cluster_size = tracks as u64 * SECTOR_SIZE;
-        let virtual_size = nb_sectors * SECTOR_SIZE;
+        let cluster_size = (tracks as u64)
+            .checked_mul(SECTOR_SIZE)
+            .filter(|&size| size != 0)
+            .ok_or_else(|| invalid_data("invalid Parallels tracks"))?;
+        let virtual_size = nb_sectors
+            .checked_mul(SECTOR_SIZE)
+            .ok_or_else(|| invalid_data("Parallels virtual size overflow"))?;
 
         // Read BAT
-        let bat_size = bat_entries as usize * 4;
+        let bat_size = checked_table_size(parent.as_ref(), HEADER_SIZE, bat_entries as u64, 4)?;
         let mut bat_bytes = vec![0u8; bat_size];
         if parent.read_at(HEADER_SIZE, &mut bat_bytes)? != bat_size {
             return Err(io::Error::new(
@@ -159,3 +164,31 @@ impl Reader for ParallelsReader {
 // SAFETY: ParallelsReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for ParallelsReader {}
 unsafe impl Sync for ParallelsReader {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    fn header(tracks: u32, bat_entries: u32) -> Vec<u8> {
+        let mut data = vec![0u8; HEADER_SIZE as usize];
+        data[..16].copy_from_slice(MAGIC_OLD);
+        data[16..20].copy_from_slice(&2u32.to_le_bytes());
+        data[28..32].copy_from_slice(&tracks.to_le_bytes());
+        data[32..36].copy_from_slice(&bat_entries.to_le_bytes());
+        data[36..44].copy_from_slice(&1u64.to_le_bytes());
+        data
+    }
+
+    #[test]
+    fn rejects_zero_tracks() {
+        let image = Arc::new(BytesReader::new(header(0, 0)));
+        assert!(ParallelsReader::new(image).is_err());
+    }
+
+    #[test]
+    fn rejects_bat_larger_than_image() {
+        let image = Arc::new(BytesReader::new(header(1, u32::MAX)));
+        assert!(ParallelsReader::new(image).is_err());
+    }
+}

@@ -10,11 +10,43 @@ pub mod pt;
 pub mod slice;
 
 use crate::detect::Reader;
-use std::io;
+use std::io::{self, Read, Write};
 use std::sync::Arc;
 
 /// Maximum size for reading container contents into memory (1 GB)
 const MAX_SIZE: usize = 1024 * 1024 * 1024;
+
+/// Maximum amount of image metadata read into memory at once.
+const MAX_TABLE_SIZE: u64 = 64 * 1024 * 1024;
+
+pub(crate) fn invalid_data(message: &'static str) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, message)
+}
+
+/// Validate a table before converting its size to `usize` and allocating it.
+pub(crate) fn checked_table_size(
+    reader: &dyn Reader,
+    offset: u64,
+    entries: u64,
+    entry_size: u64,
+) -> io::Result<usize> {
+    let bytes = entries
+        .checked_mul(entry_size)
+        .filter(|&size| size <= MAX_TABLE_SIZE)
+        .ok_or_else(|| invalid_data("container metadata table too large"))?;
+    let end = offset
+        .checked_add(bytes)
+        .ok_or_else(|| invalid_data("container metadata offset overflow"))?;
+
+    if reader.size().is_some_and(|size| end > size) {
+        return Err(io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "container metadata table extends past end of image",
+        ));
+    }
+
+    usize::try_from(bytes).map_err(|_| invalid_data("container metadata table too large"))
+}
 
 /// A child within a container
 pub struct Child {
@@ -85,6 +117,44 @@ pub fn read_all(reader: &dyn Reader) -> io::Result<Vec<u8>> {
         }
     }
     Ok(data)
+}
+
+/// Decompress into memory without allowing expansion past the container limit.
+pub(crate) fn read_to_end_limited<R: Read>(reader: R) -> io::Result<Vec<u8>> {
+    let mut data = Vec::new();
+    reader.take(MAX_SIZE as u64 + 1).read_to_end(&mut data)?;
+    if data.len() > MAX_SIZE {
+        return Err(invalid_data("decompressed container too large"));
+    }
+    Ok(data)
+}
+
+pub(crate) struct LimitedBuffer {
+    data: Vec<u8>,
+}
+
+impl LimitedBuffer {
+    pub(crate) fn new() -> Self {
+        Self { data: Vec::new() }
+    }
+
+    pub(crate) fn into_inner(self) -> Vec<u8> {
+        self.data
+    }
+}
+
+impl Write for LimitedBuffer {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        if self.data.len().saturating_add(buf.len()) > MAX_SIZE {
+            return Err(invalid_data("decompressed container too large"));
+        }
+        self.data.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
 }
 
 /// Get container reader for a format, if it's a container

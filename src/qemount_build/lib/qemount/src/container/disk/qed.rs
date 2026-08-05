@@ -2,12 +2,15 @@
 //!
 //! Parses QED format and provides virtual disk access through L1/L2 tables.
 
-use crate::container::{Child, Container};
+use crate::container::{checked_table_size, invalid_data, Child, Container};
 use crate::detect::Reader;
 use std::io;
 use std::sync::Arc;
 
 const QED_MAGIC: u32 = 0x00444551;
+const QED_MIN_CLUSTER_SIZE: u64 = 4 * 1024;
+const QED_MAX_CLUSTER_SIZE: u64 = 64 * 1024 * 1024;
+const QED_MAX_TABLE_SIZE: u64 = 16;
 
 /// QED disk image container
 pub struct QedContainer;
@@ -82,19 +85,27 @@ impl QedReader {
             header[0x37],
         ]);
 
-        // Validate cluster_size is power of 2
-        if cluster_size == 0 || (cluster_size & (cluster_size - 1)) != 0 {
+        // QED stores table_size in clusters; both fields are powers of two.
+        if !(QED_MIN_CLUSTER_SIZE..=QED_MAX_CLUSTER_SIZE).contains(&cluster_size)
+            || !cluster_size.is_power_of_two()
+        {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "invalid cluster_size",
             ));
         }
+        if table_size == 0 || table_size > QED_MAX_TABLE_SIZE || !table_size.is_power_of_two() {
+            return Err(invalid_data("invalid QED table_size"));
+        }
 
         // L1/L2 table entries = (table_size * cluster_size) / 8
-        let l2_entries = (table_size * cluster_size) / 8;
+        let l1_bytes_u64 = table_size
+            .checked_mul(cluster_size)
+            .ok_or_else(|| invalid_data("QED table size overflow"))?;
+        let l2_entries = l1_bytes_u64 / 8;
 
         // Read L1 table
-        let l1_bytes = (l2_entries * 8) as usize;
+        let l1_bytes = checked_table_size(parent.as_ref(), l1_table_offset, l2_entries, 8)?;
         let mut l1_data = vec![0u8; l1_bytes];
         if parent.read_at(l1_table_offset, &mut l1_data)? != l1_bytes {
             return Err(io::Error::new(
@@ -192,3 +203,29 @@ impl Reader for QedReader {
 // SAFETY: QedReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for QedReader {}
 unsafe impl Sync for QedReader {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    fn header(cluster_size: u32, table_size: u32) -> Vec<u8> {
+        let mut data = vec![0u8; 0x38];
+        data[0..4].copy_from_slice(&QED_MAGIC.to_le_bytes());
+        data[0x04..0x08].copy_from_slice(&cluster_size.to_le_bytes());
+        data[0x08..0x0c].copy_from_slice(&table_size.to_le_bytes());
+        data
+    }
+
+    #[test]
+    fn rejects_zero_table_size() {
+        let image = Arc::new(BytesReader::new(header(4096, 0)));
+        assert!(QedReader::new(image).is_err());
+    }
+
+    #[test]
+    fn rejects_table_larger_than_image() {
+        let image = Arc::new(BytesReader::new(header(4096, 1)));
+        assert!(QedReader::new(image).is_err());
+    }
+}

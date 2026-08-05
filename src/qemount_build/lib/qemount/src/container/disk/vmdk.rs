@@ -6,7 +6,7 @@
 //! - VMDK4 stream-optimized - compressed with deflate
 //! - seSparse - ESXi sparse format
 
-use crate::container::{Child, Container};
+use crate::container::{checked_table_size, invalid_data, Child, Container};
 use crate::detect::Reader;
 use flate2::read::DeflateDecoder;
 use std::io::{self, Read};
@@ -114,13 +114,21 @@ impl VmdkReader {
         let l1dir_size =
             u32::from_le_bytes([header[20], header[21], header[22], header[23]]) as usize;
 
-        let grain_size = granularity * 512;
-        let virtual_size = disk_sectors * 512;
+        let grain_size = granularity
+            .checked_mul(512)
+            .filter(|&size| size != 0)
+            .ok_or_else(|| invalid_data("invalid VMDK3 granularity"))?;
+        let virtual_size = disk_sectors
+            .checked_mul(512)
+            .ok_or_else(|| invalid_data("VMDK3 virtual size overflow"))?;
 
         // Read L1 table
-        let l1_bytes = l1dir_size * 4;
+        let l1_offset = l1dir_offset
+            .checked_mul(512)
+            .ok_or_else(|| invalid_data("VMDK3 L1 offset overflow"))?;
+        let l1_bytes = checked_table_size(parent.as_ref(), l1_offset, l1dir_size as u64, 4)?;
         let mut l1_data = vec![0u8; l1_bytes];
-        if parent.read_at(l1dir_offset * 512, &mut l1_data)? != l1_bytes {
+        if parent.read_at(l1_offset, &mut l1_data)? != l1_bytes {
             return Err(io::Error::new(
                 io::ErrorKind::UnexpectedEof,
                 "short VMDK3 L1 read",
@@ -167,19 +175,32 @@ impl VmdkReader {
             header[63],
         ]);
 
-        let grain_size = granularity * 512;
-        let virtual_size = capacity * 512;
+        let grain_size = granularity
+            .checked_mul(512)
+            .filter(|&size| size != 0)
+            .ok_or_else(|| invalid_data("invalid VMDK4 granularity"))?;
+        let virtual_size = capacity
+            .checked_mul(512)
+            .ok_or_else(|| invalid_data("VMDK4 virtual size overflow"))?;
+        if num_gtes_per_gt == 0 {
+            return Err(invalid_data("invalid VMDK4 grain table size"));
+        }
         let is_compressed = flags & VMDK4_FLAG_COMPRESS != 0;
         let has_zero_grain = flags & VMDK4_FLAG_ZERO_GRAIN != 0;
 
         // Calculate GD size
-        let gt_coverage = num_gtes_per_gt as u64 * grain_size;
-        let gd_entries = (virtual_size + gt_coverage - 1) / gt_coverage;
+        let gt_coverage = (num_gtes_per_gt as u64)
+            .checked_mul(grain_size)
+            .ok_or_else(|| invalid_data("VMDK4 grain table coverage overflow"))?;
+        let gd_entries = virtual_size.div_ceil(gt_coverage);
 
         // Read GD
-        let gd_bytes = gd_entries as usize * 4;
+        let gd_byte_offset = gd_offset
+            .checked_mul(512)
+            .ok_or_else(|| invalid_data("VMDK4 grain directory offset overflow"))?;
+        let gd_bytes = checked_table_size(parent.as_ref(), gd_byte_offset, gd_entries, 4)?;
         let mut gd_data = vec![0u8; gd_bytes];
-        let read_len = parent.read_at(gd_offset * 512, &mut gd_data)?;
+        let read_len = parent.read_at(gd_byte_offset, &mut gd_data)?;
         let actual_entries = read_len / 4;
 
         let gd: Vec<u32> = gd_data[..actual_entries * 4]
@@ -233,18 +254,14 @@ impl VmdkReader {
         ]);
 
         // Calculate GD size
-        let gt_coverage = gt_size * grain_size_bytes;
-        let gd_entries = if gt_coverage > 0 {
-            (capacity + gt_coverage - 1) / gt_coverage
-        } else {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "invalid seSparse gt_size",
-            ));
-        };
+        let gt_coverage = gt_size
+            .checked_mul(grain_size_bytes)
+            .filter(|&size| size != 0)
+            .ok_or_else(|| invalid_data("invalid seSparse grain table size"))?;
+        let gd_entries = capacity.div_ceil(gt_coverage);
 
         // Read GD (64-bit entries)
-        let gd_bytes = gd_entries as usize * 8;
+        let gd_bytes = checked_table_size(parent.as_ref(), gd_offset, gd_entries, 8)?;
         let mut gd_data = vec![0u8; gd_bytes];
         let read_len = parent.read_at(gd_offset, &mut gd_data)?;
         let actual_entries = read_len / 8;
@@ -453,3 +470,43 @@ impl Reader for VmdkReader {
 // SAFETY: VmdkReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for VmdkReader {}
 unsafe impl Sync for VmdkReader {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    fn vmdk3_header(granularity: u32) -> Vec<u8> {
+        let mut data = vec![0u8; 48];
+        data[0..4].copy_from_slice(&VMDK3_MAGIC.to_le_bytes());
+        data[16..20].copy_from_slice(&granularity.to_le_bytes());
+        data
+    }
+
+    fn vmdk4_header(granularity: u64, gtes: u32) -> Vec<u8> {
+        let mut data = vec![0u8; 80];
+        data[0..4].copy_from_slice(&VMDK4_MAGIC.to_le_bytes());
+        data[12..20].copy_from_slice(&1u64.to_le_bytes());
+        data[20..28].copy_from_slice(&granularity.to_le_bytes());
+        data[44..48].copy_from_slice(&gtes.to_le_bytes());
+        data
+    }
+
+    #[test]
+    fn rejects_zero_vmdk3_granularity() {
+        let image = Arc::new(BytesReader::new(vmdk3_header(0)));
+        assert!(VmdkReader::new(image).is_err());
+    }
+
+    #[test]
+    fn rejects_zero_vmdk4_granularity() {
+        let image = Arc::new(BytesReader::new(vmdk4_header(0, 512)));
+        assert!(VmdkReader::new(image).is_err());
+    }
+
+    #[test]
+    fn rejects_zero_vmdk4_grain_table_size() {
+        let image = Arc::new(BytesReader::new(vmdk4_header(128, 0)));
+        assert!(VmdkReader::new(image).is_err());
+    }
+}

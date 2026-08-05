@@ -3,7 +3,7 @@
 //! Parses UDIF DMG format with koly trailer, XML plist, and MISH blocks.
 //! Supports zlib, bzip2, lzfse compression.
 
-use crate::container::{Child, Container};
+use crate::container::{invalid_data, Child, Container};
 use crate::detect::Reader;
 use bzip2::read::BzDecoder;
 use flate2::read::ZlibDecoder;
@@ -22,6 +22,7 @@ const UDBZ: u32 = 0x80000006; // bzip2
 const ULFO: u32 = 0x80000007; // lzfse
 const COMMENT: u32 = 0x7ffffffe;
 const LAST_ENTRY: u32 = 0xffffffff;
+const MAX_CHUNK_SIZE: u64 = 64 * 1024 * 1024;
 
 /// DMG disk image container
 pub struct DmgContainer;
@@ -124,11 +125,13 @@ impl DmgReader {
         let chunks = Self::parse_plist_blkx(&xml_str, data_fork_offset)?;
 
         // Calculate virtual size
-        let virtual_size = chunks
-            .iter()
-            .map(|c| (c.sector_start + c.sector_count) * 512)
-            .max()
-            .unwrap_or(0);
+        let virtual_size = chunks.iter().try_fold(0u64, |size, chunk| {
+            let end = chunk.sector_start
+                .checked_add(chunk.sector_count)
+                .and_then(|sectors| sectors.checked_mul(512))
+                .ok_or_else(|| invalid_data("DMG virtual size overflow"))?;
+            Ok::<u64, io::Error>(size.max(end))
+        })?;
 
         Ok(Self {
             parent,
@@ -307,11 +310,20 @@ impl DmgReader {
 
             // Only add chunks with actual data
             if sector_count > 0 {
+                let sector_start = block_sector_start
+                    .checked_add(sector_number)
+                    .ok_or_else(|| invalid_data("DMG sector offset overflow"))?;
+                sector_start
+                    .checked_add(sector_count)
+                    .ok_or_else(|| invalid_data("DMG sector range overflow"))?;
+                let compressed_offset = data_fork_offset
+                    .checked_add(compressed_offset)
+                    .ok_or_else(|| invalid_data("DMG data offset overflow"))?;
                 chunks.push(DmgChunk {
                     chunk_type,
-                    sector_start: block_sector_start + sector_number,
+                    sector_start,
                     sector_count,
-                    compressed_offset: data_fork_offset + compressed_offset,
+                    compressed_offset,
                     compressed_length,
                 });
             }
@@ -337,23 +349,38 @@ impl DmgReader {
     }
 
     fn decompress_chunk(&self, chunk: &DmgChunk) -> io::Result<Vec<u8>> {
-        let uncompressed_size = (chunk.sector_count * 512) as usize;
+        let uncompressed_size = chunk.sector_count
+            .checked_mul(512)
+            .filter(|&size| size <= MAX_CHUNK_SIZE)
+            .and_then(|size| usize::try_from(size).ok())
+            .ok_or_else(|| invalid_data("DMG chunk too large"))?;
+
+        let source_size = match chunk.chunk_type {
+            UDZO | UDBZ | ULFO => usize::try_from(chunk.compressed_length)
+                .ok()
+                .filter(|&size| size <= MAX_CHUNK_SIZE as usize + 1024 * 1024)
+                .ok_or_else(|| invalid_data("DMG compressed chunk too large"))?,
+            _ => 0,
+        };
+        if source_size != 0 {
+            let source_end = chunk.compressed_offset
+                .checked_add(source_size as u64)
+                .ok_or_else(|| invalid_data("DMG chunk offset overflow"))?;
+            if self.parent.size().is_some_and(|size| source_end > size) {
+                return Err(io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "DMG chunk extends past end of image",
+                ));
+            }
+        }
 
         match chunk.chunk_type {
-            UDZE => {
-                // Zeros - no need to read
-                Ok(vec![0u8; uncompressed_size])
-            }
-            UDRW => {
-                // Raw - read directly
-                let mut data = vec![0u8; uncompressed_size];
-                self.parent.read_at(chunk.compressed_offset, &mut data)?;
-                Ok(data)
-            }
             UDZO => {
                 // zlib
-                let mut compressed = vec![0u8; chunk.compressed_length as usize];
-                self.parent.read_at(chunk.compressed_offset, &mut compressed)?;
+                let mut compressed = vec![0u8; source_size];
+                if self.parent.read_at(chunk.compressed_offset, &mut compressed)? != source_size {
+                    return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short DMG zlib chunk read"));
+                }
 
                 let mut decoder = ZlibDecoder::new(&compressed[..]);
                 let mut decompressed = vec![0u8; uncompressed_size];
@@ -362,8 +389,10 @@ impl DmgReader {
             }
             UDBZ => {
                 // bzip2
-                let mut compressed = vec![0u8; chunk.compressed_length as usize];
-                self.parent.read_at(chunk.compressed_offset, &mut compressed)?;
+                let mut compressed = vec![0u8; source_size];
+                if self.parent.read_at(chunk.compressed_offset, &mut compressed)? != source_size {
+                    return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short DMG bzip2 chunk read"));
+                }
 
                 let mut decoder = BzDecoder::new(&compressed[..]);
                 let mut decompressed = vec![0u8; uncompressed_size];
@@ -372,8 +401,10 @@ impl DmgReader {
             }
             ULFO => {
                 // lzfse
-                let mut compressed = vec![0u8; chunk.compressed_length as usize];
-                self.parent.read_at(chunk.compressed_offset, &mut compressed)?;
+                let mut compressed = vec![0u8; source_size];
+                if self.parent.read_at(chunk.compressed_offset, &mut compressed)? != source_size {
+                    return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short DMG lzfse chunk read"));
+                }
 
                 let mut decompressed = vec![0u8; uncompressed_size];
                 let decoded_len = lzfse::decode_buffer(&compressed, &mut decompressed)
@@ -387,10 +418,7 @@ impl DmgReader {
                 }
                 Ok(decompressed)
             }
-            _ => {
-                // Unknown compression - return zeros as fallback
-                Ok(vec![0u8; uncompressed_size])
-            }
+            _ => Err(invalid_data("unsupported DMG compression type")),
         }
     }
 }
@@ -426,9 +454,23 @@ impl Reader for DmgReader {
         let remaining_in_disk = (self.virtual_size - offset) as usize;
         let to_read = buf.len().min(remaining_in_chunk).min(remaining_in_disk);
 
-        // Decompress chunk and extract data
-        let decompressed = self.decompress_chunk(&chunk)?;
-        buf[..to_read].copy_from_slice(&decompressed[chunk_byte_offset as usize..][..to_read]);
+        match chunk.chunk_type {
+            UDZE | UDIG | COMMENT => buf[..to_read].fill(0),
+            UDRW => {
+                let physical = chunk.compressed_offset
+                    .checked_add(chunk_byte_offset)
+                    .ok_or_else(|| invalid_data("DMG raw chunk offset overflow"))?;
+                if self.parent.read_at(physical, &mut buf[..to_read])? != to_read {
+                    return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "short DMG raw chunk read"));
+                }
+            }
+            _ => {
+                let decompressed = self.decompress_chunk(&chunk)?;
+                buf[..to_read].copy_from_slice(
+                    &decompressed[chunk_byte_offset as usize..][..to_read],
+                );
+            }
+        }
 
         Ok(to_read)
     }
@@ -441,3 +483,36 @@ impl Reader for DmgReader {
 // SAFETY: DmgReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for DmgReader {}
 unsafe impl Sync for DmgReader {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    #[test]
+    fn rejects_oversized_chunk_before_allocation() {
+        let reader = DmgReader {
+            parent: Arc::new(BytesReader::new(Vec::new())),
+            chunks: Vec::new(),
+            virtual_size: 0,
+        };
+        let chunk = DmgChunk {
+            chunk_type: UDZO,
+            sector_start: 0,
+            sector_count: MAX_CHUNK_SIZE / 512 + 1,
+            compressed_offset: 0,
+            compressed_length: 0,
+        };
+        assert!(reader.decompress_chunk(&chunk).is_err());
+    }
+
+    #[test]
+    fn rejects_mish_sector_overflow() {
+        let mut data = vec![0u8; 244];
+        data[0..4].copy_from_slice(&MISH_MAGIC.to_be_bytes());
+        data[8..16].copy_from_slice(&u64::MAX.to_be_bytes());
+        data[204..208].copy_from_slice(&UDRW.to_be_bytes());
+        data[220..228].copy_from_slice(&1u64.to_be_bytes());
+        assert!(DmgReader::parse_mish_block(&data, 0).is_err());
+    }
+}

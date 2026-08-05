@@ -8,6 +8,7 @@ mod format;
 use std::ffi::{c_char, c_void, CStr};
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::{Arc, Mutex};
 
 use detect::Reader;
@@ -19,13 +20,14 @@ struct FileReader {
 
 impl Reader for FileReader {
     fn read_at(&self, offset: u64, buf: &mut [u8]) -> io::Result<usize> {
-        let mut file = self.file.lock().unwrap();
+        let mut file = self.file.lock()
+            .map_err(|_| io::Error::other("file reader lock poisoned"))?;
         file.seek(SeekFrom::Start(offset))?;
         file.read(buf)
     }
 
     fn size(&self) -> Option<u64> {
-        let mut file = self.file.lock().unwrap();
+        let mut file = self.file.lock().ok()?;
         file.seek(SeekFrom::End(0)).ok()
     }
 }
@@ -56,6 +58,19 @@ pub extern "C" fn qemount_detect_tree(
     callback: DetectTreeCallback,
     userdata: *mut c_void,
 ) {
+    let _ = catch_unwind(AssertUnwindSafe(|| {
+        detect_tree_ffi(path, callback, userdata);
+    }));
+}
+
+fn detect_tree_ffi(
+    path: *const c_char,
+    callback: DetectTreeCallback,
+    userdata: *mut c_void,
+) {
+    if path.is_null() {
+        return;
+    }
     let path = match unsafe { CStr::from_ptr(path) }.to_str() {
         Ok(s) => s,
         Err(_) => return,

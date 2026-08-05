@@ -3,7 +3,7 @@
 //! Parses EWF v1 (E01) forensic disk images. Chunks are zlib compressed
 //! with an offset table for random access, similar to cloop.
 
-use crate::container::{Child, Container};
+use crate::container::{checked_table_size, invalid_data, Child, Container};
 use crate::detect::Reader;
 use flate2::read::ZlibDecoder;
 use std::io::{self, Read};
@@ -116,7 +116,9 @@ fn parse_sections(reader: &dyn Reader) -> io::Result<SectionInfo> {
                     .ok_or_else(|| {
                         io::Error::new(io::ErrorKind::InvalidData, "invalid chunk size")
                     })?;
-                virtual_size = sector_count * bytes_per_sector as u64;
+                virtual_size = sector_count
+                    .checked_mul(bytes_per_sector as u64)
+                    .ok_or_else(|| invalid_data("EWF virtual size overflow"))?;
             }
             "sectors" => {
                 sectors_offset = pos;
@@ -127,8 +129,10 @@ fn parse_sections(reader: &dyn Reader) -> io::Result<SectionInfo> {
                 let tbl_start = pos + SECTION_DESCRIPTOR_SIZE as u64;
                 let tbl_count = read_le_u32(reader, tbl_start)?;
 
-                let entries_start = tbl_start + TABLE_HEADER_SIZE as u64;
-                let entries_bytes = tbl_count as usize * 4;
+                let entries_start = tbl_start
+                    .checked_add(TABLE_HEADER_SIZE as u64)
+                    .ok_or_else(|| invalid_data("EWF table offset overflow"))?;
+                let entries_bytes = checked_table_size(reader, entries_start, tbl_count as u64, 4)?;
                 let mut entries_data = vec![0u8; entries_bytes];
                 if reader.read_at(entries_start, &mut entries_data)? != entries_bytes {
                     return Err(io::Error::new(
@@ -148,6 +152,13 @@ fn parse_sections(reader: &dyn Reader) -> io::Result<SectionInfo> {
 
         if next_offset == pos || next_offset == 0 {
             break;
+        }
+        if next_offset < pos
+            || reader.size().is_some_and(|size| {
+                next_offset > size.saturating_sub(SECTION_DESCRIPTOR_SIZE as u64)
+            })
+        {
+            return Err(invalid_data("invalid EWF section chain"));
         }
         pos = next_offset;
     }
@@ -216,20 +227,34 @@ impl EwfReader {
         let entry = self.chunk_offsets[chunk_idx];
         let compressed = entry & COMPRESSED_FLAG != 0;
         let rel_offset = (entry & !COMPRESSED_FLAG) as u64;
-        let abs_offset = self.sectors_offset + rel_offset;
+        let abs_offset = self
+            .sectors_offset
+            .checked_add(rel_offset)
+            .ok_or_else(|| invalid_data("EWF chunk offset overflow"))?;
 
         // Determine compressed size from next chunk or section end
         let end = if chunk_idx + 1 < self.chunk_offsets.len() {
             let next_entry = self.chunk_offsets[chunk_idx + 1];
             let next_rel = (next_entry & !COMPRESSED_FLAG) as u64;
-            self.sectors_offset + next_rel
+            self.sectors_offset
+                .checked_add(next_rel)
+                .ok_or_else(|| invalid_data("EWF chunk offset overflow"))?
         } else {
             self.sectors_end
         };
-        let data_size = (end - abs_offset) as usize;
+        let data_size = end
+            .checked_sub(abs_offset)
+            .and_then(|size| usize::try_from(size).ok())
+            .filter(|&size| size <= zlib_bound(self.chunk_size as usize))
+            .ok_or_else(|| invalid_data("invalid EWF chunk offsets"))?;
 
         let mut raw = vec![0u8; data_size];
-        self.parent.read_at(abs_offset, &mut raw)?;
+        if self.parent.read_at(abs_offset, &mut raw)? != data_size {
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "short EWF chunk read",
+            ));
+        }
 
         if compressed {
             let mut decoder = ZlibDecoder::new(&raw[..]);
@@ -269,3 +294,34 @@ impl Reader for EwfReader {
 // SAFETY: EwfReader only holds Arc and Vec, safe to send/share
 unsafe impl Send for EwfReader {}
 unsafe impl Sync for EwfReader {}
+
+fn zlib_bound(size: usize) -> usize {
+    size + (size >> 12) + (size >> 14) + (size >> 25) + 13
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::container::BytesReader;
+
+    fn reader(offsets: Vec<u32>, sectors_end: u64) -> EwfReader {
+        EwfReader {
+            parent: Arc::new(BytesReader::new(vec![0u8; 1024])),
+            sectors_offset: 100,
+            sectors_end,
+            chunk_offsets: offsets,
+            chunk_size: 512,
+            virtual_size: 512,
+        }
+    }
+
+    #[test]
+    fn rejects_descending_chunk_offsets() {
+        assert!(reader(vec![20, 10], 200).read_chunk(0).is_err());
+    }
+
+    #[test]
+    fn rejects_section_end_before_last_chunk() {
+        assert!(reader(vec![20], 110).read_chunk(0).is_err());
+    }
+}
