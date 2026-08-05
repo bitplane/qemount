@@ -89,9 +89,17 @@ platform_exe_ext() {
 }
 
 platform_needs_exe_wrapper() {
+    local TARGET_ARCH=${1%%-*}
+
     case "$1" in
         *-windows-gnu|*-darwin) echo "true" ;;
-        *) echo "false" ;;
+        *)
+            if [ "$TARGET_ARCH" = "${BUILD_ARCH:?BUILD_ARCH is required}" ]; then
+                echo "false"
+            else
+                echo "true"
+            fi
+            ;;
     esac
 }
 
