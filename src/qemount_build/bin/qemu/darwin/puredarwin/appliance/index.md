@@ -27,6 +27,7 @@ cleanly.
 
 A temporary HFS payload disk carries qemount-init, simple9p and stream64 into
 the guest during provisioning. It is not part of the published appliance.
-qemount-init occupies XNU's fixed `/sbin/launchd` path, mounts the one attached
-HFS or HFS+ image read-only and starts 9P directly. The manifest includes only
-the userland and kernel-extension closure needed for that path.
+qemount-init occupies XNU's fixed `/sbin/launchd` path, finds the first HFS,
+HFS+ or HFSX volume on the one attached raw, MBR, GPT or APM image, mounts it
+read-only and starts 9P directly. The manifest includes only the userland and
+kernel-extension closure needed for that path.

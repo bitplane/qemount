@@ -12,6 +12,8 @@
 #define MOUNT_PATH "/Volumes/QEMOUNT_TARGET"
 #define SIMPLE9P_PATH "/usr/bin/simple9p"
 #define STREAM64_PATH "/usr/bin/stream64"
+#define MAX_DISKS 10
+#define MAX_SLICES 128
 
 static void
 fail(const char *operation)
@@ -37,39 +39,33 @@ open_console(void)
         close(console);
 }
 
-static void
-find_target(char *target, size_t size)
+static int
+device_is(const char *path, dev_t device)
 {
-    struct stat root;
-    unsigned int index;
+    struct stat status;
 
-    if (stat("/", &root) != 0)
-        fail("identify root disk");
-
-    for (index = 0; index < 10; index++) {
-        struct stat device;
-        char disk[32];
-        char slice[32];
-        int has_slice;
-
-        snprintf(disk, sizeof(disk), "/dev/disk%u", index);
-        if (stat(disk, &device) != 0)
-            continue;
-        if (device.st_rdev == root.st_dev)
-            continue;
-        snprintf(slice, sizeof(slice), "%ss1", disk);
-        has_slice = stat(slice, &device) == 0;
-        if (has_slice && device.st_rdev == root.st_dev)
-            continue;
-        snprintf(target, size, "%s", has_slice ? slice : disk);
-        return;
-    }
-    errno = ENODEV;
-    fail("find target disk");
+    return stat(path, &status) == 0 && status.st_rdev == device;
 }
 
-static void
-mount_target(const char *target)
+static int
+is_root_disk(unsigned int disk, dev_t root)
+{
+    char path[32];
+    unsigned int slice;
+
+    snprintf(path, sizeof(path), "/dev/disk%u", disk);
+    if (device_is(path, root))
+        return 1;
+    for (slice = 1; slice <= MAX_SLICES; slice++) {
+        snprintf(path, sizeof(path), "/dev/disk%us%u", disk, slice);
+        if (device_is(path, root))
+            return 1;
+    }
+    return 0;
+}
+
+static int
+try_mount(const char *target)
 {
     struct hfs_mount_args arguments;
 
@@ -77,8 +73,41 @@ mount_target(const char *target)
     arguments.fspec = (char *)target;
     arguments.hfs_uid = 0;
     arguments.hfs_gid = 0;
-    if (mount("hfs", MOUNT_PATH, MNT_RDONLY, &arguments) != 0)
-        fail("mount target disk");
+    return mount("hfs", MOUNT_PATH, MNT_RDONLY, &arguments) == 0;
+}
+
+static void
+mount_target(void)
+{
+    struct stat root;
+    unsigned int disk;
+    int mount_error = ENODEV;
+
+    if (stat("/", &root) != 0)
+        fail("identify root disk");
+
+    for (disk = 0; disk < MAX_DISKS; disk++) {
+        char path[32];
+        unsigned int slice;
+
+        snprintf(path, sizeof(path), "/dev/disk%u", disk);
+        if (access(path, F_OK) != 0 || is_root_disk(disk, root.st_dev))
+            continue;
+        for (slice = 1; slice <= MAX_SLICES; slice++) {
+            snprintf(path, sizeof(path), "/dev/disk%us%u", disk, slice);
+            if (access(path, F_OK) == 0) {
+                if (try_mount(path))
+                    return;
+                mount_error = errno;
+            }
+        }
+        snprintf(path, sizeof(path), "/dev/disk%u", disk);
+        if (try_mount(path))
+            return;
+        mount_error = errno;
+    }
+    errno = mount_error;
+    fail("mount target disk");
 }
 
 static void
@@ -101,11 +130,8 @@ raw_console(void)
 int
 main(void)
 {
-    char target[32];
-
     open_console();
-    find_target(target, sizeof(target));
-    mount_target(target);
+    mount_target();
     raw_console();
     if (write(STDOUT_FILENO, "QEMOUNT_9P_READY", 16) != 16)
         fail("announce 9P service");

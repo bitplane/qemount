@@ -35,9 +35,13 @@ def connect(path: str, timeout: float) -> socket.socket:
     raise TimeoutError("timed out connecting to the PureDarwin console")
 
 
-def read_until(channel: socket.socket, needle: bytes, timeout: float) -> None:
+def read_until(
+    channel: socket.socket,
+    needle: bytes,
+    timeout: float,
+    received: bytearray,
+) -> None:
     deadline = time.monotonic() + timeout
-    received = bytearray()
     while needle not in received:
         if time.monotonic() >= deadline:
             raise TimeoutError(f"timed out waiting for {needle!r}")
@@ -52,6 +56,7 @@ def read_until(channel: socket.socket, needle: bytes, timeout: float) -> None:
         received.extend(chunk)
         if len(received) > 65536:
             del received[:-32768]
+    del received[: received.index(needle) + len(needle)]
 
 
 def read_exact(channel: socket.socket, size: int) -> bytes:
@@ -134,8 +139,9 @@ def main() -> None:
     args = parser.parse_args()
 
     with connect(args.backend_socket, args.timeout) as channel:
-        read_until(channel, READY, args.timeout)
-        read_until(channel, STREAM_READY, 10)
+        received = bytearray()
+        read_until(channel, READY, args.timeout, received)
+        read_until(channel, STREAM_READY, 10, received)
         channel.settimeout(None)
         print(flush=True)
         guest = ArmoredStream(channel)
