@@ -115,6 +115,7 @@ where
     let actual = if let Some(m) = mask {
         match actual {
             Value::Int(i) => Value::Int(i & m as i64),
+            Value::UInt(i) => Value::UInt(i & m),
             v => v,
         }
     } else {
@@ -169,13 +170,13 @@ fn match_bytes_generic<R: Reader + ?Sized>(reader: &R, offset: u64, expected: &V
 
 fn read_value_generic<R: Reader + ?Sized>(reader: &R, offset: u64, typ: &str) -> Option<Value> {
     match typ {
-        "byte" | "u8" | "i8" => read_byte_generic(reader, offset).map(|b| Value::Int(b as i64)),
-        "le16" | "u16" | "i16" => read_le16_generic(reader, offset).map(|v| Value::Int(v as i64)),
-        "be16" => read_be16_generic(reader, offset).map(|v| Value::Int(v as i64)),
-        "le32" | "u32" | "i32" => read_le32_generic(reader, offset).map(|v| Value::Int(v as i64)),
-        "be32" => read_be32_generic(reader, offset).map(|v| Value::Int(v as i64)),
-        "le64" | "u64" | "i64" => read_le64_generic(reader, offset).map(|v| Value::Int(v as i64)),
-        "be64" => read_be64_generic(reader, offset).map(|v| Value::Int(v as i64)),
+        "byte" | "u8" | "i8" => read_byte_generic(reader, offset).map(|b| Value::UInt(b as u64)),
+        "le16" | "u16" | "i16" => read_le16_generic(reader, offset).map(Value::UInt),
+        "be16" => read_be16_generic(reader, offset).map(Value::UInt),
+        "le32" | "u32" | "i32" => read_le32_generic(reader, offset).map(Value::UInt),
+        "be32" => read_be32_generic(reader, offset).map(Value::UInt),
+        "le64" | "u64" | "i64" => read_le64_generic(reader, offset).map(Value::UInt),
+        "be64" => read_be64_generic(reader, offset).map(Value::UInt),
         "string" => None,
         _ => None,
     }
@@ -222,20 +223,52 @@ fn read_be64_generic<R: Reader + ?Sized>(reader: &R, offset: u64) -> Option<u64>
 }
 
 fn compare(actual: &Value, expected: &Value, op: &str) -> bool {
-    match (actual, expected) {
-        (Value::Int(a), Value::Int(e)) => match op {
+    if let (Some(a), Some(e)) = (numeric_value(actual), numeric_value(expected)) {
+        return match op {
             "=" => a == e,
             "!=" => a != e,
-            "&" => (a & e) == *e,
+            "&" => (a & e) == e,
             "^" => (a ^ e) == 0,
             "<" => a < e,
             ">" => a > e,
             "<=" => a <= e,
             ">=" => a >= e,
             _ => false,
-        },
+        };
+    }
+
+    match (actual, expected) {
         (Value::Bytes(a), Value::Bytes(e)) => a == e,
         _ => false,
+    }
+}
+
+fn numeric_value(value: &Value) -> Option<u64> {
+    match value {
+        Value::Int(value) => Some(*value as u64),
+        Value::UInt(value) => Some(*value),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn compares_unsigned_64_bit_values() {
+        let high_bit_value = 0xc841_4d4d_c552_3031;
+
+        assert!(compare(
+            &Value::UInt(high_bit_value),
+            &Value::UInt(high_bit_value),
+            "="
+        ));
+        assert!(compare(
+            &Value::UInt(high_bit_value),
+            &Value::Int(high_bit_value as i64),
+            "="
+        ));
     }
 }
 

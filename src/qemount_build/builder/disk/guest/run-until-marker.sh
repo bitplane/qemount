@@ -50,9 +50,6 @@ while [ "$second" -lt "$timeout_seconds" ]; do
 done
 
 if [ "$completed" = true ]; then
-    # The guest emits its marker immediately before Shutdown. Give dos.library
-    # time to flush filesystem buffers before terminating an emulation backend
-    # whose virtual power-off implementation does not exit.
     sleep "$grace_seconds"
 fi
 

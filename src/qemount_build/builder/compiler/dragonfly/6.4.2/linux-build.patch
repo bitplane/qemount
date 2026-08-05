@@ -128,14 +128,6 @@
 -.endif
 +CFLAGS+=-I${.CURDIR}/../../lib/libc/gen -DEMBED_LIB_SRC
  .endif
---- a/stand/boot/common/misc.c
-+++ b/stand/boot/common/misc.c
-@@ -98,4 +98,4 @@
- kern_bzero(vm_offset_t dest, size_t len)
- {
--    char	    buf[256];
-+    static char    buf[4096];
-     size_t	    chunk, resid;
 --- a/usr.sbin/config/Makefile
 +++ b/usr.sbin/config/Makefile
 @@ -9,6 +9,6 @@

@@ -5,13 +5,21 @@ related:
   - format/fs/zfs
   - format/fs/btrfs
 detect:
-  - offset: 0x10000
-    type: string
-    value: "H2"
-    then:
-      - offset: 0x10002
-        type: le16
-        name: version
+  any:
+    - offset: 0
+      type: le64
+      value: 0x48414d3205172011
+      then:
+        - offset: 0x30
+          type: le32
+          name: version
+    - offset: 0
+      type: le64
+      value: 0x11201705324d4148
+      then:
+        - offset: 0x30
+          type: be32
+          name: version
 ---
 
 # HAMMER2 Filesystem
@@ -33,8 +41,8 @@ original HAMMER filesystem with modern features.
 
 ## Structure
 
-- Volume header at offset 0x10000
-- "H2" magic signature
+- Volume header at offset 0, with redundant headers every 2 GiB
+- 64-bit `HAM2` volume signature, in either byte order
 - Freemap for space allocation
 - B-tree based metadata
 - Topology with multiple roots

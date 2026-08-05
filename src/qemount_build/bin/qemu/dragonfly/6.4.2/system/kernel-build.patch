@@ -45,3 +45,40 @@
 @@ -389 +389 @@
 -	mtree ${MTREE_FSCHG} -deU -f ${.CURDIR}/mtree/BSD.include.dist \
 +	mtree ${MTREE_FSCHG} -deU -N ${.CURDIR} -f ${.CURDIR}/mtree/BSD.include.dist \
+--- a/stand/lib/cd9660.c
++++ b/stand/lib/cd9660.c
+@@ -124,6 +124,7 @@
+ 	ISO_SUSP_HEADER *sh;
+ 	ISO_RRIP_CONT *shc;
+ 	char *p, *end;
++	size_t record_length;
+ 	int error;
+ 	size_t read;
+ 
+@@ -134,11 +135,17 @@
+ 	end = (char *)dp + isonum_711(dp->length);
+ 	while (p + 3 < end) {
+ 		sh = (ISO_SUSP_HEADER *)p;
++		record_length = isonum_711(sh->length);
++		if (record_length < sizeof(*sh) ||
++		    record_length > (size_t)(end - p))
++			return (NULL);
+ 		if (bcmp(sh->type, identifier, 2) == 0)
+ 			return (sh);
+ 		if (bcmp(sh->type, SUSP_STOP, 2) == 0)
+ 			return (NULL);
+ 		if (bcmp(sh->type, SUSP_CONTINUATION, 2) == 0) {
++			if (record_length < sizeof(*shc))
++				return (NULL);
+ 			shc = (ISO_RRIP_CONT *)sh;
+ 			error = f->f_dev->dv_strategy(f->f_devdata, F_READ,
+ 			    cdb2devb(isonum_733(shc->location)),
+@@ -151,7 +158,7 @@
+ 			end = p + isonum_733(shc->length);
+ 		} else
+ 			/* Ignore this record and skip to the next. */
+-			p += isonum_711(sh->length);
++			p += record_length;
+ 	}
+ 	return (NULL);
+ }

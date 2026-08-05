@@ -1,4 +1,4 @@
-FROM builder/disk/aros
+FROM builder/disk/guest
 
 COPY --chmod=755 build.sh /build/build.sh
 COPY grub.cfg /build/grub.cfg

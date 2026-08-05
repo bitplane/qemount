@@ -1,7 +1,7 @@
 ---
 format: fs/amiga-sfs
 requires:
-  - docker:builder/disk/aros
+  - docker:builder/disk/guest
 build_requires:
   - bin/qemu/i386-aros/system/aros.iso
   - data/templates/basic.tar

@@ -47,6 +47,7 @@ pub enum Rule {
 #[serde(untagged)]
 pub enum Value {
     Int(i64),
+    UInt(u64),
     Bytes(Vec<i64>),
     String(String),
 }
