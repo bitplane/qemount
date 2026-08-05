@@ -8,6 +8,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xorriso \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --chmod=755 build.sh /build.sh
+COPY --chmod=755 build.sh prune-root.sh /build/
 
-ENTRYPOINT ["/build.sh"]
+ENTRYPOINT ["/build/build.sh"]

@@ -88,7 +88,10 @@ bmake \
     reinstallkernel
 
 cp -a "$DRAGONFLY_SRC/nrelease/root/." "$ROOT/"
+sed -i '/^dm_load=/d' "$ROOT/boot/loader.conf"
 printf '\nconsole="comconsole"\n' >> "$ROOT/boot/loader.conf"
+
+/build/prune-root.sh "$ROOT"
 
 mkdir -p "$OUTPUT_DIR"
 xorriso -as mkisofs \
