@@ -177,6 +177,11 @@
 -#include <sys/limits.h>
 --- a/usr.bin/crunch/crunchide/exec_elf64.c
 +++ b/usr.bin/crunch/crunchide/exec_elf64.c
+@@ -26,3 +26,3 @@
+-#ifdef __x86_64__
++#ifdef NLIST_ELF64
+ #define	ELFSIZE		64
+ #endif
 @@ -36 +36,5 @@
 +#ifdef BOOTSTRAPPING
 +#include <endian.h>
