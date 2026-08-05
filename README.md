@@ -16,7 +16,8 @@ MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
 
 Currently, there's:
 
-* Linux 2.6, Linux 6.12, NetBSD 10.0, AROS and Haiku guests (currently x86 only)
+* guests for Linux 2.6, Linux 6.12, NetBSD 10.0, Dragonfly BSD, PureDarwin,
+  AROS and Haiku. Most are x86 only, some have aarch64 builds.
 * 9P2000.U support via a simple9p server and 9pfuse client.
 * A huge collection of test data fixtures, with many custom mkfs and archive and
   compression tools.
