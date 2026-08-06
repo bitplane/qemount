@@ -37,8 +37,7 @@ mkfs.vfat -F 32 -n QEMOUNTOUT "$work/output.fat" >/dev/null
 python3 /build/build.py \
     "$work/system.qcow2" \
     "$source_iso" \
-    "$work/output.fat" \
-    "$cache/source-build.log"
+    "$work/output.fat"
 
 test "$(mtype -i "$work/output.fat" ::proof.txt)" = QEMOUNT_BUILD_OK
 temporary=$output_dir/.9front.iso.tmp

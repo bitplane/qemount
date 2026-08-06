@@ -8,6 +8,8 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
+    - [ ] lock the build directory so concurrent qemount-build processes cannot
+      corrupt shared caches or interleave output
     - [ ] separate qemount binaries from the compiled catalogue so catalogue
       changes do not rebuild the Rust code
     - [ ] decouple downloaded source identity from the downloader image hash
