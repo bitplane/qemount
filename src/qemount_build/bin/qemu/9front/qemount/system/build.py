@@ -40,8 +40,17 @@ qemu.logfile_read = sys.stdout
 
 
 def run(command: str) -> None:
-    qemu.sendline(command)
+    qemu.sendline(
+        f"{{{command}}}; command_status=$status; "
+        'if(~ $"command_status \'\') echo QEMOUNT_^COMMAND_OK; '
+        'if(! ~ $"command_status \'\') echo QEMOUNT_^COMMAND_FAILED'
+    )
+    result = qemu.expect(
+        [r"QEMOUNT_COMMAND_OK", r"QEMOUNT_COMMAND_FAILED"], timeout=3600
+    )
     qemu.expect(r"term% ", timeout=3600)
+    if result != 0:
+        raise RuntimeError(f"9front command failed: {command}")
 
 
 try:
@@ -61,16 +70,23 @@ try:
         "cd /usr/glenda/qemount-build",
         "tar xzf /n/src/9front-*.tar.gz",
         "cd 9front-*",
-        "bind -ac `{pwd} /",
-        "cp /n/src/qemount/plan9.ini /cfg/plan9.ini",
-        "cp /n/src/qemount/qemount.rc /rc/bin/qemount",
-        "cp /n/src/qemount/qemount-init.rc /rc/bin/qemount-init",
-        "chmod 775 /rc/bin/qemount /rc/bin/qemount-init",
+        "source_root=`{pwd}",
+        "cp /n/src/qemount/plan9.ini $source_root/sys/lib/dist/cfg/plan9.ini",
+        "cp /n/src/qemount/qemount.rc $source_root/rc/bin/qemount",
+        "cp /n/src/qemount/qemount-init.rc $source_root/rc/bin/qemount-init",
+        "chmod 775 $source_root/rc/bin/qemount $source_root/rc/bin/qemount-init",
+        "bind -bc $source_root /",
         "cd /",
         ". /sys/lib/rootstub",
         "cd /sys/src",
         "mk nuke",
         "mk libs",
+        "mk install",
+        "mk clean",
+        "cd /sys/src/boot/pc",
+        "mk install",
+        "mk clean",
+        "cd /sys/src/boot/efi",
         "mk install",
         "mk clean",
         "cd /sys/src/9/pc64",

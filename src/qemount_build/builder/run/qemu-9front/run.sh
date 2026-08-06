@@ -95,6 +95,7 @@ QEMU_ARGS=(
 QEMU_ARGS+=("${EXTRA_ARGS[@]}")
 
 echo "9P socket: $SOCKET_PATH"
-echo "Connect with: 9pfuse -n 1 $SOCKET_PATH <mountpoint>"
+echo "After the guest prints 'term%', connect with:"
+echo "  9pfuse -n 1 $SOCKET_PATH <mountpoint>"
 
 exec "${QEMOUNT_QEMU:-qemu-system-x86_64}" "${QEMU_ARGS[@]}"
