@@ -2,6 +2,8 @@
 
 import io
 import sys
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -14,6 +16,7 @@ from qemount_build.runner import (
     image_needs_no_cache,
     podman_runtime_args,
     begin_output_transaction,
+    run_container,
     finish_output_transaction,
     run_streaming,
     validate_path_provides,
@@ -96,6 +99,71 @@ def test_run_streaming_retains_failed_command_without_replaying_it(tmp_path):
     retained = log_path.read_text()
     assert retained.count("broken") == 1
     assert "[qemount] exit status: 23\n" in retained
+
+
+def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
+    """An interrupted logger terminates and reaps its child process."""
+
+    class InterruptedOutput:
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            raise KeyboardInterrupt
+
+    class Process:
+        stdout = InterruptedOutput()
+        returncode = None
+        terminated = False
+        waited = False
+
+        def poll(self):
+            return self.returncode
+
+        def terminate(self):
+            self.terminated = True
+            self.returncode = -15
+
+        def wait(self, timeout=None):
+            self.waited = True
+            return self.returncode
+
+    process = Process()
+    monkeypatch.setattr(
+        "qemount_build.runner.subprocess.Popen", lambda *args, **kwargs: process
+    )
+    log_path = tmp_path / "stage.run.log"
+
+    with pytest.raises(KeyboardInterrupt):
+        run_streaming(["ignored"], log_path, stream=io.StringIO())
+
+    assert process.terminated
+    assert process.waited
+    assert "[qemount] interrupted\n" in log_path.read_text()
+
+
+def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch):
+    """Ctrl-C force-removes the exact container recorded by Podman."""
+    removed = []
+
+    def interrupt(cmd, log_path):
+        cid_path = Path(cmd[cmd.index("--cidfile") + 1])
+        cid_path.write_text("test-container-id\n")
+        raise KeyboardInterrupt
+
+    def record_run(cmd, **kwargs):
+        removed.append(cmd)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr("qemount_build.runner.run_streaming", interrupt)
+    monkeypatch.setattr("qemount_build.runner.subprocess.run", record_run)
+    monkeypatch.setattr("qemount_build.runner.podman_runtime_args", lambda: [])
+
+    with pytest.raises(KeyboardInterrupt):
+        run_container("stage", "image", tmp_path, {}, ["output"])
+
+    assert removed == [["podman", "rm", "--force", "test-container-id"]]
+    assert not list((tmp_path / "cache/containers").iterdir())
 
 
 def test_get_image_tag_docker():

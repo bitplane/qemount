@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import TextIO
@@ -33,6 +34,46 @@ def podman_runtime_args(kvm_device: Path = Path("/dev/kvm")) -> list[str]:
         return []
 
     return ["--device", str(kvm_device), "--group-add", "keep-groups"]
+
+
+def stop_process(proc: subprocess.Popen) -> None:
+    """Stop and reap a child process without leaving it orphaned."""
+    if proc.poll() is not None:
+        return
+
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+
+
+def container_cid_path(build_dir: Path) -> Path:
+    """Reserve a unique, initially absent path for a Podman CID file."""
+    cid_dir = build_dir / "cache" / "containers"
+    cid_dir.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix="run.", suffix=".cid", dir=cid_dir)
+    os.close(descriptor)
+    path = Path(name)
+    path.unlink()
+    return path
+
+
+def remove_container(cid_path: Path) -> None:
+    """Force-remove the container recorded by Podman, if it still exists."""
+    try:
+        container_id = cid_path.read_text().strip()
+    except FileNotFoundError:
+        return
+
+    if container_id:
+        subprocess.run(
+            ["podman", "rm", "--force", container_id],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
 
 
 def get_image_id(tag: str) -> str | None:
@@ -97,23 +138,33 @@ def run_streaming(
         )
 
         last_line_had_newline = True
-        assert proc.stdout is not None
-        for line in proc.stdout:
-            stream.write(line)
-            stream.flush()
-            log_file.write(line)
-            log_file.flush()
-            last_line_had_newline = line.endswith("\n")
+        interrupted = False
+        try:
+            assert proc.stdout is not None
+            for line in proc.stdout:
+                stream.write(line)
+                stream.flush()
+                log_file.write(line)
+                log_file.flush()
+                last_line_had_newline = line.endswith("\n")
 
-        returncode = proc.wait()
-        if not last_line_had_newline:
-            stream.write("\n")
-            stream.flush()
-            log_file.write("\n")
+            returncode = proc.wait()
+        except BaseException:
+            interrupted = True
+            stop_process(proc)
+            raise
+        finally:
+            if not last_line_had_newline:
+                stream.write("\n")
+                stream.flush()
+                log_file.write("\n")
 
-        finished = datetime.now().astimezone().isoformat()
-        log_file.write(f"[qemount] finished: {finished}\n")
-        log_file.write(f"[qemount] exit status: {returncode}\n")
+            finished = datetime.now().astimezone().isoformat()
+            log_file.write(f"[qemount] finished: {finished}\n")
+            if interrupted:
+                log_file.write("[qemount] interrupted\n")
+            else:
+                log_file.write(f"[qemount] exit status: {returncode}\n")
 
     return returncode
 
@@ -190,7 +241,8 @@ def run_container(
 
     Returns (success, log_path).
     """
-    cmd = ["podman", "run", "--rm"]
+    cid_path = container_cid_path(build_dir)
+    cmd = ["podman", "run", "--rm", "--cidfile", str(cid_path)]
     cmd.extend(podman_runtime_args())
     cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
     for key, value in env.items():
@@ -200,7 +252,11 @@ def run_container(
 
     log.info("Running stage %s: %s", stage, image)
     log_path = build_log_path(build_dir, stage, "run")
-    returncode = run_streaming(cmd, log_path)
+    try:
+        returncode = run_streaming(cmd, log_path)
+    finally:
+        remove_container(cid_path)
+        cid_path.unlink(missing_ok=True)
     if returncode != 0:
         log.error("Build failed: %s", stage)
         log.error("Log: %s", log_path)

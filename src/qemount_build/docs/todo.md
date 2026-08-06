@@ -8,6 +8,8 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
+    - [ ] separate qemount binaries from the compiled catalogue so catalogue
+      changes do not rebuild the Rust code
     - [ ] decouple downloaded source identity from the downloader image hash
       before changing the downloader again; downloader changes currently
       invalidate every source, redownload upstream archives, and rebuild all

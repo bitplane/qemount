@@ -10,10 +10,21 @@ from qemount_build.main import (
     get_default_arch,
     build_context,
     compatible_output_arches,
+    run_command,
     cmd_dump,
     cmd_outputs,
     cmd_deps,
 )
+
+
+def test_run_command_handles_keyboard_interrupt(caplog):
+    """Ctrl-C exits conventionally without exposing a Python traceback."""
+
+    def interrupt(*args):
+        raise KeyboardInterrupt
+
+    assert run_command(interrupt, None, None, None) == 130
+    assert "Interrupted" in caplog.text
 
 
 def test_normalize_target_strips_build_prefix():

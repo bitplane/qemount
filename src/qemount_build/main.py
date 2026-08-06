@@ -60,6 +60,15 @@ def build_context(build_platform: str) -> dict:
     }
 
 
+def run_command(func, args, catalogue, context) -> int:
+    """Run a CLI command, translating Ctrl-C into the conventional status."""
+    try:
+        return func(args, catalogue, context) or 0
+    except KeyboardInterrupt:
+        log.warning("Interrupted")
+        return 130
+
+
 def compatible_output_arches(build_arch: str) -> set[str]:
     """Return architectures selected by default for a build architecture."""
     return ARCH_COMPATIBILITY.get(build_arch, {build_arch})
@@ -306,8 +315,7 @@ def main():
     context = build_context(args.build_platform)
 
     # Run command
-    result = args.func(args, catalogue, context)
-    return result or 0
+    return run_command(args.func, args, catalogue, context)
 
 
 if __name__ == "__main__":
