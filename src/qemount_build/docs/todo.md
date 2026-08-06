@@ -56,7 +56,6 @@
 
 - [ ] add more guests
   - [ ] Atari ST (STEEM?)
-  - [x] DragonFly BSD
   - [ ] 9front
   - [ ] RISC OS
   - [ ] illumos
