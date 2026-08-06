@@ -423,6 +423,10 @@ build_qemu_for_target() {
     local OUTDIR=/host/build/bin/qemu-system/$TARGET
     local C_ARGS="$(platform_c_args $TARGET)"
     local LD_ARGS="$(qemu_ld_args $TARGET)"
+    local EXT="$(platform_exe_ext $TARGET)"
+    local SUFFIX=""
+
+    case "$TARGET" in *-darwin) SUFFIX="-unsigned" ;; esac
 
     mkdir -p $OUTDIR
 
@@ -471,18 +475,14 @@ build_qemu_for_target() {
         --extra-ldflags="-L$PREFIX/lib $LD_ARGS"
 
     ninja -C build -j$JOBS \
-        qemu-system-x86_64 \
-        qemu-system-aarch64 \
-        qemu-system-m68k
+        "qemu-system-x86_64$SUFFIX$EXT" \
+        "qemu-system-aarch64$SUFFIX$EXT" \
+        "qemu-system-m68k$SUFFIX$EXT"
 
     # Copy outputs. On macOS, QEMU's meson build produces *-unsigned
     # binaries expecting a post-build codesign step. We don't sign in
     # the build container — users can ad-hoc sign with `codesign -s -`
     # on their mac, or run via `xattr -d com.apple.quarantine`.
-    local EXT="$(platform_exe_ext $TARGET)"
-    local SUFFIX=""
-    case "$TARGET" in *-darwin) SUFFIX="-unsigned" ;; esac
-
     cp build/qemu-system-x86_64$SUFFIX$EXT $OUTDIR/qemu-system-x86_64$EXT
     cp build/qemu-system-aarch64$SUFFIX$EXT $OUTDIR/qemu-system-aarch64$EXT
     cp build/qemu-system-m68k$SUFFIX$EXT $OUTDIR/qemu-system-m68k$EXT
