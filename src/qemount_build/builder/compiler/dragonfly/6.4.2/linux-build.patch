@@ -227,6 +227,14 @@
 +CPU_FAMILY=	${HOST_CPU_FAMILY}
 +.endif
 +
+@@ -137 +141 @@
+-#libgmp_la_SOURCES = mp_clz_tab.c
++libgmp_la_SOURCES += mp_clz_tab.c
+--- a/gnu/usr.bin/mpfr/Makefile
++++ b/gnu/usr.bin/mpfr/Makefile
+@@ -67 +67 @@
+-#SRCS+= mp_clz_tab.c
++SRCS+= mp_clz_tab.c
 --- a/gnu/usr.bin/binutils234/block1/libiberty/config.h
 +++ b/gnu/usr.bin/binutils234/block1/libiberty/config.h
 @@ -362,0 +363,4 @@
