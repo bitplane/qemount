@@ -3,7 +3,7 @@ set -eu
 
 test "$OUTPUT_ARCH" = x86_64
 
-version=95ad97b98af078a1ca6a45f76725f6b693fa6795
+version=qemount
 bootstrap=/host/build/sources/9front-11957.amd64.qcow2.gz
 source=/host/build/sources/9front-${version}.tar.gz
 cache=/host/build/cache/9front/${BUILD_PLATFORM}/x86_64/11957-${version}

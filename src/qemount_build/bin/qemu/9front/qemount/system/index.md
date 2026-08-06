@@ -6,7 +6,7 @@ output_platforms:
       - bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso
 requires:
   - sources/9front-11957.amd64.qcow2.gz
-  - sources/9front-95ad97b98af078a1ca6a45f76725f6b693fa6795.tar.gz
+  - sources/9front-qemount.tar.gz
 ---
 
 # 9front qemount system
