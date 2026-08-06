@@ -1,0 +1,8 @@
+#!/bin/rc
+
+. /rc/bin/termrc
+. /rc/bin/qemount
+
+prompt=('term% ' '	')
+fn term%{ $* }
+/bin/rc

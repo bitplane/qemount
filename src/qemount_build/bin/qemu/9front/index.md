@@ -1,5 +1,9 @@
 ---
 title: 9front guests
+env:
+  BUILDER: builder/compiler/9front
+requires:
+  - docker:${BUILDER}
 ---
 
 # 9front guests
