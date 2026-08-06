@@ -12,6 +12,7 @@ RUN apk add --no-cache \
     meson \
     ninja \
     pkgconf \
+    patch \
     make \
     perl \
     binutils \
@@ -29,4 +30,5 @@ RUN apk add --no-cache \
 WORKDIR /work
 COPY --chmod=755 build.sh /build.sh
 COPY --chmod=755 zig-wrapper.sh /zig-wrapper.sh
+COPY glib-zig-cross.patch /build/glib-zig-cross.patch
 ENTRYPOINT ["/build.sh"]

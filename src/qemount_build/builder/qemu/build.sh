@@ -307,6 +307,15 @@ build_deps_for_target() {
     [ -d pixman-0.44.2 ]  || tar xf /host/build/sources/pixman-0.44.2.tar.gz
     [ -d glib-2.82.4 ]    || tar xf /host/build/sources/glib-2.82.4.tar.xz
 
+    # GLib tests -latomic by linking an empty program. During a Zig cross-build
+    # that can accept the build host's archive and record its absolute path in
+    # the target's static pkg-config metadata. Zig provides the compiler atomic
+    # runtime, so do not add this optional host library to the target closure.
+    if [ ! -f $SRCDIR/glib-2.82.4/.qemount-zig-cross-patched ]; then
+        patch -d $SRCDIR/glib-2.82.4 -p1 < /build/glib-zig-cross.patch
+        touch $SRCDIR/glib-2.82.4/.qemount-zig-cross-patched
+    fi
+
     # GLib's cross build first determines size_t by size, then refines that
     # with GCC/Clang warning-clean pointer compatibility probes. On Win64
     # MinGW, size_t is 8 bytes and long is 4 bytes, so the size facts are
@@ -461,7 +470,10 @@ build_qemu_for_target() {
         --extra-cflags="-I$PREFIX/include -UNDEBUG $C_ARGS" \
         --extra-ldflags="-L$PREFIX/lib $LD_ARGS"
 
-    make -j$JOBS
+    ninja -C build -j$JOBS \
+        qemu-system-x86_64 \
+        qemu-system-aarch64 \
+        qemu-system-m68k
 
     # Copy outputs. On macOS, QEMU's meson build produces *-unsigned
     # binaries expecting a post-build codesign step. We don't sign in
