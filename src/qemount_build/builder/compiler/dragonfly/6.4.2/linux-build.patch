@@ -397,3 +397,24 @@
 +	snprintf(tempfname, sizeof(tempfname), "%s/crunchgen_%sXXXXXX",
 +	    getenv("TMPDIR") ? getenv("TMPDIR") : _PATH_TMP, confname);
 +
+--- a/contrib/gcc-4.7/gcc/config/i386/driver-i386.c
++++ b/contrib/gcc-4.7/gcc/config/i386/driver-i386.c
+@@ -27 +27 @@
+-#ifdef __GNUC__
++#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+@@ -810,2 +810,2 @@
+-/* If we aren't compiling with GCC then the driver will just ignore
+-   -march and -mtune "native" target and will leave to the newly
++/* If x86 CPUID detection is unavailable, ignore -march and -mtune "native"
++   and leave to the newly
+--- a/contrib/gcc-8.0/gcc/config/i386/driver-i386.c
++++ b/contrib/gcc-8.0/gcc/config/i386/driver-i386.c
+@@ -29 +29,2 @@
+-#if defined(__GNUC__) && (__GNUC__ >= 5 || !defined(__PIC__))
++#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)) \
++    && (__GNUC__ >= 5 || !defined(__PIC__))
+@@ -1123,2 +1124,2 @@
+-/* If we are compiling with GCC where %EBX register is fixed, then the
+-   driver will just ignore -march and -mtune "native" target and will leave
++/* If x86 CPUID detection is unavailable, ignore -march and -mtune "native"
++   and leave
