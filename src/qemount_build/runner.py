@@ -6,6 +6,7 @@ Executes build steps in dependency order using podman.
 
 import json
 import logging
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -24,6 +25,14 @@ from .cache import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def podman_runtime_args(kvm_device: Path = Path("/dev/kvm")) -> list[str]:
+    """Return optional host acceleration arguments for container runs."""
+    if not kvm_device.exists() or not os.access(kvm_device, os.R_OK | os.W_OK):
+        return []
+
+    return ["--device", str(kvm_device), "--group-add", "keep-groups"]
 
 
 def get_image_id(tag: str) -> str | None:
@@ -181,7 +190,9 @@ def run_container(
 
     Returns (success, log_path).
     """
-    cmd = ["podman", "run", "--rm", "-v", f"{build_dir.absolute()}:/host/build"]
+    cmd = ["podman", "run", "--rm"]
+    cmd.extend(podman_runtime_args())
+    cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
     for key, value in env.items():
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)

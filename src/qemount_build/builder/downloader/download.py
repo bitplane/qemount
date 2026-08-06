@@ -8,6 +8,8 @@ Supports:
 - http/https URLs: direct download
 - git+https://...#ref: clone at a branch, tag, or commit with submodules,
   then export as a tarball
+- git-full+git://...#ref: fetch from a server without shallow-clone support,
+  then export the checked-out tree without repository history
 """
 
 import json
@@ -72,10 +74,12 @@ def download_file(url: str, dest: Path) -> bool:
         return False
 
 
-def clone_repo(url: str, dest: Path) -> bool:
+def clone_repo(url: str, dest: Path, *, shallow: bool = True) -> bool:
     """Clone a git repo and export as tarball.
 
-    URL format: git+https://github.com/user/repo.git#ref
+    URL formats:
+    - git+https://github.com/user/repo.git#ref
+    - git-full+git://example.test/repo#ref
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -83,7 +87,12 @@ def clone_repo(url: str, dest: Path) -> bool:
         log.warning("Git URL missing #ref: %s", url)
         return False
 
-    repo_url, ref = url[4:].split("#", 1)  # Strip "git+" prefix
+    prefix = "git+" if shallow else "git-full+"
+    if not url.startswith(prefix):
+        log.warning("Git URL has the wrong prefix: %s", url)
+        return False
+
+    repo_url, ref = url[len(prefix) :].split("#", 1)
     repo_name = repo_url.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git")
     export_name = f"{repo_name}-{ref}"  # e.g. haiku-r1beta5
 
@@ -92,10 +101,19 @@ def clone_repo(url: str, dest: Path) -> bool:
     with tempfile.TemporaryDirectory() as tmpdir:
         clone_dir = Path(tmpdir) / export_name
 
+        fetch = ["git", "-C", str(clone_dir), "fetch"]
+        if shallow:
+            fetch.extend(["--depth", "1", "origin", ref])
+        else:
+            # Some deliberately simple servers advertise branches but reject
+            # direct requests for commit IDs. Fetch their advertised refs,
+            # then resolve the immutable commit locally.
+            fetch.append("origin")
+
         commands = [
             ["git", "init", str(clone_dir)],
             ["git", "-C", str(clone_dir), "remote", "add", "origin", repo_url],
-            ["git", "-C", str(clone_dir), "fetch", "--depth", "1", "origin", ref],
+            fetch,
             ["git", "-C", str(clone_dir), "checkout", "--detach", "FETCH_HEAD"],
             [
                 "git",
@@ -115,6 +133,9 @@ def clone_repo(url: str, dest: Path) -> bool:
                 log.warning("Git command failed: %s", result.stderr.strip())
                 return False
 
+        if not shallow:
+            shutil.rmtree(clone_dir / ".git")
+
         log.info("Creating tarball: %s", dest)
         with temporary_output(dest) as tmp:
             with tarfile.open(tmp, "w:gz") as tar:
@@ -127,6 +148,8 @@ def clone_repo(url: str, dest: Path) -> bool:
 
 def fetch(url: str, dest: Path) -> bool:
     """Fetch from URL - dispatches to appropriate handler."""
+    if url.startswith("git-full+"):
+        return clone_repo(url, dest, shallow=False)
     if url.startswith("git+"):
         return clone_repo(url, dest)
     return download_file(url, dest)

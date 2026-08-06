@@ -16,7 +16,8 @@
       downloader changes, source-ref changes, missing outputs, and failed
       atomic downloads separately
   - [ ] guest architecture coverage
-    - [ ] enable KVM in Linux-hosted QEMU builds
+    - [x] enable KVM in Linux-hosted QEMU builds
+      - [ ] harden automatic `/dev/kvm` access against hostile build sources
     - [ ] cross-compiling
       - [ ] Linux 6.12
       - [ ] Linux 2.6

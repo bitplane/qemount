@@ -12,12 +12,31 @@ from qemount_build.runner import (
     get_docker_provides,
     get_file_provides,
     image_needs_no_cache,
+    podman_runtime_args,
     begin_output_transaction,
     finish_output_transaction,
     run_streaming,
     validate_path_provides,
     run_build,
 )
+
+
+def test_podman_runtime_args_omit_missing_kvm(tmp_path):
+    """Hosts without KVM retain the ordinary rootless container path."""
+    assert podman_runtime_args(tmp_path / "missing-kvm") == []
+
+
+def test_podman_runtime_args_expose_accessible_kvm(tmp_path):
+    """An accessible KVM device is passed through with supplementary groups."""
+    kvm = tmp_path / "kvm"
+    kvm.touch(mode=0o600)
+
+    assert podman_runtime_args(kvm) == [
+        "--device",
+        str(kvm),
+        "--group-add",
+        "keep-groups",
+    ]
 
 
 def test_build_log_path_mirrors_catalogue_path(tmp_path):

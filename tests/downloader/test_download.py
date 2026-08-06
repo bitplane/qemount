@@ -74,3 +74,42 @@ def test_clone_repo_publishes_complete_archive(tmp_path):
         assert content is not None
         assert content.read() == b"updated\n"
     assert list(destination.parent.glob("*.tmp")) == []
+
+
+def test_full_clone_exports_tree_without_repository_history(tmp_path):
+    repository = tmp_path / "repository"
+    destination = tmp_path / "output" / "source.tar.gz"
+    repository.mkdir()
+    subprocess.run(["git", "init", "-b", "main"], cwd=repository, check=True)
+    (repository / "content.txt").write_text("complete\n")
+    subprocess.run(["git", "add", "content.txt"], cwd=repository, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=qemount tests",
+            "-c",
+            "user.email=tests@qemount.invalid",
+            "commit",
+            "-m",
+            "fixture",
+        ],
+        cwd=repository,
+        check=True,
+    )
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    assert clone_repo(
+        f"git-full+file://{repository}#{commit}", destination, shallow=False
+    )
+
+    with tarfile.open(destination, "r:gz") as archive:
+        names = archive.getnames()
+        assert f"repository-{commit}/content.txt" in names
+        assert not any("/.git" in name for name in names)
