@@ -202,6 +202,7 @@ mod tests {
     /// container and unwrap to exactly one reconstructed TRD child.
     #[test]
     fn detect_chain_unwraps_to_trd() {
+        crate::format::init_test_formats();
         let reader = Arc::new(BytesReader::new(sample_scl()));
         let tree = crate::detect::detect_tree(reader);
         let scl = tree

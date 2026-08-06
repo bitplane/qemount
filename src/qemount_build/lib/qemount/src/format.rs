@@ -1,11 +1,12 @@
-//! Format rules loaded from embedded format.bin
+//! Format rules loaded from a compiled catalogue file.
 
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::ffi::CStr;
-use std::sync::LazyLock;
-
-const FORMAT_BIN: &[u8] = include_bytes!(env!("QEMOUNT_FORMAT_BIN"));
+use std::ffi::{CStr, CString};
+use std::fs;
+use std::io;
+use std::path::Path;
+use std::sync::OnceLock;
 
 #[derive(Debug, Deserialize)]
 struct RawFormatDb {
@@ -57,16 +58,73 @@ pub struct FormatDb {
     pub formats: Vec<(&'static CStr, Detect)>,
 }
 
-pub static FORMATS: LazyLock<FormatDb> = LazyLock::new(|| {
-    let raw: RawFormatDb = rmp_serde::from_slice(FORMAT_BIN)
-        .expect("embedded format.bin is valid");
+pub static FORMATS: OnceLock<FormatDb> = OnceLock::new();
 
-    let formats = raw.formats.into_iter().map(|(name, detect)| {
-        // Create null-terminated string and leak it for static lifetime
-        let cstr = std::ffi::CString::new(name).unwrap();
-        let leaked: &'static CStr = Box::leak(cstr.into_boxed_c_str());
-        (leaked, detect)
-    }).collect();
+impl FormatDb {
+    fn from_slice(data: &[u8]) -> io::Result<Self> {
+        let raw: RawFormatDb = rmp_serde::from_slice(data)
+            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
 
-    FormatDb { formats }
-});
+        let formats = raw
+            .formats
+            .into_iter()
+            .map(|(name, detect)| {
+                let cstr = CString::new(name)
+                    .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+                let leaked: &'static CStr = Box::leak(cstr.into_boxed_c_str());
+                Ok((leaked, detect))
+            })
+            .collect::<io::Result<Vec<_>>>()?;
+
+        Ok(Self { formats })
+    }
+
+    fn load(path: &Path) -> io::Result<Self> {
+        Self::from_slice(&fs::read(path)?)
+    }
+}
+
+pub fn load(path: &Path) -> io::Result<()> {
+    if FORMATS.get().is_some() {
+        return Ok(());
+    }
+
+    let formats = FormatDb::load(path)?;
+    let _ = FORMATS.set(formats);
+    Ok(())
+}
+
+#[cfg(test)]
+pub fn init_test_formats() {
+    FORMATS.get_or_init(|| FormatDb {
+        formats: vec![
+            test_format("disk/atr", &[0x96, 0x02]),
+            test_format("disk/2img", b"2IMG"),
+            test_format("disk/scl", b"SINCLAIR"),
+        ],
+    });
+}
+
+#[cfg(test)]
+fn test_format(name: &str, value: &[u8]) -> (&'static CStr, Detect) {
+    let name = Box::leak(CString::new(name).unwrap().into_boxed_c_str());
+    (
+        name,
+        Detect::All {
+            all: vec![Rule::Leaf {
+                offset: 0,
+                typ: "string".into(),
+                value: Some(Value::Bytes(
+                    value.iter().map(|byte| i64::from(*byte)).collect(),
+                )),
+                op: None,
+                mask: None,
+                _name: None,
+                then_rules: None,
+                length: None,
+                algorithm: None,
+                key: None,
+            }],
+        },
+    )
+}

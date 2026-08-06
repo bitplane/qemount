@@ -51,7 +51,7 @@ C FFI rather than using the Rust crate directly to validate the C ABI.
 ## Usage
 
 ```
-detect <file>...
+detect <format.bin> <file>...
 ```
 
 Recursively detects format trees for each file, descending into containers

@@ -118,6 +118,7 @@ mod tests {
     /// and strip the header to exactly one raw child.
     #[test]
     fn detect_chain_strips_header() {
+        crate::format::init_test_formats();
         let reader = Arc::new(BytesReader::new(sample(&[0u8; 256])));
         let tree = crate::detect::detect_tree(reader);
         let node = tree

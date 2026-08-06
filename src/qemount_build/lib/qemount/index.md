@@ -7,7 +7,6 @@ env:
   ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig/${BUILD_PLATFORM}
 requires:
   - docker:builder/compiler/rust
-  - lib/format.bin
 output_platforms:
   neutral:
     provides:

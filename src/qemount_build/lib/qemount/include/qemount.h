@@ -1,6 +1,7 @@
 #ifndef QEMOUNT_H
 #define QEMOUNT_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -24,9 +25,19 @@ typedef void (*qemount_detect_tree_callback)(
 );
 
 /**
+ * Load a compiled qemount format catalogue.
+ * The first successfully loaded catalogue remains active for the process.
+ *
+ * @param path Path to format.bin (UTF-8 encoded)
+ * @return true on success, false if the file could not be loaded
+ */
+bool qemount_load_catalogue(const char* path);
+
+/**
  * Detect format tree from file path.
  * Recursively detects formats in containers (gzip, tar, partition tables, etc.)
  * Calls the callback for each detected format with its position in the tree.
+ * qemount_load_catalogue() must succeed before this function is called.
  *
  * @param path Path to file to detect (UTF-8 encoded)
  * @param callback Function called for each detected format

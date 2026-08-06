@@ -369,12 +369,16 @@ fn is_transform(format: &str) -> bool {
 /// Returns a list of root-level detected formats, each with their
 /// children populated if they are container formats.
 pub fn detect_tree(reader: Arc<dyn Reader + Send + Sync>) -> Vec<DetectNode> {
+    let Some(formats) = FORMATS.get() else {
+        return vec![];
+    };
     let mut seen = HashSet::new();
-    detect_tree_recursive(reader, 0, 0, String::new(), 0, &mut seen)
+    detect_tree_recursive(reader, formats, 0, 0, String::new(), 0, &mut seen)
 }
 
 fn detect_tree_recursive(
     reader: Arc<dyn Reader + Send + Sync>,
+    formats: &crate::format::FormatDb,
     index: u32,
     depth: u32,
     stream: String,
@@ -388,7 +392,7 @@ fn detect_tree_recursive(
     let mut results = Vec::new();
 
     // Iterate in priority order, processing each match immediately (depth-first)
-    for (format, detect) in FORMATS.formats.iter() {
+    for (format, detect) in formats.formats.iter() {
         if !matches_detect_dyn(&*reader, detect) {
             continue;
         }
@@ -414,6 +418,7 @@ fn detect_tree_recursive(
                         .flat_map(|child| {
                             let detected = detect_tree_recursive(
                                 Arc::clone(&child.reader),
+                                formats,
                                 child.index,
                                 depth + 1,
                                 child_stream.clone(),

@@ -4,9 +4,6 @@ set -e
 OUT=/host/build/lib
 TARGET=${CARGO_TARGET_DIR:-target}
 
-# Embed format.bin at compile time
-export QEMOUNT_FORMAT_BIN=/host/build/lib/format.bin
-
 # Target filtering: if args passed, only build matching targets
 TARGETS="$*"
 want() { [ -z "$TARGETS" ] || echo "$TARGETS" | grep -q "$1"; }

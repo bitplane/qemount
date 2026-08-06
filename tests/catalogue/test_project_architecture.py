@@ -124,6 +124,14 @@ def test_qemu_runtime_firmware_is_complete():
     assert '-L "$FIRMWARE_DIR"' in runner
 
 
+def test_qemount_binaries_do_not_embed_the_format_catalogue():
+    for target in (
+        "lib/x86_64-linux-gnu/libqemount.a",
+        "bin/x86_64-linux-gnu/detect",
+    ):
+        assert "lib/format" not in graph_for(target)["nodes"]
+
+
 def test_linux_rootfs_creates_runtime_mountpoints():
     build_script = (PACKAGE_DIR / "bin/qemu/linux/rootfs/build.sh").read_text()
 

@@ -49,6 +49,22 @@ pub extern "C" fn qemount_version() -> *const c_char {
 pub type DetectTreeCallback =
     extern "C" fn(format: *const c_char, index: u32, depth: u32, userdata: *mut c_void);
 
+/// Load the compiled format catalogue used by subsequent detection calls.
+#[no_mangle]
+pub extern "C" fn qemount_load_catalogue(path: *const c_char) -> bool {
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        if path.is_null() {
+            return false;
+        }
+        let path = match unsafe { CStr::from_ptr(path) }.to_str() {
+            Ok(path) => path,
+            Err(_) => return false,
+        };
+        format::load(std::path::Path::new(path)).is_ok()
+    }));
+    result.unwrap_or(false)
+}
+
 /// Detect format tree from file path.
 /// Recursively detects formats in containers (gzip, tar, partition tables, etc.)
 /// Calls the callback for each detected format with its position in the tree.
