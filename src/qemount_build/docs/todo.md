@@ -16,11 +16,16 @@
       downloader changes, source-ref changes, missing outputs, and failed
       atomic downloads separately
   - [ ] guest architecture coverage
-    - [ ] enable KVM in Linux-hosted QEMU builds for same-architecture guests,
-          retaining TCG as the portable and cross-architecture fallback
+    - [ ] enable KVM in Linux-hosted QEMU builds
+    - [ ] cross-compiling
+      - [ ] Linux 6.12
+      - [ ] Linux 2.6
+      - [ ] Haiku
+      - [ ] AROS
+      - [ ] PureDarwin (upgrade to latest Darwin + fork)
     - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
-    - [ ] build Haiku guests natively on aarch64 hosts
     - [ ] define fallback policy for guests that only support x86
+  - [ ] reduce size of Dragonfly BSD
 
 ## 2. Link it in
 
