@@ -22,8 +22,7 @@ for arch in x86_64 aarch64; do
         $ZIG cc -target ${arch}-linux-musl \
             -O2 -static \
             -I${INCLUDE} \
-            -L${LIB}/${arch}-linux-musl \
-            ${SRCS} -lqemount -lunwind \
+            ${SRCS} ${LIB}/${arch}-linux-musl/libqemount.a -lunwind \
             -o detect
         mkdir -p ${OUT}/${arch}-linux-musl
         mv detect ${OUT}/${arch}-linux-musl/
@@ -36,8 +35,7 @@ for arch in x86_64 aarch64; do
         $ZIG cc -target ${arch}-linux-gnu \
             -O2 \
             -I${INCLUDE} \
-            -L${LIB}/${arch}-linux-gnu \
-            ${SRCS} -lqemount -lunwind \
+            ${SRCS} ${LIB}/${arch}-linux-gnu/libqemount.a -lunwind \
             -o detect
         mkdir -p ${OUT}/${arch}-linux-gnu
         mv detect ${OUT}/${arch}-linux-gnu/
@@ -49,8 +47,7 @@ if want "bin/x86_64-windows-gnu/detect"; then
     $ZIG cc -target x86_64-windows-gnu \
         -O2 \
         -I${INCLUDE} \
-        -L${LIB}/x86_64-windows-gnu \
-        ${SRCS} -lqemount -lunwind \
+        ${SRCS} ${LIB}/x86_64-windows-gnu/qemount.lib -lunwind \
         -o detect.exe
     mkdir -p ${OUT}/x86_64-windows-gnu
     mv detect.exe ${OUT}/x86_64-windows-gnu/
@@ -62,8 +59,7 @@ for arch in x86_64 aarch64; do
         $ZIG cc -target ${arch}-macos \
             -O2 \
             -I${INCLUDE} \
-            -L${LIB}/${arch}-darwin \
-            ${SRCS} -lqemount -lunwind \
+            ${SRCS} ${LIB}/${arch}-darwin/libqemount.a -lunwind \
             -o detect
         mkdir -p ${OUT}/${arch}-darwin
         mv detect ${OUT}/${arch}-darwin/
