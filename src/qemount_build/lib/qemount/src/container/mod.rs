@@ -199,6 +199,7 @@ pub fn get_container(format: &str) -> Option<&'static dyn Container> {
         "pt/disklabel" => Some(&pt::disklabel::DISKLABEL),
         "pt/gpt" => Some(&pt::gpt::GPT),
         "pt/mbr" => Some(&pt::mbr::MBR),
+        "pt/plan9" => Some(&pt::plan9::PLAN9),
         "pt/rdb" => Some(&pt::rdb::RDB),
         "pt/pc98" => Some(&pt::pc98::PC98),
         "pt/sgi" => Some(&pt::sgi::SGI),

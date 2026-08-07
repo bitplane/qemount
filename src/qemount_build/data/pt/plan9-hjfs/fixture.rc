@@ -1,0 +1,43 @@
+#!/bin/rc
+
+disk/fdisk -baw /dev/sdF0/data
+command_status=$status
+if(! ~ $"command_status '') exit failure
+disk/prep -bw -a fs /dev/sdF0/plan9
+command_status=$status
+if(! ~ $"command_status '') exit failure
+
+hjfs -f /dev/sdF0/fs -n qemountplan9 -S -r
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mkdir -p /n/plan9-verify
+mount -c /srv/qemountplan9 /n/plan9-verify
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /n/plan9-verify
+tar xf /n/qemount-fixture/basic.tar
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/plan9-verify/basic/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+
+cd /
+echo halt >>/srv/qemountplan9.cmd
+while(test -e /srv/qemountplan9.cmd) sleep 1
+unmount /n/plan9-verify >[2=]
+
+hjfs -f /dev/sdF0/fs -n qemountplan9 -S
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mount /srv/qemountplan9 /n/plan9-verify
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/plan9-verify/basic/nested_dir/file_in_dir.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+
+echo halt >>/srv/qemountplan9.cmd
+while(test -e /srv/qemountplan9.cmd) sleep 1
+unmount /n/plan9-verify >[2=]
+

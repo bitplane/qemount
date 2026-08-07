@@ -5,10 +5,10 @@ related:
   - format/pt/mbr
   - format/fs/fossil
 detect:
-  - offset: 0x1BE
-    type: u8
-    value: 0x39
-    name: plan9_partition_type
+  - offset: 0x200
+    type: string
+    length: 5
+    value: "part "
 ---
 
 # Plan 9 Partition Table
@@ -59,9 +59,10 @@ Sectors are in units of the disk's sector size.
 
 ## Detection
 
-1. Look for MBR partition type 0x39
-2. Read ASCII table from start of that partition
-3. Parse text lines
+1. An enclosing MBR or GPT reader exposes the Plan 9 partition
+2. Look for `part ` at the start of its second sector
+3. Parse the text lines and expose each extent relative to the enclosing
+   Plan 9 partition
 
 ## Linux Support
 
