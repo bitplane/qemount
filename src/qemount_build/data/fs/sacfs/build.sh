@@ -16,6 +16,7 @@ for output in "$@"; do
         -graft-points \
         -o "$work/fixture.iso" \
         /TestData="$work/template" \
+        /mksacfs=/host/build/bin/x86_64-9front/mksacfs \
         /fixture.rc=/build/fixture.rc
 
     truncate -s 16M "$work/output.fat"
@@ -30,4 +31,3 @@ for output in "$@"; do
         exit 1
     fi
 done
-

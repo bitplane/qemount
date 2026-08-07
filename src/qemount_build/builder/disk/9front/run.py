@@ -63,6 +63,11 @@ def run(command: str) -> None:
 
 try:
     qemu.expect(r"term% ", timeout=180)
+    qemu.sendline(
+        "unmount /n/qemount >[2=]; "
+        "mount -c /srv/qemountdisk /n/qemount >[2=]"
+    )
+    qemu.expect(r"term% ", timeout=180)
     run("mkdir -p /n/qemount-fixture")
     run("9660srv -f /dev/sdE1/data qemountfixture")
     run("mount /srv/qemountfixture /n/qemount-fixture")

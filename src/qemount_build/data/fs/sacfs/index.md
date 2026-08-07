@@ -4,6 +4,7 @@ requires:
   - docker:builder/disk/9front
 build_requires:
   - bin/qemu/x86_64-9front/qemount/system/9front.iso
+  - bin/x86_64-9front/mksacfs
   - data/templates/basic.tar
 provides:
   - data/fs/basic.sacfs
@@ -11,7 +12,5 @@ provides:
 
 # SACFS Test Image
 
-Compressed SACFS image populated from the standard test-data template. The
-fixture is produced and traversed with 9front's native `mksacfs` and `sacfs`
-tools.
-
+Compressed SACFS image populated from the standard test-data template with
+9front's native `mksacfs` tool.

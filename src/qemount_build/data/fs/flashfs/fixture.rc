@@ -10,7 +10,8 @@ mkdir -p /n/flash-verify
 aux/flashfs -n 512 -z 4096 -f /dev/sdF0/data -m /n/flash-verify
 command_status=$status
 if(! ~ $"command_status '') exit failure
-cp -r /n/qemount-fixture/TestData/basic /n/flash-verify/basic
+cd /n/flash-verify
+tar xf /n/qemount-fixture/basic.tar
 command_status=$status
 if(! ~ $"command_status '') exit failure
 test -f /n/flash-verify/basic/hello.txt

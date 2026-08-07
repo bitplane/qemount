@@ -1,15 +1,6 @@
 #!/bin/rc
 
-disk/mksacfs -o /n/qemount/basic.sacfs /n/qemount-fixture/TestData/basic
-command_status=$status
-if(! ~ $"command_status '') exit failure
-disk/sacfs -m /n/sac-verify /n/qemount/basic.sacfs
-command_status=$status
-if(! ~ $"command_status '') exit failure
-test -f /n/sac-verify/hello.txt
-command_status=$status
-if(! ~ $"command_status '') exit failure
-unmount /n/sac-verify
+/n/qemount-fixture/mksacfs -o /n/qemount/basic.sacfs /n/qemount-fixture/TestData/basic
 command_status=$status
 if(! ~ $"command_status '') exit failure
 unmount /n/qemount

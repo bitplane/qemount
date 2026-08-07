@@ -7,9 +7,7 @@ version=qemount
 bootstrap=/host/build/sources/9front-11957.amd64.qcow2.gz
 source=/host/build/sources/9front-${version}.tar.gz
 cache=/host/build/cache/9front/${BUILD_PLATFORM}/x86_64/11957-${version}
-output_dir=/host/build/bin/qemu/${OUTPUT_PLATFORM}/qemount/system
-
-mkdir -p "$cache" "$output_dir"
+mkdir -p "$cache"
 
 bootstrap_image=$cache/bootstrap.qcow2
 if ! qemu-img info "$bootstrap_image" >/dev/null 2>&1; then
@@ -53,7 +51,26 @@ python3 /build/build.py \
     "$work/output.fat"
 
 test "$(mtype -i "$work/output.fat" ::proof.txt)" = QEMOUNT_BUILD_OK
-temporary=$output_dir/.9front.iso.tmp
-mcopy -o -i "$work/output.fat" ::9front.iso "$temporary"
-test -s "$temporary"
-mv "$temporary" "$output_dir/9front.iso"
+
+for output in "$@"; do
+    output_path=/host/build/$output
+    mkdir -p "$(dirname "$output_path")"
+    temporary=$(dirname "$output_path")/.$(basename "$output_path").tmp
+
+    case "$output" in
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso)
+            mcopy -o -i "$work/output.fat" ::9front.iso "$temporary"
+            ;;
+        bin/${OUTPUT_PLATFORM}/mksacfs)
+            mcopy -o -i "$work/output.fat" ::mksacfs "$temporary"
+            chmod 755 "$temporary"
+            ;;
+        *)
+            echo "Unexpected output: $output" >&2
+            exit 1
+            ;;
+    esac
+
+    test -s "$temporary"
+    mv "$temporary" "$output_path"
+done

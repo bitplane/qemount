@@ -4,6 +4,7 @@ output_platforms:
   x86_64-9front:
     provides:
       - bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso
+      - bin/${OUTPUT_PLATFORM}/mksacfs
 requires:
   - sources/9front-11957.amd64.qcow2.gz
   - sources/9front-qemount.tar.gz

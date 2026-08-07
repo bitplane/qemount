@@ -9,13 +9,12 @@ for output in "$@"; do
     work=/work/flashfs
 
     rm -rf "$work"
-    mkdir -p "$work/template" "$(dirname "$output_path")"
-    tar -xf "$template" -C "$work/template"
+    mkdir -p "$work" "$(dirname "$output_path")"
 
     xorriso -as mkisofs -quiet -R \
         -graft-points \
         -o "$work/fixture.iso" \
-        /TestData="$work/template" \
+        /basic.tar="$template" \
         /fixture.rc=/build/fixture.rc
 
     truncate -s 2M "$output_path"
@@ -27,4 +26,3 @@ for output in "$@"; do
         exit 1
     fi
 done
-

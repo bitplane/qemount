@@ -1,8 +1,8 @@
 ---
-title: 9front qemount branch
-version: qemount
+title: 9front qemount source
+version: qemount-0.1
 urls:
-  - https://github.com/bitplane/9front/archive/refs/heads/qemount.tar.gz
+  - https://github.com/bitplane/9front/archive/refs/tags/qemount-0.1.tar.gz
 provides:
   - sources/9front-qemount.tar.gz
 ---
@@ -10,6 +10,5 @@ provides:
 # 9front
 
 The 9front source tree used by qemount while its appliance build is under
-development. The branch currently points to commit
-`95ad97b98af078a1ca6a45f76725f6b693fa6795`, used for official build 11957.
-It will be replaced with a release tag after the source build is proven.
+development. Tag `qemount-0.1` is based on official build 11957 and contains
+the filesystem-tool fixes needed by the appliance build.
