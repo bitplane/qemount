@@ -91,8 +91,7 @@ def test_qemu_netbsd_architecture_profiles():
     helper = PACKAGE_DIR / "builder/run/qemu-netbsd/qemu-netbsd-arch.sh"
     expected = {
         "x86_64": (
-            "qemu-system-x86_64||"
-            "-drive file=boot,format=raw,if=virtio,readonly=on"
+            "qemu-system-x86_64||" "-drive file=boot,format=raw,if=virtio,readonly=on"
         ),
         "aarch64": "qemu-system-aarch64|-machine virt -cpu cortex-a57|-kernel boot",
     }
@@ -244,31 +243,54 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
         assert "bin/qemu/aarch64-netbsd/10.0/boot/netbsd" in providers
         assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers
 
-    arm_guest = graph_for(
-        "bin/qemu/aarch64-netbsd/10.0/boot/netbsd", CONTEXT
-    )
-    x86_guest = graph_for(
-        "bin/qemu/x86_64-netbsd/10.0/boot/netbsd", arm_context
-    )
+    arm_guest = graph_for("bin/qemu/aarch64-netbsd/10.0/boot/netbsd", CONTEXT)
+    x86_guest = graph_for("bin/qemu/x86_64-netbsd/10.0/boot/netbsd", arm_context)
     arm_data = graph_for("data/fs/basic.v7", arm_context)
 
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@x86_64-netbsd" in x86_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_data["nodes"]
-    assert arm_guest["nodes"][
-        "builder/compiler/netbsd/10.0@aarch64-netbsd"
-    ]["meta"]["env"]["JOBS"] == "1"
+    assert (
+        arm_guest["nodes"]["builder/compiler/netbsd/10.0@aarch64-netbsd"]["meta"][
+            "env"
+        ]["JOBS"]
+        == "1"
+    )
 
 
 def test_netbsd_rootfs_uses_target_device_database():
-    build_script = (
-        PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/build.sh"
-    ).read_text()
+    build_script = (PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/build.sh").read_text()
     init_script = (
         PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/root/sbin/init"
     ).read_text()
 
-    assert '$DESTDIR/dev/MAKEDEV' in build_script
+    assert "$DESTDIR/dev/MAKEDEV" in build_script
     assert "/bin/sh /MAKEDEV" in init_script
     assert "kern.rawpartition" in init_script
     assert "mknod /dev/ld" not in init_script
+
+
+def test_9front_cross_build_matrix():
+    arm_context = {
+        "BUILD_PLATFORM": "aarch64-linux",
+        "BUILD_ARCH": "aarch64",
+        "BUILD_OS": "linux",
+        "JOBS": "1",
+    }
+
+    for context in (CONTEXT, arm_context):
+        providers = buildable_providers(context)
+        assert "docker:builder/compiler/9front" in providers
+        assert "bin/qemu/x86_64-9front/qemount/system/9front.iso" in providers
+        assert "bin/qemu/aarch64-9front/qemount/system/9front.qcow2" in providers
+        assert "bin/qemu/aarch64-9front/qemount/system/u-boot.bin" in providers
+
+    arm_guest = graph_for(
+        "bin/qemu/aarch64-9front/qemount/system/9front.qcow2", CONTEXT
+    )
+    x86_guest = graph_for(
+        "bin/qemu/x86_64-9front/qemount/system/9front.iso", arm_context
+    )
+
+    assert "bin/qemu/9front/qemount/system@aarch64-9front" in arm_guest["nodes"]
+    assert "bin/qemu/9front/qemount/system@x86_64-9front" in x86_guest["nodes"]

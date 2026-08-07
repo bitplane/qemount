@@ -1,9 +1,16 @@
 #!/bin/rc
 
+if(! ~ $#* 1) {
+	echo 'usage: qemount-mount disk' >[1=2]
+	exit usage
+}
+
+qemount_disk=$1
+
 # Discover partitions on the one attached target disk. diskparts asks the
 # native EFI, FDISK and Plan 9 partition readers to publish their partitions
-# beneath /dev/sdF0.
-diskparts /dev/sdF0
+# beneath the target device.
+diskparts $qemount_disk
 
 mkdir -p /mnt /tmp
 ramfs -m /tmp
@@ -13,8 +20,8 @@ ramfs -m /tmp
 dossrv -r qemountdos
 9660srv qemountiso
 
-qemount_parts=(/dev/sdF0/data)
-for(qemount_dev in /dev/sdF0/*) {
+qemount_parts=($qemount_disk/data)
+for(qemount_dev in $qemount_disk/*) {
 	qemount_name=`{basename $qemount_dev}
 	if(! ~ $qemount_name ctl data raw)
 		qemount_parts=($qemount_parts $qemount_dev)

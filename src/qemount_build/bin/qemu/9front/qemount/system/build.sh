@@ -1,12 +1,18 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+case "$OUTPUT_ARCH" in
+    x86_64|aarch64) ;;
+    *)
+        echo "Unsupported 9front architecture: $OUTPUT_ARCH" >&2
+        exit 1
+        ;;
+esac
 
 version=qemount
 bootstrap=/host/build/sources/9front-11957.amd64.qcow2.gz
 source=/host/build/sources/9front-${version}.tar.gz
-cache=/host/build/cache/9front/${BUILD_PLATFORM}/x86_64/11957-${version}
+cache=/host/build/cache/9front/${BUILD_PLATFORM}/${OUTPUT_ARCH}/11957-${version}
 mkdir -p "$cache"
 
 bootstrap_image=$cache/bootstrap.qcow2
@@ -21,6 +27,7 @@ source_iso=$cache/source-qemount.iso
 source_hash=$(sha256sum \
     "$source" \
     /build/plan9.ini \
+    /build/plan9-arm64.ini \
     /build/qemount.rc \
     /build/qemount-mount.rc \
     /build/qemount-init.rc \
@@ -31,7 +38,8 @@ if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
     rm -f "$temporary"
     genisoimage -quiet -R -J -graft-points -o "$temporary" \
         "$(basename "$source")=$source" \
-        qemount/plan9.ini=/build/plan9.ini \
+        qemount/plan9-amd64.ini=/build/plan9.ini \
+        qemount/plan9-arm64.ini=/build/plan9-arm64.ini \
         qemount/qemount.rc=/build/qemount.rc \
         qemount/qemount-mount.rc=/build/qemount-mount.rc \
         qemount/qemount-init.rc=/build/qemount-init.rc \
@@ -50,6 +58,7 @@ truncate -s 1536M "$work/output.fat"
 mkfs.vfat -F 32 -n QEMOUNTOUT "$work/output.fat" >/dev/null
 
 python3 /build/build.py \
+    "$OUTPUT_ARCH" \
     "$work/system.qcow2" \
     "$source_iso" \
     "$work/output.fat"
@@ -64,6 +73,13 @@ for output in "$@"; do
     case "$output" in
         bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso)
             mcopy -o -i "$work/output.fat" ::9front.iso "$temporary"
+            ;;
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.qcow2)
+            mcopy -o -i "$work/output.fat" ::9front.qcow2 "$temporary"
+            qemu-img check -f qcow2 "$temporary"
+            ;;
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/u-boot.bin)
+            cp /usr/lib/u-boot/qemu_arm64/u-boot.bin "$temporary"
             ;;
         bin/${OUTPUT_PLATFORM}/mksacfs)
             mcopy -o -i "$work/output.fat" ::mksacfs "$temporary"

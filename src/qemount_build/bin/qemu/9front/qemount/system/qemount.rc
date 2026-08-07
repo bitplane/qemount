@@ -1,6 +1,12 @@
 #!/bin/rc
 
-/rc/bin/qemount-mount
+qemount_disk=`{cat '#ec/qemountdisk'}
+qemount_channel=`{cat '#ec/qemountchannel'}
 
-echo b115200 > /dev/eia1ctl
-exportfs -r / <>/dev/eia1 >[1=0] &
+/rc/bin/qemount-mount $qemount_disk
+
+echo b115200 > $qemount_channel^ctl
+if(~ $qemount_channel /dev/eia0)
+	exec exportfs -r / <>$qemount_channel >[1=0]
+
+exportfs -r / <>$qemount_channel >[1=0] &
