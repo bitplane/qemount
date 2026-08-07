@@ -1,0 +1,15 @@
+#!/bin/rc
+
+mkpaqfs -l QEMOUNT -o /n/qemount/basic.paqfs /n/qemount-fixture/TestData/basic
+command_status=$status
+if(! ~ $"command_status '') exit failure
+paqfs -v -m /n/paq-verify /n/qemount/basic.paqfs
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/paq-verify/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+unmount /n/paq-verify
+command_status=$status
+if(! ~ $"command_status '') exit failure
+unmount /n/qemount
