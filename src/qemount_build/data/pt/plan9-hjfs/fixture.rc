@@ -1,5 +1,8 @@
 #!/bin/rc
 
+disk/mbr /dev/sdF0/data
+command_status=$status
+if(! ~ $"command_status '') exit failure
 disk/fdisk -baw /dev/sdF0/data
 command_status=$status
 if(! ~ $"command_status '') exit failure
@@ -40,4 +43,3 @@ if(! ~ $"command_status '') exit failure
 echo halt >>/srv/qemountplan9.cmd
 while(test -e /srv/qemountplan9.cmd) sleep 1
 unmount /n/plan9-verify >[2=]
-
