@@ -18,3 +18,41 @@ def test_sfs_versions_are_alternatives():
         [ord("S"), ord("F"), ord("S"), 0],
         [ord("S"), ord("F"), ord("S"), 2],
     ]
+
+
+def test_mbr_detection_allows_boot_code_jump():
+    compiled = compile_formats(load(PACKAGE_DIR))
+    detect = compiled["formats"]["pt/mbr"]
+
+    assert detect == {
+        "all": [
+            {
+                "offset": 510,
+                "type": "le16",
+                "value": 0xAA55,
+                "then": [
+                    {
+                        "any": [
+                            {"offset": offset, "type": "byte", "op": "!=", "value": 0}
+                            for offset in (450, 466, 482, 498)
+                        ]
+                    }
+                ],
+            }
+        ]
+    }
+
+
+def test_plan9_detection_uses_ascii_partition_table():
+    compiled = compile_formats(load(PACKAGE_DIR))
+
+    assert compiled["formats"]["pt/plan9"] == {
+        "all": [
+            {
+                "offset": 0x200,
+                "type": "string",
+                "length": 5,
+                "value": [ord(character) for character in "part "],
+            }
+        ]
+    }

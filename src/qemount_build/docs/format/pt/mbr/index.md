@@ -5,39 +5,29 @@ related:
   - format/pt/gpt
   - format/pt/minix
 detect:
-  # MBR: boot sig + not FAT jump + at least one partition entry
+  # MBR: boot signature plus at least one partition entry. Boot code may begin
+  # with the same short or near jump opcodes used by FAT boot sectors.
   - offset: 510
     type: le16
     value: 0xAA55
     then:
-      # FAT uses 0xEB (short jmp) or 0xE9 (near jmp) at byte 0
-      - offset: 0
-        type: byte
-        op: "!="
-        value: 0xEB
-        then:
-          - offset: 0
+      - any:
+          - offset: 450
             type: byte
             op: "!="
-            value: 0xE9
-            then:
-              - any:
-                  - offset: 450
-                    type: byte
-                    op: "!="
-                    value: 0
-                  - offset: 466
-                    type: byte
-                    op: "!="
-                    value: 0
-                  - offset: 482
-                    type: byte
-                    op: "!="
-                    value: 0
-                  - offset: 498
-                    type: byte
-                    op: "!="
-                    value: 0
+            value: 0
+          - offset: 466
+            type: byte
+            op: "!="
+            value: 0
+          - offset: 482
+            type: byte
+            op: "!="
+            value: 0
+          - offset: 498
+            type: byte
+            op: "!="
+            value: 0
 ---
 
 # MBR (Master Boot Record)
