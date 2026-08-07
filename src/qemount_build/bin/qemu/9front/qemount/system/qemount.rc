@@ -1,8 +1,6 @@
 #!/bin/rc
 
-mkdir -p /n/qemount
-dossrv -f /dev/sdF0/data qemountdisk
-mount /srv/qemountdisk /n/qemount
+/rc/bin/qemount-mount
 
 echo b115200 > /dev/eia1ctl
-exportfs -r /n/qemount <>/dev/eia1 >[1=0] &
+exportfs -r / <>/dev/eia1 >[1=0] &

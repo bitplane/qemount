@@ -22,7 +22,9 @@ source_hash=$(sha256sum \
     "$source" \
     /build/plan9.ini \
     /build/qemount.rc \
-    /build/qemount-init.rc)
+    /build/qemount-mount.rc \
+    /build/qemount-init.rc \
+    /build/qemount-fsprobe.c)
 source_hash=$(printf '%s\n' "$source_hash" | sha256sum | cut -d ' ' -f 1)
 if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
     temporary=$cache/source-qemount.iso.tmp
@@ -31,7 +33,9 @@ if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
         "$(basename "$source")=$source" \
         qemount/plan9.ini=/build/plan9.ini \
         qemount/qemount.rc=/build/qemount.rc \
-        qemount/qemount-init.rc=/build/qemount-init.rc
+        qemount/qemount-mount.rc=/build/qemount-mount.rc \
+        qemount/qemount-init.rc=/build/qemount-init.rc \
+        qemount/qemount-fsprobe.c=/build/qemount-fsprobe.c
     mv "$temporary" "$source_iso"
     rm -f "$cache"/source-qemount.iso.*
     : > "$source_iso.$source_hash"

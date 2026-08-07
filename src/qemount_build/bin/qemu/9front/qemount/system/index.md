@@ -13,8 +13,9 @@ requires:
 # 9front qemount system
 
 Source-built amd64 9front appliance. It boots headlessly on its first serial
-port, mounts the single attached FAT filesystem with `dossrv`, and serves that
-filesystem with 9front's native `exportfs` over the second serial port.
+port, discovers partitions and mountable filesystems on the single attached
+disk, and serves the system namespace with 9front's native `exportfs` over the
+second serial port. Discovered volumes appear beneath `/mnt`.
 
 Official build 11957 is used only as the declared stage-0 compiler
 environment.

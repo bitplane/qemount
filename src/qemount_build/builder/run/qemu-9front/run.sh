@@ -6,7 +6,7 @@ usage() {
 Usage: $0 <boot-iso> -i <target-image> [-s <socket>] [-- extra_qemu_args]
 
 Options:
-  -i <image>    Attach the single FAT filesystem image to inspect
+  -i <image>    Attach the single disk image to inspect
   -s <socket>   9P serial socket path (default: /tmp/qemount-9front-9p.sock)
 EOF
 }
