@@ -1,0 +1,18 @@
+#!/bin/rc
+
+reader=`{cat /n/qemount-fixture/reader}
+mkdir -p /n/research-unix
+$reader -m /n/research-unix /dev/sdF0/data
+command_status=$status
+if(! ~ $"command_status '') exit failure
+
+test -f /n/research-unix/basic/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cmp /n/research-unix/basic/hello.txt /n/qemount-fixture/expected.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/research-unix/basic/nested_dir/file_in_dir.tx
+command_status=$status
+if(! ~ $"command_status '') exit failure
+unmount /n/research-unix
