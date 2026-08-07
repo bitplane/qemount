@@ -1,0 +1,32 @@
+#!/bin/rc
+
+hjfs -f /dev/sdF0/data -n qemounthjfs -S -r
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mkdir -p /n/hjfs-verify
+mount -c /srv/qemounthjfs /n/hjfs-verify
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /n/hjfs-verify
+tar xf /n/qemount-fixture/basic.tar
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/hjfs-verify/basic/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /
+echo halt >>/srv/qemounthjfs.cmd
+while(test -e /srv/qemounthjfs.cmd) sleep 1
+unmount /n/hjfs-verify >[2=]
+hjfs -f /dev/sdF0/data -n qemounthjfs -S
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mount /srv/qemounthjfs /n/hjfs-verify
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/hjfs-verify/basic/nested_dir/file_in_dir.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+echo halt >>/srv/qemounthjfs.cmd
+while(test -e /srv/qemounthjfs.cmd) sleep 1
+unmount /n/hjfs-verify >[2=]
