@@ -22,7 +22,7 @@ for output in "$@"; do
     truncate -s 16M "$work/output.fat"
     mkfs.vfat -F 16 -n QEMOUNTOUT "$work/output.fat"
 
-    run-9front-fixture "$boot_iso" "$work/fixture.iso" "$work/output.fat"
+    run-9front-fixture "$boot_iso" "$work/fixture.iso" "$work/output.fat" --writable-fat
     mcopy -i "$work/output.fat" ::/basic.sacfs "$output_path"
 
     signature=$(od -An -tx1 -N4 "$output_path" | tr -d ' \n')

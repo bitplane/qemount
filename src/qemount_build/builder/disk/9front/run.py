@@ -5,10 +5,16 @@ import sys
 import pexpect
 
 
-if len(sys.argv) != 4:
-    raise SystemExit("usage: run-9front-fixture BOOT_ISO FIXTURE_ISO TARGET_IMAGE")
+if len(sys.argv) not in (4, 5):
+    raise SystemExit(
+        "usage: run-9front-fixture BOOT_ISO FIXTURE_ISO TARGET_IMAGE "
+        "[--writable-fat]"
+    )
 
-boot_iso, fixture_iso, target_image = sys.argv[1:]
+boot_iso, fixture_iso, target_image = sys.argv[1:4]
+writable_fat = sys.argv[4:] == ["--writable-fat"]
+if sys.argv[4:] and not writable_fat:
+    raise SystemExit(f"unknown option: {sys.argv[4]}")
 
 qemu = pexpect.spawn(
     "qemu-system-x86_64",
@@ -63,11 +69,10 @@ def run(command: str) -> None:
 
 try:
     qemu.expect(r"term% ", timeout=180)
-    qemu.sendline(
-        "unmount /n/qemount >[2=]; "
-        "mount -c /srv/qemountdisk /n/qemount >[2=]"
-    )
-    qemu.expect(r"term% ", timeout=180)
+    if writable_fat:
+        run("unmount /mnt/data")
+        run("dossrv -f /dev/sdF0/data qemountdisk")
+        run("mount -c /srv/qemountdisk /n/qemount")
     run("mkdir -p /n/qemount-fixture")
     run("9660srv -f /dev/sdE1/data qemountfixture")
     run("mount /srv/qemountfixture /n/qemount-fixture")
