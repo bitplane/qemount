@@ -1,29 +1,16 @@
 #!/bin/sh
-# PROVIDE: qemount_fixture
-# REQUIRE: LOGIN
+set -eu
 
-. /etc/rc.subr
+mountpoint=/tmp/qemount-fixture
 
-name=qemount_fixture
-start_cmd=qemount_fixture_start
-stop_cmd=:
-
-qemount_fixture_start()
-{
-    mountpoint=/tmp/qemount-fixture
-
-    newfs_hammer -f -u 8M -L QEMOUNT_HAMMER /dev/vbd0
-    mkdir -p "$mountpoint"
-    mount -t hammer /dev/vbd0 "$mountpoint"
-    cp -Rp /TestData/. "$mountpoint"/
-    sync
-    umount "$mountpoint"
-    mount -t hammer /dev/vbd0 "$mountpoint"
-    test "$(cat "$mountpoint/basic/hello.txt")" = "Hello, world!"
-    umount "$mountpoint"
-    echo "HAMMER fixture complete"
-    shutdown -p now
-}
-
-load_rc_config "$name"
-run_rc_command "$1"
+newfs_hammer -f -u 8M -L QEMOUNT_HAMMER /dev/vbd0
+mkdir -p "$mountpoint"
+mount -t hammer /dev/vbd0 "$mountpoint"
+cp -Rp /TestData/. "$mountpoint"/
+sync
+umount "$mountpoint"
+mount -t hammer /dev/vbd0 "$mountpoint"
+test "$(cat "$mountpoint/basic/hello.txt")" = "Hello, world!"
+umount "$mountpoint"
+echo "HAMMER fixture complete"
+shutdown -p now

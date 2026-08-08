@@ -8,11 +8,10 @@ output_platforms:
 
 # DragonFly BSD 6.4.2 system
 
-Source-built live ISO for preserving the proven DragonFly compatibility
-baseline. DragonFly world and the generic kernel are built from the pinned
-source tree, then development files, the native toolchain and unrelated kernel
-modules are excluded from the serial appliance.
+Source-built serial appliance for DragonFly filesystem support. The build uses
+a dedicated QEMU kernel and assembles an allowlisted root from the DragonFly
+world, including only the filesystem tools, mount helpers and shared libraries
+needed at runtime.
 
-The generic kernel and normal DragonFly startup remain intact in this pass so
-filesystem behaviour stays comparable with the full image. They can be reduced
-independently after the pruned image passes the same end-to-end tests.
+The ISO is limited to 16 MiB so unrelated world or kernel content cannot creep
+back into the appliance unnoticed.

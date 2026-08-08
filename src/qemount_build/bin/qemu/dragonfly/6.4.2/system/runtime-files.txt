@@ -1,0 +1,47 @@
+# Boot chain, kernel and filesystem modules.
+boot/cdboot
+boot/loader
+boot/defaults/loader.conf
+boot/kernel/kernel
+boot/kernel/ext2fs.ko
+boot/kernel/libiconv.ko
+boot/kernel/ntfs.ko
+boot/kernel/ntfs_iconv.ko
+boot/kernel/udf.ko
+
+# Init and the small diagnostic/fixture shell environment.
+sbin/init
+bin/sh
+bin/cat
+bin/cp
+bin/dd
+bin/echo
+bin/ls
+bin/mkdir
+bin/rm
+bin/sleep
+bin/sync
+bin/test
+
+# Partition discovery and supported filesystem tools.
+sbin/disklabel32
+sbin/disklabel64
+sbin/fdisk
+sbin/gpt
+sbin/kldload
+sbin/mount
+sbin/mount_cd9660
+sbin/mount_ext2fs
+sbin/mount_hammer
+sbin/mount_hammer2
+sbin/mount_msdos
+sbin/mount_ntfs
+sbin/mount_tmpfs
+sbin/mount_udf
+sbin/mount_ufs
+sbin/newfs
+sbin/newfs_hammer
+sbin/newfs_hammer2
+sbin/newfs_msdos
+sbin/shutdown
+sbin/umount

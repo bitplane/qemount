@@ -1,0 +1,14 @@
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export PATH
+
+mount -t tmpfs tmpfs /tmp
+
+echo "[qemount] DragonFly appliance ready"
+
+if [ -x /etc/qemount-fixture ]; then
+    /etc/qemount-fixture
+fi
+
+exec /bin/sh

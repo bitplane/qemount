@@ -21,7 +21,7 @@ for output in "$@"; do
         -outdev "$format_iso" \
         -boot_image any replay \
         -map "$template_dir" /TestData \
-        -map /build/fixture.rc /etc/rc.local.d/qemount-fixture \
+        -map /build/fixture.rc /etc/qemount-fixture \
         -commit
 
     if ! run-until-marker \

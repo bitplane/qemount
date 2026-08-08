@@ -3,6 +3,7 @@ set -eu
 
 test "$OUTPUT_ARCH" = x86_64
 
+WORLD=/work/world
 ROOT=/work/root
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_PLATFORM}/6.4.2/system
 TARGET_INSTALL="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/install -N ${DRAGONFLY_SRC}/etc"
@@ -39,6 +40,7 @@ world_make -C "$DRAGONFLY_SRC/stand/boot/pc32/loader" \
     loader
 
 bmake -j"${JOBS}" \
+    KERNCONF=QEMOUNT \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
@@ -48,11 +50,11 @@ bmake -j"${JOBS}" \
     WORLD_VERSION=600401 \
     buildkernel
 
-rm -rf "$ROOT"
-mkdir -p "$ROOT"
+rm -rf "$WORLD" "$ROOT"
+mkdir -p "$WORLD" "$ROOT"
 
 bmake \
-    DESTDIR="$ROOT" \
+    DESTDIR="$WORLD" \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
@@ -65,18 +67,9 @@ bmake \
     NO_SHARE=1 \
     installworld
 
-mkdir -p /work/etc-obj
-PATH="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/sbin:${PATH}" \
-bmake -m "$DRAGONFLY_SRC/share/mk" -C "$DRAGONFLY_SRC/etc" \
-    MAKEOBJDIRPREFIX=/work/etc-obj \
-    DESTDIR="$ROOT" \
-    MACHINE=x86_64 \
-    MACHINE_ARCH=x86_64 \
-    INSTALL="$TARGET_INSTALL" \
-    distribution
-
 bmake \
-    DESTDIR="$ROOT" \
+    DESTDIR="$WORLD" \
+    KERNCONF=QEMOUNT \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
@@ -84,14 +77,38 @@ bmake \
     TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     INSTALL="$TARGET_INSTALL" \
-    INSTALLSTRIPPED=1 \
     reinstallkernel
 
-cp -a "$DRAGONFLY_SRC/nrelease/root/." "$ROOT/"
-sed -i '/^dm_load=/d' "$ROOT/boot/loader.conf"
-printf '\nconsole="comconsole"\n' >> "$ROOT/boot/loader.conf"
+/build/assemble-root.py "$WORLD" "$ROOT" /build/runtime-files.txt
+find "$ROOT/boot/kernel" -type f -name '*.ko' -exec strip --strip-debug {} +
+mkdir -p "$ROOT/etc"
+install -m 644 /build/loader.conf "$ROOT/boot/loader.conf"
+install -m 644 /build/dloader.rc "$ROOT/boot/dloader.rc"
+install -m 755 /build/qemount-rc "$ROOT/etc/rc"
+install -m 644 "$DRAGONFLY_SRC/etc/login.conf" "$ROOT/etc/login.conf"
+install -m 644 "$DRAGONFLY_SRC/initrd/etc/termcap" "$ROOT/etc/termcap"
+mkdir -p "$ROOT/etc/defaults"
+install -m 644 "$DRAGONFLY_SRC/etc/defaults/uuids" "$ROOT/etc/defaults/uuids"
 
-/build/prune-root.sh "$ROOT"
+for directory in dev mnt proc tmp var var/run; do
+    mkdir -p "$ROOT/$directory"
+done
+
+for path in \
+    boot/cdboot \
+    boot/loader \
+    boot/kernel/kernel \
+    bin/sh \
+    sbin/init \
+    sbin/mount \
+    sbin/mount_hammer \
+    sbin/mount_hammer2 \
+    sbin/newfs_hammer \
+    sbin/newfs_hammer2 \
+    sbin/umount
+do
+    test -e "$ROOT/$path"
+done
 
 mkdir -p "$OUTPUT_DIR"
 xorriso -as mkisofs \
@@ -102,3 +119,10 @@ xorriso -as mkisofs \
     -V QEMOUNT_DRAGONFLY \
     -o "$OUTPUT_DIR/dragonfly.iso" \
     "$ROOT"
+
+size=$(stat -c %s "$OUTPUT_DIR/dragonfly.iso")
+limit=$((16 * 1024 * 1024))
+if [ "$size" -gt "$limit" ]; then
+    echo "DragonFly appliance exceeds 16 MiB: $size bytes" >&2
+    exit 1
+fi

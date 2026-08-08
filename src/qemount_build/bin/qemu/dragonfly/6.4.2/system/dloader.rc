@@ -1,0 +1,8 @@
+include defaults/loader.conf
+include loader.conf
+unload
+set default_kernel=kernel
+cd ${base}${default_kernel}
+set module_path=";modules"
+loadall
+boot
