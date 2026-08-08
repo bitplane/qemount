@@ -1,0 +1,88 @@
+mode=ug+rw
+mode=o-w
+uid=sys
+gid=sys
+
+adm	d775 adm adm
+	uid=adm
+	gid=adm
+	timezone	d775
+		local	664
+
+cfg	d775
+	plan9.ini	664
+
+bin	d555
+dev	d555
+env	d555
+fd	d555
+net	d555
+n	d555
+	other	d555
+proc	d555
+root	d555
+shr	d555
+srv	d555
+
+lib	d775
+	namespace	664
+
+$objtype	d775
+	init	775
+	bin	d775
+		9660srv	775
+		awk	775
+		basename	775
+		bind	775
+		cat	775
+		cp	775
+		cwfs64x	775
+		dd	775
+		dossrv	775
+		echo	775
+		exportfs	775
+		gefs	775
+		grep	775
+		hjfs	775
+		ls	775
+		mkdir	775
+		mount	775
+		paqfs	775
+		ps	775
+		pwd	775
+		qemount-fsprobe	775
+		ramfs	775
+		rc	775
+		rm	775
+		sleep	775
+		test	775
+		unmount	775
+		xd	775
+		aux	d775
+			flashfs	775
+		disk	d775
+			edisk	775
+			fdisk	775
+			prep	775
+		fs	d775
+			32vfs	775
+			v10fs	775
+			v6fs	775
+
+rc	d775
+	bin	d775
+		diskparts	775
+		qemount	775
+		qemount-init	775
+		qemount-mount	775
+		termrc	775 sys sys /rc/bin/qemount-init
+	lib	d775
+		rcmain	664
+
+mnt	d775
+	exportfs	d775
+	factotum	d775
+tmp	d777
+usr	d775
+	glenda	d775 glenda glenda
+		tmp	d775 glenda glenda

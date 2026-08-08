@@ -39,7 +39,7 @@ fn qemount_mounted {
 
 fn qemount_cleanup {
 	unmount $qemount_mnt >[2]/dev/null
-	rmdir $qemount_mnt >[2]/dev/null
+	rm -d $qemount_mnt >[2]/dev/null
 	mkdir -p $qemount_mnt
 }
 
@@ -154,7 +154,7 @@ for(qemount_dev in $qemount_parts) {
 
 	if(~ $qemount_done no) {
 		qemount_cleanup
-		rmdir $qemount_mnt >[2]/dev/null
+		rm -d $qemount_mnt >[2]/dev/null
 		echo '[qemount] unrecognised volume:' $qemount_dev
 	}
 }

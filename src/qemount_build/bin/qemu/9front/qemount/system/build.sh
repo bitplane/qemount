@@ -31,7 +31,11 @@ source_hash=$(sha256sum \
     /build/qemount.rc \
     /build/qemount-mount.rc \
     /build/qemount-init.rc \
-    /build/qemount-fsprobe.c)
+    /build/qemount-fsprobe.c \
+    /build/qemount.proto \
+    /build/qemount-amd64.proto \
+    /build/qemount-arm64.proto \
+    /build/qemount-build.rc)
 source_hash=$(printf '%s\n' "$source_hash" | sha256sum | cut -d ' ' -f 1)
 if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
     temporary=$cache/source-qemount.iso.tmp
@@ -43,7 +47,11 @@ if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
         qemount/qemount.rc=/build/qemount.rc \
         qemount/qemount-mount.rc=/build/qemount-mount.rc \
         qemount/qemount-init.rc=/build/qemount-init.rc \
-        qemount/qemount-fsprobe.c=/build/qemount-fsprobe.c
+        qemount/qemount-fsprobe.c=/build/qemount-fsprobe.c \
+        qemount/qemount.proto=/build/qemount.proto \
+        qemount/qemount-amd64.proto=/build/qemount-amd64.proto \
+        qemount/qemount-arm64.proto=/build/qemount-arm64.proto \
+        qemount/qemount-build.rc=/build/qemount-build.rc
     mv "$temporary" "$source_iso"
     rm -f "$cache"/source-qemount.iso.*
     : > "$source_iso.$source_hash"
@@ -92,5 +100,16 @@ for output in "$@"; do
     esac
 
     test -s "$temporary"
+    case "$output" in
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso|\
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.qcow2)
+            size=$(stat -c %s "$temporary")
+            limit=$((16 * 1024 * 1024))
+            if [ "$size" -gt "$limit" ]; then
+                echo "9front appliance exceeds 16 MiB: $size bytes" >&2
+                exit 1
+            fi
+            ;;
+    esac
     mv "$temporary" "$output_path"
 done

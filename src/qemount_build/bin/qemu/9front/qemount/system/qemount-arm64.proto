@@ -1,0 +1,2 @@
+# The ARM64 kernel and plan9.ini live on the FAT boot partition.  The shared
+# runtime proto supplies the HJFS root.

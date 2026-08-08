@@ -77,6 +77,8 @@ if [[ "$SOCKET_PATH" == / || -d "$SOCKET_PATH" ]]; then
 fi
 
 rm -f "$SOCKET_PATH"
+INTERNAL_SOCKET=$SOCKET_PATH.uart
+rm -f "$INTERNAL_SOCKET"
 
 COMMON_ARGS=(
     -smp 2
@@ -96,7 +98,7 @@ case "$BOOT_IMAGE" in
             -drive "file=$BOOT_IMAGE,media=cdrom,format=raw,readonly=on"
             -drive "file=$TARGET_IMAGE,if=virtio,format=raw,snapshot=on"
             -serial stdio
-            -chardev "socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off"
+            -chardev "socket,id=p9channel,path=$INTERNAL_SOCKET,server=on,wait=off"
             -serial chardev:p9channel
         )
         ;;
@@ -123,7 +125,7 @@ case "$BOOT_IMAGE" in
             -device virtio-blk-pci-non-transitional,drive=boot
             -drive "file=$TARGET_IMAGE,if=none,id=target,format=raw,snapshot=on"
             -device virtio-blk-pci-non-transitional,drive=target
-            -chardev "socket,id=p9channel,path=$SOCKET_PATH,server=on,wait=off"
+            -chardev "socket,id=p9channel,path=$INTERNAL_SOCKET,server=on,wait=off"
             -serial chardev:p9channel
         )
         ;;
@@ -134,7 +136,40 @@ case "$BOOT_IMAGE" in
 esac
 QEMU_ARGS+=("${EXTRA_ARGS[@]}")
 
+RELAY_PID=
+QEMU_PID=
+cleanup() {
+    [[ -z "$QEMU_PID" ]] || kill "$QEMU_PID" 2>/dev/null || true
+    [[ -z "$RELAY_PID" ]] || kill "$RELAY_PID" 2>/dev/null || true
+    [[ -z "$QEMU_PID" ]] || wait "$QEMU_PID" 2>/dev/null || true
+    [[ -z "$RELAY_PID" ]] || wait "$RELAY_PID" 2>/dev/null || true
+    rm -f "$INTERNAL_SOCKET" "$SOCKET_PATH"
+}
+trap cleanup EXIT HUP INT TERM
+
+python3 "$(dirname "$0")/serial_relay.py" \
+    "$INTERNAL_SOCKET" "$SOCKET_PATH" &
+RELAY_PID=$!
+"$QEMU" "${QEMU_ARGS[@]}" &
+QEMU_PID=$!
+
+deadline=$((SECONDS + 180))
+until [[ -S "$SOCKET_PATH" ]]; do
+    if ! kill -0 "$QEMU_PID" 2>/dev/null; then
+        echo "9front exited before starting exportfs" >&2
+        exit 1
+    fi
+    if ! kill -0 "$RELAY_PID" 2>/dev/null; then
+        wait "$RELAY_PID"
+        exit 1
+    fi
+    if ((SECONDS >= deadline)); then
+        echo "9front did not start exportfs within 180 seconds" >&2
+        exit 1
+    fi
+    sleep 0.1
+done
+
 echo "9P socket: $SOCKET_PATH"
 echo "  9pfuse -n 1 $SOCKET_PATH <mountpoint>"
-
-exec "$QEMU" "${QEMU_ARGS[@]}"
+wait -n "$QEMU_PID" "$RELAY_PID"
