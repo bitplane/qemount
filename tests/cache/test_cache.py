@@ -9,7 +9,6 @@ from qemount_build.cache import (
     hash_file,
     hash_files,
     hash_path_inputs,
-    hash_source_inputs,
     strip_ref_prefix,
     is_output_dirty,
     update_output_hash,
@@ -200,33 +199,6 @@ def test_hash_files_nonexistent():
     h1 = hash_files(Path("/nonexistent/path/that/does/not/exist"), cache)
     h2 = hash_files(Path("/another/nonexistent/path"), cache)
     assert h1 == h2  # Both return hash of empty content
-
-
-def test_source_hash_ignores_transfer_environment():
-    first = {
-        "urls": {"https://example.test/source.tar": {}},
-        "provides": {"sources/source.tar": {}},
-        "env": {"BUILD_PLATFORM": "x86_64-linux"},
-        "requires": {"docker:builder/downloader": {}},
-    }
-    second = {
-        **first,
-        "env": {"BUILD_PLATFORM": "aarch64-linux"},
-        "requires": {"docker:builder/new-downloader": {}},
-    }
-    assert hash_source_inputs(first) == hash_source_inputs(second)
-
-
-def test_source_hash_changes_with_url():
-    first = {
-        "urls": {"https://example.test/one.tar": {}},
-        "provides": {"sources/source.tar": {}},
-    }
-    second = {
-        "urls": {"https://example.test/two.tar": {}},
-        "provides": {"sources/source.tar": {}},
-    }
-    assert hash_source_inputs(first) != hash_source_inputs(second)
 
 
 def test_output_cache_survives_build_directory_relocation(tmp_path):

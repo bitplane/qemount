@@ -12,11 +12,13 @@ install -m 755 /host/build/bin/${OUTPUT_ARCH}-haiku/qemount-init \
     "$INIT_DIR/launch_daemon"
 
 mkdir -p "$CACHE_DIR"
-if [ ! -f "$CACHE_DIR/Jamfile" ]; then
+if [ ! -f "$CACHE_DIR/.qemount-configured" ]; then
+    find "$CACHE_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
     cd "$CACHE_DIR"
     /src/haiku/configure \
         --cross-tools-prefix \
         "/toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-"
+    touch "$CACHE_DIR/.qemount-configured"
 fi
 
 cd "$CACHE_DIR"

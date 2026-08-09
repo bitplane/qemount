@@ -22,8 +22,6 @@ from .cache import (
     load_cache,
     save_cache,
     hash_path_inputs,
-    hash_source_inputs,
-    cached_output_intact,
     is_output_dirty,
     update_output_hash,
 )
@@ -206,8 +204,11 @@ def build_image(
     cache_dir = build_dir / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{cache_dir.absolute()}:/host/build/cache:rw"])
-    provider_cache = build_dir / "cache" / provider_cache_relative(
-        env["BUILD_PLATFORM"], stage
+    provider_cache = (
+        build_dir
+        / "cache"
+        / provider_cache_relative(env["BUILD_PLATFORM"], stage)
+        / "work"
     )
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{provider_cache.absolute()}:/cache:rw"])
@@ -262,8 +263,11 @@ def run_container(
     cmd = ["podman", "run", "--rm", "--cidfile", str(cid_path)]
     cmd.extend(podman_runtime_args())
     cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
-    provider_cache = build_dir / "cache" / provider_cache_relative(
-        env["BUILD_PLATFORM"], stage
+    provider_cache = (
+        build_dir
+        / "cache"
+        / provider_cache_relative(env["BUILD_PLATFORM"], stage)
+        / "work"
     )
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["-v", f"{provider_cache.absolute()}:/cache"])
@@ -327,6 +331,34 @@ def remove_output(path: Path) -> None:
         shutil.rmtree(path)
     else:
         path.unlink()
+
+
+def prepare_provider_cache(
+    build_dir: Path, build_platform: str, instance_id: str, input_hash: str
+) -> Path:
+    """Make a provider's private cache match its complete input identity."""
+    cache_root = build_dir / "cache" / provider_cache_relative(
+        build_platform, instance_id
+    )
+    marker = cache_root / ".qemount-input"
+    try:
+        current = marker.read_text().strip()
+    except FileNotFoundError:
+        current = None
+
+    if current != input_hash:
+        if cache_root.exists():
+            for child in cache_root.iterdir():
+                remove_output(child)
+        else:
+            cache_root.mkdir(parents=True)
+        temporary = cache_root / ".qemount-input.tmp"
+        temporary.write_text(f"{input_hash}\n")
+        temporary.replace(marker)
+
+    work_dir = cache_root / "work"
+    work_dir.mkdir(exist_ok=True)
+    return work_dir
 
 
 def begin_output_transaction(build_dir: Path, outputs: list[str]) -> dict[str, Path]:
@@ -439,17 +471,17 @@ def run_build(
         build_requires = list(meta.get("build_requires", {}).keys())
 
         # Compute input hash for this path (Merkle tree)
-        is_source = bool(meta.get("urls"))
         provenance = {
             "provider": path,
             "provider_instance": instance_id,
             "build_platform": context.get("BUILD_PLATFORM"),
             "output_platform": record.get("output_platform"),
         }
-        input_hash = (
-            hash_source_inputs(meta)
-            if is_source
-            else hash_path_inputs(path, pkg_dir, meta, dep_hashes, build_dir, cache)
+        input_hash = hash_path_inputs(
+            path, pkg_dir, meta, dep_hashes, build_dir, cache
+        )
+        prepare_provider_cache(
+            build_dir, context["BUILD_PLATFORM"], instance_id, input_hash
         )
         dep_hashes[instance_id] = input_hash
         for provided in provides:
@@ -492,21 +524,6 @@ def run_build(
         # Helper to get per-output requires
         def get_output_requires(output: str) -> list[str]:
             return meta.get("provides", {}).get(output, {}).get("requires", [])
-
-        # Adopt pre-schema source downloads once. This rollout deliberately
-        # changes no source declarations; after adoption the declaration hash
-        # makes future URL changes dirty in the normal way.
-        if is_source and not force:
-            for output in needed_outputs:
-                entry = cache.get(output, {})
-                if "source_identity" not in entry and cached_output_intact(
-                    output, cache, build_dir
-                ):
-                    update_output_hash(
-                        cache, output, input_hash, build_dir, provenance=provenance
-                    )
-                    cache[output]["source_identity"] = input_hash
-            save_cache(build_dir, cache)
 
         # Find dirty outputs (missing or hash changed)
         if force:
@@ -553,9 +570,6 @@ def run_build(
                 get_output_requires(output_name),
                 provenance,
             )
-            if is_source:
-                cache[output_name]["source_identity"] = input_hash
-
         # Save cache after each successful build step
         save_cache(build_dir, cache)
 

@@ -5,26 +5,6 @@ QEMU_TARGETS="x86_64-softmmu,aarch64-softmmu,m68k-softmmu"
 JOBS=${JOBS:-$(nproc)}
 CACHE_DIR=${QEMOUNT_CACHE_DIR:?QEMOUNT_CACHE_DIR is required}
 
-prepare_cache() {
-    local source_hash marker
-
-    source_hash=$(sha256sum \
-        /host/build/sources/libffi-3.4.6.tar.gz \
-        /host/build/sources/libiconv-1.17.tar.gz \
-        /host/build/sources/pixman-0.44.2.tar.gz \
-        /host/build/sources/glib-2.82.4.tar.xz \
-        /host/build/sources/qemu-10.2.0.tar.xz \
-        /host/build/sdk/darwin/11.3/MacOSX11.3.sdk/.qemount-source-hash \
-        | sha256sum | cut -d ' ' -f 1)
-    marker=$CACHE_DIR/.qemount-sources-$source_hash
-
-    if [ ! -e "$marker" ]; then
-        rm -rf "$CACHE_DIR"
-        mkdir -p "$CACHE_DIR"
-        touch "$marker"
-    fi
-}
-
 # A provider instance normally supplies exactly one host platform.
 PLATFORMS=("${OUTPUT_PLATFORM:?OUTPUT_PLATFORM is required}")
 
@@ -320,16 +300,28 @@ build_deps_for_target() {
     local SRCDIR=$CACHE_DIR/sources
     mkdir -p "$SRCDIR"
     cd "$SRCDIR"
-    [ -d libffi-3.4.6 ]   || tar xf /host/build/sources/libffi-3.4.6.tar.gz
-    [ -d libiconv-1.17 ]  || tar xf /host/build/sources/libiconv-1.17.tar.gz
-    [ -d pixman-0.44.2 ]  || tar xf /host/build/sources/pixman-0.44.2.tar.gz
-    [ -d glib-2.82.4 ]    || tar xf /host/build/sources/glib-2.82.4.tar.xz
+    extract_source() {
+        local archive=$1 directory=$2 temporary
+        [ -d "$SRCDIR/$directory" ] && return 0
+        temporary=$SRCDIR/.$directory.tmp.$$
+        rm -rf "$temporary"
+        mkdir -p "$temporary"
+        tar xf "$archive" -C "$temporary"
+        test -d "$temporary/$directory"
+        mv "$temporary/$directory" "$SRCDIR/$directory"
+        rm -rf "$temporary"
+    }
+    extract_source /host/build/sources/libffi-3.4.6.tar.gz libffi-3.4.6
+    extract_source /host/build/sources/libiconv-1.17.tar.gz libiconv-1.17
+    extract_source /host/build/sources/pixman-0.44.2.tar.gz pixman-0.44.2
 
     # GLib tests -latomic by linking an empty program. During a Zig cross-build
     # that can accept the build host's archive and record its absolute path in
     # the target's static pkg-config metadata. Zig provides the compiler atomic
     # runtime, so do not add this optional host library to the target closure.
     if [ ! -f $SRCDIR/glib-2.82.4/.qemount-zig-cross-patched ]; then
+        rm -rf "$SRCDIR/glib-2.82.4"
+        extract_source /host/build/sources/glib-2.82.4.tar.xz glib-2.82.4
         patch -d $SRCDIR/glib-2.82.4 -p1 < /build/glib-zig-cross.patch
         touch $SRCDIR/glib-2.82.4/.qemount-zig-cross-patched
     fi
@@ -456,9 +448,12 @@ build_qemu_for_target() {
 
     local QEMU_SOURCE=$CACHE_DIR/qemu-10.2.0
     if [ ! -d "$QEMU_SOURCE" ]; then
-        mkdir -p "$QEMU_SOURCE"
+        local QEMU_TEMP=$CACHE_DIR/.qemu-10.2.0.tmp.$$
+        rm -rf "$QEMU_TEMP"
+        mkdir -p "$QEMU_TEMP"
         tar xf /host/build/sources/qemu-10.2.0.tar.xz \
-            -C "$QEMU_SOURCE" --strip-components=1
+            -C "$QEMU_TEMP" --strip-components=1
+        mv "$QEMU_TEMP" "$QEMU_SOURCE"
     fi
     cd "$QEMU_SOURCE"
 
@@ -572,7 +567,6 @@ for PLATFORM in "${PLATFORMS[@]}"; do
     echo "######################################"
     echo ""
 
-    prepare_cache
     mkdir -p "$CACHE_DIR/prefix" "$CACHE_DIR/zig-wrappers" /opt/zig-wrappers
     rm -rf "/opt/$PLATFORM" "/opt/zig-wrappers/$PLATFORM"
     ln -s "$CACHE_DIR/prefix" "/opt/$PLATFORM"

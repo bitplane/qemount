@@ -152,38 +152,6 @@ def hash_path_inputs(
     return h.hexdigest()
 
 
-def hash_source_inputs(resolved: dict) -> str:
-    """Hash the declaration of a fetched source, not its transfer mechanism.
-
-    Downloader code, container images and build-platform metadata must not
-    invalidate already fetched upstream artefacts. Changing an output name or
-    URL still creates a new identity.
-    """
-    declaration = {
-        "provides": sorted(resolved.get("provides", {})),
-        # Preserve mirror order and any per-URL integrity metadata.
-        "urls": list(resolved.get("urls", {}).items()),
-    }
-    return hashlib.md5(stable_json(declaration).encode()).hexdigest()
-
-
-def cached_output_intact(output: str, cache: dict, build_dir: Path) -> bool:
-    """Return whether an existing output still matches its cached bytes."""
-    path = build_dir / output
-    cached = cache.get(output)
-    if not path.exists() or not cached:
-        return False
-    if path.is_dir():
-        return cached.get("kind") == "directory"
-    if cached.get("kind", "file") != "file":
-        return False
-    digest = hashlib.md5()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest() == cached.get("hash")
-
-
 def hash_output_inputs(
     base_hash: str,
     output_requires: list[str],

@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 CONTAINER_CACHE_DIR = "/cache"
-PROVIDER_CACHE_VERSION = 2
+PROVIDER_CACHE_VERSION = 3
 
 
 def provider_cache_name(instance_id: str) -> str:

@@ -3,8 +3,6 @@ set -eu
 
 SOURCE_ARCHIVE=/host/build/sources/puredarwin-linux-build.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
-SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
-COMPILER_RT_HASH=$(sha256sum "$COMPILER_RT_ARCHIVE" | cut -d ' ' -f 1)
 CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
 COMPILER_RT_DIR=$CACHE_DIR/compiler-rt
@@ -15,23 +13,21 @@ OUTPUT_ARCHIVE=$OUTPUT_DIR/kernel.tar.gz
 BUILD_JOBS=${JOBS:-1}
 
 mkdir -p "$CACHE_DIR"
-if [ ! -f "$CACHE_DIR/.source-$SOURCE_HASH" ]; then
-    rm -rf "$SOURCE_DIR"
-    mkdir -p "$SOURCE_DIR"
-    tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
-        -C "$SOURCE_DIR" --strip-components=1
-    rm -f "$CACHE_DIR"/.source-*
-    touch "$CACHE_DIR/.source-$SOURCE_HASH"
-fi
+extract_source() {
+    archive=$1
+    destination=$2
+    compression=$3
+    [ -d "$destination" ] && return 0
+    temporary=$destination.tmp.$$
+    rm -rf "$temporary"
+    mkdir -p "$temporary"
+    tar --no-same-owner "-$compression" "$archive" \
+        -C "$temporary" --strip-components=1
+    mv "$temporary" "$destination"
+}
 
-if [ ! -f "$CACHE_DIR/.compiler-rt-$COMPILER_RT_HASH" ]; then
-    rm -rf "$COMPILER_RT_DIR"
-    mkdir -p "$COMPILER_RT_DIR"
-    tar --no-same-owner -xJf "$COMPILER_RT_ARCHIVE" \
-        -C "$COMPILER_RT_DIR" --strip-components=1
-    rm -f "$CACHE_DIR"/.compiler-rt-*
-    touch "$CACHE_DIR/.compiler-rt-$COMPILER_RT_HASH"
-fi
+extract_source "$SOURCE_ARCHIVE" "$SOURCE_DIR" xzf
+extract_source "$COMPILER_RT_ARCHIVE" "$COMPILER_RT_DIR" xJf
 
 # Keep the downloaded source pristine while retaining out-of-tree objects.
 git -C "$SOURCE_DIR" reset --hard HEAD

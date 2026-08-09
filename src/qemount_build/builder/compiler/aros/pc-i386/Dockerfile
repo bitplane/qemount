@@ -7,19 +7,18 @@ ENV TAR_OPTIONS=--no-same-owner
 
 RUN set -eu; \
     SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz; \
-    SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1); \
     CACHE_DIR=$QEMOUNT_CACHE_DIR; \
     SOURCE_DIR=$CACHE_DIR/source; \
     BUILD_DIR=$CACHE_DIR/toolchain-build; \
     INSTALL_DIR=$CACHE_DIR/toolchain; \
     export CCACHE_DIR=$CACHE_DIR/ccache; \
     mkdir -p "$CACHE_DIR" "$CCACHE_DIR"; \
-    if [ ! -f "$CACHE_DIR/.source-$SOURCE_HASH" ]; then \
-        rm -rf "$SOURCE_DIR" "$BUILD_DIR" "$INSTALL_DIR"; \
-        mkdir -p "$SOURCE_DIR"; \
-        tar -xzf "$SOURCE_ARCHIVE" -C "$SOURCE_DIR" --strip-components=1; \
-        rm -f "$CACHE_DIR"/.source-*; \
-        touch "$CACHE_DIR/.source-$SOURCE_HASH"; \
+    if [ ! -d "$SOURCE_DIR" ]; then \
+        TEMPORARY=$CACHE_DIR/source.tmp.$$; \
+        rm -rf "$TEMPORARY"; \
+        mkdir -p "$TEMPORARY"; \
+        tar -xzf "$SOURCE_ARCHIVE" -C "$TEMPORARY" --strip-components=1; \
+        mv "$TEMPORARY" "$SOURCE_DIR"; \
     fi; \
     mkdir -p "$BUILD_DIR" "$INSTALL_DIR"; \
     cd "$BUILD_DIR"; \

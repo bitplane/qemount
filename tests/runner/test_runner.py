@@ -16,6 +16,7 @@ from qemount_build.runner import (
     get_file_provides,
     image_needs_no_cache,
     podman_runtime_args,
+    prepare_provider_cache,
     begin_output_transaction,
     run_container,
     finish_output_transaction,
@@ -360,45 +361,31 @@ def test_new_transaction_recovers_previous_file_after_interruption(tmp_path):
     assert output.read_text() == "previous"
 
 
-def test_existing_source_is_adopted_without_running_downloader(tmp_path, monkeypatch):
-    build_dir = tmp_path / "build"
-    pkg_dir = tmp_path / "catalogue"
-    output = "sources/source.tar"
-    path = build_dir / output
-    path.parent.mkdir(parents=True)
-    path.write_bytes(b"already downloaded")
-    cache = {}
-    update_output_hash(cache, output, "legacy-input", build_dir)
-    save_cache(build_dir, cache)
+def test_provider_cache_is_reused_only_for_identical_inputs(tmp_path):
+    cache = prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one")
+    (cache / "objects").write_text("reusable")
 
-    catalogue = {
-        "paths": {
-            "source": {
-                "sources": ["source.md"],
-                "meta": {
-                    "urls": {"https://example.test/source.tar": {}},
-                    "runs_on": "docker:builder/downloader",
-                    "provides": {output: {}},
-                },
-            }
-        }
-    }
+    assert prepare_provider_cache(
+        tmp_path, "x86_64-linux", "stage", "one"
+    ) == cache
+    assert (cache / "objects").read_text() == "reusable"
 
-    def unexpected_download(*args, **kwargs):
-        raise AssertionError("downloader should not run")
+    prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "two")
+    assert not (cache / "objects").exists()
+    assert (cache.parent / ".qemount-input").read_text() == "two\n"
 
-    monkeypatch.setattr("qemount_build.runner.run_container", unexpected_download)
-    success = run_build(
-        [output],
-        catalogue,
-        {
-            "BUILD_PLATFORM": "x86_64-linux",
-            "BUILD_ARCH": "x86_64",
-            "BUILD_OS": "linux",
-        },
-        build_dir,
-        pkg_dir,
-    )
 
-    assert success
-    assert path.read_bytes() == b"already downloaded"
+def test_provider_cache_metadata_is_outside_the_builder_workspace(tmp_path):
+    cache = prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one")
+    marker = cache.parent / ".qemount-input"
+
+    for child in cache.iterdir():
+        if child.is_dir():
+            child.rmdir()
+        else:
+            child.unlink()
+
+    assert marker.read_text() == "one\n"
+    assert prepare_provider_cache(
+        tmp_path, "x86_64-linux", "stage", "one"
+    ) == cache

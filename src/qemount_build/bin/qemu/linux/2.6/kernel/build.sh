@@ -4,16 +4,14 @@ set -eu
 SOURCE_ARCHIVE=/host/build/sources/linux-2.6.39.4.tar.xz
 CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
-SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
 
-if [ ! -f "$SOURCE_DIR/.qemount-source-$SOURCE_HASH" ]; then
+if [ ! -d "$SOURCE_DIR" ]; then
     EXTRACT_DIR=$CACHE_DIR/source.tmp.$$
     rm -rf "$SOURCE_DIR"
     mkdir -p "$EXTRACT_DIR"
     trap 'rm -rf "$EXTRACT_DIR"' EXIT HUP INT TERM
     tar --no-same-owner -xf "$SOURCE_ARCHIVE" \
         -C "$EXTRACT_DIR" --strip-components=1
-    touch "$EXTRACT_DIR/.qemount-source-$SOURCE_HASH"
     mv "$EXTRACT_DIR" "$SOURCE_DIR"
     trap - EXIT HUP INT TERM
 fi

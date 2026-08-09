@@ -75,17 +75,6 @@ RUN if [ "$OUTPUT_ARCH" = "x86_64" ]; then \
 # downstream qemount stages are copied into the compiler image.
 RUN set -eu; \
     CACHE_DIR=$QEMOUNT_CACHE_DIR; \
-    SOURCE_HASH=$(sha256sum \
-        /host/build/sources/netbsd-10.0-src.tgz \
-        /host/build/sources/netbsd-10.0-syssrc.tgz \
-        /host/build/sources/netbsd-10.0-sharesrc.tgz \
-        /host/build/sources/netbsd-10.0-gnusrc.tgz \
-        | sha256sum | cut -d ' ' -f 1); \
-    if [ ! -e "$CACHE_DIR/.qemount-sources-$SOURCE_HASH" ]; then \
-        rm -rf "$CACHE_DIR"; \
-        mkdir -p "$CACHE_DIR"; \
-        touch "$CACHE_DIR/.qemount-sources-$SOURCE_HASH"; \
-    fi; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
