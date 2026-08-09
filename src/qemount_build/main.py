@@ -22,6 +22,7 @@ from .runner import run_build
 from .inventory import create_inventory, write_inventory
 from .cache import load_cache, save_cache, hash_file
 from .gc import collect
+from .lock import BuildDirectoryBusy, build_directory_lock
 from . import log as logsetup
 
 log = logging.getLogger(__name__)
@@ -189,30 +190,35 @@ def cmd_build(args, catalogue, context):
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
 
-    # Expand patterns and strip build/ prefix
-    targets = expand_targets(args.targets, catalogue, context)
-    if not targets:
-        log.error("No targets to build")
+    try:
+        with build_directory_lock(build_dir, blocking=False):
+            # Expand patterns and strip build/ prefix
+            targets = expand_targets(args.targets, catalogue, context)
+            if not targets:
+                log.error("No targets to build")
+                return 1
+
+            # Dump catalogue as implicit dependency for all builds
+            catalogue_file = build_dir / "catalogue.json"
+            catalogue_file.write_text(json.dumps(catalogue, indent=2))
+            log.debug("Wrote catalogue to %s", catalogue_file)
+
+            # Update cache with new catalogue hash so dependents see the change
+            cache = load_cache(build_dir)
+            hash_file(catalogue_file, cache, "build:catalogue.json")
+            save_cache(build_dir, cache)
+
+            success = run_build(
+                targets,
+                catalogue,
+                context,
+                build_dir,
+                pkg_dir,
+                force=args.force,
+            )
+    except BuildDirectoryBusy as error:
+        log.error("Build failed: %s", error)
         return 1
-
-    # Dump catalogue as implicit dependency for all builds
-    catalogue_file = build_dir / "catalogue.json"
-    catalogue_file.write_text(json.dumps(catalogue, indent=2))
-    log.debug("Wrote catalogue to %s", catalogue_file)
-
-    # Update cache with new catalogue hash so dependents see the change
-    cache = load_cache(build_dir)
-    hash_file(catalogue_file, cache, "build:catalogue.json")
-    save_cache(build_dir, cache)
-
-    success = run_build(
-        targets,
-        catalogue,
-        context,
-        build_dir,
-        pkg_dir,
-        force=args.force,
-    )
     return 0 if success else 1
 
 
@@ -230,16 +236,21 @@ def cmd_inventory(args, catalogue, context):
 def cmd_gc(args, catalogue, context):
     """Collect obsolete state owned by qemount."""
     try:
-        images, work_directories = collect(Path("build").absolute(), args.dry_run)
-    except RuntimeError as error:
+        build_dir = Path("build").absolute()
+        with build_directory_lock(build_dir, blocking=False):
+            images, work_directories, cache_generations = collect(
+                build_dir, args.dry_run
+            )
+    except (BuildDirectoryBusy, RuntimeError) as error:
         log.error("Garbage collection failed: %s", error)
         return 1
     action = "Would remove" if args.dry_run else "Removed"
     log.info(
-        "%s %d obsolete images and %d abandoned work directories",
+        "%s %d obsolete images, %d abandoned work directories, and %d cache generations",
         action,
         images,
         work_directories,
+        cache_generations,
     )
     return 0
 

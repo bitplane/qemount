@@ -67,9 +67,10 @@ RUN if [ "$OUTPUT_ARCH" = "x86_64" ]; then \
         echo "$OUTPUT_ARCH" > /tmp/nbgnutriple; \
     fi
 
-# Build the cross-compilation toolchain and distribution. /usr/obj and
-# /usr/tools use the host-backed cache while build.sh runs, then are copied
-# into the image so child build stages remain self-contained.
+# Build the cross-compilation toolchain and the appliance-facing distribution.
+# The complete incremental object tree remains in the host cache. Only the
+# tools, sysroot, rescue binary, device script, and boot blocks consumed by
+# downstream qemount stages are copied into the compiler image.
 RUN set -eu; \
     SOURCE_HASH=$(sha256sum \
         /host/build/sources/netbsd-10.0-src.tgz \
@@ -77,20 +78,48 @@ RUN set -eu; \
         /host/build/sources/netbsd-10.0-sharesrc.tgz \
         /host/build/sources/netbsd-10.0-gnusrc.tgz \
         | sha256sum | cut -d ' ' -f 1); \
+    CACHE_KEY=${SOURCE_HASH}-appliance-v1; \
     CACHE_DIR=/host/build/cache/netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0; \
-    CACHE_DIR=$CACHE_DIR/compiler-v1/${SOURCE_HASH}; \
+    CACHE_DIR=$CACHE_DIR/compiler-v1/${CACHE_KEY}; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
     NBARCH=$(cat /tmp/nbarch); \
     NBMACHINEARCH=$(cat /tmp/nbmachinearch); \
     ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
-        -m "$NBARCH" -a "$NBMACHINEARCH" tools; \
+        -m "$NBARCH" -a "$NBMACHINEARCH" \
+        -V MKCOMPAT=no -V MKDEBUG=no -V MKDEBUGLIB=no \
+        -V MKHTML=no -V MKINFO=no -V MKMAN=no -V MKNLS=no \
+        -V MKPROFILE=no -V MKTESTS=no -V MKX11=no tools; \
     ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
-        -m "$NBARCH" -a "$NBMACHINEARCH" distribution; \
+        -m "$NBARCH" -a "$NBMACHINEARCH" \
+        -V MKCOMPAT=no -V MKDEBUG=no -V MKDEBUGLIB=no \
+        -V MKHTML=no -V MKINFO=no -V MKMAN=no -V MKNLS=no \
+        -V MKPROFILE=no -V MKTESTS=no -V MKX11=no distribution; \
     rm /usr/obj /usr/tools; \
-    cp -a "$CACHE_DIR/obj" /usr/obj; \
-    cp -a "$CACHE_DIR/tools" /usr/tools
+    cp -a "$CACHE_DIR/tools" /usr/tools; \
+    DESTDIR=$CACHE_DIR/obj/destdir.$NBARCH; \
+    IMAGE_DESTDIR=/usr/obj/destdir.$NBARCH; \
+    mkdir -p "$IMAGE_DESTDIR/usr"; \
+    cp -a "$DESTDIR/lib" "$DESTDIR/rescue" "$IMAGE_DESTDIR/"; \
+    cp -a "$DESTDIR/usr/include" "$DESTDIR/usr/lib" "$DESTDIR/usr/mdec" \
+        "$IMAGE_DESTDIR/usr/"; \
+    mkdir -p "$IMAGE_DESTDIR/dev"; \
+    cp -a "$DESTDIR/dev/MAKEDEV" "$IMAGE_DESTDIR/dev/"; \
+    rm -rf "$IMAGE_DESTDIR/lib/i386" "$IMAGE_DESTDIR/usr/lib/i386"; \
+    OWNER=netbsd-10.0-compiler-${BUILD_PLATFORM}-${OUTPUT_ARCH}; \
+    CACHE_ROOT=$(dirname "$CACHE_DIR"); \
+    for GENERATION in "$CACHE_ROOT"/*; do \
+        [ -d "$GENERATION" ] && printf '%s\n' "$OWNER" > "$GENERATION/.qemount-generation"; \
+    done; \
+    MANIFEST_DIR=/host/build/cache/.qemount/manifests; \
+    mkdir -p "$MANIFEST_DIR"; \
+    MANIFEST_TMP=$MANIFEST_DIR/$OWNER.json.tmp; \
+    printf '{"schema":1,"owner":"%s","root":"%s","current":"%s"}\n' \
+        "$OWNER" \
+        "netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0/compiler-v1" \
+        "$CACHE_KEY" > "$MANIFEST_TMP"; \
+    mv "$MANIFEST_TMP" "$MANIFEST_DIR/$OWNER.json"
 
 # Set up environment for cross-compilation
 # Child images can use these for building binaries

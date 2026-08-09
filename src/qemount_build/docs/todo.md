@@ -8,7 +8,7 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
-    - [ ] lock the build directory so concurrent qemount-build processes cannot
+    - [x] lock the build directory so concurrent qemount-build processes cannot
       corrupt shared caches or interleave output
     - [x] separate qemount binaries from the compiled catalogue so catalogue
       changes do not rebuild the Rust code

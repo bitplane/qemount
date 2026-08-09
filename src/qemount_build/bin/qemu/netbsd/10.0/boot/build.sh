@@ -17,7 +17,8 @@ cp "$ROOTFS_DIR/ramdisk.fs" /work/ramdisk.fs
 
 # Embed ramdisk into kernel
 echo "Embedding ramdisk into kernel..."
-/usr/obj/tools/mdsetimage/mdsetimage -v /work/netbsd.gdb /work/ramdisk.fs
+"$TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-mdsetimage" \
+    -v /work/netbsd.gdb /work/ramdisk.fs
 
 # Strip the kernel
 echo "Stripping kernel..."
