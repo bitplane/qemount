@@ -171,6 +171,14 @@ def test_reiser4_fixture_uses_portable_block_size():
     assert "mkfs.reiser4 --block-size 4096" in build_script
 
 
+def test_dragonfly_compiler_image_contains_its_completed_object_tree():
+    dockerfile = (
+        PACKAGE_DIR / "builder/compiler/dragonfly/6.4.2/Dockerfile"
+    ).read_text()
+
+    assert 'cp -a "$CACHE_DIR/obj" /usr/obj' in dockerfile
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 

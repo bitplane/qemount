@@ -74,7 +74,9 @@ RUN set -eu; \
         TARGET_ARCH=x86_64 \
         TARGET_PLATFORM=pc64 \
         WORLD_VERSION=600401 \
-        buildworld
+        buildworld; \
+    rm /usr/obj; \
+    cp -a "$CACHE_DIR/obj" /usr/obj
 
 ENV DRAGONFLY_SRC=/usr/src
 ENV DRAGONFLY_OBJ=/usr/obj
