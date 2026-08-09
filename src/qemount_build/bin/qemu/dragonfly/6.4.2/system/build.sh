@@ -41,6 +41,7 @@ world_make -C "$DRAGONFLY_SRC/stand/boot/pc32/loader" \
 
 bmake -j"${JOBS}" \
     KERNCONF=QEMOUNT \
+    MODULES_OVERRIDE="vfs/ext2fs vfs/ntfs vfs/udf libiconv" \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
@@ -70,6 +71,7 @@ bmake \
 bmake \
     DESTDIR="$WORLD" \
     KERNCONF=QEMOUNT \
+    MODULES_OVERRIDE="vfs/ext2fs vfs/ntfs vfs/udf libiconv" \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
@@ -77,10 +79,10 @@ bmake \
     TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     INSTALL="$TARGET_INSTALL" \
+    INSTALLSTRIPPED=1 \
     reinstallkernel
 
 /build/assemble-root.py "$WORLD" "$ROOT" /build/runtime-files.txt
-find "$ROOT/boot/kernel" -type f -name '*.ko' -exec strip --strip-debug {} +
 mkdir -p "$ROOT/etc"
 install -m 644 /build/loader.conf "$ROOT/boot/loader.conf"
 install -m 644 /build/dloader.rc "$ROOT/boot/dloader.rc"
