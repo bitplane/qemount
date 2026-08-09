@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -304,17 +305,30 @@ def output_backup(path: Path) -> Path:
     return path.with_name(f"{path.name}.qemount-previous")
 
 
+def output_exists(path: Path) -> bool:
+    """Return whether an output path or symlink occupies this name."""
+    return path.exists() or path.is_symlink()
+
+
+def remove_output(path: Path) -> None:
+    """Remove a file, symlink or directory output without following links."""
+    if path.is_dir() and not path.is_symlink():
+        shutil.rmtree(path)
+    else:
+        path.unlink()
+
+
 def begin_output_transaction(build_dir: Path, outputs: list[str]) -> dict[str, Path]:
     """Preserve previous outputs until their replacements are verified."""
     backups = {}
     for output in outputs:
         path = build_dir / output
         backup = output_backup(path)
-        if backup.exists():
-            if path.exists():
-                path.unlink()
+        if output_exists(backup):
+            if output_exists(path):
+                remove_output(path)
             backup.rename(path)
-        if path.exists():
+        if output_exists(path):
             path.rename(backup)
             backups[output] = backup
     return backups
@@ -328,12 +342,12 @@ def finish_output_transaction(
         path = build_dir / output
         backup = backups.get(output)
         if success:
-            if backup and backup.exists():
-                backup.unlink()
+            if backup and output_exists(backup):
+                remove_output(backup)
             continue
-        if path.exists():
-            path.unlink()
-        if backup and backup.exists():
+        if output_exists(path):
+            remove_output(path)
+        if backup and output_exists(backup):
             backup.rename(path)
 
 

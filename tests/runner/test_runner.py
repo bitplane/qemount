@@ -303,6 +303,35 @@ def test_successful_output_transaction_discards_previous_file(tmp_path):
     assert not (tmp_path / "result.qemount-previous").exists()
 
 
+def test_failed_output_transaction_restores_previous_directory(tmp_path):
+    output = tmp_path / "sdk"
+    output.mkdir()
+    (output / "previous.h").write_text("previous")
+
+    backups = begin_output_transaction(tmp_path, ["sdk"])
+    output.mkdir()
+    (output / "partial.h").write_text("partial")
+    finish_output_transaction(tmp_path, ["sdk"], backups, False)
+
+    assert (output / "previous.h").read_text() == "previous"
+    assert not (output / "partial.h").exists()
+    assert not (tmp_path / "sdk.qemount-previous").exists()
+
+
+def test_successful_output_transaction_discards_previous_directory(tmp_path):
+    output = tmp_path / "sdk"
+    output.mkdir()
+    (output / "previous.h").write_text("previous")
+
+    backups = begin_output_transaction(tmp_path, ["sdk"])
+    output.mkdir()
+    (output / "replacement.h").write_text("replacement")
+    finish_output_transaction(tmp_path, ["sdk"], backups, True)
+
+    assert (output / "replacement.h").read_text() == "replacement"
+    assert not (tmp_path / "sdk.qemount-previous").exists()
+
+
 def test_new_transaction_recovers_previous_file_after_interruption(tmp_path):
     output = tmp_path / "result"
     output.write_text("previous")
