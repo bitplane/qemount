@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 
-CONTAINER_CACHE_ROOT = Path("/host/build/cache/stages")
+CONTAINER_CACHE_DIR = "/cache"
 
 
 def provider_cache_name(instance_id: str) -> str:
@@ -23,8 +23,6 @@ def provider_cache_relative(build_platform: str, instance_id: str) -> Path:
     return Path("stages") / build_platform / provider_cache_name(instance_id)
 
 
-def provider_cache_container(build_platform: str, instance_id: str) -> str:
-    """Return the provider cache path visible inside build containers."""
-    return str(
-        CONTAINER_CACHE_ROOT / build_platform / provider_cache_name(instance_id)
-    )
+def provider_cache_container() -> str:
+    """Return the canonical provider cache mount inside build containers."""
+    return CONTAINER_CACHE_DIR

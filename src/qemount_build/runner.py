@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import TextIO
 
 from .catalogue import build_graph
+from .provider_cache import provider_cache_relative
 from .cache import (
     load_cache,
     save_cache,
@@ -205,6 +206,11 @@ def build_image(
     cache_dir = build_dir / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{cache_dir.absolute()}:/host/build/cache:rw"])
+    provider_cache = build_dir / "cache" / provider_cache_relative(
+        env["BUILD_PLATFORM"], stage
+    )
+    provider_cache.mkdir(parents=True, exist_ok=True)
+    cmd.extend(["--volume", f"{provider_cache.absolute()}:/cache:rw"])
 
     # Mount build_requires as volumes
     for req in build_requires:
@@ -256,6 +262,11 @@ def run_container(
     cmd = ["podman", "run", "--rm", "--cidfile", str(cid_path)]
     cmd.extend(podman_runtime_args())
     cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
+    provider_cache = build_dir / "cache" / provider_cache_relative(
+        env["BUILD_PLATFORM"], stage
+    )
+    provider_cache.mkdir(parents=True, exist_ok=True)
+    cmd.extend(["-v", f"{provider_cache.absolute()}:/cache"])
     for key, value in env.items():
         cmd.extend(["-e", f"{key}={value}"])
     cmd.append(image)

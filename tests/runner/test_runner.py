@@ -163,8 +163,10 @@ def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
 def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch):
     """Ctrl-C force-removes the exact container recorded by Podman."""
     removed = []
+    commands = []
 
     def interrupt(cmd, log_path):
+        commands.append(cmd)
         cid_path = Path(cmd[cmd.index("--cidfile") + 1])
         cid_path.write_text("test-container-id\n")
         raise KeyboardInterrupt
@@ -178,9 +180,21 @@ def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch)
     monkeypatch.setattr("qemount_build.runner.podman_runtime_args", lambda: [])
 
     with pytest.raises(KeyboardInterrupt):
-        run_container("stage", "image", tmp_path, {}, ["output"])
+        run_container(
+            "stage",
+            "image",
+            tmp_path,
+            {"BUILD_PLATFORM": "x86_64-linux"},
+            ["output"],
+        )
 
     assert removed == [["podman", "rm", "--force", "test-container-id"]]
+    mounts = [
+        commands[0][index + 1]
+        for index, argument in enumerate(commands[0])
+        if argument == "-v"
+    ]
+    assert any(mount.endswith(":/cache") for mount in mounts)
     assert not list((tmp_path / "cache/containers").iterdir())
 
 

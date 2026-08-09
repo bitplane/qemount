@@ -22,8 +22,4 @@ def test_provider_cache_paths_include_the_build_platform():
     assert str(
         provider_cache_relative("aarch64-linux", "bin/example@x86_64-test")
     ).startswith("stages/aarch64-linux/bin-example-x86_64-test--")
-    assert provider_cache_container(
-        "aarch64-linux", "bin/example@x86_64-test"
-    ).startswith(
-        "/host/build/cache/stages/aarch64-linux/bin-example-x86_64-test--"
-    )
+    assert provider_cache_container() == "/cache"

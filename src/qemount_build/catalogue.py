@@ -392,13 +392,10 @@ def resolve_provider_instances(path: str, catalogue: dict, context: dict) -> lis
     for platform_key in platform_keys:
         output_platform = None if platform_key == "neutral" else platform_key
         instance_id = provider_instance(path, output_platform)
-        build_platform = context.get("BUILD_PLATFORM", "unknown")
         instance_context = {
             **context,
             **split_platform(output_platform),
-            "QEMOUNT_CACHE_DIR": provider_cache_container(
-                build_platform, instance_id
-            ),
+            "QEMOUNT_CACHE_DIR": provider_cache_container(),
         }
         meta = resolve_path(path, catalogue, instance_context)
         if platform_key is not None:

@@ -47,9 +47,7 @@ def test_every_provider_instance_receives_its_automatic_cache():
 
     for path in catalogue["paths"]:
         for instance in resolve_provider_instances(path, catalogue, CONTEXT):
-            expected = provider_cache_container(
-                CONTEXT["BUILD_PLATFORM"], instance["id"]
-            )
+            expected = provider_cache_container()
             assert instance["context"]["QEMOUNT_CACHE_DIR"] == expected
             assert instance["meta"]["env"]["QEMOUNT_CACHE_DIR"] == expected
 
