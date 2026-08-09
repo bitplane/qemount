@@ -18,7 +18,7 @@ mk libs
 # first because the remaining install rules use it to populate /$objtype/bin.
 cd /sys/src/cmd
 mk cp.install
-commands=(init basename bind cat cfs chmod dd echo ls mkdir mntgen mount mv ps pwd ramfs rm sed sleep srv test tlsclient unmount xd)
+commands=(init basename bind cat cfs chmod cmp dd echo ls mkdir mntgen mount mv ps pwd ramfs rm sed sleep srv tar test tlsclient unmount xd)
 for(command in $commands)
 	mk $command^.install
 
@@ -46,10 +46,12 @@ cd /sys/src/cmd/exportfs
 mk install
 cd /sys/src/cmd/paqfs
 mk paqfs.install
+mk mkpaqfs.install
 cd /sys/src/cmd/auth/factotum
 mk factotum.install
 cd /sys/src/cmd/aux/flashfs
 mk flashfs.install
+mk mkflashfs.install
 cd /sys/src/cmd/gefs
 mk install
 cd /sys/src/cmd/hjfs
@@ -59,6 +61,8 @@ mk install
 cd /sys/src/cmd/tapefs
 for(command in v6fs 32vfs v10fs)
 	mk $command^.install
+cd /sys/src/cmd/disk
+mk mbr.install
 cd /sys/src/cmd/disk/prep
 for(command in edisk fdisk prep)
 	mk $command^.install

@@ -35,6 +35,7 @@ $objtype	d775
 		basename	775
 		bind	775
 		cat	775
+		cmp	775
 		cp	775
 		cwfs64x	775
 		dd	775
@@ -47,6 +48,7 @@ $objtype	d775
 		ls	775
 		mkdir	775
 		mount	775
+		mkpaqfs	775
 		paqfs	775
 		ps	775
 		pwd	775
@@ -56,13 +58,16 @@ $objtype	d775
 		rm	775
 		sleep	775
 		test	775
+		tar	775
 		unmount	775
 		xd	775
 		aux	d775
 			flashfs	775
+			mkflashfs	775
 		disk	d775
 			edisk	775
 			fdisk	775
+			mbr	775
 			prep	775
 		fs	d775
 			32vfs	775
