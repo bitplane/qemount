@@ -12,7 +12,7 @@ esac
 version=qemount
 bootstrap=/host/build/sources/9front-11957.amd64.qcow2.gz
 source=/host/build/sources/9front-${version}.tar.gz
-cache=/host/build/cache/9front/${BUILD_PLATFORM}/${OUTPUT_ARCH}/11957-${version}
+cache=$QEMOUNT_CACHE_DIR
 mkdir -p "$cache"
 
 bootstrap_image=$cache/bootstrap.qcow2
@@ -57,6 +57,7 @@ if [ ! -s "$source_iso" ] || [ ! -f "$source_iso.$source_hash" ]; then
     : > "$source_iso.$source_hash"
 fi
 
+rm -rf "$cache"/run.*
 work=$(mktemp -d "$cache/run.XXXXXX")
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 

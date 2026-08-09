@@ -5,10 +5,7 @@ SOURCE_ARCHIVE=/host/build/sources/puredarwin-linux-build.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
 SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
 COMPILER_RT_HASH=$(sha256sum "$COMPILER_RT_ARCHIVE" | cut -d ' ' -f 1)
-INPUT_HASH=$(printf '%s\n' \
-    "$SOURCE_HASH" \
-    "$COMPILER_RT_HASH" | sha256sum | cut -d ' ' -f 1)
-CACHE_DIR=/host/build/cache/puredarwin/${BUILD_PLATFORM}/${OUTPUT_ARCH}/system-v2/${INPUT_HASH}
+CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
 COMPILER_RT_DIR=$CACHE_DIR/compiler-rt
 BUILD_DIR=$CACHE_DIR/build-llvm14
@@ -18,18 +15,22 @@ OUTPUT_ARCHIVE=$OUTPUT_DIR/kernel.tar.gz
 BUILD_JOBS=${JOBS:-1}
 
 mkdir -p "$CACHE_DIR"
-if [ ! -f "$CACHE_DIR/.source-unpacked" ]; then
+if [ ! -f "$CACHE_DIR/.source-$SOURCE_HASH" ]; then
+    rm -rf "$SOURCE_DIR"
     mkdir -p "$SOURCE_DIR"
     tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
         -C "$SOURCE_DIR" --strip-components=1
-    touch "$CACHE_DIR/.source-unpacked"
+    rm -f "$CACHE_DIR"/.source-*
+    touch "$CACHE_DIR/.source-$SOURCE_HASH"
 fi
 
-if [ ! -f "$CACHE_DIR/.compiler-rt-unpacked" ]; then
+if [ ! -f "$CACHE_DIR/.compiler-rt-$COMPILER_RT_HASH" ]; then
+    rm -rf "$COMPILER_RT_DIR"
     mkdir -p "$COMPILER_RT_DIR"
     tar --no-same-owner -xJf "$COMPILER_RT_ARCHIVE" \
         -C "$COMPILER_RT_DIR" --strip-components=1
-    touch "$CACHE_DIR/.compiler-rt-unpacked"
+    rm -f "$CACHE_DIR"/.compiler-rt-*
+    touch "$CACHE_DIR/.compiler-rt-$COMPILER_RT_HASH"
 fi
 
 # Keep the downloaded source pristine while retaining out-of-tree objects.

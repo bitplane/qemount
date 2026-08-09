@@ -4,6 +4,7 @@ FROM ${BUILDER}
 ARG BUILD_PLATFORM
 ARG JOBS=1
 ARG OUTPUT_ARCH
+ARG QEMOUNT_CACHE_DIR
 
 RUN mkdir -p /usr/src /usr/obj && \
     tar -xf /host/build/sources/dragonfly-6.4.2.tar.gz \
@@ -54,16 +55,19 @@ RUN set -eux; \
 RUN set -eu; \
     test "$OUTPUT_ARCH" = x86_64; \
     HOST_CPU_FAMILY=${BUILD_PLATFORM%%-*}; \
-    SOURCE_HASH=$(sha256sum /host/build/sources/dragonfly-6.4.2.tar.gz \
-        | cut -d ' ' -f 1); \
-    PORT_HASH=$(sha256sum \
-        /tmp/host-aout.h /tmp/host-compat.c /tmp/host-compat.h /tmp/host-elf-hints.h \
-        /tmp/host-elf.h /tmp/host-elf32.h \
-        /tmp/host-objformat.h \
-        /tmp/host-pwd.h /tmp/host-util.h /tmp/host-xlocale.h \
-        /tmp/linux-build.patch | sha256sum | cut -d ' ' -f 1); \
-    CACHE_DIR=/host/build/cache/dragonfly/${BUILD_PLATFORM}/${OUTPUT_ARCH}; \
-    CACHE_DIR=$CACHE_DIR/6.4.2/compiler-v1/${SOURCE_HASH}/${PORT_HASH}; \
+    CACHE_DIR=$QEMOUNT_CACHE_DIR; \
+    SOURCE_HASH=$(sha256sum \
+        /host/build/sources/dragonfly-6.4.2.tar.gz \
+        /tmp/host-aout.h /tmp/host-compat.c /tmp/host-compat.h \
+        /tmp/host-elf-hints.h /tmp/host-elf.h /tmp/host-elf32.h \
+        /tmp/host-objformat.h /tmp/host-pwd.h /tmp/host-util.h \
+        /tmp/host-xlocale.h /tmp/linux-build.patch \
+        | sha256sum | cut -d ' ' -f 1); \
+    if [ ! -e "$CACHE_DIR/.qemount-sources-$SOURCE_HASH" ]; then \
+        rm -rf "$CACHE_DIR"; \
+        mkdir -p "$CACHE_DIR"; \
+        touch "$CACHE_DIR/.qemount-sources-$SOURCE_HASH"; \
+    fi; \
     mkdir -p "$CACHE_DIR/obj"; \
     rmdir /usr/obj; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \

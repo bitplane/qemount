@@ -1,11 +1,13 @@
 ARG OUTPUT_ARCH
 ARG BUILD_PLATFORM
 ARG JOBS=1
+ARG QEMOUNT_CACHE_DIR
 
 FROM debian:bookworm-slim AS builder
 ARG OUTPUT_ARCH
 ARG BUILD_PLATFORM
 ARG JOBS=1
+ARG QEMOUNT_CACHE_DIR
 
 # Install build dependencies for NetBSD build.sh
 # Using Debian because musl libc (Alpine) has conflicts with old texinfo code
@@ -72,15 +74,18 @@ RUN if [ "$OUTPUT_ARCH" = "x86_64" ]; then \
 # tools, sysroot, rescue binary, device script, and boot blocks consumed by
 # downstream qemount stages are copied into the compiler image.
 RUN set -eu; \
+    CACHE_DIR=$QEMOUNT_CACHE_DIR; \
     SOURCE_HASH=$(sha256sum \
         /host/build/sources/netbsd-10.0-src.tgz \
         /host/build/sources/netbsd-10.0-syssrc.tgz \
         /host/build/sources/netbsd-10.0-sharesrc.tgz \
         /host/build/sources/netbsd-10.0-gnusrc.tgz \
         | sha256sum | cut -d ' ' -f 1); \
-    CACHE_KEY=${SOURCE_HASH}-appliance-v1; \
-    CACHE_DIR=/host/build/cache/netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0; \
-    CACHE_DIR=$CACHE_DIR/compiler-v1/${CACHE_KEY}; \
+    if [ ! -e "$CACHE_DIR/.qemount-sources-$SOURCE_HASH" ]; then \
+        rm -rf "$CACHE_DIR"; \
+        mkdir -p "$CACHE_DIR"; \
+        touch "$CACHE_DIR/.qemount-sources-$SOURCE_HASH"; \
+    fi; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
@@ -106,20 +111,7 @@ RUN set -eu; \
         "$IMAGE_DESTDIR/usr/"; \
     mkdir -p "$IMAGE_DESTDIR/dev"; \
     cp -a "$DESTDIR/dev/MAKEDEV" "$IMAGE_DESTDIR/dev/"; \
-    rm -rf "$IMAGE_DESTDIR/lib/i386" "$IMAGE_DESTDIR/usr/lib/i386"; \
-    OWNER=netbsd-10.0-compiler-${BUILD_PLATFORM}-${OUTPUT_ARCH}; \
-    CACHE_ROOT=$(dirname "$CACHE_DIR"); \
-    for GENERATION in "$CACHE_ROOT"/*; do \
-        [ -d "$GENERATION" ] && printf '%s\n' "$OWNER" > "$GENERATION/.qemount-generation"; \
-    done; \
-    MANIFEST_DIR=/host/build/cache/.qemount/manifests; \
-    mkdir -p "$MANIFEST_DIR"; \
-    MANIFEST_TMP=$MANIFEST_DIR/$OWNER.json.tmp; \
-    printf '{"schema":1,"owner":"%s","root":"%s","current":"%s"}\n' \
-        "$OWNER" \
-        "netbsd/${BUILD_PLATFORM}/${OUTPUT_ARCH}/10.0/compiler-v1" \
-        "$CACHE_KEY" > "$MANIFEST_TMP"; \
-    mv "$MANIFEST_TMP" "$MANIFEST_DIR/$OWNER.json"
+    rm -rf "$IMAGE_DESTDIR/lib/i386" "$IMAGE_DESTDIR/usr/lib/i386"
 
 # Set up environment for cross-compilation
 # Child images can use these for building binaries

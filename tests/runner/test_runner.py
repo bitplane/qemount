@@ -10,6 +10,7 @@ import pytest
 from qemount_build.cache import save_cache, update_output_hash
 from qemount_build.runner import (
     build_log_path,
+    dockerfile_build_args,
     get_image_tag,
     get_docker_provides,
     get_file_provides,
@@ -22,6 +23,23 @@ from qemount_build.runner import (
     validate_path_provides,
     run_build,
 )
+
+
+def test_dockerfile_build_args_reads_global_and_stage_arguments(tmp_path):
+    dockerfile = tmp_path / "Dockerfile"
+    dockerfile.write_text(
+        "ARG BASE=example\n"
+        "FROM ${BASE}\n"
+        "  ARG JOBS\n"
+        "ARG QEMOUNT_CACHE_DIR=/cache\n"
+        "RUN true\n"
+    )
+
+    assert dockerfile_build_args(dockerfile) == {
+        "BASE",
+        "JOBS",
+        "QEMOUNT_CACHE_DIR",
+    }
 
 
 def test_podman_runtime_args_omit_missing_kvm(tmp_path):

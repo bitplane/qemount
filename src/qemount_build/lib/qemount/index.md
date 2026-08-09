@@ -2,9 +2,6 @@
 title: qemount library
 env:
   JOBS: ${JOBS}
-  CARGO_HOME: /host/build/cache/cargo
-  CARGO_TARGET_DIR: /host/build/cache/cargo-target/${BUILD_PLATFORM}
-  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig/${BUILD_PLATFORM}
 requires:
   - docker:builder/compiler/rust
 output_platforms:

@@ -4,7 +4,7 @@ set -eu
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-haiku/qemount/system
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 BUILD_JOBS=${JOBS:-1}
-CACHE_DIR=/host/build/cache/haiku/${OUTPUT_ARCH}/${HAIKU_REVISION}/qemount-v2
+CACHE_DIR=$QEMOUNT_CACHE_DIR
 INIT_DIR=/src/haiku/build/qemount/init
 
 mkdir -p "$INIT_DIR"

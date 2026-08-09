@@ -17,12 +17,19 @@ import platform
 import sys
 from pathlib import Path
 
-from .catalogue import build_graph, build_output_index, build_provides_index, load
+from .catalogue import (
+    build_graph,
+    build_output_index,
+    build_provides_index,
+    load,
+    resolve_provider_instances,
+)
 from .runner import run_build
 from .inventory import create_inventory, write_inventory
 from .cache import load_cache, save_cache, hash_file
 from .gc import collect
 from .lock import BuildDirectoryBusy, build_directory_lock
+from .provider_cache import provider_cache_name
 from . import log as logsetup
 
 log = logging.getLogger(__name__)
@@ -237,20 +244,24 @@ def cmd_gc(args, catalogue, context):
     """Collect obsolete state owned by qemount."""
     try:
         build_dir = Path("build").absolute()
+        live_cache_names = {
+            provider_cache_name(instance["id"])
+            for path in catalogue["paths"]
+            for instance in resolve_provider_instances(path, catalogue, context)
+        }
         with build_directory_lock(build_dir, blocking=False):
-            images, work_directories, cache_generations = collect(
-                build_dir, args.dry_run
+            images, provider_caches = collect(
+                build_dir, live_cache_names, args.dry_run
             )
     except (BuildDirectoryBusy, RuntimeError) as error:
         log.error("Garbage collection failed: %s", error)
         return 1
     action = "Would remove" if args.dry_run else "Removed"
     log.info(
-        "%s %d obsolete images, %d abandoned work directories, and %d cache generations",
+        "%s %d obsolete images and %d orphaned provider caches",
         action,
         images,
-        work_directories,
-        cache_generations,
+        provider_caches,
     )
     return 0
 

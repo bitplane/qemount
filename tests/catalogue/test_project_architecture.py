@@ -5,7 +5,13 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from qemount_build.catalogue import build_graph, build_provides_index, load
+from qemount_build.catalogue import (
+    build_graph,
+    build_provides_index,
+    load,
+    resolve_provider_instances,
+)
+from qemount_build.provider_cache import provider_cache_container
 
 
 PACKAGE_DIR = Path(__file__).parents[2] / "src" / "qemount_build"
@@ -34,6 +40,18 @@ def graph_for(target: str, context: dict = CONTEXT):
             context,
             Path(tmp),
         )
+
+
+def test_every_provider_instance_receives_its_automatic_cache():
+    catalogue = project_catalogue()
+
+    for path in catalogue["paths"]:
+        for instance in resolve_provider_instances(path, catalogue, CONTEXT):
+            expected = provider_cache_container(
+                CONTEXT["BUILD_PLATFORM"], instance["id"]
+            )
+            assert instance["context"]["QEMOUNT_CACHE_DIR"] == expected
+            assert instance["meta"]["env"]["QEMOUNT_CACHE_DIR"] == expected
 
 
 def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):

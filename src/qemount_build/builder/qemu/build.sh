@@ -3,6 +3,26 @@ set -ex
 
 QEMU_TARGETS="x86_64-softmmu,aarch64-softmmu,m68k-softmmu"
 JOBS=${JOBS:-$(nproc)}
+CACHE_DIR=${QEMOUNT_CACHE_DIR:?QEMOUNT_CACHE_DIR is required}
+
+prepare_cache() {
+    local source_hash marker
+
+    source_hash=$(sha256sum \
+        /host/build/sources/libffi-3.4.6.tar.gz \
+        /host/build/sources/libiconv-1.17.tar.gz \
+        /host/build/sources/pixman-0.44.2.tar.gz \
+        /host/build/sources/glib-2.82.4.tar.xz \
+        /host/build/sources/qemu-10.2.0.tar.xz \
+        | sha256sum | cut -d ' ' -f 1)
+    marker=$CACHE_DIR/.qemount-sources-$source_hash
+
+    if [ ! -e "$marker" ]; then
+        rm -rf "$CACHE_DIR"
+        mkdir -p "$CACHE_DIR"
+        touch "$marker"
+    fi
+}
 
 # A provider instance normally supplies exactly one host platform.
 PLATFORMS=("${OUTPUT_PLATFORM:?OUTPUT_PLATFORM is required}")
@@ -299,9 +319,9 @@ build_deps_for_target() {
     echo "=== Building deps for $TARGET ==="
 
     # Extract sources from build dir
-    local SRCDIR=/work/sources
-    mkdir -p $SRCDIR
-    cd $SRCDIR
+    local SRCDIR=$CACHE_DIR/sources
+    mkdir -p "$SRCDIR"
+    cd "$SRCDIR"
     [ -d libffi-3.4.6 ]   || tar xf /host/build/sources/libffi-3.4.6.tar.gz
     [ -d libiconv-1.17 ]  || tar xf /host/build/sources/libiconv-1.17.tar.gz
     [ -d pixman-0.44.2 ]  || tar xf /host/build/sources/pixman-0.44.2.tar.gz
@@ -346,7 +366,7 @@ build_deps_for_target() {
     # Build libffi
     echo "--- Building libffi for $TARGET ---"
     cd $SRCDIR/libffi-3.4.6
-    rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
+    mkdir -p build-$TARGET && cd build-$TARGET
     ../configure \
         --prefix=$PREFIX \
         --host=$HOST \
@@ -367,7 +387,7 @@ build_deps_for_target() {
             grep -q "^#include <errno.h>" lib/iconv.c || \
                 sed -i '/^#include <iconv.h>/a #include <errno.h>' lib/iconv.c
         fi
-        rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
+        mkdir -p build-$TARGET && cd build-$TARGET
         ../configure \
             --prefix=$PREFIX \
             --host=$HOST \
@@ -382,8 +402,10 @@ build_deps_for_target() {
     export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
     export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
     cd $SRCDIR/pixman-0.44.2
-    rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
-    meson setup \
+    mkdir -p build-$TARGET && cd build-$TARGET
+    MESON_MODE=()
+    [ -f build.ninja ] && MESON_MODE=(--reconfigure)
+    meson setup "${MESON_MODE[@]}" \
         --prefix=$PREFIX \
         --cross-file=/work/zig-$TARGET.cross \
         --default-library=static \
@@ -399,8 +421,10 @@ build_deps_for_target() {
     export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
     export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
     cd $SRCDIR/glib-2.82.4
-    rm -rf build-$TARGET && mkdir build-$TARGET && cd build-$TARGET
-    meson setup \
+    mkdir -p build-$TARGET && cd build-$TARGET
+    local MESON_MODE=()
+    [ -f build.ninja ] && MESON_MODE=(--reconfigure)
+    meson setup "${MESON_MODE[@]}" \
         --prefix=$PREFIX \
         --cross-file=/work/zig-$TARGET.cross \
         --default-library=static \
@@ -432,9 +456,13 @@ build_qemu_for_target() {
 
     echo "=== Building QEMU for $TARGET ==="
 
-    cd /work
-    tar xf /host/build/sources/qemu-10.2.0.tar.xz
-    cd qemu-10.2.0
+    local QEMU_SOURCE=$CACHE_DIR/qemu-10.2.0
+    if [ ! -d "$QEMU_SOURCE" ]; then
+        mkdir -p "$QEMU_SOURCE"
+        tar xf /host/build/sources/qemu-10.2.0.tar.xz \
+            -C "$QEMU_SOURCE" --strip-components=1
+    fi
+    cd "$QEMU_SOURCE"
 
     # SDK 11.3 only has IOMasterPort (renamed to IOMainPort in macOS 12).
     # On real macOS 12+, IOMasterPort is still an alias, so binaries
@@ -494,9 +522,6 @@ build_qemu_for_target() {
     echo "=== QEMU built for $TARGET ==="
     ls -la $OUTDIR/
 
-    # Clean up for next target
-    cd /work
-    rm -rf qemu-10.2.0
 }
 
 # Generate meson cross files for each target
@@ -548,6 +573,12 @@ for PLATFORM in "${PLATFORMS[@]}"; do
     echo "# Building for: $PLATFORM"
     echo "######################################"
     echo ""
+
+    prepare_cache
+    mkdir -p "$CACHE_DIR/prefix" "$CACHE_DIR/zig-wrappers" /opt/zig-wrappers
+    rm -rf "/opt/$PLATFORM" "/opt/zig-wrappers/$PLATFORM"
+    ln -s "$CACHE_DIR/prefix" "/opt/$PLATFORM"
+    ln -s "$CACHE_DIR/zig-wrappers" "/opt/zig-wrappers/$PLATFORM"
 
     # Create zig wrapper scripts first
     WRAPDIR=/opt/zig-wrappers/$PLATFORM

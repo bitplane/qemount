@@ -7,6 +7,7 @@ Executes build steps in dependency order using podman.
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -26,6 +27,8 @@ from .cache import (
 )
 
 log = logging.getLogger(__name__)
+
+DOCKER_ARG_PATTERN = re.compile(r"^\s*ARG\s+([A-Za-z_][A-Za-z0-9_]*)", re.MULTILINE)
 
 
 def podman_runtime_args(kvm_device: Path = Path("/dev/kvm")) -> list[str]:
@@ -208,8 +211,10 @@ def build_image(
         dest = Path("/host/build") / req
         cmd.extend(["--volume", f"{src.absolute()}:{dest}:ro"])
 
+    declared_args = dockerfile_build_args(context_dir / "Dockerfile")
     for key, value in env.items():
-        cmd.extend(["--build-arg", f"{key}={value}"])
+        if key in declared_args:
+            cmd.extend(["--build-arg", f"{key}={value}"])
     cmd.extend(["-t", tag, "."])
 
     log_path = build_log_path(build_dir, stage, "image")
@@ -225,6 +230,11 @@ def build_image(
         log.error("Log: %s", log_path)
         return None
     return image_id
+
+
+def dockerfile_build_args(dockerfile: Path) -> set[str]:
+    """Return build argument names explicitly declared by a Dockerfile."""
+    return set(DOCKER_ARG_PATTERN.findall(dockerfile.read_text()))
 
 
 def run_container(

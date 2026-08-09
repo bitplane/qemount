@@ -2,14 +2,19 @@
 set -eu
 
 SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz
-SOURCE_DIR=/work/source
+CACHE_DIR=$QEMOUNT_CACHE_DIR
+SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
-GUEST_BUILD_DIR=/work/guest-build
+GUEST_BUILD_DIR=$CACHE_DIR/guest-build
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system
 SDK_OUTPUT=/host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 BUILD_JOBS=${JOBS:-1}
+SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
+
+export CCACHE_DIR="$CACHE_DIR/ccache"
+mkdir -p "$CACHE_DIR" "$CCACHE_DIR"
 
 write_iso=false
 write_sdk=false
@@ -41,9 +46,14 @@ fi
 TAR_OPTIONS=--no-same-owner
 export TAR_OPTIONS
 
-mkdir -p "$SOURCE_DIR"
-tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
-    -C "$SOURCE_DIR" --strip-components=1
+if [ ! -f "$CACHE_DIR/.source-$SOURCE_HASH" ]; then
+    rm -rf "$SOURCE_DIR" "$GUEST_BUILD_DIR"
+    mkdir -p "$SOURCE_DIR"
+    tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
+        -C "$SOURCE_DIR" --strip-components=1
+    rm -f "$CACHE_DIR"/.source-*
+    touch "$CACHE_DIR/.source-$SOURCE_HASH"
+fi
 
 mkdir -p "$GUEST_BUILD_DIR"
 cd "$GUEST_BUILD_DIR"
