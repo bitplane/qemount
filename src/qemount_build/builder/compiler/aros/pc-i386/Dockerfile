@@ -17,7 +17,8 @@ RUN set -eu; \
         TEMPORARY=$CACHE_DIR/source.tmp.$$; \
         rm -rf "$TEMPORARY"; \
         mkdir -p "$TEMPORARY"; \
-        tar -xzf "$SOURCE_ARCHIVE" -C "$TEMPORARY" --strip-components=1; \
+        tar --no-same-owner -xzf "$SOURCE_ARCHIVE" \
+            -C "$TEMPORARY" --strip-components=1; \
         mv "$TEMPORARY" "$SOURCE_DIR"; \
     fi; \
     mkdir -p "$BUILD_DIR" "$INSTALL_DIR"; \

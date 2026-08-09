@@ -1,6 +1,7 @@
 from qemount_build.gc import (
     orphaned_provider_caches,
     parse_obsolete_images,
+    remove_provider_cache,
 )
 
 
@@ -24,3 +25,22 @@ def test_orphaned_provider_caches_preserve_live_names_on_every_build_platform(tm
         path.mkdir(parents=True)
 
     assert orphaned_provider_caches(tmp_path, {"live"}) == [orphan]
+
+
+def test_remove_provider_cache_uses_podman_user_namespace(tmp_path, monkeypatch):
+    cache = tmp_path / "cache/stages/x86_64-linux/orphan"
+    cache.mkdir(parents=True)
+    commands = []
+
+    def remove(command, check):
+        commands.append(command)
+        cache.rmdir()
+        return type("Result", (), {"returncode": 0})()
+
+    monkeypatch.setattr("qemount_build.gc.subprocess.run", remove)
+
+    remove_provider_cache(tmp_path, cache)
+
+    assert commands == [
+        ["podman", "unshare", "rm", "-rf", "--", str(cache.absolute())]
+    ]

@@ -306,7 +306,7 @@ build_deps_for_target() {
         temporary=$SRCDIR/.$directory.tmp.$$
         rm -rf "$temporary"
         mkdir -p "$temporary"
-        tar xf "$archive" -C "$temporary"
+        tar --no-same-owner -xf "$archive" -C "$temporary"
         test -d "$temporary/$directory"
         mv "$temporary/$directory" "$SRCDIR/$directory"
         rm -rf "$temporary"
@@ -451,7 +451,7 @@ build_qemu_for_target() {
         local QEMU_TEMP=$CACHE_DIR/.qemu-10.2.0.tmp.$$
         rm -rf "$QEMU_TEMP"
         mkdir -p "$QEMU_TEMP"
-        tar xf /host/build/sources/qemu-10.2.0.tar.xz \
+        tar --no-same-owner -xf /host/build/sources/qemu-10.2.0.tar.xz \
             -C "$QEMU_TEMP" --strip-components=1
         mv "$QEMU_TEMP" "$QEMU_SOURCE"
     fi

@@ -1,7 +1,6 @@
 """Conservative garbage collection for qemount build state."""
 
 import logging
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -78,6 +77,21 @@ def orphaned_provider_caches(build_dir: Path, live_names: set[str]) -> list[Path
     return sorted(orphans)
 
 
+def remove_provider_cache(build_dir: Path, path: Path) -> None:
+    """Remove a cache tree using the user namespace that created it."""
+    stages = (build_dir / "cache" / "stages").absolute()
+    path = path.absolute()
+    if path.parent.parent != stages:
+        raise ValueError(f"provider cache is outside the stages directory: {path}")
+
+    result = subprocess.run(
+        ["podman", "unshare", "rm", "-rf", "--", str(path)],
+        check=False,
+    )
+    if result.returncode != 0 or path.exists() or path.is_symlink():
+        raise RuntimeError(f"could not remove provider cache: {path}")
+
+
 def collect(
     build_dir: Path, live_cache_names: set[str], dry_run: bool = False
 ) -> tuple[int, int]:
@@ -94,7 +108,7 @@ def collect(
     for path in provider_caches:
         log.debug("GC provider cache: %s", path)
         if not dry_run:
-            shutil.rmtree(path)
+            remove_provider_cache(build_dir, path)
 
     if images:
         for image_id in images:
