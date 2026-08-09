@@ -14,6 +14,7 @@ prepare_cache() {
         /host/build/sources/pixman-0.44.2.tar.gz \
         /host/build/sources/glib-2.82.4.tar.xz \
         /host/build/sources/qemu-10.2.0.tar.xz \
+        /host/build/sdk/darwin/11.3/MacOSX11.3.sdk/.qemount-source-hash \
         | sha256sum | cut -d ' ' -f 1)
     marker=$CACHE_DIR/.qemount-sources-$source_hash
 
@@ -138,11 +139,8 @@ meson_array() {
 ensure_macos_sdk() {
     local TARGET=$1
     case "$TARGET" in *-darwin) ;; *) return 0 ;; esac
-    if [ ! -d /opt/macos-sdk/MacOSX11.3.sdk ]; then
-        echo "--- Extracting macOS SDK ---"
-        mkdir -p /opt/macos-sdk
-        tar xf /host/build/sources/MacOSX11.3.sdk.tar.xz -C /opt/macos-sdk
-    fi
+    rm -rf /opt/macos-sdk
+    ln -s /host/build/sdk/darwin/11.3 /opt/macos-sdk
     # Synthesise pkg-config files for SDK-provided libraries that QEMU
     # discovers via dependency() rather than cc.find_library(). zlib is
     # the prominent case — meson tries pkg-config first.

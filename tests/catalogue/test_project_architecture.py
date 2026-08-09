@@ -78,6 +78,17 @@ def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
     assert "/opt/x86_64-darwin" in compiler
 
 
+def test_darwin_consumers_share_the_declared_sdk_provider():
+    sdk_provider = "sdk/darwin/11.3"
+
+    for target in (
+        "bin/x86_64-darwin/qemount-init",
+        "bin/x86_64-darwin/simple9p",
+        "bin/qemu-system/x86_64-darwin/qemu-system-x86_64",
+    ):
+        assert sdk_provider in graph_for(target)["nodes"]
+
+
 def test_qemu_linux_architecture_profiles():
     helper = PACKAGE_DIR / "builder/disk/qemu/qemu-linux-arch.sh"
     expected = {

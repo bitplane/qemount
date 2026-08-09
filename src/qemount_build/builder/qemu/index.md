@@ -9,7 +9,7 @@ requires:
   - sources/pixman-0.44.2.tar.gz
   - sources/libffi-3.4.6.tar.gz
   - sources/libiconv-1.17.tar.gz
-  - sources/MacOSX11.3.sdk.tar.xz
+  - sdk/darwin/11.3/MacOSX11.3.sdk
 output_platforms:
   x86_64-linux-musl:
     provides:

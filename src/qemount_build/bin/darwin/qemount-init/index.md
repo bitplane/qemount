@@ -9,7 +9,7 @@ env:
   BUILDER: builder/compiler/puredarwin
 requires:
   - docker:builder/compiler/puredarwin
-  - sources/MacOSX11.3.sdk.tar.xz
+  - sdk/darwin/11.3/MacOSX11.3.sdk
 provides:
   - bin/${OUTPUT_ARCH}-darwin/qemount-init
 ---

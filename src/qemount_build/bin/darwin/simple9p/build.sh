@@ -1,20 +1,12 @@
 #!/bin/sh
 set -eu
 
-SDK_ARCHIVE=/host/build/sources/MacOSX11.3.sdk.tar.xz
-SDK_HASH=$(sha256sum "$SDK_ARCHIVE" | cut -d ' ' -f 1)
-SDK_CACHE=/host/build/cache/darwin/sdk/$SDK_HASH
-SDK=$SDK_CACHE/MacOSX11.3.sdk
+SDK=/host/build/sdk/darwin/11.3/MacOSX11.3.sdk
 SOURCE=/work/simple9p
 LIBIXP=$SOURCE/libixp
 OBJECTS=/work/objects
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
 TARGET=x86_64-apple-macos10.13
-
-if [ ! -d "$SDK" ]; then
-    mkdir -p "$SDK_CACHE"
-    tar --no-same-owner -xJf "$SDK_ARCHIVE" -C "$SDK_CACHE"
-fi
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$LIBIXP" "$OBJECTS/libixp" "$OUTPUT_DIR"
