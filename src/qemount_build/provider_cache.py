@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 CONTAINER_CACHE_DIR = "/cache"
+PROVIDER_CACHE_VERSION = 2
 
 
 def provider_cache_name(instance_id: str) -> str:
@@ -14,7 +15,8 @@ def provider_cache_name(instance_id: str) -> str:
         return "_root"
     slug = re.sub(r"[^A-Za-z0-9._-]+", "-", instance_id).strip("-")
     slug = slug[:80] or "provider"
-    digest = hashlib.sha256(instance_id.encode()).hexdigest()[:24]
+    identity = f"{PROVIDER_CACHE_VERSION}\0{instance_id}".encode()
+    digest = hashlib.sha256(identity).hexdigest()[:24]
     return f"{slug}--{digest}"
 
 

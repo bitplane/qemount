@@ -1,8 +1,13 @@
 from qemount_build.provider_cache import (
+    PROVIDER_CACHE_VERSION,
     provider_cache_container,
     provider_cache_name,
     provider_cache_relative,
 )
+
+
+def test_provider_cache_version_records_layout_migrations():
+    assert PROVIDER_CACHE_VERSION == 2
 
 
 def test_provider_cache_name_is_readable_stable_and_tool_safe():
