@@ -1,4 +1,4 @@
-.PHONY: help all install test dev coverage clean build archive cloc
+.PHONY: help all install test dev coverage clean gc build archive cloc
 
 PROJECT_NAME := qemount_build
 
@@ -24,6 +24,9 @@ build: .venv/.installed-dev scripts/build.sh  ## build all outputs
 
 clean:  ## delete caches and the venv
 	scripts/clean.sh
+
+gc: .venv/.installed-dev  ## collect obsolete qemount build state
+	.venv/bin/qemount-build gc
 
 dist: scripts/dist.sh  ## build the distributable files
 	scripts/dist.sh $(PROJECT_NAME)

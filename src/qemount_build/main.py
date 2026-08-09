@@ -21,6 +21,7 @@ from .catalogue import build_graph, build_output_index, build_provides_index, lo
 from .runner import run_build
 from .inventory import create_inventory, write_inventory
 from .cache import load_cache, save_cache, hash_file
+from .gc import collect
 from . import log as logsetup
 
 log = logging.getLogger(__name__)
@@ -226,6 +227,23 @@ def cmd_inventory(args, catalogue, context):
     log.info("Wrote %d artefacts to %s", len(inventory["artefacts"]), destination)
 
 
+def cmd_gc(args, catalogue, context):
+    """Collect obsolete state owned by qemount."""
+    try:
+        images, work_directories = collect(Path("build").absolute(), args.dry_run)
+    except RuntimeError as error:
+        log.error("Garbage collection failed: %s", error)
+        return 1
+    action = "Would remove" if args.dry_run else "Removed"
+    log.info(
+        "%s %d obsolete images and %d abandoned work directories",
+        action,
+        images,
+        work_directories,
+    )
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="qemount_build",
@@ -301,6 +319,14 @@ def main():
         "--output", default="build/inventory.json", help="Inventory destination"
     )
     inventory_parser.set_defaults(func=cmd_inventory)
+
+    gc_parser = subparsers.add_parser(
+        "gc", help="Collect obsolete qemount build state"
+    )
+    gc_parser.add_argument(
+        "--dry-run", action="store_true", help="Report without removing anything"
+    )
+    gc_parser.set_defaults(func=cmd_gc)
 
     args = parser.parse_args()
 
