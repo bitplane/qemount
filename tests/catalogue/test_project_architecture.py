@@ -179,6 +179,14 @@ def test_dragonfly_compiler_image_contains_its_completed_object_tree():
     assert 'cp -a "$CACHE_DIR/obj" /usr/obj' in dockerfile
 
 
+def test_netbsd_compiler_image_contains_downstream_host_tools():
+    dockerfile = (
+        PACKAGE_DIR / "builder/compiler/netbsd/10.0/Dockerfile"
+    ).read_text()
+
+    assert 'cp -a "$CACHE_DIR/obj/tools/makefs/makefs"' in dockerfile
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 

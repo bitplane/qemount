@@ -92,6 +92,8 @@ RUN set -eu; \
         -V MKPROFILE=no -V MKTESTS=no -V MKX11=no distribution; \
     rm /usr/obj /usr/tools; \
     cp -a "$CACHE_DIR/tools" /usr/tools; \
+    mkdir -p /usr/obj/tools/makefs; \
+    cp -a "$CACHE_DIR/obj/tools/makefs/makefs" /usr/obj/tools/makefs/; \
     DESTDIR=$CACHE_DIR/obj/destdir.$NBARCH; \
     IMAGE_DESTDIR=/usr/obj/destdir.$NBARCH; \
     mkdir -p "$IMAGE_DESTDIR/usr"; \
