@@ -12,13 +12,6 @@
       corrupt shared caches or interleave output
     - [x] separate qemount binaries from the compiled catalogue so catalogue
       changes do not rebuild the Rust code
-    - [ ] decouple downloaded source identity from the downloader image hash
-      before changing the downloader again; downloader changes currently
-      invalidate every source, redownload upstream archives, and rebuild all
-      downstream targets
-    - [ ] migrate valid source cache entries without redownloading, then test
-      downloader changes, source-ref changes, missing outputs, and failed
-      atomic downloads separately
   - [ ] guest architecture coverage
     - [x] enable KVM in Linux-hosted QEMU builds
       - [ ] harden automatic `/dev/kvm` access against hostile build sources

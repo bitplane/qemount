@@ -124,6 +124,33 @@ def test_is_output_dirty_modified_output():
         assert is_output_dirty("foo", "abc123", cache, build_dir)
 
 
+def test_directory_output_trusts_input_identity_and_existence(tmp_path):
+    output = tmp_path / "sdk"
+    output.mkdir()
+    (output / "header.h").write_text("original")
+    cache = {}
+    update_output_hash(cache, "sdk", "inputs", tmp_path)
+
+    assert cache["sdk"]["kind"] == "directory"
+    assert not is_output_dirty("sdk", "inputs", cache, tmp_path)
+
+    (output / "header.h").write_text("locally damaged")
+    assert not is_output_dirty("sdk", "inputs", cache, tmp_path)
+
+
+def test_directory_output_is_dirty_when_absent_or_replaced(tmp_path):
+    output = tmp_path / "sdk"
+    output.mkdir()
+    cache = {}
+    update_output_hash(cache, "sdk", "inputs", tmp_path)
+
+    output.rmdir()
+    assert is_output_dirty("sdk", "inputs", cache, tmp_path)
+
+    output.write_text("not a directory")
+    assert is_output_dirty("sdk", "inputs", cache, tmp_path)
+
+
 def test_is_output_dirty_output_requires_clean():
     """Output-specific requires are included in the clean cache state."""
     with tempfile.TemporaryDirectory() as tmp:

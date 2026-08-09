@@ -173,6 +173,10 @@ def cached_output_intact(output: str, cache: dict, build_dir: Path) -> bool:
     cached = cache.get(output)
     if not path.exists() or not cached:
         return False
+    if path.is_dir():
+        return cached.get("kind") == "directory"
+    if cached.get("kind", "file") != "file":
+        return False
     digest = hashlib.md5()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -219,6 +223,11 @@ def is_output_dirty(
     if cached.get("input_hash") != full_hash:
         return True
 
+    if output_path.is_dir():
+        return cached.get("kind") != "directory"
+    if cached.get("kind", "file") != "file":
+        return True
+
     stat = output_path.stat()
     if cached.get("mtime") == stat.st_mtime and cached.get("size") == stat.st_size:
         return False
@@ -234,16 +243,25 @@ def update_output_hash(
     output_requires: list[str] | None = None,
     provenance: dict | None = None,
 ):
-    """Record hash state for a built file output."""
+    """Record hash state for a built output."""
     path = build_dir / output
-    # Update file cache entry so downstream deps see the new hash
-    file_hash = hash_file(path, cache, f"build:{output}")
-    stat = path.stat()
     # Include per-output requires in stored hash
     full_hash = hash_output_inputs(input_hash, output_requires or [], cache, build_dir)
+    stat = path.stat()
+    if path.is_dir():
+        # Declared directory outputs are immutable products of their provider.
+        # Their input identity and existence are the cache contract; recursively
+        # walking large sysroots on every clean build would be prohibitive.
+        artifact_hash = full_hash
+        kind = "directory"
+    else:
+        # Update file cache entry so downstream deps see the new hash.
+        artifact_hash = hash_file(path, cache, f"build:{output}")
+        kind = "file"
     cache[output] = {
         "input_hash": full_hash,
-        "hash": file_hash,
+        "hash": artifact_hash,
+        "kind": kind,
         "mtime": stat.st_mtime,
         "size": stat.st_size,
         **({"provenance": provenance} if provenance else {}),
