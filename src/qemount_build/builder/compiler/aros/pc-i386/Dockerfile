@@ -1,6 +1,7 @@
 ARG BUILDER
 FROM ${BUILDER}
 
+ARG BUILD_ARCH
 ARG JOBS=1
 ARG QEMOUNT_CACHE_DIR
 ENV TAR_OPTIONS=--no-same-owner
@@ -33,12 +34,13 @@ RUN set -eu; \
         --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4" \
     ; \
     make -j"${JOBS}" crosstools; \
+    HOST_TOOLS=bin/linux-${BUILD_ARCH}/tools; \
     mkdir -p \
         /opt/aros-bootstrap/bin/pc-i386-tiny/AROS \
-        /opt/aros-bootstrap/bin/linux-x86_64/tools; \
+        "/opt/aros-bootstrap/$HOST_TOOLS"; \
     cp -a \
         "$BUILD_DIR/bin/pc-i386-tiny/AROS/Developer" \
         /opt/aros-bootstrap/bin/pc-i386-tiny/AROS/; \
     cp -a \
-        "$BUILD_DIR/bin/linux-x86_64/tools/collect-aros" \
-        /opt/aros-bootstrap/bin/linux-x86_64/tools/
+        "$BUILD_DIR/$HOST_TOOLS/collect-aros" \
+        "/opt/aros-bootstrap/$HOST_TOOLS/"

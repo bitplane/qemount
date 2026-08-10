@@ -197,6 +197,10 @@ def test_aros_compiler_image_contains_its_bootstrap_closure():
 
     assert "INSTALL_DIR=/opt/aros-toolchain" in dockerfile
     assert "/opt/aros-bootstrap/bin/pc-i386-tiny/AROS" in dockerfile
+    assert "HOST_TOOLS=bin/linux-${BUILD_ARCH}/tools" in dockerfile
+    assert "$BUILD_DIR/$HOST_TOOLS/collect-aros" in dockerfile
+    assert "/opt/aros-bootstrap/$HOST_TOOLS/" in dockerfile
+    assert "linux-x86_64" not in dockerfile
     assert 'cp -a /opt/aros-bootstrap/. "$GUEST_BUILD_DIR/"' in system
 
 
