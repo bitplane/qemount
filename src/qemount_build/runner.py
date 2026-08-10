@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TextIO
 
 from .catalogue import build_graph
-from .provider_cache import provider_cache_relative
+from .provider_cache import provider_cache_relative, remove_provider_cache
 from .cache import (
     load_cache,
     save_cache,
@@ -348,10 +348,8 @@ def prepare_provider_cache(
 
     if current != input_hash:
         if cache_root.exists():
-            for child in cache_root.iterdir():
-                remove_output(child)
-        else:
-            cache_root.mkdir(parents=True)
+            remove_provider_cache(build_dir, cache_root)
+        cache_root.mkdir(parents=True)
         temporary = cache_root / ".qemount-input.tmp"
         temporary.write_text(f"{input_hash}\n")
         temporary.replace(marker)

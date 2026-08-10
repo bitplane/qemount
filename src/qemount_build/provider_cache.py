@@ -2,6 +2,8 @@
 
 import hashlib
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 
@@ -28,3 +30,24 @@ def provider_cache_relative(build_platform: str, instance_id: str) -> Path:
 def provider_cache_container() -> str:
     """Return the canonical provider cache mount inside build containers."""
     return CONTAINER_CACHE_DIR
+
+
+def remove_provider_cache(build_dir: Path, path: Path) -> None:
+    """Remove a provider cache, including rootless-container-owned entries."""
+    stages = (build_dir / "cache" / "stages").absolute()
+    path = path.absolute()
+    if path.parent.parent != stages:
+        raise ValueError(f"provider cache is outside the stages directory: {path}")
+
+    try:
+        shutil.rmtree(path)
+    except PermissionError:
+        result = subprocess.run(
+            ["podman", "unshare", "rm", "-rf", "--", str(path)],
+            check=False,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"could not remove provider cache: {path}")
+
+    if path.exists() or path.is_symlink():
+        raise RuntimeError(f"could not remove provider cache: {path}")

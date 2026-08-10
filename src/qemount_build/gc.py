@@ -4,6 +4,8 @@ import logging
 import subprocess
 from pathlib import Path
 
+from .provider_cache import remove_provider_cache
+
 
 log = logging.getLogger(__name__)
 
@@ -75,21 +77,6 @@ def orphaned_provider_caches(build_dir: Path, live_names: set[str]) -> list[Path
             if path.is_dir() and path.name not in live_names
         )
     return sorted(orphans)
-
-
-def remove_provider_cache(build_dir: Path, path: Path) -> None:
-    """Remove a cache tree using the user namespace that created it."""
-    stages = (build_dir / "cache" / "stages").absolute()
-    path = path.absolute()
-    if path.parent.parent != stages:
-        raise ValueError(f"provider cache is outside the stages directory: {path}")
-
-    result = subprocess.run(
-        ["podman", "unshare", "rm", "-rf", "--", str(path)],
-        check=False,
-    )
-    if result.returncode != 0 or path.exists() or path.is_symlink():
-        raise RuntimeError(f"could not remove provider cache: {path}")
 
 
 def collect(

@@ -1,8 +1,8 @@
 from qemount_build.gc import (
     orphaned_provider_caches,
     parse_obsolete_images,
-    remove_provider_cache,
 )
+from qemount_build.provider_cache import remove_provider_cache
 
 
 def test_parse_obsolete_images_selects_only_unique_untagged_images():
@@ -32,12 +32,16 @@ def test_remove_provider_cache_uses_podman_user_namespace(tmp_path, monkeypatch)
     cache.mkdir(parents=True)
     commands = []
 
+    def deny(_path):
+        raise PermissionError
+
     def remove(command, check):
         commands.append(command)
         cache.rmdir()
         return type("Result", (), {"returncode": 0})()
 
-    monkeypatch.setattr("qemount_build.gc.subprocess.run", remove)
+    monkeypatch.setattr("qemount_build.provider_cache.shutil.rmtree", deny)
+    monkeypatch.setattr("qemount_build.provider_cache.subprocess.run", remove)
 
     remove_provider_cache(tmp_path, cache)
 
