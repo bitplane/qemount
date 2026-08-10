@@ -6,7 +6,7 @@ CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
-GUEST_BUILD_DIR=$CACHE_DIR/guest-build
+GUEST_BUILD_DIR=$CACHE_DIR/toolchain-build
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system
 SDK_OUTPUT=/host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
@@ -54,7 +54,12 @@ if [ ! -d "$SOURCE_DIR" ]; then
     mv "$temporary" "$SOURCE_DIR"
 fi
 
-mkdir -p "$GUEST_BUILD_DIR"
+if [ ! -f "$GUEST_BUILD_DIR/.qemount-bootstrap" ]; then
+    rm -rf "$GUEST_BUILD_DIR"
+    mkdir -p "$GUEST_BUILD_DIR"
+    cp -a /opt/aros-bootstrap/. "$GUEST_BUILD_DIR/"
+    touch "$GUEST_BUILD_DIR/.qemount-bootstrap"
+fi
 cd "$GUEST_BUILD_DIR"
 "$SOURCE_DIR/configure" \
     --target="$AROS_TARGET" \

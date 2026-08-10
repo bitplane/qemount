@@ -10,9 +10,9 @@ RUN set -eu; \
     CACHE_DIR=$QEMOUNT_CACHE_DIR; \
     SOURCE_DIR=$CACHE_DIR/source; \
     BUILD_DIR=$CACHE_DIR/toolchain-build; \
-    INSTALL_DIR=$CACHE_DIR/toolchain; \
+    INSTALL_DIR=/opt/aros-toolchain; \
     export CCACHE_DIR=$CACHE_DIR/ccache; \
-    mkdir -p "$CACHE_DIR" "$CCACHE_DIR"; \
+    mkdir -p "$CACHE_DIR" "$CCACHE_DIR" "$INSTALL_DIR"; \
     if [ ! -d "$SOURCE_DIR" ]; then \
         TEMPORARY=$CACHE_DIR/source.tmp.$$; \
         rm -rf "$TEMPORARY"; \
@@ -33,5 +33,12 @@ RUN set -eu; \
         --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4" \
     ; \
     make -j"${JOBS}" crosstools; \
-    rm -rf /opt/aros-toolchain; \
-    cp -a "$INSTALL_DIR" /opt/aros-toolchain
+    mkdir -p \
+        /opt/aros-bootstrap/bin/pc-i386-tiny/AROS \
+        /opt/aros-bootstrap/bin/linux-x86_64/tools; \
+    cp -a \
+        "$BUILD_DIR/bin/pc-i386-tiny/AROS/Developer" \
+        /opt/aros-bootstrap/bin/pc-i386-tiny/AROS/; \
+    cp -a \
+        "$BUILD_DIR/bin/linux-x86_64/tools/collect-aros" \
+        /opt/aros-bootstrap/bin/linux-x86_64/tools/

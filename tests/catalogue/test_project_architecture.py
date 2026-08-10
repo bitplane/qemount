@@ -187,6 +187,19 @@ def test_netbsd_compiler_image_contains_downstream_host_tools():
     assert 'cp -a "$CACHE_DIR/obj/tools/makefs/makefs"' in dockerfile
 
 
+def test_aros_compiler_image_contains_its_bootstrap_closure():
+    dockerfile = (
+        PACKAGE_DIR / "builder/compiler/aros/pc-i386/Dockerfile"
+    ).read_text()
+    system = (
+        PACKAGE_DIR / "bin/qemu/aros/pc-i386/system/build.sh"
+    ).read_text()
+
+    assert "INSTALL_DIR=/opt/aros-toolchain" in dockerfile
+    assert "/opt/aros-bootstrap/bin/pc-i386-tiny/AROS" in dockerfile
+    assert 'cp -a /opt/aros-bootstrap/. "$GUEST_BUILD_DIR/"' in system
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 
