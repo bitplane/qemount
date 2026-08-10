@@ -30,21 +30,39 @@ world_make()
     INSTALLSTRIPPED=1 \
     M4="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/m4" \
     PATH="${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/bin:/usr/local/bin:/usr/pkg/bin" \
-        /usr/bin/bmake -j"${JOBS}" -DSYSBUILD -DNOMAN -DNOPROFILE "$@"
+        /usr/bin/bmake -m "$DRAGONFLY_SRC/share/mk" -j"${JOBS}" \
+            -DSYSBUILD -DNOMAN -DNOPIC -DNOPROFILE "$@"
 }
 
-world_make -C "$DRAGONFLY_SRC/stand/boot/dloader32" all
-world_make -C "$DRAGONFLY_SRC/stand/boot/libstand32" all
-world_make -C "$DRAGONFLY_SRC/stand/boot/pc32" \
-    MACHINE_ARCH=i386 \
-    MACHINE_PLATFORM=pc32 \
-    REALLY_X86_64=true \
-    all
-world_make -C "$DRAGONFLY_SRC/stand/boot/pc32" \
-    MACHINE_ARCH=i386 \
-    MACHINE_PLATFORM=pc32 \
-    REALLY_X86_64=true \
-    install
+top_make()
+{
+    HOST_CPU_FAMILY=${BUILD_PLATFORM%%-*}
+    /usr/bin/bmake -j"${JOBS}" \
+        BUILD_ARCH=x86_64 \
+        HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
+        HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
+        HOST_LDADD="/tmp/host-compat.o $(pkg-config --libs --static libbsd-overlay) -lresolv -ltirpc" \
+        HOST_YACC=/usr/bin/byacc \
+        MACHINE=x86_64 \
+        MACHINE_ARCH=x86_64 \
+        MACHINE_PLATFORM=pc64 \
+        NOCLEAN=1 \
+        NO_GAMES=1 \
+        NO_SHARE=1 \
+        TARGET_ARCH=x86_64 \
+        TARGET_PLATFORM=pc64 \
+        WORLD_VERSION=600401 \
+        "$@"
+}
+
+top_make SUBDIR_OVERRIDE=stand _build-tools
+top_make SUBDIR_OVERRIDE=stand _depend
+top_make SUBDIR_OVERRIDE=stand everything
+world_make -C "$DRAGONFLY_SRC/stand" install
+
+world_make -C "$DRAGONFLY_SRC/libexec/rtld-elf" depend
+world_make -C "$DRAGONFLY_SRC/libexec/rtld-elf" all
+world_make -C "$DRAGONFLY_SRC/libexec/rtld-elf" install
 
 while IFS= read -r path; do
     case "$path" in
