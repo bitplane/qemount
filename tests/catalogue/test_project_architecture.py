@@ -175,8 +175,19 @@ def test_dragonfly_compiler_image_contains_its_completed_object_tree():
     dockerfile = (
         PACKAGE_DIR / "builder/compiler/dragonfly/6.4.2/Dockerfile"
     ).read_text()
+    system = (
+        PACKAGE_DIR / "bin/qemu/dragonfly/6.4.2/system/build.sh"
+    ).read_text()
 
     assert 'cp -a "$CACHE_DIR/obj" /usr/obj' in dockerfile
+    assert '"$@" crossworld' in dockerfile
+    assert '"$@" _includes' in dockerfile
+    assert '"$@" _libraries' in dockerfile
+    assert "buildworld" not in dockerfile
+    assert "installworld" not in system
+    assert 'done < /build/runtime-files.txt' in system
+    for target in ("depend", "all", "install"):
+        assert f'world_make -C "$DRAGONFLY_SRC/$path" {target}' in system
 
 
 def test_netbsd_compiler_image_contains_downstream_host_tools():
