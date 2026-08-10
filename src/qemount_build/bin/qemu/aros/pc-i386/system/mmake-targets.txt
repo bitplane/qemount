@@ -1,0 +1,107 @@
+# Boot closure and kernel packages.
+bootloader-grub2-pc-i386
+linklibs-bootconsole
+linklibs-bootstrap
+kernel-bootstrap-pc-compress-quick
+
+# Native kernel.
+includes-asm_h
+kernel-acpica-sharedlib-includes
+linklibs-libinit
+kernel-pc-acpica-quick
+kernel-kernel-kobj-quick
+kernel-exec-kobj-quick
+kernel-task-kobj-quick
+kernel-pc-i386-kernel-compress-quick
+
+# PC board-support package. The aggregate target depends on global linklibs;
+# these are its resident components without that SDK-wide dependency.
+kernel-hidd-bus-includes
+kernel-hidd-bus-quick
+kernel-hidd-telemetry-quick
+kernel-hidd-power-quick
+kernel-hidd-storage-quick
+kernel-hidd-system-quick
+kernel-battclock-quick
+kernel-entropy-quick
+kernel-processor-quick
+kernel-timer-quick
+kernel-expansion-quick
+kernel-efi-quick
+kernel-hidd-acpibutton-quick
+kernel-pc-hpet-quick
+kernel-ata-quick
+kernel-hidd-pciata-quick
+kernel-ahci-quick
+kernel-nvme-quick
+kernel-virtio-quick
+kernel-pc-i386-serial-quick
+kernel-pc-i386-parallel-quick
+kernel-hidd-i8042-quick
+kernel-hidd-pci-quick
+kernel-hidd-pci-pcipc-quick
+kernel-hidd-vesagfx-quick
+kernel-hidd-vgagfx-quick
+kernel-bsp-pc-i386-compress-quick
+
+# Architecture-independent boot package.
+kernel-aros-quick
+kernel-bootloader-quick
+kernel-dos-quick
+kernel-dos64-quick
+kernel-dosboot-quick
+linklibs-udis86
+kernel-debug-quick
+kernel-filesystem-quick
+kernel-graphics-quick
+kernel-hidd-gfx-quick
+kernel-hidd-input-quick
+kernel-hidd-kbd-quick
+kernel-hidd-mouse-quick
+kernel-utility-quick
+kernel-intuition-quick
+kernel-keymap-quick
+kernel-lddemon-quick
+kernel-console-quick
+kernel-gameport-quick
+kernel-input-quick
+kernel-keyboard-quick
+kernel-hidd-quick
+kernel-oop-quick
+kernel-layers-quick
+workbench-libs-gadtools-quick
+kernel-package-base-compress-quick
+
+# Filesystem package.
+kernel-fs-afs-quick
+kernel-fs-cdvdfs-quick
+kernel-partition-quick
+kernel-fs-sfs-quick
+kernel-fs-fat-quick
+kernel-package-fs-compress-quick
+
+# Programs sharing broad upstream metatargets are selected individually in
+# mmake-outputs.txt.
+workbench-system-format-catalogs
+workbench-system-format-quick
+workbench-devs-sfs-c-sfsformat-quick
+workbench-libs-uuid-includes
+workbench-libs-uuid-quick
+
+# Serial transport and filesystem discovery.
+kernel-fs-con-quick
+kernel-fs-ram-quick
+workbench-c-shell-quick
+workbench-devs-serial-quick
+workbench-fs-debug-quick
+workbench-fs-port-quick
+
+# Runtime and application libraries.
+kernel-entropy-includes
+workbench-libs-fd-includes
+compiler-posixc-quick
+compiler-stdc-genwcharsupport
+compiler-stdc-quick
+compiler-stdcio-quick
+workbench-libs-iffparse-quick
+workbench-libs-locale-quick

@@ -1,0 +1,4 @@
+# source directory | metatarget | selected output paths
+workbench/c workbench-c-quick C/Automount C/Mount C/Shutdown
+workbench/c workbench-c-sh-quick C/Assign
+workbench/c/shellcommands workbench-c-shellcommands-quick C/Echo C/EndIf C/Execute C/FailAt C/If

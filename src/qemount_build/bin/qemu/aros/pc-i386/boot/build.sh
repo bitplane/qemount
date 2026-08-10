@@ -77,4 +77,8 @@ xorriso -as mkisofs \
     -sysid "AROS-I386-PC" \
     -l -J -r \
     "$STAGING_DIR"
+if [ "$(stat -c %s "$OUTPUT_TMP")" -gt 4194304 ]; then
+    echo "AROS appliance ISO exceeds the 4 MiB size budget" >&2
+    exit 1
+fi
 mv "$OUTPUT_TMP" "$OUTPUT_DIR/aros.iso"

@@ -218,6 +218,81 @@ def test_aros_compiler_image_contains_its_bootstrap_closure():
     assert 'cp -a /opt/aros-bootstrap/. "$GUEST_BUILD_DIR/"' in system
 
 
+def test_aros_system_builds_only_its_declared_appliance_closure():
+    directory = PACKAGE_DIR / "bin/qemu/aros/pc-i386/system"
+    build_script = (directory / "build.sh").read_text()
+    dockerfile = (directory / "Dockerfile").read_text()
+    metadata = (directory / "index.md").read_text()
+    targets = {
+        line
+        for line in (directory / "mmake-targets.txt").read_text().splitlines()
+        if line and not line.startswith("#")
+    }
+    files = {
+        line
+        for line in (directory / "system-files.txt").read_text().splitlines()
+        if line and not line.startswith("#")
+    }
+    outputs = (directory / "mmake-outputs.txt").read_text()
+    runtime_files = (
+        PACKAGE_DIR / "bin/qemu/aros/pc-i386/boot/runtime-files.txt"
+    ).read_text().splitlines()
+
+    assert 'done < /build/mmake-targets.txt' in build_script
+    assert 'make -j"$BUILD_JOBS" "$target"' in build_script
+    assert 'done < /build/mmake-outputs.txt' in build_script
+    assert 'done < /build/system-files.txt' in build_script
+    assert "bootiso-pc-i386" not in build_script
+    assert "AROS-complete" not in build_script
+    assert '\nmake -j"$BUILD_JOBS"\n' not in build_script
+    assert "mmake-targets.txt mmake-outputs.txt system-files.txt" in dockerfile
+    assert "mesa" not in metadata.lower()
+    assert {
+        "bootloader-grub2-pc-i386",
+        "kernel-bootstrap-pc-compress-quick",
+        "kernel-pc-i386-kernel-compress-quick",
+        "kernel-bsp-pc-i386-compress-quick",
+        "kernel-package-base-compress-quick",
+        "kernel-package-fs-compress-quick",
+        "workbench-devs-serial-quick",
+        "workbench-fs-port-quick",
+        "includes-asm_h",
+        "kernel-entropy-includes",
+        "workbench-libs-fd-includes",
+        "compiler-posixc-quick",
+        "compiler-stdc-genwcharsupport",
+        "compiler-stdc-quick",
+    } <= targets
+    assert {
+        "boot/pc-tiny/bootstrap.xz",
+        "boot/pc-tiny/kernel.xz",
+        "boot/aros-fs.pkg.xz",
+        "C/Automount",
+        "Devs/serial.device",
+        "L/pfs3-handler",
+        "L/sfs-handler",
+        "Libs/partition.library",
+    } <= files
+    assert 'printf \'%s\\n\' "$TARGET_CPU" >"$STAGING_DIR/AROS.boot"' in build_script
+    assert 'make -j"$BUILD_JOBS" hidd-serial-stubs' in build_script
+    assert 'gen/lib/hidd/serial_stubs.o' in build_script
+    assert "AROS.boot" in runtime_files
+    assert "workbench-c-quick C/Automount C/Mount C/Shutdown" in outputs
+    assert "workbench-c-shellcommands-quick C/Echo" in outputs
+
+
+def test_aros_images_enforce_their_size_budgets():
+    system = (
+        PACKAGE_DIR / "bin/qemu/aros/pc-i386/system/build.sh"
+    ).read_text()
+    appliance = (
+        PACKAGE_DIR / "bin/qemu/aros/pc-i386/boot/build.sh"
+    ).read_text()
+
+    assert "16777216" in system
+    assert "4194304" in appliance
+
+
 def test_amiga_manifest_has_separate_provider_from_generic_template():
     providers = buildable_providers()
 
