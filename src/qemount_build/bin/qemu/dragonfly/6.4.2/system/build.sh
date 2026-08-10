@@ -30,7 +30,7 @@ world_make()
     INSTALLSTRIPPED=1 \
     M4="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/m4" \
     PATH="${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/bin:/usr/local/bin:/usr/pkg/bin" \
-        /usr/bin/bmake -j"${JOBS}" "$@"
+        /usr/bin/bmake -j"${JOBS}" -DSYSBUILD -DNOMAN -DNOPROFILE "$@"
 }
 
 world_make -C "$DRAGONFLY_SRC/stand/boot/dloader32" all

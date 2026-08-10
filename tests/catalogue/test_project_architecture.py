@@ -186,6 +186,7 @@ def test_dragonfly_compiler_image_contains_its_completed_object_tree():
     assert "buildworld" not in dockerfile
     assert "installworld" not in system
     assert 'done < /build/runtime-files.txt' in system
+    assert '-DSYSBUILD -DNOMAN -DNOPROFILE' in system
     for target in ("depend", "all", "install"):
         assert f'world_make -C "$DRAGONFLY_SRC/$path" {target}' in system
 
