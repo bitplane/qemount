@@ -1,6 +1,7 @@
 from qemount_build.gc import (
     orphaned_provider_caches,
     parse_obsolete_images,
+    remove_obsolete_images,
 )
 from qemount_build.provider_cache import remove_provider_cache
 
@@ -14,6 +15,30 @@ def test_parse_obsolete_images_selects_only_unique_untagged_images():
     ]
 
     assert parse_obsolete_images(lines) == ["aaaa"]
+
+
+def test_remove_obsolete_images_skips_images_retained_by_containers(monkeypatch):
+    commands = []
+
+    class Result:
+        def __init__(self, returncode, stderr=""):
+            self.returncode = returncode
+            self.stdout = ""
+            self.stderr = stderr
+
+    def remove(command, **kwargs):
+        commands.append(command)
+        if command[-1] == "retained":
+            return Result(1, "image is in use by a container")
+        return Result(0)
+
+    monkeypatch.setattr("qemount_build.gc.subprocess.run", remove)
+
+    assert remove_obsolete_images(["unused", "retained"]) == 1
+    assert commands == [
+        ["podman", "image", "rm", "unused"],
+        ["podman", "image", "rm", "retained"],
+    ]
 
 
 def test_orphaned_provider_caches_preserve_live_names_on_every_build_platform(tmp_path):

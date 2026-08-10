@@ -62,6 +62,24 @@ def parse_obsolete_images(lines: list[str]) -> list[str]:
     return images
 
 
+def remove_obsolete_images(images: list[str]) -> int:
+    """Remove unreferenced images without disturbing retained containers."""
+    removed = 0
+    for image_id in images:
+        result = subprocess.run(
+            ["podman", "image", "rm", image_id],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0:
+            removed += 1
+            continue
+        message = result.stderr.strip() or result.stdout.strip()
+        log.warning("Keeping obsolete image %s: %s", image_id, message)
+    return removed
+
+
 def orphaned_provider_caches(build_dir: Path, live_names: set[str]) -> list[Path]:
     """Return automatic provider caches absent from the current catalogue."""
     stages = build_dir / "cache" / "stages"
@@ -97,14 +115,8 @@ def collect(
         if not dry_run:
             remove_provider_cache(build_dir, path)
 
-    if images:
-        for image_id in images:
-            log.debug("GC image: %s", image_id)
-        if not dry_run:
-            result = subprocess.run(
-                ["podman", "image", "rm", *images], check=False
-            )
-            if result.returncode != 0:
-                raise RuntimeError("podman could not remove every obsolete image")
+    for image_id in images:
+        log.debug("GC image: %s", image_id)
+    removed_images = len(images) if dry_run else remove_obsolete_images(images)
 
-    return len(images), len(provider_caches)
+    return removed_images, len(provider_caches)
