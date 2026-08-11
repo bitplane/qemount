@@ -8,14 +8,20 @@ boot/aros-fs.pkg.xz
 # Commands needed by the appliance and the PFS/SFS fixture builders.
 C/Assign
 C/Automount
+C/Copy
+C/DiskChange
 C/Echo
 C/EndIf
 C/Execute
 C/FailAt
 C/If
+C/MakeDir
+C/MakeLink
 C/Mount
 C/SFSformat
 C/Shutdown
+C/Type
+C/Wait
 System/Format
 
 # Serial transport and volume discovery.
@@ -35,8 +41,19 @@ L/pfs3-handler
 L/sfs-handler
 
 # Runtime libraries.
+Libs/asl.library
+Libs/commodities.library
+Libs/coolimages.library
+Libs/cybergraphics.library
+Libs/datatypes.library
+Libs/diskfont.library
 Libs/iffparse.library
+Libs/icon.library
 Libs/locale.library
+Libs/muimaster.library
+Libs/muiscreen.library
 Libs/posixc.library
+Libs/rexxsyslib.library
 Libs/stdc.library
 Libs/stdcio.library
+Libs/workbench.library

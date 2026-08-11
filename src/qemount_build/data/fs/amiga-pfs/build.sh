@@ -70,10 +70,12 @@ for output in "$@"; do
         echo "Expected a PFS boot block, found: $magic"
         exit 1
     fi
-    if ! grep -aFq "Hello, world!" "$output_path"; then
+    if ! grep -Fq "Hello, world!" "$console_log" \
+        || ! grep -Fq "This file is nested." "$console_log"
+    then
         cat "$work/qemu.log"
         cat "$console_log"
-        echo "PFS fixture does not contain the test-data payload"
+        echo "AROS could not read the PFS test-data payload after flushing"
         exit 1
     fi
 

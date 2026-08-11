@@ -8,6 +8,7 @@ kernel-bootstrap-pc-compress-quick
 includes-asm_h
 kernel-acpica-sharedlib-includes
 linklibs-libinit
+libinit-libentry
 kernel-pc-acpica-quick
 kernel-kernel-kobj-quick
 kernel-exec-kobj-quick
@@ -45,14 +46,18 @@ kernel-hidd-vgagfx-quick
 kernel-bsp-pc-i386-compress-quick
 
 # Architecture-independent boot package.
+linklibs-udis86
 kernel-aros-quick
 kernel-bootloader-quick
+workbench-libs-dos-catalogs
+linklibs-romhack
 kernel-dos-quick
+linklibs-loadseg
 kernel-dos64-quick
 kernel-dosboot-quick
-linklibs-udis86
 kernel-debug-quick
 kernel-filesystem-quick
+includes-compositor-copy
 kernel-graphics-quick
 kernel-hidd-gfx-quick
 kernel-hidd-input-quick
@@ -70,7 +75,6 @@ kernel-hidd-quick
 kernel-oop-quick
 kernel-layers-quick
 workbench-libs-gadtools-quick
-kernel-package-base-compress-quick
 
 # Filesystem package.
 kernel-fs-afs-quick
@@ -78,6 +82,7 @@ kernel-fs-cdvdfs-quick
 kernel-partition-quick
 kernel-fs-sfs-quick
 kernel-fs-fat-quick
+kernel-fs-pfs3-quick
 kernel-package-fs-compress-quick
 
 # Programs sharing broad upstream metatargets are selected individually in
@@ -95,6 +100,7 @@ workbench-c-shell-quick
 workbench-devs-serial-quick
 workbench-fs-debug-quick
 workbench-fs-port-quick
+kernel-package-base-compress-quick
 
 # Runtime and application libraries.
 kernel-entropy-includes
@@ -105,3 +111,18 @@ compiler-stdc-quick
 compiler-stdcio-quick
 workbench-libs-iffparse-quick
 workbench-libs-locale-quick
+workbench-libs-asl-catalogs
+workbench-libs-commodities-quick
+linklibs-coolimagesstatic
+workbench-libs-coolimages-quick
+workbench-libs-cgfx-quick
+workbench-libs-datatypes-quick
+workbench-libs-diskfont-quick
+linklibs-z-nogzip-static
+workbench-libs-icon-quick
+workbench-libs-rexxsyslib-quick
+workbench-libs-muimaster-catalogs
+workbench-libs-muimaster-quick
+workbench-libs-muiscreen-quick
+workbench-libs-workbench-quick
+workbench-libs-asl-quick

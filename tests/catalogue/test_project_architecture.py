@@ -228,6 +228,11 @@ def test_aros_system_builds_only_its_declared_appliance_closure():
         for line in (directory / "mmake-targets.txt").read_text().splitlines()
         if line and not line.startswith("#")
     }
+    prepare_targets = {
+        line
+        for line in (directory / "mmake-prepare-targets.txt").read_text().splitlines()
+        if line and not line.startswith("#")
+    }
     files = {
         line
         for line in (directory / "system-files.txt").read_text().splitlines()
@@ -245,7 +250,7 @@ def test_aros_system_builds_only_its_declared_appliance_closure():
     assert "bootiso-pc-i386" not in build_script
     assert "AROS-complete" not in build_script
     assert '\nmake -j"$BUILD_JOBS"\n' not in build_script
-    assert "mmake-targets.txt mmake-outputs.txt system-files.txt" in dockerfile
+    assert "mmake-prepare-targets.txt mmake-targets.txt" in dockerfile
     assert "mesa" not in metadata.lower()
     assert {
         "bootloader-grub2-pc-i386",
@@ -254,6 +259,11 @@ def test_aros_system_builds_only_its_declared_appliance_closure():
         "kernel-bsp-pc-i386-compress-quick",
         "kernel-package-base-compress-quick",
         "kernel-package-fs-compress-quick",
+        "kernel-fs-pfs3-quick",
+        "workbench-libs-dos-catalogs",
+        "linklibs-romhack",
+        "linklibs-loadseg",
+        "includes-compositor-copy",
         "workbench-devs-serial-quick",
         "workbench-fs-port-quick",
         "includes-asm_h",
@@ -263,6 +273,7 @@ def test_aros_system_builds_only_its_declared_appliance_closure():
         "compiler-stdc-genwcharsupport",
         "compiler-stdc-quick",
     } <= targets
+    assert 'make -j"$BUILD_JOBS" hidd-serial-stubs' in build_script
     assert {
         "boot/pc-tiny/bootstrap.xz",
         "boot/pc-tiny/kernel.xz",
@@ -272,12 +283,30 @@ def test_aros_system_builds_only_its_declared_appliance_closure():
         "L/pfs3-handler",
         "L/sfs-handler",
         "Libs/partition.library",
+        "C/Copy",
+        "C/DiskChange",
+        "C/MakeDir",
+        "C/MakeLink",
+        "C/Type",
+        "C/Wait",
     } <= files
     assert 'printf \'%s\\n\' "$TARGET_CPU" >"$STAGING_DIR/AROS.boot"' in build_script
-    assert 'make -j"$BUILD_JOBS" hidd-serial-stubs' in build_script
+    assert 'make -j"$BUILD_JOBS" "$target"' in build_script
+    assert {
+        "kernel-task-includes-dirs",
+        "kernel-hidd-telemetry-includes-dirs",
+        "kernel-hidd-power-includes-dirs",
+        "kernel-fs-pfs3-includes-dirs",
+    } <= prepare_targets
+    assert 'xargs -r -n 32 "$MMAKE"' in build_script
+    assert 'export MMAKE_CONFIG="$GUEST_BUILD_DIR/mmake.config"' in build_script
     assert 'gen/lib/hidd/serial_stubs.o' in build_script
     assert "AROS.boot" in runtime_files
-    assert "workbench-c-quick C/Automount C/Mount C/Shutdown" in outputs
+    assert (
+        "workbench-c-quick C/Automount C/DiskChange C/MakeDir C/MakeLink C/Mount C/Shutdown C/Type C/Wait"
+        in outputs
+    )
+    assert "workbench-c-sh-quick C/Assign C/Copy" in outputs
     assert "workbench-c-shellcommands-quick C/Echo" in outputs
 
 

@@ -1,4 +1,4 @@
 # source directory | metatarget | selected output paths
-workbench/c workbench-c-quick C/Automount C/Mount C/Shutdown
-workbench/c workbench-c-sh-quick C/Assign
+workbench/c workbench-c-quick C/Automount C/DiskChange C/MakeDir C/MakeLink C/Mount C/Shutdown C/Type C/Wait
+workbench/c workbench-c-sh-quick C/Assign C/Copy
 workbench/c/shellcommands workbench-c-shellcommands-quick C/Echo C/EndIf C/Execute C/FailAt C/If

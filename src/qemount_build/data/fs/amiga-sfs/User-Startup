@@ -7,16 +7,41 @@ If WARN
 EndIf
 
 Echo "Populating DH0: from the test-data manifest" >SER:
-C:Execute SYS:populate
+C:Type SYS:TestData/basic/hello.txt >SER:
+If WARN
+    Echo "Reading source test data failed" >SER:
+    C:Shutdown
+EndIf
+C:Execute SYS:populate >SER:
 If WARN
     Echo "Populating DH0: failed" >SER:
     C:Shutdown
 EndIf
 
-Echo "Dismounting DH0: to flush the fixture" >SER:
-C:Assign DH0: DISMOUNT
+Echo "Reading DH0: before flush" >SER:
+C:Type DH0:basic/hello.txt >SER:
 If WARN
-    Echo "Dismounting DH0: failed" >SER:
+    Echo "Reading DH0: before flush failed" >SER:
+    C:Shutdown
+EndIf
+
+Echo "Flushing DH0:" >SER:
+C:DiskChange DH0:
+If WARN
+    Echo "Flushing DH0: failed" >SER:
+    C:Shutdown
+EndIf
+C:Wait 1 SECS
+
+Echo "Reading DH0: after flush" >SER:
+C:Type DH0:basic/hello.txt >SER:
+If WARN
+    Echo "Reading DH0: failed" >SER:
+    C:Shutdown
+EndIf
+C:Type DH0:basic/nested_dir/file_in_dir.txt >SER:
+If WARN
+    Echo "Reading nested DH0: file failed" >SER:
     C:Shutdown
 EndIf
 

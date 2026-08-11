@@ -88,6 +88,22 @@ make -j"$BUILD_JOBS" hidd-serial-stubs
 mkdir -p "$(dirname "$HIDDSTUBS")"
 /opt/aros-toolchain/i386-aros-ar rcs "$HIDDSTUBS" \
     "$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/gen/lib/hidd/serial_stubs.o"
+TARGET_ARCH=${AROS_TARGET%-*}
+TARGET_CPU=${AROS_TARGET#*-}
+export AROS_HOST_ARCH=linux
+export AROS_HOST_CPU="$BUILD_ARCH"
+export AROS_TARGET_ARCH="$TARGET_ARCH"
+export AROS_TARGET_CPU="$TARGET_CPU"
+# The generated include rules do not order their nested directories before the
+# generators. Invoke MetaMake directly for the selected directory closure,
+# avoiding both that race and the root Makefile's per-target crosstool wrapper.
+MMAKE=$GUEST_BUILD_DIR/bin/linux-${BUILD_ARCH}/tools/mmake
+export MMAKE_CONFIG="$GUEST_BUILD_DIR/mmake.config"
+# MetaMake has a fixed 64-entry command-line target array. Keep comfortably
+# below it while still amortising its source-tree scan across each batch.
+awk 'NF && $1 !~ /^#/ { print "AROS." $1 }' /build/mmake-prepare-targets.txt \
+    | xargs -r -n 32 "$MMAKE" \
+        --srcdir="$SOURCE_DIR" --builddir="$GUEST_BUILD_DIR" -q
 
 while IFS= read -r target; do
     case "$target" in
@@ -97,13 +113,13 @@ while IFS= read -r target; do
 done < /build/mmake-targets.txt
 
 AROS_DIR=$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/AROS
-TARGET_ARCH=${AROS_TARGET%-*}
-TARGET_CPU=${AROS_TARGET#*-}
 
 while IFS= read -r line; do
     case "$line" in
         ""|\#*) continue ;;
     esac
+    # Manifest records are deliberately whitespace-separated fields.
+    # shellcheck disable=SC2086
     set -- $line
     current_dir=$1
     meta_target=$2

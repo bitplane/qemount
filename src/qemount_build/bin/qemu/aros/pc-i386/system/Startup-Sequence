@@ -1,2 +1,11 @@
 C:FailAt 21
+
+C:MakeDir RAM:T
+C:MakeDir RAM:ENV
+C:Assign T: RAM:T
+C:Assign ENV: RAM:ENV
+
+C:Automount >NIL:
+C:Mount >NIL: "DEVS:DOSDrivers/~((.#?)|(#?.info)|(#?.dbg))"
+
 C:Execute S:User-Startup
