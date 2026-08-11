@@ -23,4 +23,4 @@ MAKEOBJDIR="$object_dir" \
 
 output=/host/build/bin/${OUTPUT_ARCH}-netbsd/newfs_lfs
 mkdir -p "$(dirname "$output")"
-cp "$object_dir/usr/src/sbin/newfs_lfs/newfs_lfs" "$output"
+cp "$object_dir/newfs_lfs" "$output"

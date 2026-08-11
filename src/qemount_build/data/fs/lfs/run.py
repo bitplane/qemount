@@ -66,14 +66,14 @@ try:
         print(line, end="", flush=True)
         if not sent and "Type 'exit' to shutdown" in line:
             process.stdin.write(
-                "/mnt/c/newfs_lfs -F -s 131072 /dev/rld1d\n"
-                "mkdir /tmp/lfs\n"
-                "mount -t lfs /dev/ld1d /tmp/lfs\n"
-                "cp -Rp /mnt/c/TestData/. /tmp/lfs/\n"
-                "sync\n"
-                "umount /tmp/lfs\n"
-                "mount -t lfs /dev/ld1d /tmp/lfs\n"
-                "test \"$(cat /tmp/lfs/basic/hello.txt)\" = \"Hello, world!\"\n"
+                "/mnt/c/newfs_lfs -F -s 131072 /dev/rld1d && "
+                "mkdir /tmp/lfs && "
+                "mount -t lfs /dev/ld1d /tmp/lfs && "
+                "cp -Rp /mnt/c/TestData/. /tmp/lfs/ && "
+                "sync && "
+                "umount /tmp/lfs && "
+                "mount -t lfs /dev/ld1d /tmp/lfs && "
+                "test \"$(cat /tmp/lfs/basic/hello.txt)\" = \"Hello, world!\" && "
                 "echo 'LFS fixture complete'\n"
                 "exit\n"
             )

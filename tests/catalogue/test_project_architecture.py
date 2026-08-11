@@ -204,6 +204,8 @@ def test_netbsd_compiler_publishes_tools_without_full_distribution():
     assert "MULTILIB_ARGS= --disable-multilib" in dockerfile
     assert "MKCTF=no" in dockerfile
     assert "MKPIC=no" in dockerfile
+    assert "/usr/src/external/gpl3/gcc/lib/libgcc dependall" in dockerfile
+    assert "/usr/src/external/gpl3/gcc/lib/libgcc install" in dockerfile
     for library in (
         "lib/csu",
         "lib/libc",
@@ -220,7 +222,8 @@ def test_netbsd_compiler_publishes_tools_without_full_distribution():
     assert "obj dependall install" not in dockerfile
     assert 'MKX11=no distribution' not in dockerfile
     assert "COPY --from=builder /opt/netbsd/tools /usr/tools" in dockerfile
-    assert "COPY --from=builder /usr/src" not in dockerfile
+    assert "COPY --from=builder /usr/src/share/mk /usr/src/share/mk" in dockerfile
+    assert "COPY --from=builder /usr/src /usr/src" not in dockerfile
 
 
 def test_aros_compiler_image_contains_its_bootstrap_closure():
@@ -469,6 +472,7 @@ def test_netbsd_rootfs_uses_build_time_target_device_database():
 
     assert "qemount-devices.mtree" in build_script
     assert "/usr/src/etc/MAKEDEV -s" in base_dockerfile
+    assert "echo './dev type=dir optional'" in base_dockerfile
     assert "/bin/sh /MAKEDEV" not in init_script
     assert "kern.rawpartition" in init_script
     assert "mknod /dev/ld" not in init_script

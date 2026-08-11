@@ -27,6 +27,7 @@ PROG mount_filecore
 PROG mount_hfs
 PROG mount_lfs
 PROG mount_msdos
+PROG mount_ntfs
 PROG mount_procfs
 PROG mount_tmpfs
 PROG mount_udf

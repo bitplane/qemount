@@ -98,6 +98,9 @@ RUN set -eu; \
         -V MKPIC=no -V MKPROFILE=no -V MKTESTS=no -V MKX11=no tools; \
     NBMAKE="$CACHE_DIR/tools/bin/nbmake-$NBARCH"; \
     "$NBMAKE" -C /usr/src obj do-distrib-dirs includes; \
+    "$NBMAKE" -C /usr/src/external/gpl3/gcc/lib/libgcc obj; \
+    "$NBMAKE" -C /usr/src/external/gpl3/gcc/lib/libgcc dependall; \
+    "$NBMAKE" -C /usr/src/external/gpl3/gcc/lib/libgcc install; \
     for directory in \
         lib/csu \
         lib/libc \
@@ -145,6 +148,7 @@ COPY --from=builder /tmp/nbkernarch /tmp/nbkernarch
 COPY --from=builder /tmp/nbgnutriple /tmp/nbgnutriple
 COPY --from=builder /opt/netbsd/tools /usr/tools
 COPY --from=builder /opt/netbsd/obj /usr/obj
+COPY --from=builder /usr/src/share/mk /usr/src/share/mk
 
 # Set up environment for cross-compilation
 # Child images can use these for building binaries

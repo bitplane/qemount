@@ -16,6 +16,7 @@ RUN set -eu; \
     cp /work/qemount-crunch/qemount-rescue /opt/qemount/; \
     { \
         echo '. type=dir optional'; \
+        echo './dev type=dir optional'; \
         cd /work; \
         /bin/sh /usr/src/etc/MAKEDEV -s \
             std ttyVI \

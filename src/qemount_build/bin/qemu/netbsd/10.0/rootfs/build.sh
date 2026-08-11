@@ -23,7 +23,8 @@ done
 # Hard link admin commands in /sbin
 for cmd in dkctl ifconfig mount mount_ados mount_cd9660 mount_efs \
            mount_ext2fs mount_ffs mount_ufs mount_filecore mount_hfs mount_lfs \
-           mount_msdos mount_procfs mount_tmpfs mount_udf mount_v7fs halt \
+           mount_msdos mount_ntfs mount_procfs mount_tmpfs mount_udf \
+           mount_v7fs halt \
            sysctl umount; do
     ln "$RESCUE" "/ramdisk/sbin/$cmd"
 done
