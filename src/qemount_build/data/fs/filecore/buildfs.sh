@@ -13,5 +13,5 @@ commands=/tmp/filecore.commands
     echo 'exit'
 } > "$commands"
 
-disc-image-manager --no-colour --script "$commands"
+disc-image-manager -s "$commands" -n
 test -s "$output"
