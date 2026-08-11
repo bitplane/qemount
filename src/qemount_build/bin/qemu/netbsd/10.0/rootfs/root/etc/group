@@ -1,1 +1,3 @@
 wheel:x:0:
+nobody:*:39:
+nogroup:*:32766:

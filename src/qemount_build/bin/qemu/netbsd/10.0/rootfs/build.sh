@@ -42,6 +42,7 @@ chmod 755 /ramdisk/init.sh
 cp -v /root/init.9p /ramdisk/init.9p
 chmod 755 /ramdisk/init.9p
 cp -v /root/etc/* /ramdisk/etc/
+/usr/tools/bin/nbpwd_mkdb -d /ramdisk /ramdisk/etc/master.passwd
 
 # Copy qemount tools from build
 if [ -f "$BIN_DIR/simple9p" ]; then

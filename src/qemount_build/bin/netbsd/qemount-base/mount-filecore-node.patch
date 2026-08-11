@@ -1,0 +1,11 @@
+--- a/sbin/mount_filecore/mount_filecore.c
++++ b/sbin/mount_filecore/mount_filecore.c
+@@ -161,7 +161,7 @@ mount_filecore(int argc, char **argv)
+ 	pathadj(argv[0], canon_dev);
+ 	dev = canon_dev;
+ 
+-	pathadj(argv[0], canon_dir);
++	pathadj(argv[1], canon_dir);
+ 	dir = canon_dir;
+ 
+ #define DEFAULT_ROOTUID	-2

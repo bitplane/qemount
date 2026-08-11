@@ -2,12 +2,14 @@ ARG BUILDER
 FROM ${BUILDER}
 
 COPY Makefile list /work/qemount-crunch/
+COPY mount-filecore-node.patch /work/
 
 RUN set -eu; \
     mkdir -p /usr/src; \
     tar -xzf /host/build/sources/netbsd-10.0-src.tgz -C /; \
     tar -xzf /host/build/sources/netbsd-10.0-syssrc.tgz -C /; \
     tar -xzf /host/build/sources/netbsd-10.0-sharesrc.tgz -C /; \
+    patch -d /usr/src -p1 < /work/mount-filecore-node.patch; \
     NBARCH=$(cat /tmp/nbarch); \
     NBMAKE="/usr/tools/bin/nbmake-$NBARCH"; \
     "$NBMAKE" -C /work/qemount-crunch qemount-rescue; \

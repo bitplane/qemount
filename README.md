@@ -124,8 +124,8 @@ support. This is what works so far; YMMV.
 | **NTFS**        | ✅ ntfs3   | 💩 ntfs   | 💩 ntfs   | 💩            | ❌        | ✅           | ❌                | ❌     | DragonFly directory reads can panic    |
 | **ISO9660**     | ✅         | ✅        | ✅        | ✅            | ✅        | ✅           | ❌                | ✅     | 9front drops Rock Ridge symlinks       |
 | **UDF**         | ✅         | ✅        | ✅        | ✅ ro         | ❌        | ✅ ro        | ❌                | ❌     | DVD/Blu-ray                            |
-| **HFS**         | ✅         | ✅        | ✅        | ❌            | ❌        | ❌           | ✅                | ❌     | Classic Mac                            |
-| **HFS+**        | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ✅                | ❌     | hfsplus                                |
+| **HFS**         | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ✅                | ❌     | Classic Mac                            |
+| **HFS+**        | ✅         | ✅        | ✅        | ❌            | ❌        | ❌           | ✅                | ❌     | hfsplus                                |
 | **HFSX**        | ❌         | ❌        | ❌        | ❌            | ❌        | ❌           | ✅                | ❌     | Case-sensitive HFS Plus                |
 | **UFS/FFS**     | 💩         | 💩        | ✅        | ✅ UFS1       | ❌        | ❌           | ❌                | ❌     | Linux UFS is limited                   |
 | **LFS**         | ❌         | ❌        | ✅        | ❌            | ❌        | ❌           | ❌                | ❌     | NetBSD log-structured                  |
@@ -167,13 +167,13 @@ support. This is what works so far; YMMV.
 | **NILFS2**      | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Log-structured                         |
 | **GFS2**        | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Red Hat cluster                        |
 | **OCFS2**       | ❌         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Oracle cluster                         |
-| **Coda**        | ❌         | ❌        | ✅        | ❌            | ❌        | ❌           | ❌                | ❌     | Distributed FS                         |
+| **Coda**        | ❌         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Distributed FS                         |
 | **BFS**         | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | SCO Boot FS                            |
-| **ZFS**         | ❌         | ❌        | ✅        | ❌            | ❌        | ❌           | ❌                | ❌     | OpenZFS (module, not in-kernel)        |
+| **ZFS**         | ❌         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | OpenZFS (module, not in-kernel)        |
 | **APFS**        | ❌         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Apple macOS 10.13+                     |
 | **ReFS**        | ❌         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Windows Resilient FS                   |
 | **HAMMER**      | ❌         | ❌        | ❌        | ✅            | ❌        | ❌           | ❌                | ❌     | DragonFly native                       |
 | **HAMMER2**     | ❌         | ❌        | ❌        | ✅            | ❌        | ❌           | ❌                | ❌     | DragonFly native                       |
 | **JFFS2**       | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | Flash journaling                       |
 | **UBIFS**       | ✅         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | UBI Flash FS                           |
-| **High Sierra** | ✅         | ✅        | ✅        | ❌            | ❌        | ❌           | ❌                | ❌     | ISO9660 predecessor                    |
+| **High Sierra** | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ISO9660 predecessor                    |
