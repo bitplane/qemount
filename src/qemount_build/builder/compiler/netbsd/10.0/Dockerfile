@@ -3,7 +3,7 @@ ARG BUILD_PLATFORM
 ARG JOBS=1
 ARG QEMOUNT_CACHE_DIR
 
-FROM debian:bookworm-slim AS builder
+FROM debian:bookworm-slim AS base
 ARG OUTPUT_ARCH
 ARG BUILD_PLATFORM
 ARG JOBS=1
@@ -39,6 +39,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gettext \
     && rm -rf /var/lib/apt/lists/*
 
+FROM base AS builder
+ARG OUTPUT_ARCH
+ARG BUILD_PLATFORM
+ARG JOBS=1
+ARG QEMOUNT_CACHE_DIR
+
 WORKDIR /build
 
 # Extract source from mounted build_requires
@@ -46,7 +52,12 @@ RUN mkdir -p /usr/src && \
     tar -xzf /host/build/sources/netbsd-10.0-src.tgz -C / && \
     tar -xzf /host/build/sources/netbsd-10.0-syssrc.tgz -C / && \
     tar -xzf /host/build/sources/netbsd-10.0-sharesrc.tgz -C / && \
-    tar -xzf /host/build/sources/netbsd-10.0-gnusrc.tgz -C /
+    tar -xzf /host/build/sources/netbsd-10.0-gnusrc.tgz -C / && \
+    grep -qx 'GCC_LANGUAGES=c c++ objc' /usr/src/tools/gcc/Makefile && \
+    sed -i \
+        -e 's/^GCC_LANGUAGES=c c++ objc$/GCC_LANGUAGES=c/' \
+        -e 's/^MULTILIB_ARGS= --enable-multilib$/MULTILIB_ARGS= --disable-multilib/' \
+        /usr/src/tools/gcc/Makefile
 
 WORKDIR /usr/src
 
@@ -69,10 +80,10 @@ RUN if [ "$OUTPUT_ARCH" = "x86_64" ]; then \
         echo "$OUTPUT_ARCH" > /tmp/nbgnutriple; \
     fi
 
-# Build the cross-compilation toolchain and the appliance-facing distribution.
-# The complete incremental object tree remains in the host cache. Only the
-# tools, sysroot, rescue binary, device script, and boot blocks consumed by
-# downstream qemount stages are copied into the compiler image.
+# Build the C-only cross-compilation toolchain and the target headers/libraries.
+# A complete NetBSD distribution builds thousands of programs which are never
+# used by qemount; the native make targets below are the supported foundation
+# for building selected target programs later.
 RUN set -eu; \
     CACHE_DIR=$QEMOUNT_CACHE_DIR; \
     mkdir -p "$CACHE_DIR/obj" "$CACHE_DIR/tools"; \
@@ -82,31 +93,61 @@ RUN set -eu; \
     NBMACHINEARCH=$(cat /tmp/nbmachinearch); \
     ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
         -m "$NBARCH" -a "$NBMACHINEARCH" \
-        -V MKCOMPAT=no -V MKDEBUG=no -V MKDEBUGLIB=no \
+        -V MKCOMPAT=no -V MKCTF=no -V MKDEBUG=no -V MKDEBUGLIB=no \
         -V MKHTML=no -V MKINFO=no -V MKMAN=no -V MKNLS=no \
-        -V MKPROFILE=no -V MKTESTS=no -V MKX11=no tools; \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$JOBS" \
-        -m "$NBARCH" -a "$NBMACHINEARCH" \
-        -V MKCOMPAT=no -V MKDEBUG=no -V MKDEBUGLIB=no \
-        -V MKHTML=no -V MKINFO=no -V MKMAN=no -V MKNLS=no \
-        -V MKPROFILE=no -V MKTESTS=no -V MKX11=no distribution; \
+        -V MKPIC=no -V MKPROFILE=no -V MKTESTS=no -V MKX11=no tools; \
+    NBMAKE="$CACHE_DIR/tools/bin/nbmake-$NBARCH"; \
+    "$NBMAKE" -C /usr/src obj do-distrib-dirs includes; \
+    for directory in \
+        lib/csu \
+        lib/libc \
+        lib/libm \
+        lib/libprop \
+        lib/libterminfo \
+        lib/libedit \
+        lib/libutil \
+        lib/libpthread; \
+    do \
+        "$NBMAKE" -C "/usr/src/$directory" obj; \
+        "$NBMAKE" -C "/usr/src/$directory" dependall; \
+        "$NBMAKE" -C "/usr/src/$directory" install; \
+    done; \
+    if [ "$NBARCH" = amd64 ]; then \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/boot obj; \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/boot dependall; \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/boot install; \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/bootxx/bootxx_ffsv1 \
+            obj; \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/bootxx/bootxx_ffsv1 \
+            dependall; \
+        "$NBMAKE" -C /usr/src/sys/arch/i386/stand/bootxx/bootxx_ffsv1 \
+            install; \
+    fi; \
     rm /usr/obj /usr/tools; \
-    cp -a "$CACHE_DIR/tools" /usr/tools; \
-    mkdir -p /usr/obj/tools/makefs; \
-    cp -a "$CACHE_DIR/obj/tools/makefs/makefs" /usr/obj/tools/makefs/; \
-    DESTDIR=$CACHE_DIR/obj/destdir.$NBARCH; \
-    IMAGE_DESTDIR=/usr/obj/destdir.$NBARCH; \
+    mkdir -p /opt/netbsd/obj; \
+    cp -a "$CACHE_DIR/tools" /opt/netbsd/tools; \
+    DESTDIR="$CACHE_DIR/obj/destdir.$NBARCH"; \
+    IMAGE_DESTDIR="/opt/netbsd/obj/destdir.$NBARCH"; \
     mkdir -p "$IMAGE_DESTDIR/usr"; \
-    cp -a "$DESTDIR/lib" "$DESTDIR/rescue" "$IMAGE_DESTDIR/"; \
-    cp -a "$DESTDIR/usr/include" "$DESTDIR/usr/lib" "$DESTDIR/usr/mdec" \
-        "$IMAGE_DESTDIR/usr/"; \
-    mkdir -p "$IMAGE_DESTDIR/dev"; \
-    cp -a "$DESTDIR/dev/MAKEDEV" "$IMAGE_DESTDIR/dev/"; \
+    cp -a "$DESTDIR/lib" "$IMAGE_DESTDIR/"; \
+    cp -a "$DESTDIR/usr/include" "$DESTDIR/usr/lib" "$IMAGE_DESTDIR/usr/"; \
+    if [ -d "$DESTDIR/usr/mdec" ]; then \
+        cp -a "$DESTDIR/usr/mdec" "$IMAGE_DESTDIR/usr/"; \
+    fi; \
     rm -rf "$IMAGE_DESTDIR/lib/i386" "$IMAGE_DESTDIR/usr/lib/i386"
+
+FROM base
+ARG OUTPUT_ARCH
+
+COPY --from=builder /tmp/nbarch /tmp/nbarch
+COPY --from=builder /tmp/nbmachinearch /tmp/nbmachinearch
+COPY --from=builder /tmp/nbkernarch /tmp/nbkernarch
+COPY --from=builder /tmp/nbgnutriple /tmp/nbgnutriple
+COPY --from=builder /opt/netbsd/tools /usr/tools
+COPY --from=builder /opt/netbsd/obj /usr/obj
 
 # Set up environment for cross-compilation
 # Child images can use these for building binaries
-ENV NETBSD_SRC=/usr/src
 ENV NETBSD_OBJ=/usr/obj
 ENV NETBSD_TOOLS=/usr/tools
 

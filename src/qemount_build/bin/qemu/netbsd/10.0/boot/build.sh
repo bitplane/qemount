@@ -37,10 +37,15 @@ case "$OUTPUT_ARCH" in
         cp "$DESTDIR/usr/mdec/boot" /work/bootfs/boot
         cp /boot.cfg /work/bootfs/boot.cfg
 
-        "$TOOLDIR/bin/nbmakefs" -s 48m -t ffs -o version=1 \
+        "$TOOLDIR/bin/nbmakefs" -t ffs -o version=1 \
             /work/boot.img /work/bootfs
+        sectors=$(( $(stat -c %s /work/boot.img) / 512 ))
+        cylinders=$(( (sectors + 2047) / 2048 ))
+        sed -e "s/@CYLINDERS@/$cylinders/" \
+            -e "s/@SECTORS@/$sectors/g" /disklabel.template \
+            > /work/disklabel.proto
         "$TOOLDIR/bin/nbdisklabel" -M "$NBARCH" -R -F \
-            /work/boot.img /disklabel.proto
+            /work/boot.img /work/disklabel.proto
         "$TOOLDIR/bin/nbinstallboot" -m "$NBARCH" -o timeout=0 \
             /work/boot.img "$DESTDIR/usr/mdec/bootxx_ffsv1"
         cp /work/boot.img "$OUTPUT_DIR/boot.img"

@@ -11,5 +11,5 @@ viocon* at virtio?
 # Root filesystem embedded by mdsetimage.
 no options MEMORY_DISK_DYNAMIC
 options MEMORY_DISK_IS_ROOT
-options MEMORY_DISK_ROOT_SIZE=32768
+options MEMORY_DISK_ROOT_SIZE=@RAMDISK_SECTORS@
 options MEMORY_DISK_RBFLAGS=RB_SINGLE

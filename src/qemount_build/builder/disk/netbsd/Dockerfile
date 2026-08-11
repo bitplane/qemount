@@ -8,7 +8,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy NetBSD tools (makefs supports v7fs, ffs, cd9660, msdos)
-COPY --from=netbsd /usr/obj/tools/makefs/makefs /usr/local/bin/makefs
+COPY --from=netbsd /usr/tools/bin/nbmakefs /usr/local/bin/makefs
 COPY --from=netbsd /usr/tools/bin/nbdisklabel /usr/local/bin/nbdisklabel
 
 WORKDIR /build

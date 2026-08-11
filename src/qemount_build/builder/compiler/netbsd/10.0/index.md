@@ -21,10 +21,14 @@ build_requires:
 
 # NetBSD 10.0 Compiler
 
-Cross-compiler for NetBSD 10.0, built using NetBSD's build.sh. The complete
-incremental object tree stays in the host build cache. The compiler image only
-contains the cross-tools and the sysroot, rescue, device and boot files used by
-downstream qemount builds.
+Cross-compiler for NetBSD 10.0, built using NetBSD's build.sh. The incremental
+tool and library objects stay in the host build cache. The published image
+contains only the cross-tools, target headers, the libraries used by qemount,
+and amd64 boot blocks; appliance programs are built separately from explicitly
+declared sources. The cross-compiler builds only its C frontend and does not
+produce x86 multilib or shared target libraries because the appliance has no
+32-bit or dynamically linked programs. CTF generation is disabled because the
+published appliance does not ship CTF debugging data.
 
 Architecture mapping:
 - x86_64 → amd64/x86_64

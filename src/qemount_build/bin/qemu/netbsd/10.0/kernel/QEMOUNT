@@ -127,7 +127,6 @@ options 	DDB		# in-kernel debugger
 options 	DDB_HISTORY_SIZE=512	# enable history editing in DDB
 #options 	KGDB		# remote debugger
 #options 	KGDB_DEVNAME="\"com\"",KGDB_DEVADDR=0x3f8,KGDB_DEVRATE=9600
-makeoptions	DEBUG="-g"	# compile full symbol table for CTF
 options DDB_COMMANDONENTER="trace;show registers"
 #options 	SYSCALL_STATS	# per syscall counts
 #options 	SYSCALL_TIMES	# per syscall times
@@ -1080,7 +1079,7 @@ options 	MEMORY_DISK_HOOKS	# enable md specific hooks
 # QEMOUNT: Boot from embedded ramdisk
 #options 	MEMORY_DISK_DYNAMIC	# disabled - need static array for mdsetimage
 options 	MEMORY_DISK_IS_ROOT
-options 	MEMORY_DISK_ROOT_SIZE=32768	# 16MB in 512-byte sectors
+options 	MEMORY_DISK_ROOT_SIZE=@RAMDISK_SECTORS@
 options 	MEMORY_DISK_RBFLAGS=RB_SINGLE	# Boot single-user
 
 pseudo-device	vnd			# disk-like interface to files

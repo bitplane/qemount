@@ -1,9 +1,8 @@
 #!/bin/sh
 set -e
 
-NBARCH=$(cat /tmp/nbarch)
-DESTDIR="/usr/obj/destdir.$NBARCH"
 BIN_DIR="/host/build/bin/${OUTPUT_ARCH}-netbsd"
+SHARE_DIR="/host/build/share/${OUTPUT_ARCH}-netbsd"
 OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs"
 
 echo "Building NetBSD ramdisk for $OUTPUT_ARCH..."
@@ -12,38 +11,22 @@ echo "Building NetBSD ramdisk for $OUTPUT_ARCH..."
 mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc \
          /ramdisk/mnt /ramdisk/tmp /ramdisk/proc /ramdisk/kern
 
-# Copy rescue binary (statically linked crunchgen multicall)
+# Copy the qemount-specific crunchgen multicall binary.
 RESCUE="/ramdisk/.rescue"
-cp "$DESTDIR/rescue/sh" "$RESCUE"
+cp "$BIN_DIR/qemount-rescue" "$RESCUE"
 
 # Hard link user commands in /bin
-for cmd in cat chio chmod cp csh date dd df domainname echo ed expr \
-           hostname kill ksh ln ls mkdir mt mv pax tar ps pwd rcmd rcp rm rmdir sh \
-           sleep stty sync test "[" bzip2 bunzip2 bzcat ftp grep egrep fgrep \
-           zgrep zegrep zfgrep gzip gunzip gzcat zcat kdump ktrace ktruss \
-           progress ekermit less more vi ex tetris ldd rescue; do
+for cmd in cat cp dd df expr ls mkdir rm rmdir sh stty sync sort uname; do
     ln "$RESCUE" "/ramdisk/bin/$cmd"
 done
 
 # Hard link admin commands in /sbin
-for cmd in atactl badsect brconfig ccdconfig cgdconfig chown chgrp clri \
-           disklabel dkctl dmesg dump rdump dump_lfs rdump_lfs fdisk fsck \
-           fsck_ext2fs fsck_ffs fsck_lfs fsck_msdos fsdb fsirand gpt ifconfig \
-           init mknod modload modstat modunload \
-           mount mount_ados mount_cd9660 mount_efs mount_ext2fs mount_fdesc \
-           mount_ffs mount_ufs mount_filecore mount_kernfs mount_lfs mount_msdos \
-           mount_nfs mount_ntfs mount_null mount_overlay mount_procfs mount_tmpfs \
-           mount_umap mount_union mount_mfs \
-           newfs newfs_lfs newfs_msdos ping pppoectl raidctl rcorder reboot halt \
-           restore rrestore rndctl route routed savecore scan_ffs scsictl setkey \
-           shutdown slattach swapctl swapon sysctl ttyflags tunefs umbctl umount \
-           wdogctl veriexecctl wsconsctl chroot dumpfs dumplfs installboot \
-           vnconfig vndconfig lfs_cleanerd pdisk ping6 scp ssh slogin; do
+for cmd in dkctl ifconfig mount mount_ados mount_cd9660 mount_efs \
+           mount_ext2fs mount_ffs mount_ufs mount_filecore mount_hfs mount_lfs \
+           mount_msdos mount_procfs mount_tmpfs mount_udf mount_v7fs halt \
+           sysctl umount; do
     ln "$RESCUE" "/ramdisk/sbin/$cmd"
 done
-
-# Rename real init so our script can call it
-mv /ramdisk/sbin/init /ramdisk/sbin/init.real
 
 # Remove base rescue copy (all links remain valid)
 rm "$RESCUE"
@@ -56,8 +39,6 @@ chmod 755 /ramdisk/init.sh
 cp -v /root/init.9p /ramdisk/init.9p
 chmod 755 /ramdisk/init.9p
 cp -v /root/etc/* /ramdisk/etc/
-cp -v "$DESTDIR/dev/MAKEDEV" /ramdisk/MAKEDEV
-chmod 755 /ramdisk/MAKEDEV
 
 # Copy qemount tools from build
 if [ -f "$BIN_DIR/simple9p" ]; then
@@ -66,17 +47,17 @@ if [ -f "$BIN_DIR/simple9p" ]; then
     chmod 755 /ramdisk/bin/simple9p
 fi
 
-if [ -f "$BIN_DIR/socat" ]; then
-    echo "Adding socat..."
-    cp -v "$BIN_DIR/socat" /ramdisk/bin/
-    chmod 755 /ramdisk/bin/socat
-fi
-
-# Create ramdisk filesystem image (16MB)
-/usr/tools/bin/nbmakefs -s 16m -t ffs -o version=1 /ramdisk.fs /ramdisk
+# Let makefs calculate the minimum complete filesystem. Runtime scratch and
+# mount points use tmpfs, so the embedded root does not need reserved space.
+/usr/tools/bin/nbmakefs -N /ramdisk/etc \
+    -F "$SHARE_DIR/qemount-devices.mtree" \
+    -t ffs -o version=1 /ramdisk.fs /ramdisk
 
 # Copy to output
 mkdir -p "$OUTPUT_DIR"
 cp /ramdisk.fs "$OUTPUT_DIR/ramdisk.fs"
+size=$(stat -c %s /ramdisk.fs)
+test $((size % 512)) -eq 0
+echo $((size / 512)) > "$OUTPUT_DIR/ramdisk.sectors"
 
 echo "Done! Ramdisk: $(du -sh /ramdisk | cut -f1)"

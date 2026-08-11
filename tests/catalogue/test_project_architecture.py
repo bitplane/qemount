@@ -193,12 +193,34 @@ def test_dragonfly_compiler_image_contains_its_completed_object_tree():
         assert f'world_make -C "$DRAGONFLY_SRC/$path" {target}' in system
 
 
-def test_netbsd_compiler_image_contains_downstream_host_tools():
+def test_netbsd_compiler_publishes_tools_without_full_distribution():
     dockerfile = (
         PACKAGE_DIR / "builder/compiler/netbsd/10.0/Dockerfile"
     ).read_text()
 
-    assert 'cp -a "$CACHE_DIR/obj/tools/makefs/makefs"' in dockerfile
+    assert '"$NBMAKE" -C /usr/src obj do-distrib-dirs includes' in dockerfile
+    assert "do-lib" not in dockerfile
+    assert "GCC_LANGUAGES=c c++ objc$/GCC_LANGUAGES=c" in dockerfile
+    assert "MULTILIB_ARGS= --disable-multilib" in dockerfile
+    assert "MKCTF=no" in dockerfile
+    assert "MKPIC=no" in dockerfile
+    for library in (
+        "lib/csu",
+        "lib/libc",
+        "lib/libm",
+        "lib/libprop",
+        "lib/libterminfo",
+        "lib/libedit",
+        "lib/libutil",
+        "lib/libpthread",
+    ):
+        assert library in dockerfile
+    assert '"$NBMAKE" -C "/usr/src/$directory" dependall;' in dockerfile
+    assert '"$NBMAKE" -C "/usr/src/$directory" install;' in dockerfile
+    assert "obj dependall install" not in dockerfile
+    assert 'MKX11=no distribution' not in dockerfile
+    assert "COPY --from=builder /opt/netbsd/tools /usr/tools" in dockerfile
+    assert "COPY --from=builder /usr/src" not in dockerfile
 
 
 def test_aros_compiler_image_contains_its_bootstrap_closure():
@@ -436,14 +458,18 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
     )
 
 
-def test_netbsd_rootfs_uses_target_device_database():
+def test_netbsd_rootfs_uses_build_time_target_device_database():
     build_script = (PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/build.sh").read_text()
+    base_dockerfile = (
+        PACKAGE_DIR / "bin/netbsd/qemount-base/Dockerfile"
+    ).read_text()
     init_script = (
         PACKAGE_DIR / "bin/qemu/netbsd/10.0/rootfs/root/sbin/init"
     ).read_text()
 
-    assert "$DESTDIR/dev/MAKEDEV" in build_script
-    assert "/bin/sh /MAKEDEV" in init_script
+    assert "qemount-devices.mtree" in build_script
+    assert "/usr/src/etc/MAKEDEV -s" in base_dockerfile
+    assert "/bin/sh /MAKEDEV" not in init_script
     assert "kern.rawpartition" in init_script
     assert "mknod /dev/ld" not in init_script
 

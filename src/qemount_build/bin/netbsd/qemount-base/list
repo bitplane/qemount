@@ -1,0 +1,43 @@
+SRCDIRS bin
+
+PROG cat
+PROG cp
+PROG dd
+PROG df
+PROG expr
+PROG ls
+PROG mkdir
+PROG rm
+PROG rmdir
+PROG sh
+PROG stty
+PROG sync
+
+SRCDIRS sbin
+
+PROG dkctl
+PROG ifconfig
+PROG mount
+PROG mount_ados
+PROG mount_cd9660
+PROG mount_efs
+PROG mount_ext2fs
+PROG mount_ffs mount_ufs
+PROG mount_filecore
+PROG mount_hfs
+PROG mount_lfs
+PROG mount_msdos
+PROG mount_procfs
+PROG mount_tmpfs
+PROG mount_udf
+PROG mount_v7fs
+PROG reboot halt
+PROG sysctl
+PROG umount
+
+SRCDIRS usr.bin
+
+PROG sort
+PROG uname
+
+LIBS -lprop -lutil
