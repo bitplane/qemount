@@ -1,5 +1,6 @@
 #!/bin/sh
 export PATH=/bin:/sbin
+exec </dev/console >/dev/console 2>&1
 
 # Filesystem types to try when auto-detect fails (override via config)
 FS_TYPES="ffs cd9660 ext2fs msdos udf ntfs hfs lfs v7fs ados filecore efs"

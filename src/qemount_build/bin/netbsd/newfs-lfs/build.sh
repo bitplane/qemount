@@ -2,7 +2,6 @@
 set -eu
 
 source_dir=$QEMOUNT_CACHE_DIR/source
-object_dir=$QEMOUNT_CACHE_DIR/obj
 nbarch=$(cat /tmp/nbarch)
 
 if [ ! -f "$source_dir/.extracted" ]; then
@@ -13,14 +12,12 @@ if [ ! -f "$source_dir/.extracted" ]; then
     touch "$source_dir/.extracted"
 fi
 
-mkdir -p "$object_dir"
-MAKEOBJDIR="$object_dir" \
-    /usr/tools/bin/nbmake-"$nbarch" -C "$source_dir/usr/src/sbin/newfs_lfs" \
+build_dir=$source_dir/usr/src/sbin/newfs_lfs
+/usr/tools/bin/nbmake-"$nbarch" -C "$build_dir" \
     NETBSDSRCDIR="$source_dir/usr/src" MKMAN=no LDSTATIC=-static obj
-MAKEOBJDIR="$object_dir" \
-    /usr/tools/bin/nbmake-"$nbarch" -C "$source_dir/usr/src/sbin/newfs_lfs" \
+/usr/tools/bin/nbmake-"$nbarch" -C "$build_dir" \
     NETBSDSRCDIR="$source_dir/usr/src" MKMAN=no LDSTATIC=-static dependall
 
 output=/host/build/bin/${OUTPUT_ARCH}-netbsd/newfs_lfs
 mkdir -p "$(dirname "$output")"
-cp "$object_dir/newfs_lfs" "$output"
+cp "$build_dir/newfs_lfs" "$output"
