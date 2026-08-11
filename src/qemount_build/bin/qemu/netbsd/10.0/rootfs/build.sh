@@ -9,7 +9,7 @@ echo "Building NetBSD ramdisk for $OUTPUT_ARCH..."
 
 # Create ramdisk directory structure
 mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc \
-         /ramdisk/mnt /ramdisk/tmp /ramdisk/proc /ramdisk/kern
+         /ramdisk/libexec /ramdisk/mnt /ramdisk/tmp /ramdisk/proc /ramdisk/kern
 
 # Copy the qemount-specific crunchgen multicall binary.
 RESCUE="/ramdisk/.rescue"
@@ -28,6 +28,8 @@ for cmd in dkctl ifconfig mount mount_ados mount_cd9660 mount_efs \
            sysctl umount; do
     ln "$RESCUE" "/ramdisk/sbin/$cmd"
 done
+
+ln "$RESCUE" /ramdisk/libexec/lfs_cleanerd
 
 # Remove base rescue copy (all links remain valid)
 rm "$RESCUE"

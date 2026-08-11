@@ -79,7 +79,7 @@ try:
             )
             process.stdin.flush()
             sent = True
-        if "LFS fixture complete" in line:
+        if line.strip() == "LFS fixture complete":
             complete = True
     if not complete:
         raise RuntimeError("NetBSD did not complete the LFS fixture")

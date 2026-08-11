@@ -36,6 +36,10 @@ PROG reboot halt
 PROG sysctl
 PROG umount
 
+SRCDIRS libexec
+
+PROG lfs_cleanerd
+
 SRCDIRS usr.bin
 
 PROG sort
