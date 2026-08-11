@@ -31,7 +31,8 @@ sed "s/@RAMDISK_SECTORS@/$RAMDISK_SECTORS/g" "$CONFIG" \
 mkdir -p "$OBJ_DIR"
 /usr/tools/bin/nbconfig -s "$SYS_DIR" -b "$OBJ_DIR" \
     "$QEMOUNT_CACHE_DIR/QEMOUNT"
-/usr/tools/bin/nbmake-"$NBARCH" -C "$OBJ_DIR" -j"${JOBS}" depend all
+/usr/tools/bin/nbmake-"$NBARCH" -C "$OBJ_DIR" -j"${JOBS}" \
+    NETBSDSRCDIR="$SOURCE_DIR/usr/src" depend all
 
 # Copy unstripped kernel (needed for mdsetimage)
 OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel"
