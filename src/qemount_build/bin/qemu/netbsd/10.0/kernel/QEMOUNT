@@ -48,7 +48,7 @@ options LFS_DIRHASH
 
 config netbsd root on ? type ?
 
-# Q35 platform used by the runner.
+# PC platform used by the runner.
 acpi0 at mainbus0
 options ACPI_SCANPCI
 qemufwcfg* at acpi?
