@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/puredarwin-linux-build.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/puredarwin-qemount-0.2.tar.gz
 ARCHITECTURE_ARCHIVE=/host/build/sources/architecture-268.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
 DYLD_ARCHIVE=/host/build/sources/dyld-519.2.2.tar.gz
@@ -22,12 +22,16 @@ LIBSYSTEM_ARCHIVE=/host/build/sources/libsystem-1252.50.4.tar.gz
 LIBUNWIND_ARCHIVE=/host/build/sources/libunwind-5.0.0.src.tar.xz
 SYSLOG_ARCHIVE=/host/build/sources/syslog-356.50.1.tar.gz
 IOATAFAMILY_ARCHIVE=/host/build/sources/ioatafamily-255.tar.gz
+IOATABLOCKSTORAGE_ARCHIVE=/host/build/sources/ioatablockstorage-130.3.1.tar.gz
 IOPCIFAMILY_ARCHIVE=/host/build/sources/iopcifamily-320.30.2.tar.gz
 IOSTORAGEFAMILY_ARCHIVE=/host/build/sources/iostoragefamily-218.30.1.tar.gz
 APPLEFILESYSTEMDRIVER_ARCHIVE=/host/build/sources/applefilesystemdriver-23.tar.gz
+APPLEI386PCI_ARCHIVE=/host/build/sources/applei386pci-6.tar.gz
 HFS_ARCHIVE=/host/build/sources/hfs-407.30.1.tar.gz
+SOURCE_HASH=$(sha256sum "$SOURCE_ARCHIVE" | cut -d ' ' -f 1)
 CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
+SOURCE_STAMP=$CACHE_DIR/source.sha256
 DARWIN_SOURCE_DIR=$CACHE_DIR/darwin-17.4
 COMPILER_RT_DIR=$CACHE_DIR/compiler-rt
 LIBCXX_DIR=$CACHE_DIR/libcxx-5.0.0
@@ -45,15 +49,31 @@ extract_source() {
     destination=$2
     compression=$3
     [ -d "$destination" ] && return 0
-    temporary=$destination.tmp.$$
-    rm -rf "$temporary"
-    mkdir -p "$temporary"
+    extract_temporary=$destination.tmp.$$
+    rm -rf "$extract_temporary"
+    mkdir -p "$extract_temporary"
     tar --no-same-owner "-$compression" "$archive" \
-        -C "$temporary" --strip-components=1
-    mv "$temporary" "$destination"
+        -C "$extract_temporary" --strip-components=1
+    mv "$extract_temporary" "$destination"
 }
 
-extract_source "$SOURCE_ARCHIVE" "$SOURCE_DIR" xzf
+if [ ! -f "$SOURCE_STAMP" ] || [ "$(cat "$SOURCE_STAMP")" != "$SOURCE_HASH" ]; then
+    update_directory=$SOURCE_DIR.update.$$
+    rm -rf "$update_directory"
+    extract_source "$SOURCE_ARCHIVE" "$update_directory" xzf
+    if [ -d "$SOURCE_DIR/.git" ]; then
+        revision=$(git -C "$update_directory" rev-parse HEAD)
+        git -C "$SOURCE_DIR" reset --hard HEAD
+        git -C "$SOURCE_DIR" clean -fdx
+        git -C "$SOURCE_DIR" fetch --no-tags "$update_directory" "$revision"
+        git -C "$SOURCE_DIR" reset --hard "$revision"
+        rm -rf "$update_directory"
+    else
+        rm -rf "$SOURCE_DIR"
+        mv "$update_directory" "$SOURCE_DIR"
+    fi
+    printf '%s\n' "$SOURCE_HASH" > "$SOURCE_STAMP"
+fi
 extract_source "$ARCHITECTURE_ARCHIVE" "$DARWIN_SOURCE_DIR/architecture" xzf
 extract_source "$COMPILER_RT_ARCHIVE" "$COMPILER_RT_DIR" xJf
 extract_source "$DYLD_ARCHIVE" "$DARWIN_SOURCE_DIR/dyld" xzf
@@ -74,9 +94,11 @@ extract_source "$LIBSYSTEM_ARCHIVE" "$DARWIN_SOURCE_DIR/Libsystem" xzf
 extract_source "$LIBUNWIND_ARCHIVE" "$LIBUNWIND_DIR" xJf
 extract_source "$SYSLOG_ARCHIVE" "$DARWIN_SOURCE_DIR/syslog" xzf
 extract_source "$IOATAFAMILY_ARCHIVE" "$DARWIN_SOURCE_DIR/IOATAFamily" xzf
+extract_source "$IOATABLOCKSTORAGE_ARCHIVE" "$DARWIN_SOURCE_DIR/IOATABlockStorage" xzf
 extract_source "$IOPCIFAMILY_ARCHIVE" "$DARWIN_SOURCE_DIR/IOPCIFamily" xzf
 extract_source "$IOSTORAGEFAMILY_ARCHIVE" "$DARWIN_SOURCE_DIR/IOStorageFamily" xzf
 extract_source "$APPLEFILESYSTEMDRIVER_ARCHIVE" "$DARWIN_SOURCE_DIR/AppleFileSystemDriver" xzf
+extract_source "$APPLEI386PCI_ARCHIVE" "$DARWIN_SOURCE_DIR/AppleI386PCI" xzf
 extract_source "$HFS_ARCHIVE" "$DARWIN_SOURCE_DIR/hfs" xzf
 
 "$SOURCE_DIR/scripts/prepare-external-sources.sh" "$DARWIN_SOURCE_DIR"
@@ -107,24 +129,18 @@ cmake --build "$BUILD_DIR" --parallel "$BUILD_JOBS" --target \
     xnu \
     AppleAPIC \
     AppleI386GenericPlatform \
+    AppleI386PCI \
     AppleIntelPIIXATA \
     IOACPIFamily \
     IOATAFamily \
+    IOATABlockStorage \
     IOPCIFamily \
     IOStorageFamily \
     AppleFileSystemDriver \
     HFS \
     HFSEncodings \
     dyld_runtime \
-    libsystem_kernel \
-    libsystem_blocks \
-    libsystem_m \
-    libsystem_notify \
-    libsystem_info \
-    libsystem_c \
-    libsystem_platform_firstpass \
-    libsystem_pthread_firstpass \
-    libsystem_malloc_firstpass \
+    base_system_runtime \
     corecrypto.kext \
     pthread.kext
 
@@ -136,9 +152,11 @@ install -D -m 755 \
 for extension in \
     AppleAPIC \
     AppleI386GenericPlatform \
+    AppleI386PCI \
     AppleIntelPIIXATA \
     IOACPIFamily \
     IOATAFamily \
+    IOATABlockStorage \
     IOPCIFamily \
     IOStorageFamily \
     AppleFileSystemDriver \

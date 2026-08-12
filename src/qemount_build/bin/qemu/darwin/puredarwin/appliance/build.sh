@@ -1,43 +1,98 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
-SOURCE=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/bootstrap-minimal/puredarwin.raw
+BASE_SYSTEM=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/system/base-system.tar.gz
+BOOT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/boot
 SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-darwin/simple9p
 STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
 QEMOUNT_INIT=/host/build/bin/${OUTPUT_ARCH}-darwin/qemount-init
+KERNEL=/host/build/bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
+ROOTFS=/host/build/bin/qemu/${BUILD_ARCH}-linux/6.12/boot/rootfs.img
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/appliance
-WORK_IMAGE=$OUTPUT_DIR/puredarwin.work.raw
-PAYLOAD_IMAGE=$OUTPUT_DIR/payload.hfs
-OUTPUT_TMP=$OUTPUT_DIR/puredarwin.raw.tmp
 OUTPUT=$OUTPUT_DIR/puredarwin.raw
+STAGING=/work/root
+SOURCE=/work/source.ext2
+PARTITION=/work/root.hfsplus
+DISK=/work/puredarwin.raw
 
-mkdir -p "$OUTPUT_DIR"
-rm -f "$WORK_IMAGE" "$PAYLOAD_IMAGE" "$OUTPUT_TMP"
-truncate -s "$PUREDARWIN_IMAGE_SIZE" "$WORK_IMAGE"
-parted -s "$WORK_IMAGE" \
-    mklabel msdos \
-    mkpart primary hfs+ 1MiB 100% \
-    set 1 boot on
+source /build/qemu-linux-arch.sh
+set_qemu_linux_arch_profile "$BUILD_ARCH"
 
-truncate -s 20M "$PAYLOAD_IMAGE"
-hformat -l QEMOUNT_PAYLOAD "$PAYLOAD_IMAGE"
-hmount "$PAYLOAD_IMAGE"
-hcopy "$SIMPLE9P" :simple9p
-hcopy "$STREAM64" :stream64
-hcopy "$QEMOUNT_INIT" :qemount-init
-hcopy /appliance.manifest :appliance.manifest
-humount
+rm -rf "$STAGING"
+mkdir -p "$STAGING" "$OUTPUT_DIR"
+rm -f "$SOURCE" "$PARTITION" "$DISK" "$OUTPUT.tmp"
+tar -xzf "$BASE_SYSTEM" -C "$STAGING"
 
-/serial-provision.py \
-    --target "$WORK_IMAGE" \
-    --snapshot-drive "$PAYLOAD_IMAGE" \
-    "$SOURCE" /populate.sh
+rm -rf "$STAGING/usr/share/man" "$STAGING/usr/libexec/dtrace"
+mkdir -p \
+    "$STAGING/dev" \
+    "$STAGING/Volumes/QEMOUNT_TARGET" \
+    "$STAGING/private/tmp" \
+    "$STAGING/private/var/db" \
+    "$STAGING/private/var/log" \
+    "$STAGING/private/var/root" \
+    "$STAGING/private/var/run" \
+    "$STAGING/private/var/tmp" \
+    "$STAGING/boot/grub/i386-pc" \
+    "$STAGING/sbin" \
+    "$STAGING/usr/bin"
+ln -s private/etc "$STAGING/etc"
+ln -s private/tmp "$STAGING/tmp"
+ln -s private/var "$STAGING/var"
+install -m 755 "$SIMPLE9P" "$STAGING/usr/bin/simple9p"
+install -m 755 "$STREAM64" "$STAGING/usr/bin/stream64"
+install -m 755 "$QEMOUNT_INIT" "$STAGING/sbin/launchd"
+install -m 644 "$BOOT_DIR/efiemu64.o" "$STAGING/boot/grub/i386-pc/efiemu64.o"
 
-dd if="$SOURCE" of="$WORK_IMAGE" bs=446 count=1 conv=notrunc status=none
-dd if="$SOURCE" of="$WORK_IMAGE" \
-    bs=512 skip=1 seek=2048 count=2 conv=notrunc status=none
+partition_bytes=$((48 * 1024 * 1024 - 1024 * 1024))
+truncate -s "$partition_bytes" "$PARTITION"
+mkfs.hfsplus -v QEMOUNT "$PARTITION"
+root_uuid=$(blkid -s UUID -o value "$PARTITION")
+if [ -z "$root_uuid" ]; then
+    echo "Could not read the appliance HFS+ UUID" >&2
+    exit 1
+fi
+cat > "$STAGING/boot/grub/grub.cfg" <<EOF
+serial --unit=0 --speed=115200
+terminal_output serial
+echo Loading qemount PureDarwin
+echo Loading EFI runtime
+efiemu_loadcore /boot/grub/i386-pc/efiemu64.o
+echo EFI runtime loaded
+echo Loading XNU
+xnu_kernel64 /System/Library/Kernels/kernel rd=uuid boot-uuid=$root_uuid -v serial=3 debug=0x148 -no-kext-autounload
+echo Loading kernel extensions
+xnu_kextdir /System/Library/Extensions
+echo Starting XNU
+boot
+EOF
 
-qemu-img convert -f raw -O raw -S 4096 "$WORK_IMAGE" "$OUTPUT_TMP"
-qemu-img info "$OUTPUT_TMP"
-rm -f "$WORK_IMAGE" "$PAYLOAD_IMAGE"
-mv "$OUTPUT_TMP" "$OUTPUT"
+tree_size=$(du -sm "$STAGING" | cut -f1)
+source_size=$((tree_size + 8))
+truncate -s "${source_size}M" "$SOURCE"
+mke2fs -q -t ext2 -d "$STAGING" "$SOURCE"
+
+timeout 120 "$QEMU_BIN" \
+    "${QEMU_MACHINE_ARGS[@]}" \
+    -m 256 \
+    -kernel "$KERNEL" \
+    -drive "file=$ROOTFS,format=raw,if=virtio,readonly=on" \
+    -drive "file=$SOURCE,format=raw,if=virtio,readonly=on" \
+    -drive "file=$PARTITION,format=raw,if=virtio" \
+    -append "root=/dev/vda ro console=$QEMU_CONSOLE mode=duplicate quiet" \
+    -nographic \
+    -no-reboot
+
+truncate -s "$PUREDARWIN_IMAGE_SIZE" "$DISK"
+printf '%s\n' \
+    'label: dos' \
+    'unit: sectors' \
+    '' \
+    'start=2048, type=af, bootable' \
+    | sfdisk "$DISK"
+dd if="$BOOT_DIR/boot.img" of="$DISK" bs=446 count=1 conv=notrunc status=none
+dd if="$BOOT_DIR/core.img" of="$DISK" bs=512 seek=1 conv=notrunc status=none
+dd if="$PARTITION" of="$DISK" bs=1M seek=1 conv=notrunc status=none
+
+mv "$DISK" "$OUTPUT.tmp"
+mv "$OUTPUT.tmp" "$OUTPUT"
