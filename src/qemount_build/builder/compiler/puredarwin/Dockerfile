@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gawk \
     git \
     libblocksruntime-dev \
+    libc++-14-dev \
     libacl1-dev \
     libbz2-dev \
     liblzma-dev \
