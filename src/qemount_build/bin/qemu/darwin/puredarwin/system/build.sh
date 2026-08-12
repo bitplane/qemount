@@ -10,6 +10,7 @@ LIBC_ARCHIVE=/host/build/sources/libc-1244.30.3.tar.gz
 LIBCXX_ARCHIVE=/host/build/sources/libcxx-5.0.0.src.tar.xz
 LIBCXXABI_ARCHIVE=/host/build/sources/libcxxabi-5.0.0.src.tar.xz
 LIBDISPATCH_ARCHIVE=/host/build/sources/libdispatch-913.30.4.tar.gz
+LAUNCHD_ARCHIVE=/host/build/sources/launchd-842.92.1.tar.gz
 LIBINFO_ARCHIVE=/host/build/sources/libinfo-517.30.1.tar.gz
 LIBM_ARCHIVE=/host/build/sources/libm-2026.tar.gz
 LIBNOTIFY_ARCHIVE=/host/build/sources/libnotify-172.tar.gz
@@ -61,6 +62,7 @@ extract_source "$LIBC_ARCHIVE" "$DARWIN_SOURCE_DIR/libc" xzf
 extract_source "$LIBCXX_ARCHIVE" "$LIBCXX_DIR" xJf
 extract_source "$LIBCXXABI_ARCHIVE" "$LIBCXXABI_DIR" xJf
 extract_source "$LIBDISPATCH_ARCHIVE" "$DARWIN_SOURCE_DIR/libdispatch" xzf
+extract_source "$LAUNCHD_ARCHIVE" "$DARWIN_SOURCE_DIR/launchd" xzf
 extract_source "$LIBINFO_ARCHIVE" "$DARWIN_SOURCE_DIR/Libinfo" xzf
 extract_source "$LIBM_ARCHIVE" "$DARWIN_SOURCE_DIR/Libm" xzf
 extract_source "$LIBNOTIFY_ARCHIVE" "$DARWIN_SOURCE_DIR/Libnotify" xzf
@@ -115,6 +117,11 @@ cmake --build "$BUILD_DIR" --parallel "$BUILD_JOBS" --target \
     HFSEncodings \
     dyld_runtime \
     libsystem_kernel \
+    libsystem_blocks \
+    libsystem_m \
+    libsystem_notify \
+    libsystem_info \
+    libsystem_c \
     libsystem_platform_firstpass \
     libsystem_pthread_firstpass \
     libsystem_malloc_firstpass \

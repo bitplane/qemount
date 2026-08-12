@@ -9,6 +9,7 @@ requires:
   - sources/libcxx-5.0.0.src.tar.xz
   - sources/libcxxabi-5.0.0.src.tar.xz
   - sources/libdispatch-913.30.4.tar.gz
+  - sources/launchd-842.92.1.tar.gz
   - sources/libinfo-517.30.1.tar.gz
   - sources/libm-2026.tar.gz
   - sources/libnotify-172.tar.gz
