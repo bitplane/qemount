@@ -13,6 +13,6 @@ requires:
 
 # PureDarwin qemount Guest
 
-Experimental x86_64 PureDarwin guest. Darwin 17.4 XNU builds from its pinned
-Apple source on Linux, while the project's 17.4 image provides the proven boot
-chain, driver set and initial userland substrate.
+Experimental x86_64 PureDarwin guest. Its Darwin 17.4 kernel, drivers, runtime
+libraries, BIOS bootloader and minimal appliance image all build from pinned
+sources on Linux.

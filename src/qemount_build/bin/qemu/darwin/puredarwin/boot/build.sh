@@ -27,7 +27,7 @@ cd "$BUILD_DIR"
     --disable-werror
 # The EFI runtime is freestanding.  Prevent GCC from replacing its internal
 # byte loops with calls to libc functions that do not exist after GRUB boots.
-TARGET_CC="gcc -fno-tree-loop-distribute-patterns -fno-pie -no-pie"
+TARGET_CC="i686-linux-gnu-gcc -fno-tree-loop-distribute-patterns -fno-pie -no-pie"
 make -j"${JOBS:-1}" TARGET_CC="$TARGET_CC"
 make install TARGET_CC="$TARGET_CC"
 

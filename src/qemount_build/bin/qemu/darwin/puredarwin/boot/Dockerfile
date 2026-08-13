@@ -9,7 +9,7 @@ RUN apt-get update && \
         bison \
         flex \
         gawk \
-        gcc-multilib \
+        gcc-i686-linux-gnu \
         gettext \
         pkg-config \
         python3 \

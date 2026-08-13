@@ -23,6 +23,15 @@ mkdir -p "$STAGING" "$OUTPUT_DIR"
 rm -f "$SOURCE" "$PARTITION" "$DISK" "$OUTPUT.tmp"
 tar -xzf "$BASE_SYSTEM" -C "$STAGING"
 
+truncate -s "$PUREDARWIN_IMAGE_SIZE" "$DISK"
+disk_bytes=$(stat -c %s "$DISK")
+partition_offset=$((1024 * 1024))
+if [ "$disk_bytes" -le "$partition_offset" ]; then
+    echo "PureDarwin image must be larger than 1 MiB" >&2
+    exit 1
+fi
+partition_bytes=$((disk_bytes - partition_offset))
+
 rm -rf "$STAGING/usr/share/man" "$STAGING/usr/libexec/dtrace"
 mkdir -p \
     "$STAGING/dev" \
@@ -44,7 +53,6 @@ install -m 755 "$STREAM64" "$STAGING/usr/bin/stream64"
 install -m 755 "$QEMOUNT_INIT" "$STAGING/sbin/launchd"
 install -m 644 "$BOOT_DIR/efiemu64.o" "$STAGING/boot/grub/i386-pc/efiemu64.o"
 
-partition_bytes=$((48 * 1024 * 1024 - 1024 * 1024))
 truncate -s "$partition_bytes" "$PARTITION"
 mkfs.hfsplus -v QEMOUNT "$PARTITION"
 root_uuid=$(blkid -s UUID -o value "$PARTITION")
@@ -60,7 +68,7 @@ echo Loading EFI runtime
 efiemu_loadcore /boot/grub/i386-pc/efiemu64.o
 echo EFI runtime loaded
 echo Loading XNU
-xnu_kernel64 /System/Library/Kernels/kernel rd=uuid boot-uuid=$root_uuid -v serial=3 debug=0x148 -no-kext-autounload
+xnu_kernel64 /System/Library/Kernels/kernel rd=uuid boot-uuid=$root_uuid -v serial=3 debug=0x8 -no-kext-autounload
 echo Loading kernel extensions
 xnu_kextdir /System/Library/Extensions
 echo Starting XNU
@@ -83,7 +91,6 @@ timeout 120 "$QEMU_BIN" \
     -nographic \
     -no-reboot
 
-truncate -s "$PUREDARWIN_IMAGE_SIZE" "$DISK"
 printf '%s\n' \
     'label: dos' \
     'unit: sectors' \
