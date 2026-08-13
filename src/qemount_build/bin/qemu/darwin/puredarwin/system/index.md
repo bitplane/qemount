@@ -25,7 +25,7 @@ requires:
   - sources/iopcifamily-320.30.2.tar.gz
   - sources/iostoragefamily-218.30.1.tar.gz
   - sources/hfs-407.30.1.tar.gz
-  - sources/puredarwin-qemount-0.3.tar.gz
+  - sources/puredarwin-qemount-0.4.tar.gz
   - sources/syslog-356.50.1.tar.gz
   - sources/xnu-4570.41.2.tar.gz
 provides:

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/puredarwin-qemount-0.3.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/puredarwin-qemount-0.4.tar.gz
 ARCHITECTURE_ARCHIVE=/host/build/sources/architecture-268.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
 DYLD_ARCHIVE=/host/build/sources/dyld-519.2.2.tar.gz
