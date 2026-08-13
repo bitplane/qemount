@@ -1,10 +1,10 @@
 ---
-title: PureDarwin qemount 0.2
-version: qemount-0.2
+title: PureDarwin qemount 0.3
+version: qemount-0.3
 urls:
-  - git+https://github.com/bitplane/PureDarwin.git#qemount-0.2
+  - git+https://github.com/bitplane/PureDarwin.git#qemount-0.3
 provides:
-  - sources/puredarwin-qemount-0.2.tar.gz
+  - sources/puredarwin-qemount-0.3.tar.gz
 ---
 
 # PureDarwin
