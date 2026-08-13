@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := build
+
 .PHONY: help all install test dev coverage clean gc build archive cloc
 
 PROJECT_NAME := qemount_build
@@ -7,7 +9,8 @@ REGISTRY ?= localhost
 export BUILD_PLATFORM
 export REGISTRY
 
-all: build  ## build all outputs
+all: .venv/.installed-dev  ## build all locally buildable output platforms
+	.venv/bin/qemount-build outputs --all-platforms | xargs -r .venv/bin/qemount-build build
 
 install: .venv/.installed  ## install the venv and project packages
 
@@ -19,7 +22,7 @@ test: .venv/.installed-dev  ## run the project's tests
 coverage: .venv/.installed-dev scripts/coverage.sh  ## build the html coverage report
 	scripts/coverage.sh $(PROJECT_NAME)
 
-build: .venv/.installed-dev scripts/build.sh  ## build all outputs
+build: .venv/.installed-dev scripts/build.sh  ## build host-compatible outputs
 	scripts/build.sh
 
 clean:  ## delete caches and the venv
