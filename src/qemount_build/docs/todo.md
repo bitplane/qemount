@@ -50,3 +50,8 @@
   - [ ] Atari ST (STEEM?)
   - [ ] RISC OS
   - [ ] illumos
+- [ ] bundle source
+  - [ ] firstly, download source packages into builder images for archival
+        purposes
+  - [ ] later, make our own generic builder that can build everything including
+        most of itself, forcing purity across every part of the platform
