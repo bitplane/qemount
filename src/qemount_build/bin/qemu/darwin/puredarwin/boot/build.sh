@@ -15,6 +15,15 @@ tar -xzf "$SOURCE" -C "$SOURCE_DIR" --strip-components=1
 printf '%s\n' 'depends bli part_gpt' > "$SOURCE_DIR/grub-core/extra_deps.lst"
 
 cd "$BUILD_DIR"
+# GRUB uses separate host and target toolchains.  Set the target tools while
+# configuring so its assembly probes do not fall back to the build host.  The
+# extra flags also keep its freestanding EFI runtime free of libc calls.
+TARGET_CC="i686-linux-gnu-gcc -fno-tree-loop-distribute-patterns -fno-pie -no-pie"
+TARGET_CC="$TARGET_CC" \
+TARGET_OBJCOPY=i686-linux-gnu-objcopy \
+TARGET_STRIP=i686-linux-gnu-strip \
+TARGET_NM=i686-linux-gnu-nm \
+TARGET_RANLIB=i686-linux-gnu-ranlib \
 "$SOURCE_DIR/configure" \
     --target=i386 \
     --with-platform=pc \
@@ -25,9 +34,6 @@ cd "$BUILD_DIR"
     --disable-liblzma \
     --disable-nls \
     --disable-werror
-# The EFI runtime is freestanding.  Prevent GCC from replacing its internal
-# byte loops with calls to libc functions that do not exist after GRUB boots.
-TARGET_CC="i686-linux-gnu-gcc -fno-tree-loop-distribute-patterns -fno-pie -no-pie"
 make -j"${JOBS:-1}" TARGET_CC="$TARGET_CC"
 make install TARGET_CC="$TARGET_CC"
 

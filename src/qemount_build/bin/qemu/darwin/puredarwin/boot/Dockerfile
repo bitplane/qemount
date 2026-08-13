@@ -7,6 +7,7 @@ RUN apt-get update && \
         automake \
         autopoint \
         bison \
+        binutils-i686-linux-gnu \
         flex \
         gawk \
         gcc-i686-linux-gnu \
