@@ -12,19 +12,20 @@ it'll support archive formats and obscure data files too.
 
 ## 🛑 STOP! 🛑
 
-MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL.
+**MAKE BACKUPS OF YOUR DISK IMAGES BEFORE USING THIS TOOL**
 
 Currently, there's:
 
 * guests for Linux 2.6, Linux 6.12, NetBSD 10.0, Dragonfly BSD, PureDarwin,
-  AROS and Haiku. Most are x86 only, some have aarch64 builds.
-* 9P2000.U support via a simple9p server and 9pfuse client.
+  AROS and Haiku. Architecture coverage varies depending on build host.
+* 9P2000.U support via a [9p server](https://github.com/bitplane/simple9p) an
+  9pfuse client.
 * A huge collection of test data fixtures, with many custom mkfs and archive and
   compression tools.
-* A Python-based podman-isolated build system that runs rootless and dodges
+* A Python-based, podman-isolated build system that runs rootless and dodges
   dependency hell.
 * A Rust library to detect and extract filesystems from many image formats.
-* Full archival: sources, outputs and containers used to build everything,
+* Full archival backup sources, outputs and containers used to build everything,
   saved on archive.org for future historians. 
 
 ### Building
@@ -57,15 +58,12 @@ qemount-build outputs --all-platforms
 # record the catalogue artefacts currently present
 qemount-build inventory
 
-make help  # for a full list of targets.
-# make     # or just build the world!
+make help   # for a full list of targets.
+# make      # build everything for this arch
+# make all  # to build everything possible. might take a while.
 ```
 
-Ordinary builds default to outputs compatible with the build machine's
-architecture - an `x86_64` build includes `i386` outputs, but won't build
-`aarch64` ones.
-
-Guest and transport selection, the detection engine and launch layer are still
+Guest and transport selection, detection engine and launch layer are still
 under construction, see the [todo list](src/qemount_build/docs/todo.md). There's
 `./scripts` for data recovery though.
 
@@ -75,7 +73,7 @@ tree - there's no html builder yet.
 ## Format support
 
 Guest operating systems are the smallest thing I could get running with broadest
-support. This is what works so far; YMMV.
+support. This is what works so far; YMMV, expect occasional regressions.
 
 ### Partition tables
 

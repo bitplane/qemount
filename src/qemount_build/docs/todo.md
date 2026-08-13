@@ -8,10 +8,6 @@
           Maybe have a shell?
 - [ ] Python build system
   - [ ] carefully think about caching strategy
-    - [x] lock the build directory so concurrent qemount-build processes cannot
-      corrupt shared caches or interleave output
-    - [x] separate qemount binaries from the compiled catalogue so catalogue
-      changes do not rebuild the Rust code
   - [ ] guest architecture coverage
     - [x] enable KVM in Linux-hosted QEMU builds
       - [ ] harden automatic `/dev/kvm` access against hostile build sources
@@ -20,10 +16,8 @@
       - [ ] Linux 2.6
       - [ ] Haiku
       - [ ] AROS
-      - [ ] PureDarwin (upgrade to latest Darwin + fork)
     - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
     - [ ] define fallback policy for guests that only support x86
-  - [ ] reduce size of Dragonfly BSD
 
 ## 2. Link it in
 
@@ -54,6 +48,5 @@
 
 - [ ] add more guests
   - [ ] Atari ST (STEEM?)
-  - [ ] 9front
   - [ ] RISC OS
   - [ ] illumos
