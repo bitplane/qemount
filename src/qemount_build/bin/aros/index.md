@@ -10,5 +10,5 @@ requires:
 
 # AROS binaries
 
-Programs built for 32-bit x86 AROS guests using the SDK produced by the
-matching source-pinned system build.
+Programs built for 32-bit x86 AROS guests using the Developer tree in the
+matching source-pinned compiler toolbox.

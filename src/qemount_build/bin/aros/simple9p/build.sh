@@ -4,16 +4,15 @@ set -eu
 CC=/opt/aros-toolchain/i386-aros-gcc
 AR=/opt/aros-toolchain/i386-aros-ar
 STRIP=/opt/aros-toolchain/i386-aros-strip
-SDK=/work/sdk/Developer
+SDK=/opt/aros-toolbox/bin/pc-i386-tiny/AROS/Developer
 SIMPLE9P_SOURCE=/work/simple9p-source
 LIBIXP_SOURCE=$SIMPLE9P_SOURCE/libixp
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-aros
 CFLAGS="--sysroot=$SDK -Os -fno-common -fno-asynchronous-unwind-tables -fno-unwind-tables -DVERSION=\"0.5\" -D_POSIX_C_SOURCE=200809L -DSIMPLE9P_NO_NETWORK -DS9_PATH_MAX=1024 -I$LIBIXP_SOURCE/include"
 
 mkdir -p \
-    /work/sdk /work/objects/libixp \
+    /work/objects/libixp \
     "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
-tar -xzf /host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz -C /work/sdk
 tar -xf /host/build/sources/simple9p-0.6.2.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 

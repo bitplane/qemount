@@ -6,7 +6,7 @@ env:
 requires:
   - docker:${BUILDER}
 build_requires:
-  - sources/aros-qemount-2026-07-30.tar.gz
+  - sources/aros-2026-07-30.tar.gz
   - sources/aros-ports/binutils-2.32.tar.bz2
   - sources/aros-ports/gcc-6.5.0.tar.xz
   - sources/aros-ports/gmp-6.3.0.tar.bz2
@@ -19,6 +19,6 @@ provides:
 
 # AROS PC i386 Cross-Compiler
 
-AROS's GCC and binutils cross-toolchain for native 32-bit x86 PC guests.
-The image is tied to the selected AROS source revision and is cached
-independently of guest-image assembly.
+AROS's GCC and binutils cross-toolchain and matching Developer tree for native
+32-bit x86 PC guests. The image is tied to the selected AROS source revision
+and is cached independently of guest-image assembly.

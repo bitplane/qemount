@@ -1,37 +1,29 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/aros-2026-07-30.tar.gz
 CACHE_DIR=$QEMOUNT_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=$CACHE_DIR/toolchain-build
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/system
-SDK_OUTPUT=/host/build/lib/${OUTPUT_ARCH}-aros/sdk.tar.gz
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/base
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 BUILD_JOBS=${JOBS:-1}
 
 export CCACHE_DIR="$CACHE_DIR/ccache"
 mkdir -p "$CACHE_DIR" "$CCACHE_DIR"
 
-write_iso=false
-write_sdk=false
-
-if [ "$#" -eq 0 ]; then
-    write_iso=true
-    write_sdk=true
-else
+write_iso=true
+if [ "$#" -ne 0 ]; then
+    write_iso=false
     for output in "$@"; do
         case "/host/build/$output" in
             "$ISO_OUTPUT")
                 write_iso=true
                 ;;
-            "$SDK_OUTPUT")
-                write_sdk=true
-                ;;
             *)
-                echo "Unknown AROS system output: $output" >&2
+                echo "Unknown AROS base output: $output" >&2
                 exit 1
                 ;;
         esac
@@ -57,7 +49,7 @@ fi
 if [ ! -f "$GUEST_BUILD_DIR/.qemount-bootstrap" ]; then
     rm -rf "$GUEST_BUILD_DIR"
     mkdir -p "$GUEST_BUILD_DIR"
-    cp -a /opt/aros-bootstrap/. "$GUEST_BUILD_DIR/"
+    cp -a /opt/aros-toolbox/. "$GUEST_BUILD_DIR/"
     touch "$GUEST_BUILD_DIR/.qemount-bootstrap"
 fi
 cd "$GUEST_BUILD_DIR"
@@ -201,11 +193,4 @@ if [ "$write_iso" = true ]; then
         exit 1
     fi
     mv "$ISO_TMP" "$ISO_OUTPUT"
-fi
-
-if [ "$write_sdk" = true ]; then
-    mkdir -p "$(dirname "$SDK_OUTPUT")"
-    tar -czf "$SDK_OUTPUT" \
-        -C "$AROS_DIR" \
-        Developer
 fi

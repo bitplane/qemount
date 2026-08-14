@@ -7,7 +7,7 @@ ARG QEMOUNT_CACHE_DIR
 ENV TAR_OPTIONS=--no-same-owner
 
 RUN set -eu; \
-    SOURCE_ARCHIVE=/host/build/sources/aros-qemount-2026-07-30.tar.gz; \
+    SOURCE_ARCHIVE=/host/build/sources/aros-2026-07-30.tar.gz; \
     CACHE_DIR=$QEMOUNT_CACHE_DIR; \
     SOURCE_DIR=$CACHE_DIR/source; \
     BUILD_DIR=$CACHE_DIR/toolchain-build; \
@@ -36,11 +36,11 @@ RUN set -eu; \
     make -j"${JOBS}" crosstools; \
     HOST_TOOLS=bin/linux-${BUILD_ARCH}/tools; \
     mkdir -p \
-        /opt/aros-bootstrap/bin/pc-i386-tiny/AROS \
-        "/opt/aros-bootstrap/$HOST_TOOLS"; \
+        /opt/aros-toolbox/bin/pc-i386-tiny/AROS \
+        "/opt/aros-toolbox/$HOST_TOOLS"; \
     cp -a \
         "$BUILD_DIR/bin/pc-i386-tiny/AROS/Developer" \
-        /opt/aros-bootstrap/bin/pc-i386-tiny/AROS/; \
+        /opt/aros-toolbox/bin/pc-i386-tiny/AROS/; \
     cp -a \
         "$BUILD_DIR/$HOST_TOOLS/collect-aros" \
-        "/opt/aros-bootstrap/$HOST_TOOLS/"
+        "/opt/aros-toolbox/$HOST_TOOLS/"

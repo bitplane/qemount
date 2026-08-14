@@ -182,7 +182,7 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
     assert providers["bin/i386-aros/simple9p"] == "bin/aros/simple9p"
     assert providers["bin/x86_64-darwin/simple9p"] == "bin/darwin/simple9p"
 
-    aros = graph_for("bin/qemu/i386-aros/boot/aros.iso", context)
+    aros = graph_for("bin/qemu/i386-aros/qemount/aros.iso", context)
     darwin = graph_for(
         "bin/qemu/x86_64-darwin/puredarwin/appliance/puredarwin.raw",
         context,

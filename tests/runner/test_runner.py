@@ -65,11 +65,11 @@ def test_build_log_path_mirrors_catalogue_path(tmp_path):
     """Stage logs mirror catalogue paths and distinguish command phases."""
     result = build_log_path(
         tmp_path,
-        "bin/qemu/aros/pc-i386/system",
+        "bin/qemu/aros/pc-i386/base",
         "run",
     )
 
-    assert result == (tmp_path / "logs/bin/qemu/aros/pc-i386/system.run.log")
+    assert result == (tmp_path / "logs/bin/qemu/aros/pc-i386/base.run.log")
 
 
 def test_run_streaming_tees_output_to_stream_and_log(tmp_path):
