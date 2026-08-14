@@ -1,8 +1,8 @@
 ---
 title: illumos gate Linux build
-version: e70534d51f
+version: qemount-0.1
 urls:
-  - git+https://github.com/bitplane/illumos-gate.git#e70534d51f82d2a3d1ad927d8666d51b8671efd7
+  - git+https://github.com/bitplane/illumos-gate.git#qemount-0.1
 provides:
   - sources/illumos-gate-linux-build.tar.gz
 ---

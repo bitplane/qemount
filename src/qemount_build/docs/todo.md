@@ -50,7 +50,7 @@
 - [ ] add more guests
   - [ ] Atari ST (STEEM?)
   - [ ] RISC OS
-  - [ ] illumos
+  - [x] illumos
 - [ ] bundle source
   - [ ] firstly, download source packages into builder images for archival
         purposes
