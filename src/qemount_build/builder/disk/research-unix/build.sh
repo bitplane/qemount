@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-boot_iso=/host/build/bin/qemu/x86_64-9front/qemount/system/9front.iso
+boot_iso=/host/build/bin/qemu/x86_64-9front/qemount/9front.iso
 template=/host/build/data/templates/basic.tar
 
 case "${RESEARCH_UNIX_FORMAT:?RESEARCH_UNIX_FORMAT is required}" in

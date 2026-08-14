@@ -3,7 +3,7 @@ format: pt/plan9
 requires:
   - docker:builder/disk/9front
 build_requires:
-  - bin/qemu/x86_64-9front/qemount/system/9front.iso
+  - bin/qemu/x86_64-9front/qemount/9front.iso
   - data/templates/basic.tar
 provides:
   - data/pt/basic.plan9

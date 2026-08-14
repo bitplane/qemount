@@ -273,16 +273,16 @@ def test_9front_cross_build_matrix():
     for context in (CONTEXT, arm_context):
         providers = buildable_providers(context)
         assert "docker:builder/compiler/9front" in providers
-        assert "bin/qemu/x86_64-9front/qemount/system/9front.iso" in providers
-        assert "bin/qemu/aarch64-9front/qemount/system/9front.qcow2" in providers
-        assert "bin/qemu/aarch64-9front/qemount/system/u-boot.bin" in providers
+        assert "bin/qemu/x86_64-9front/qemount/9front.iso" in providers
+        assert "bin/qemu/aarch64-9front/qemount/9front.qcow2" in providers
+        assert "bin/qemu/aarch64-9front/qemount/u-boot.bin" in providers
 
     arm_guest = graph_for(
-        "bin/qemu/aarch64-9front/qemount/system/9front.qcow2", CONTEXT
+        "bin/qemu/aarch64-9front/qemount/9front.qcow2", CONTEXT
     )
     x86_guest = graph_for(
-        "bin/qemu/x86_64-9front/qemount/system/9front.iso", arm_context
+        "bin/qemu/x86_64-9front/qemount/9front.iso", arm_context
     )
 
-    assert "bin/qemu/9front/qemount/system@aarch64-9front" in arm_guest["nodes"]
-    assert "bin/qemu/9front/qemount/system@x86_64-9front" in x86_guest["nodes"]
+    assert "bin/qemu/9front/qemount@aarch64-9front" in arm_guest["nodes"]
+    assert "bin/qemu/9front/qemount@x86_64-9front" in x86_guest["nodes"]

@@ -95,6 +95,7 @@ case "$BOOT_IMAGE" in
             -machine q35,accel=kvm:tcg
             -cpu max
             "${COMMON_ARGS[@]}"
+            -boot order=d
             -drive "file=$BOOT_IMAGE,media=cdrom,format=raw,readonly=on"
             -drive "file=$TARGET_IMAGE,if=virtio,format=raw,snapshot=on"
             -serial stdio

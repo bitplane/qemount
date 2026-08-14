@@ -9,9 +9,8 @@ case "$OUTPUT_ARCH" in
         ;;
 esac
 
-version=qemount
 bootstrap=/host/build/sources/9front-11957.amd64.qcow2.gz
-source=/host/build/sources/9front-${version}.tar.gz
+source=/host/build/sources/9front-11957.tar.gz
 cache=$QEMOUNT_CACHE_DIR
 mkdir -p "$cache"
 
@@ -80,14 +79,14 @@ for output in "$@"; do
     temporary=$(dirname "$output_path")/.$(basename "$output_path").tmp
 
     case "$output" in
-        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso)
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.iso)
             mcopy -o -i "$work/output.fat" ::9front.iso "$temporary"
             ;;
-        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.qcow2)
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.qcow2)
             mcopy -o -i "$work/output.fat" ::9front.qcow2 "$temporary"
             qemu-img check -f qcow2 "$temporary"
             ;;
-        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/u-boot.bin)
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/u-boot.bin)
             cp /usr/lib/u-boot/qemu_arm64/u-boot.bin "$temporary"
             ;;
         bin/${OUTPUT_PLATFORM}/mksacfs)
@@ -102,8 +101,8 @@ for output in "$@"; do
 
     test -s "$temporary"
     case "$output" in
-        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.iso|\
-        bin/qemu/${OUTPUT_PLATFORM}/qemount/system/9front.qcow2)
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.iso|\
+        bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.qcow2)
             size=$(stat -c %s "$temporary")
             limit=$((16 * 1024 * 1024))
             if [ "$size" -gt "$limit" ]; then
