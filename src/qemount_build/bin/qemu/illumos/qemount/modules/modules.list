@@ -50,13 +50,6 @@ intel/kbtrans            kernel/misc/amd64/kbtrans
 intel/tem                kernel/misc/amd64/tem
 intel/usbser             kernel/misc/amd64/usbser
 intel/usba               kernel/misc/amd64/usba
-intel/neti               kernel/misc/amd64/neti
-intel/hook               kernel/misc/amd64/hook
-intel/md5                kernel/crypto/amd64/md5 kernel/misc/amd64/md5
-intel/cc                 kernel/misc/amd64/cc
-intel/cc_sunreno         kernel/cc/amd64/cc_sunreno
-intel/cc_newreno         kernel/cc/amd64/cc_newreno
-intel/cc_cubic           kernel/cc/amd64/cc_cubic
 intel/TS                 kernel/sched/amd64/TS
 intel/TS_DPTBL           kernel/sched/amd64/TS_DPTBL
 intel/mac                kernel/misc/amd64/mac
@@ -70,13 +63,3 @@ intel/ufs                kernel/fs/amd64/ufs
 intel/pcfs               kernel/fs/amd64/pcfs
 intel/hsfs               kernel/fs/amd64/hsfs
 intel/dld                kernel/drv/amd64/dld
-intel/ip                 kernel/drv/amd64/ip
-intel/ip6                kernel/drv/amd64/ip6
-intel/tcp                kernel/drv/amd64/tcp
-intel/tcp6               kernel/drv/amd64/tcp6
-intel/udp                kernel/drv/amd64/udp
-intel/udp6               kernel/drv/amd64/udp6
-intel/icmp               kernel/drv/amd64/icmp
-intel/icmp6              kernel/drv/amd64/icmp6
-intel/arp                kernel/drv/amd64/arp
-intel/timod              kernel/strmod/amd64/timod

@@ -16,6 +16,7 @@ mkdir -p \
     "$staging/etc/svc/volatile" \
     "$staging/kernel/amd64" \
     "$staging/lib" \
+    "$staging/mnt" \
     "$staging/platform/i86pc/kernel/amd64" \
     "$staging/proc" \
     "$staging/sbin" \
@@ -36,6 +37,8 @@ install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/qemount-bootstrap \
     "$staging/sbin/init"
 install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/qemount-init \
     "$staging/sbin/qemount-init"
+install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/simple9p \
+    "$staging/sbin/simple9p"
 ln -s ../devices/pseudo/cn@0:console "$staging/dev/console"
 ln -s ../devices/pseudo/mm@0:null "$staging/dev/null"
 ln -s ../devices/pseudo/mm@0:zero "$staging/dev/zero"

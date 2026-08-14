@@ -19,6 +19,7 @@ compile()
 {
     input=$1
     object=$2
+    shift 2
     "$onbld/bin/i386/cw" \
         --tag target \
         --linker "$onbld/bin/amd64/ld" \
@@ -36,26 +37,29 @@ compile()
         -I"$sysroot/usr/include" \
         -I"$source" \
         -I"$source/libixp/include" \
+        "$@" \
         -c "$input" \
         -o "$object"
 }
 
-for name in convert error map message request rpc server socket transport util \
-        timer client thread; do
+for name in convert error map message request server transport util timer \
+        thread; do
     compile "$source/libixp/lib/libixp/$name.c" \
         "$objects/libixp/$name.o"
 done
 
-for name in simple9p alloc path namespace platform_posix fs_ops fs_io fs_stat \
-        fs_dir; do
+for name in simple9p alloc path namespace fs_ops fs_io fs_stat fs_dir; do
     compile "$source/$name.c" "$objects/$name.o"
 done
+compile "$source/platform_posix.c" "$objects/platform_posix.o" \
+    -_gcc=-include -_gcc=sys/time.h -D_ATFILE_SOURCE
 
 "$onbld/bin/amd64/ld" \
     -o "$output" \
     -e _start \
     -I /lib/amd64/ld.so.1 \
     -z defs \
+    -R /lib/amd64 \
     -L"$sysroot/lib/amd64" \
     "$sysroot/usr/lib/amd64/crt1.o" \
     "$sysroot/usr/lib/amd64/crti.o" \

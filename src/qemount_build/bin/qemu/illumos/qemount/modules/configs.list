@@ -14,12 +14,3 @@ common/io/consms.conf            kernel/drv/consms.conf
 common/io/wc.conf                kernel/drv/wc.conf
 common/io/iwscn.conf             kernel/drv/iwscn.conf
 common/io/dld/dld.conf           kernel/drv/dld.conf
-common/inet/ip/ip.conf           kernel/drv/ip.conf
-common/inet/ip/ip6.conf          kernel/drv/ip6.conf
-common/inet/tcp/tcp.conf         kernel/drv/tcp.conf
-common/inet/tcp/tcp6.conf        kernel/drv/tcp6.conf
-common/inet/udp/udp.conf         kernel/drv/udp.conf
-common/inet/udp/udp6.conf        kernel/drv/udp6.conf
-common/inet/ip/icmp.conf         kernel/drv/icmp.conf
-common/inet/ip/icmp6.conf        kernel/drv/icmp6.conf
-common/inet/arp/arp.conf         kernel/drv/arp.conf

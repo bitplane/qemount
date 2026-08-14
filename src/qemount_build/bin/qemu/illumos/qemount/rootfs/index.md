@@ -13,6 +13,7 @@ requires:
   - bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
   - bin/${OUTPUT_PLATFORM}/qemount-init
   - bin/${OUTPUT_PLATFORM}/qemount-bootstrap
+  - bin/${OUTPUT_PLATFORM}/simple9p
 ---
 
 # illumos qemount root ramdisk
