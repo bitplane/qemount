@@ -1,5 +1,5 @@
 ---
-title: Sun VTOC
+title: Sun SPARC disklabel (VTOC8)
 created: 1983
 related:
   - format/fs/ufs1
@@ -11,10 +11,11 @@ detect:
     name: vtoc_magic
 ---
 
-# Sun VTOC (Volume Table of Contents)
+# Sun SPARC disklabel (VTOC8)
 
-Sun VTOC is the partitioning scheme used by SunOS and Solaris.
-It stores partition information in the disk label at the start of the disk.
+The Sun SPARC disklabel is the big-endian VTOC8 partitioning scheme used by
+SunOS and Solaris on SPARC systems. It stores partition information in the
+disk label at the start of the disk.
 
 ## Characteristics
 
@@ -24,17 +25,8 @@ It stores partition information in the disk label at the start of the disk.
 - Disk geometry information included
 - Magic 0xDABE at offset 508
 
-## Variants
-
-### VTOC8 (Traditional SPARC)
-- 8 partitions (slices 0-7)
-- Big-endian
-- Original Sun format
-
-### VTOC16 (x86 Solaris)
-- 16 partitions
-- Can be little-endian on x86
-- Often inside an MBR partition (type 0xBF)
+This is distinct from the little-endian VTOC16 label used inside an MBR
+Solaris partition on x86 systems.
 
 ## Structure
 

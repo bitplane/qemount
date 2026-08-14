@@ -2,7 +2,7 @@
 title: HP-UX LIF/VTOC
 created: 1984
 related:
-  - format/pt/sun
+  - format/pt/sun-sparc
   - format/pt/gpt
   - format/fs/hp-lif
   - format/fs/cpm

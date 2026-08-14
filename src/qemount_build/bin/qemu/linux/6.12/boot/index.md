@@ -58,7 +58,7 @@ support:
   - format/pt/apm
   - format/pt/rdb
   - format/pt/atari
-  - format/pt/sun
+  - format/pt/sun-sparc
   - format/pt/sgi
   - format/pt/ldm
   - format/pt/minix

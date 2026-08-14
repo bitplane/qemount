@@ -53,7 +53,7 @@ support:
   - format/pt/apm
   - format/pt/rdb
   - format/pt/atari
-  - format/pt/sun
+  - format/pt/sun-sparc
   - format/pt/sgi
   - format/pt/minix
   - format/pt/ubi

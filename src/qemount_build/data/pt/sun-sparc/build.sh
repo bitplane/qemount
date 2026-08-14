@@ -1,5 +1,5 @@
 #!/bin/sh
-# $1 = output file (e.g. data/pt/basic.sun)
+# $1 = output file (e.g. data/pt/basic.sun-sparc)
 set -e
 
 OUTPUT="/host/build/$1"

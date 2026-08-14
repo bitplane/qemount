@@ -1,6 +1,6 @@
-//! Sun VTOC partition table reader
+//! Sun SPARC VTOC8 disklabel reader
 //!
-//! Parses Sun disk labels and returns children for each data partition.
+//! Parses big-endian Sun SPARC disklabels and returns each data slice.
 
 use crate::container::slice::SliceReader;
 use crate::container::{Child, Container};
@@ -14,13 +14,13 @@ const SUN_LABEL_MAGIC: u16 = 0xDABE;
 /// Maximum partitions in Sun label
 const MAX_PARTITIONS: usize = 8;
 
-/// Sun VTOC partition table container
-pub struct SunContainer;
+/// Sun SPARC VTOC8 disklabel container
+pub struct SunSparcContainer;
 
 /// Static instance for registry
-pub static SUN: SunContainer = SunContainer;
+pub static SUN_SPARC: SunSparcContainer = SunSparcContainer;
 
-impl Container for SunContainer {
+impl Container for SunSparcContainer {
     fn children(&self, reader: Arc<dyn Reader + Send + Sync>) -> io::Result<Vec<Child>> {
         // Verify magic at offset 508
         let magic = read_be16(&*reader, 508)?;

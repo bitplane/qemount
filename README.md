@@ -85,7 +85,8 @@ support. This is what works so far; YMMV, expect occasional regressions.
 | **Apple APM**      | ✅         | ✅        | ✅        | ❌            | ❌        | ❌           | ✅                | ❌     | ❌             | Classic Mac partition map       |
 | **Amiga RDB**      | ✅         | ✅        | ✅        | ❌            | ✅        | ❌           | ❌                | ❌     | ❌             |                                 |
 | **Atari AHDI**     | ✅         | ✅        | ✅        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | Atari ST/TOS                    |
-| **Sun VTOC**       | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | Solaris/SunOS                   |
+| **Sun SPARC VTOC8** | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | SunOS/Solaris on SPARC          |
+| **Solaris x86 VTOC16** | ❌      | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ✅             | Nested inside an MBR partition  |
 | **SGI DVH**        | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | IRIX disks                      |
 | **LDM**            | ✅         | ❌        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | Windows dynamic disks           |
 | **Minix**          | ✅         | ✅        | ❌        | ❌            | ❌        | ❌           | ❌                | ❌     | ❌             | Minix subpartitions             |
