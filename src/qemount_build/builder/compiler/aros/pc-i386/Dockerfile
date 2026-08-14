@@ -33,6 +33,7 @@ RUN set -eu; \
         --with-aros-toolchain-install="$INSTALL_DIR" \
         --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4" \
     ; \
+    make -j1 tools; \
     make -j"${JOBS}" crosstools; \
     HOST_TOOLS=bin/linux-${BUILD_ARCH}/tools; \
     mkdir -p \
