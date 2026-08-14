@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/puredarwin-qemount-0.4.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/puredarwin-17.4.tar.gz
 ARCHITECTURE_ARCHIVE=/host/build/sources/architecture-268.tar.gz
 COMPILER_RT_ARCHIVE=/host/build/sources/compiler-rt-14.0.6.src.tar.xz
 DYLD_ARCHIVE=/host/build/sources/dyld-519.2.2.tar.gz
@@ -39,7 +39,7 @@ LIBCXXABI_DIR=$CACHE_DIR/libcxxabi-5.0.0
 LIBUNWIND_DIR=$CACHE_DIR/libunwind-5.0.0
 BUILD_DIR=$CACHE_DIR/build-llvm14
 ROOT_DIR=$CACHE_DIR/root-llvm14
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/system
+OUTPUT_DIR=/opt/puredarwin
 OUTPUT_ARCHIVE=$OUTPUT_DIR/base-system.tar.gz
 BUILD_JOBS=${JOBS:-1}
 

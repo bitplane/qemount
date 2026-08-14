@@ -184,7 +184,7 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
 
     aros = graph_for("bin/qemu/i386-aros/qemount/aros.iso", context)
     darwin = graph_for(
-        "bin/qemu/x86_64-darwin/puredarwin/appliance/puredarwin.raw",
+        "bin/qemu/x86_64-darwin/puredarwin/qemount/puredarwin.raw",
         context,
     )
 

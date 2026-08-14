@@ -2,7 +2,7 @@
 set -eu
 
 SOURCE=/host/build/sources/aros-ports/grub-2.12.tar.gz
-OUTPUT_DIR=/host/build/bin/qemu/x86_64-darwin/puredarwin/boot
+OUTPUT_DIR=/opt/puredarwin/boot
 SOURCE_DIR=/work/grub
 BUILD_DIR=/work/build
 INSTALL_DIR=/work/install

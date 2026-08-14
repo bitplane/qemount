@@ -1,6 +1,18 @@
 ---
-title: PureDarwin BaseSystem
+title: PureDarwin 17.4 Build Toolbox
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+output_platforms:
+  x86_64-darwin:
+    provides:
+      - docker:builder/compiler/puredarwin/17.4
+env:
+  BUILDER: builder/compiler/puredarwin
+  JOBS: ${JOBS}
 requires:
+  - docker:${BUILDER}
+build_requires:
   - sources/architecture-268.tar.gz
   - sources/applefilesystemdriver-23.tar.gz
   - sources/applei386pci-6.tar.gz
@@ -25,23 +37,15 @@ requires:
   - sources/iopcifamily-320.30.2.tar.gz
   - sources/iostoragefamily-218.30.1.tar.gz
   - sources/hfs-407.30.1.tar.gz
-  - sources/puredarwin-qemount-0.4.tar.gz
+  - sources/puredarwin-17.4.tar.gz
   - sources/syslog-356.50.1.tar.gz
   - sources/xnu-4570.41.2.tar.gz
-provides:
-  - bin/qemu/${OUTPUT_ARCH}-darwin/puredarwin/system/base-system.tar.gz
+  - sources/aros-ports/grub-2.12.tar.gz
 ---
 
-# PureDarwin BaseSystem
+# PureDarwin 17.4 Build Toolbox
 
-Builds the Darwin 17.4 XNU source in PureDarwin's Linux-hosted Clang/LLVM
-environment and packages the kernel and generic PC platform driver closure as an
-installable BaseSystem tree.
-
-The archive includes the source-built dynamic loader, libSystem umbrella and
-its runtime-library closure, so it can start Darwin executables without
-borrowing userland binaries from a prebuilt image.
-
-Source extraction, generated host tools, and target objects are cached by
-source archive hashes so iterative toolchain work resumes from the last
-successful object.
+Linux-hosted compiler, Darwin 17.4 BaseSystem closure and source-built BIOS
+loader used to assemble the PureDarwin appliance. Intermediate target objects
+remain in the host build cache; the resulting toolbox image contains the
+runtime tree and boot components needed by downstream image builders.
