@@ -1,16 +1,16 @@
 ---
-title: Haiku qemount 2026-08-01-2
-version: qemount-2026-08-01-2
+title: Haiku R1 Beta 6 hrev59919+1
+version: r1-beta6-hrev59919+1
 urls:
   - git+https://github.com/bitplane/Haiku.git#qemount-2026-08-01-2
 provides:
-  - sources/haiku-qemount-2026-08-01-2.tar.gz
+  - sources/haiku-r1-beta6-hrev59919+1.tar.gz
 ---
 
 # Haiku
 
-The proven Haiku integration tree used by the qemount guest, pinned to an
-immutable dated tag.[^bugfixes]
+Haiku R1 Beta 6 at hrev59919 with the integration fixes used by qemount,
+pinned by an immutable tag on the qemount fork.[^bugfixes]
 
 [^bugfixes]: Includes fixes for Haiku [ticket #20220](https://dev.haiku-os.org/ticket/20220)
     (`pc_serial`) and [ticket #20221](https://dev.haiku-os.org/ticket/20221)

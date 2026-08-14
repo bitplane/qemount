@@ -1,19 +1,20 @@
 ---
-title: Haiku Cross-Compiler
+title: Haiku R1 Beta 6 hrev59919+1 Toolbox
 build_platforms:
   x86_64-linux: {}
 env:
   OUTPUT_ARCH: x86_64
+  HAIKU_REVISION: hrev59919+1
 build_requires:
-  - sources/haiku-qemount-2026-08-01-2.tar.gz
+  - sources/haiku-r1-beta6-hrev59919+1.tar.gz
 provides:
   - docker:builder/compiler/haiku
 ---
 
-# Haiku Cross-Compiler
+# Haiku Toolbox
 
-Haiku build environment based on the official toolchain-worker image and the
-qemount integration source.
+Haiku build environment containing the cross-compiler, source tree, matching
+cross-development sysroot and compiled objects used by the appliance.
 
-Source is mounted during build via build_requires. The official toolchain-worker
-and application SDK images are currently published for amd64 hosts only.
+Source is mounted during build via `build_requires`. The official
+toolchain-worker image is currently published for amd64 hosts only.

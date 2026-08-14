@@ -221,9 +221,8 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     providers = buildable_providers(context)
 
     assert "docker:builder/compiler/haiku" not in providers
-    assert "docker:builder/compiler/haiku/r1beta5-sdk" not in providers
     assert "bin/x86_64-haiku/qemount-init" not in providers
-    assert "bin/qemu/x86_64-haiku/qemount/boot/haiku.image" not in providers
+    assert "bin/qemu/x86_64-haiku/qemount/haiku.image" not in providers
     assert "data/fs/basic.beos-bfs" not in providers
 
 

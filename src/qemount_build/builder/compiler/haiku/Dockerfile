@@ -1,13 +1,28 @@
 ARG OUTPUT_ARCH
+ARG HAIKU_REVISION
+ARG JOBS=1
 FROM ghcr.io/haiku/toolchain-worker-master@sha256:b89005bb884ee4b127e59169ce28924460bfe7765f79d1ac186fb55fa5944ee6
 ARG OUTPUT_ARCH
+ARG HAIKU_REVISION
 
 WORKDIR /src
 RUN mkdir haiku && \
-    tar xzf /host/build/sources/haiku-qemount-2026-08-01-2.tar.gz \
+    tar xzf /host/build/sources/haiku-r1-beta6-hrev59919+1.tar.gz \
         -C haiku --strip-components=1
 
 WORKDIR /src/haiku
 RUN mkdir -p generated && \
     cd generated && \
     ../configure --cross-tools-prefix /toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
+
+RUN cd generated && \
+    jam -q -j"${JOBS}" "-sHAIKU_REVISION=${HAIKU_REVISION}" \
+        haiku_cross_devel_sysroot_${OUTPUT_ARCH}.hpkg && \
+    mkdir -p /opt/haiku-sysroot && \
+    LD_LIBRARY_PATH=objects/linux/lib \
+        objects/linux/x86_64/release/tools/package/package extract \
+        -C /opt/haiku-sysroot \
+        objects/haiku/${OUTPUT_ARCH}/packaging/packages/haiku_cross_devel_sysroot_${OUTPUT_ARCH}.hpkg
+
+RUN mkdir -p /opt/haiku-sysroot/boot/system && \
+    ln -s ../../develop /opt/haiku-sysroot/boot/system/develop

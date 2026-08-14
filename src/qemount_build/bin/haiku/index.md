@@ -5,12 +5,12 @@ build_platforms:
 output_platforms:
   x86_64-haiku: {}
 env:
-  BUILDER: builder/compiler/haiku/r1beta5-sdk
+  BUILDER: builder/compiler/haiku
 requires:
   - docker:${BUILDER}
 ---
 
 # Haiku binaries
 
-Programs built for 64-bit Haiku R1 Beta 5 guests using the matching official
-cross-compiler and sysroot.
+Programs built for the Haiku appliance using the source-matched toolbox and
+cross-development sysroot.

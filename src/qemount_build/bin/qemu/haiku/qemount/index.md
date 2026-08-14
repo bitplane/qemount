@@ -1,18 +1,20 @@
 ---
-title: Haiku qemount Guest
-build_platforms:
-  x86_64-linux: {}
-output_platforms:
-  x86_64-haiku: {}
+title: Haiku qemount Appliance
 env:
-  BUILDER: builder/compiler/haiku
-  HAIKU_IMAGE_SIZE: "7"
-  HAIKU_REVISION: hrev59919+1
-  JOBS: "1"
+  BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
+  - bin/qemu/${OUTPUT_ARCH}-haiku/base/haiku.image
+  - bin/${OUTPUT_ARCH}-haiku/simple9p
+provides:
+  - bin/qemu/${OUTPUT_ARCH}-haiku/qemount/haiku.image
 ---
 
-# Haiku qemount Guest
+# Haiku qemount Appliance
 
-Minimal x86_64 Haiku guest built from the qemount integration branch.
+Adds simple9p to the qemount appliance. At boot Haiku
+mounts every filesystem it recognises, then serves the resulting system root
+over its second PC serial port.
+
+The serial carrier handles one 9P request at a time. Use `9pfuse -n 1` when
+mounting this guest.

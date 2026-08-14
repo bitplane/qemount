@@ -3,7 +3,8 @@ set -eu
 
 SIMPLE9P_SOURCE=/work/simple9p
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-haiku
-TOOL_PREFIX=/tools/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
+TOOL_PREFIX=/toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
+SYSROOT=/opt/haiku-sysroot
 
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
@@ -13,10 +14,10 @@ tar -xf /host/build/sources/simple9p-0.6.2.tar.xz \
 
 make -C "$SIMPLE9P_SOURCE" \
     NETWORK=0 \
-    CC="${TOOL_PREFIX}gcc" \
+    CC="${TOOL_PREFIX}gcc --sysroot=${SYSROOT}" \
     CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
-    LDFLAGS= \
-    LIBS="build/libixp.a -lpthread"
+    LDFLAGS="--sysroot=${SYSROOT}" \
+    LIBS="build/libixp.a"
 
 "${TOOL_PREFIX}strip" --strip-unneeded \
     "$SIMPLE9P_SOURCE/build/simple9p"
