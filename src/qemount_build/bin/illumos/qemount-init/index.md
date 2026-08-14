@@ -5,9 +5,10 @@ output_platforms:
     provides:
       - bin/${OUTPUT_PLATFORM}/qemount-init
       - bin/${OUTPUT_PLATFORM}/qemount-bootstrap
+env:
+  BUILDER: builder/compiler/illumos/qemount-0.1
 requires:
-  - docker:builder/compiler/illumos
-  - bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
+  - docker:${BUILDER}
 ---
 
 # qemount init for illumos

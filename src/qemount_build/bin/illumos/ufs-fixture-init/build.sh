@@ -5,7 +5,7 @@ test "$OUTPUT_ARCH" = x86_64
 
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
-sysroot=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
+sysroot=/opt/illumos/sysroot
 output=/host/build/bin/${OUTPUT_PLATFORM}/ufs-fixture-init
 object=/work/ufs-fixture-init.o
 

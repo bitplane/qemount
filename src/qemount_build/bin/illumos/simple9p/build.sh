@@ -5,7 +5,7 @@ test "$OUTPUT_ARCH" = x86_64
 
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
-sysroot=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
+sysroot=/opt/illumos/sysroot
 source=/work/simple9p
 objects=/work/objects
 output=/host/build/bin/${OUTPUT_PLATFORM}/simple9p

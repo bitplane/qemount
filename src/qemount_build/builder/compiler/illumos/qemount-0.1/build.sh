@@ -2,7 +2,7 @@
 set -eu
 
 host_bin=/host/build/bin/${BUILD_ARCH}-linux-gnu
-source_archive=/host/build/sources/illumos-gate-linux-build.tar.gz
+source_archive=/host/build/sources/illumos-gate-qemount-0.1.tar.gz
 binutils_archive=/host/build/sources/binutils-2.46.1.tar.bz2
 
 mkdir -p /build/binutils-source /build/binutils-build

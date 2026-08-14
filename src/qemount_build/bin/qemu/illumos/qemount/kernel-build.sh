@@ -6,7 +6,7 @@ test "$OUTPUT_ARCH" = x86_64
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
 makefile=$src/cmd/make/bin/make.rules.file
-output=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/kernel
+output=/opt/illumos/qemount/kernel
 
 # dmake asks the target linker to load its dependency-recording support
 # library. Keep that library on the linker's search path without exposing the

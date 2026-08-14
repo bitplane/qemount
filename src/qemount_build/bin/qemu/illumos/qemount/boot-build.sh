@@ -3,7 +3,7 @@ set -eu
 
 test "$OUTPUT_ARCH" = x86_64
 
-base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount
+base=/opt/illumos/qemount
 output=$base/boot/xplatform/i86pc/kernel/amd64/unix
 
 mkdir -p "${output%/*}" /work

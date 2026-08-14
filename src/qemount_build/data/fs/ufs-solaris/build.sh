@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-base=/host/build/bin/qemu/x86_64-illumos/illumos/qemount/system
+base=/host/build/bin/qemu/x86_64-illumos/illumos/qemount
 rootfs=$base/rootfs.iso
 output=/host/build/data/fs/basic.ufs-solaris
 

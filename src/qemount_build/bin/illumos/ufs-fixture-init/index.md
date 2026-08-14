@@ -4,9 +4,10 @@ output_platforms:
   x86_64-illumos:
     provides:
       - bin/${OUTPUT_PLATFORM}/ufs-fixture-init
+env:
+  BUILDER: builder/compiler/illumos/qemount-0.1
 requires:
-  - docker:builder/compiler/illumos
-  - bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
+  - docker:${BUILDER}
 ---
 
 # illumos UFS fixture init

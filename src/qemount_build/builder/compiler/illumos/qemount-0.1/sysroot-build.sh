@@ -6,7 +6,7 @@ test "$OUTPUT_ARCH" = x86_64
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
 makefile=$src/cmd/make/bin/make.rules.file
-output=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/sysroot
+output=/opt/illumos/sysroot
 
 export LD_LIBRARY_PATH=/opt/schily/lib
 
@@ -102,3 +102,7 @@ install -m 0755 "$src/cmd/sgs/rtld/amd64/ld.so.1" \
     "$output/lib/amd64/ld.so.1"
 ln -s amd64 "$output/lib/64"
 ln -s amd64 "$output/usr/lib/64"
+
+mkdir -p /opt/illumos/share
+install -m 0644 "$src/uts/intel/os/name_to_sysnum" \
+    /opt/illumos/share/name_to_sysnum

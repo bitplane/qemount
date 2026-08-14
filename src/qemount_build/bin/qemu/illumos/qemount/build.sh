@@ -3,10 +3,10 @@ set -eu
 
 test "$OUTPUT_ARCH" = x86_64
 
-base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount
+base=/opt/illumos/qemount
 staging=/work/root
-output=$base/rootfs.iso
-source_archive=/host/build/sources/illumos-gate-linux-build.tar.gz
+output_base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount
+output=$output_base/rootfs.iso
 
 rm -rf "$staging"
 mkdir -p \
@@ -24,15 +24,15 @@ mkdir -p \
     "$staging/system/contract" \
     "$staging/system/object"
 cp -a /build/root/. "$staging/"
-cp -a "$base/sysroot/lib/." "$staging/lib/"
+cp -a /opt/illumos/sysroot/lib/. "$staging/lib/"
 # hsfs exposes the ABI aliases as symlinks, but the early runtime loader does
 # not follow them while resolving indirect dependencies. Keep its default
 # library directory concrete in the read-only appliance root.
 rm "$staging/lib/64"
 mkdir "$staging/lib/64"
-cp -a "$base/sysroot/lib/amd64/." "$staging/lib/64/"
+cp -a /opt/illumos/sysroot/lib/amd64/. "$staging/lib/64/"
 mkdir -p "$staging/usr/lib"
-cp -a "$base/sysroot/usr/lib/." "$staging/usr/lib/"
+cp -a /opt/illumos/sysroot/usr/lib/. "$staging/usr/lib/"
 install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/qemount-bootstrap \
     "$staging/sbin/init"
 install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/qemount-init \
@@ -49,9 +49,8 @@ cp -a "$base/modules/." "$staging/"
 install -m 0644 "$base/kernel/genunix" "$staging/kernel/amd64/genunix"
 install -m 0644 "$base/kernel/unix" \
     "$staging/platform/i86pc/kernel/amd64/unix"
-tar -xOf "$source_archive" --wildcards \
-    '*/usr/src/uts/intel/os/name_to_sysnum' \
-    > "$staging/etc/name_to_sysnum"
+install -m 0644 /opt/illumos/share/name_to_sysnum \
+    "$staging/etc/name_to_sysnum"
 
 mkdir -p "${output%/*}"
 find "$staging" -exec touch -h -d @0 {} +
@@ -67,3 +66,8 @@ xorriso -as mkisofs \
     -relaxed-filenames \
     -o "$output.tmp" "$staging"
 mv "$output.tmp" "$output"
+
+kernel=$output_base/xplatform/i86pc/kernel/amd64/unix
+mkdir -p "${kernel%/*}"
+install -m 0644 \
+    "$base/boot/xplatform/i86pc/kernel/amd64/unix" "$kernel"

@@ -6,8 +6,8 @@ test "$OUTPUT_ARCH" = x86_64
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
 makefile=$src/cmd/make/bin/make.rules.file
-output=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/modules
-kernel=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/kernel
+output=/opt/illumos/qemount/modules
+kernel=/opt/illumos/qemount/kernel
 
 export LD_LIBRARY_PATH=/opt/schily/lib
 
