@@ -1,8 +1,8 @@
 ---
 title: illumos gate Linux build
-version: 3e35911c29
+version: e70534d51f
 urls:
-  - git+https://github.com/bitplane/illumos-gate.git#3e35911c2938f67ed9d2205ee6a669bdbbc47d9b
+  - git+https://github.com/bitplane/illumos-gate.git#e70534d51f82d2a3d1ad927d8666d51b8671efd7
 provides:
   - sources/illumos-gate-linux-build.tar.gz
 ---

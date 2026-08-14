@@ -1,0 +1,6 @@
+asy "pciclass,0700"
+isa "pciclass,060100"
+acpinex "acpivirtnex"
+pseudo "zconsnex"
+vioblk "pci1af4,1001"
+vioblk "pci1af4,1042,p"

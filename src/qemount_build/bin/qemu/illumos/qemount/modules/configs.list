@@ -1,0 +1,25 @@
+# source path relative to uts    installed configuration path
+i86pc/io/rootnex.conf            platform/i86pc/kernel/drv/rootnex.conf
+common/io/options.conf           kernel/drv/options.conf
+common/io/ramdisk.conf           kernel/drv/ramdisk.conf
+common/io/clone.conf             kernel/drv/clone.conf
+common/io/cn.conf                kernel/drv/cn.conf
+common/io/log.conf               kernel/drv/log.conf
+common/io/mm.conf                kernel/drv/mm.conf
+common/io/pseudo.conf            kernel/drv/pseudo.conf
+common/io/sy.conf                kernel/drv/sy.conf
+common/io/asy.conf               kernel/drv/asy.conf
+common/io/conskbd.conf           kernel/drv/conskbd.conf
+common/io/consms.conf            kernel/drv/consms.conf
+common/io/wc.conf                kernel/drv/wc.conf
+common/io/iwscn.conf             kernel/drv/iwscn.conf
+common/io/dld/dld.conf           kernel/drv/dld.conf
+common/inet/ip/ip.conf           kernel/drv/ip.conf
+common/inet/ip/ip6.conf          kernel/drv/ip6.conf
+common/inet/tcp/tcp.conf         kernel/drv/tcp.conf
+common/inet/tcp/tcp6.conf        kernel/drv/tcp6.conf
+common/inet/udp/udp.conf         kernel/drv/udp.conf
+common/inet/udp/udp6.conf        kernel/drv/udp6.conf
+common/inet/ip/icmp.conf         kernel/drv/icmp.conf
+common/inet/ip/icmp6.conf        kernel/drv/icmp6.conf
+common/inet/arp/arp.conf         kernel/drv/arp.conf

@@ -27,7 +27,8 @@
   - [ ] site generator
 - [ ] clients
   - [ ] FUSE
-  - [ ] 7zip
+  - [ ] PeaZip
+  - [ ] 7-zip
   - [ ] extractor
 
 ## 3. Polish the turd
