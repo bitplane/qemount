@@ -1,16 +1,14 @@
 #!/bin/sh
 set -eu
 
-SDK=/opt/puredarwin/sysroot
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
 OUTPUT=$OUTPUT_DIR/qemount-init
-TARGET=x86_64-apple-macos10.13
 
 mkdir -p "$OUTPUT_DIR"
-clang-14 --target="$TARGET" -isysroot "$SDK" -mmacosx-version-min=10.13 \
+"$CC" \
     -Os -g0 -D_DARWIN_C_SOURCE -D__APPLE_API_UNSTABLE \
-    -fuse-ld=lld -Wl,-dead_strip \
+    -Wl,-dead_strip \
     -o "$OUTPUT" /qemount-init.c
-llvm-strip-14 -S "$OUTPUT"
-llvm-objdump-14 --macho --dylibs-used "$OUTPUT" \
+"$STRIP" -S "$OUTPUT"
+"$OBJDUMP" --macho --dylibs-used "$OUTPUT" \
     | grep -q '/usr/lib/libSystem.B.dylib'

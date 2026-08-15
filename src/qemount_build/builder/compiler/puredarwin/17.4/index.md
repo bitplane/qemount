@@ -49,3 +49,8 @@ Linux-hosted compiler, Darwin 17.4 BaseSystem closure and source-built BIOS
 loader used to assemble the PureDarwin appliance. Intermediate target objects
 remain in the host build cache; the resulting toolbox image contains the
 runtime tree and boot components needed by downstream image builders.
+
+Consumers inherit `CC`, `AR`, `STRIP`, `OBJDUMP`, and `PUREDARWIN_SYSROOT`.
+The compiler wrapper selects the x86_64 Darwin 17 target, open-source sysroot,
+minimum deployment version and linker, keeping those details out of ordinary
+build definitions.

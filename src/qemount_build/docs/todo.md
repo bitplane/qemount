@@ -12,6 +12,10 @@
     - [x] publish the sysroot and compiler driver as the PureDarwin toolbox
     - [x] build simple9p and qemount-init without the Apple SDK
     - [x] prove both binaries inside the PureDarwin guest
+  - [ ] define one minimal headless QEMU feature profile across host platforms
+    - [ ] build macOS-hosted QEMU against the PureDarwin toolbox instead of the
+          Apple SDK
+    - [ ] measure the size, build-time and acceleration trade-offs
   - [ ] carefully think about caching strategy
   - [ ] guest architecture coverage
     - [x] enable KVM in Linux-hosted QEMU builds

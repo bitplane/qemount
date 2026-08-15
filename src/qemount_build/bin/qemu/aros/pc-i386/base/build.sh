@@ -11,6 +11,11 @@ OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 BUILD_JOBS=${JOBS:-1}
 
+# The compiler toolbox defaults ordinary consumers to the AROS target. This
+# source build also creates Linux host tools and selects both compilers through
+# its own configure machinery, so it must start without an ambient toolchain.
+unset CC AR STRIP
+
 export CCACHE_DIR="$CACHE_DIR/ccache"
 mkdir -p "$CACHE_DIR" "$CCACHE_DIR"
 
