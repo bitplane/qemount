@@ -6,10 +6,9 @@ build_platforms:
 output_platforms:
   x86_64-darwin: {}
 env:
-  BUILDER: builder/compiler/puredarwin
+  BUILDER: builder/compiler/puredarwin/17.4
 requires:
-  - docker:builder/compiler/puredarwin
-  - sdk/darwin/11.3/MacOSX11.3.sdk
+  - docker:${BUILDER}
   - sources/simple9p-0.6.3.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-darwin/simple9p

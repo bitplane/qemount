@@ -14,6 +14,9 @@ mac binaries with zig. Provides libSystem (.tbd stubs), C/POSIX headers, and
 ~200 system frameworks (CoreFoundation, IOKit, Foundation, Hypervisor,
 ApplicationServices, etc.) for both `x86_64-darwin` and `aarch64-darwin` targets.
 
+This SDK is used only for genuine macOS host outputs. PureDarwin guest binaries
+use the open-source sysroot produced by the PureDarwin build toolbox.
+
 Apple does not permit redistribution of the SDK, so it is not bundled with
 this project — the downloader fetches it on demand. Users are responsible
 for ensuring their use complies with the Xcode SDK license.

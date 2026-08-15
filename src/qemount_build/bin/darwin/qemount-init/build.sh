@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-SDK=/host/build/sdk/darwin/11.3/MacOSX11.3.sdk
+SDK=/opt/puredarwin/sysroot
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
 OUTPUT=$OUTPUT_DIR/qemount-init
 TARGET=x86_64-apple-macos10.13

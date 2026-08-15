@@ -39,8 +39,10 @@ LIBCXXABI_DIR=$CACHE_DIR/libcxxabi-5.0.0
 LIBUNWIND_DIR=$CACHE_DIR/libunwind-5.0.0
 BUILD_DIR=$CACHE_DIR/build-llvm14
 ROOT_DIR=$CACHE_DIR/root-llvm14
+SYSROOT_DIR=$CACHE_DIR/sysroot-llvm14
 OUTPUT_DIR=/opt/puredarwin
 OUTPUT_ARCHIVE=$OUTPUT_DIR/base-system.tar.gz
+OUTPUT_SYSROOT=$OUTPUT_DIR/sysroot
 BUILD_JOBS=${JOBS:-1}
 
 mkdir -p "$CACHE_DIR"
@@ -122,7 +124,7 @@ cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G Ninja \
     -DPUREDARWIN_LIBCXXABI_SOURCE_DIR="$LIBCXXABI_DIR" \
     -DPUREDARWIN_LIBUNWIND_SOURCE_DIR="$LIBUNWIND_DIR" \
     -DPUREDARWIN_EXTERNAL_SOURCE_ROOT="$DARWIN_SOURCE_DIR" \
-    -DPUREDARWIN_TARGET_TRIPLE=x86_64-apple-macos11 \
+    -DPUREDARWIN_TARGET_TRIPLE=x86_64-apple-macos10.13 \
     -DPUREDARWIN_BUILD_JOBS="$BUILD_JOBS"
 
 cmake --build "$BUILD_DIR" --parallel "$BUILD_JOBS" --target \
@@ -178,5 +180,15 @@ cmake --install "$BUILD_DIR" \
     --prefix "$ROOT_DIR" \
     --component BaseSystem
 
+rm -rf "$SYSROOT_DIR"
+cmake --install "$BUILD_DIR" \
+    --prefix "$SYSROOT_DIR" \
+    --component DeveloperTools
+mkdir -p "$SYSROOT_DIR/usr/lib"
+cp -a "$ROOT_DIR/usr/lib/." "$SYSROOT_DIR/usr/lib/"
+ln -s libSystem.B.dylib "$SYSROOT_DIR/usr/lib/libSystem.dylib"
+
 mkdir -p "$OUTPUT_DIR"
 tar -czf "$OUTPUT_ARCHIVE" -C "$ROOT_DIR" .
+rm -rf "$OUTPUT_SYSROOT"
+cp -a "$SYSROOT_DIR" "$OUTPUT_SYSROOT"
