@@ -22,3 +22,7 @@ provides:
 AROS's GCC and binutils cross-toolchain and matching Developer tree for native
 32-bit x86 PC guests. The image is tied to the selected AROS source revision
 and is cached independently of guest-image assembly.
+
+Consumers inherit `CC`, `AR`, `STRIP`, and `AROS_SYSROOT`. The compiler wrapper
+supplies the matching Developer tree as its sysroot, so ordinary build systems
+do not need to know the AROS toolchain or SDK layout.

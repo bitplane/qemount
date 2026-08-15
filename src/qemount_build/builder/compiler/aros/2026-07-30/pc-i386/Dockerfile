@@ -45,3 +45,13 @@ RUN set -eu; \
     cp -a \
         "$BUILD_DIR/$HOST_TOOLS/collect-aros" \
         "/opt/aros-toolbox/$HOST_TOOLS/"
+
+COPY --chmod=755 cc.sh /usr/local/bin/aros-cc
+
+RUN ln -s /opt/aros-toolchain/i386-aros-ar /usr/local/bin/aros-ar && \
+    ln -s /opt/aros-toolchain/i386-aros-strip /usr/local/bin/aros-strip
+
+ENV AROS_SYSROOT=/opt/aros-toolbox/bin/pc-i386-tiny/AROS/Developer \
+    CC=aros-cc \
+    AR=aros-ar \
+    STRIP=aros-strip
