@@ -2,6 +2,10 @@
 
 include "arch/evbarm/conf/GENERIC64"
 
+# The appliance has no USB television hardware.  NetBSD 10's GENERIC64
+# configuration selects auvitek, whose DTV half does not link on aarch64.
+no auvitek* at uhub?
+
 # GENERIC.common deliberately disables LFS.
 file-system LFS
 

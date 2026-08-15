@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-BASE_ISO=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/base/aros.iso
+BASE_ISO=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
 SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-aros/simple9p
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/qemount
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30
 OUTPUT_TMP=$OUTPUT_DIR/aros.iso.tmp
 STAGING_DIR=/work/iso
 

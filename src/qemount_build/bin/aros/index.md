@@ -3,7 +3,7 @@ title: AROS binaries
 output_platforms:
   i386-aros: {}
 env:
-  BUILDER: builder/compiler/aros/pc-i386
+  BUILDER: builder/compiler/aros/2026-07-30/pc-i386
 requires:
   - docker:${BUILDER}
 ---

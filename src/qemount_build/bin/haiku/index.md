@@ -5,7 +5,7 @@ build_platforms:
 output_platforms:
   x86_64-haiku: {}
 env:
-  BUILDER: builder/compiler/haiku
+  BUILDER: builder/compiler/haiku/r1-beta6-hrev59919-1
 requires:
   - docker:${BUILDER}
 ---

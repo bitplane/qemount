@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-haiku/base
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/base
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 BUILD_JOBS=${JOBS:-1}
 CACHE_DIR=/src/haiku/generated

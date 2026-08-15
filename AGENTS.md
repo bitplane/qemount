@@ -267,13 +267,33 @@ Default output selection follows architecture compatibility (`x86_64` also
 selects `i386`); `--output-arch` and `--output-platform` provide explicit
 selection without changing provider identity or buildability.
 
+### Guest versions and build toolboxes
+
+Guest paths identify the upstream operating-system generation, because that is
+what determines kernel, driver and filesystem compatibility. Use the upstream
+release or series version where one exists. For rolling projects without a
+release version, use the date of the newest upstream commit included when the
+fork last diverged or was synchronized, in `YYYY-MM-DD` form.
+
+Compiler images follow the same separation:
+
+- `builder/compiler/<os>` is a reusable, source-independent host bootstrap.
+- `builder/compiler/<os>/<version>` is the toolbox for one upstream guest
+  generation. It owns the matching compiler, SDK/sysroot and runtime closure.
+- Target-specific variants may live beneath that version when required.
+- Guest assembly consumes the toolbox; it does not publish build trees,
+  sysroots or SDKs as runtime outputs.
+- `bin/qemu/...` contains only files consumed by the emulator or launcher.
+  Intermediate objects belong in the toolbox image or provider cache.
+
 ## Current State
 
-Early scaffolding. What works:
+Mature build system with cut-down appliances. What works:
 - Build system resolves dependencies and builds in containers
 - Linux 2.6 and 6.12 guests boot, mount filesystems, serve 9P
 - NetBSD 10 guest builds (needs manual 9P init)
-- Format detection library compiles rules and detects ~40 formats
+- Format detection library compiles rules and detects many formats and gets
+  better with each catalogue update.
 - 9pfuse client connects and mounts
 
 What's next:

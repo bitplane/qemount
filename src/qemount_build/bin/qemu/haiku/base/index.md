@@ -3,7 +3,7 @@ title: Haiku Appliance Base
 requires:
   - bin/${OUTPUT_ARCH}-haiku/qemount-init
 provides:
-  - bin/qemu/${OUTPUT_ARCH}-haiku/base/haiku.image
+  - bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/base/haiku.image
 ---
 
 # Haiku Appliance Base

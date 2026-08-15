@@ -13,7 +13,7 @@ requires:
   - bin/${OUTPUT_ARCH}-darwin/stream64
   - bin/${OUTPUT_ARCH}-darwin/qemount-init
 provides:
-  - bin/qemu/${OUTPUT_PLATFORM}/puredarwin/qemount/puredarwin.raw
+  - bin/qemu/${OUTPUT_PLATFORM}/17.4/puredarwin.raw
 ---
 
 # PureDarwin qemount Appliance

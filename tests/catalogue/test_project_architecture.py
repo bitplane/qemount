@@ -182,9 +182,9 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
     assert providers["bin/i386-aros/simple9p"] == "bin/aros/simple9p"
     assert providers["bin/x86_64-darwin/simple9p"] == "bin/darwin/simple9p"
 
-    aros = graph_for("bin/qemu/i386-aros/qemount/aros.iso", context)
+    aros = graph_for("bin/qemu/i386-aros/2026-07-30/aros.iso", context)
     darwin = graph_for(
-        "bin/qemu/x86_64-darwin/puredarwin/qemount/puredarwin.raw",
+        "bin/qemu/x86_64-darwin/17.4/puredarwin.raw",
         context,
     )
 
@@ -220,9 +220,9 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     }
     providers = buildable_providers(context)
 
-    assert "docker:builder/compiler/haiku" not in providers
+    assert "docker:builder/compiler/haiku/r1-beta6-hrev59919-1" not in providers
     assert "bin/x86_64-haiku/qemount-init" not in providers
-    assert "bin/qemu/x86_64-haiku/qemount/haiku.image" not in providers
+    assert "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image" not in providers
     assert "data/fs/basic.beos-bfs" not in providers
 
 
@@ -273,15 +273,15 @@ def test_9front_cross_build_matrix():
     for context in (CONTEXT, arm_context):
         providers = buildable_providers(context)
         assert "docker:builder/compiler/9front" in providers
-        assert "bin/qemu/x86_64-9front/qemount/9front.iso" in providers
-        assert "bin/qemu/aarch64-9front/qemount/9front.qcow2" in providers
-        assert "bin/qemu/aarch64-9front/qemount/u-boot.bin" in providers
+        assert "bin/qemu/x86_64-9front/11957/9front.iso" in providers
+        assert "bin/qemu/aarch64-9front/11957/9front.qcow2" in providers
+        assert "bin/qemu/aarch64-9front/11957/u-boot.bin" in providers
 
     arm_guest = graph_for(
-        "bin/qemu/aarch64-9front/qemount/9front.qcow2", CONTEXT
+        "bin/qemu/aarch64-9front/11957/9front.qcow2", CONTEXT
     )
     x86_guest = graph_for(
-        "bin/qemu/x86_64-9front/qemount/9front.iso", arm_context
+        "bin/qemu/x86_64-9front/11957/9front.iso", arm_context
     )
 
     assert "bin/qemu/9front/qemount@aarch64-9front" in arm_guest["nodes"]

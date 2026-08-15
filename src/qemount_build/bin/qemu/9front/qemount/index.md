@@ -3,12 +3,12 @@ title: 9front qemount appliance
 output_platforms:
   x86_64-9front:
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.iso
+      - bin/qemu/${OUTPUT_PLATFORM}/11957/9front.iso
       - bin/${OUTPUT_PLATFORM}/mksacfs
   aarch64-9front:
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/qemount/9front.qcow2
-      - bin/qemu/${OUTPUT_PLATFORM}/qemount/u-boot.bin
+      - bin/qemu/${OUTPUT_PLATFORM}/11957/9front.qcow2
+      - bin/qemu/${OUTPUT_PLATFORM}/11957/u-boot.bin
       - bin/${OUTPUT_PLATFORM}/mksacfs
 requires:
   - sources/9front-11957.amd64.qcow2.gz

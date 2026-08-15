@@ -3,10 +3,9 @@
 
 /*
  * QEMU's Multiboot loader uses the host-side kernel path as the kernel command
- * line. The appliance stores this wrapper under xplatform/... so changing its
- * first byte gives dboot the canonical /platform/... path of the real ELF in
- * the boot filesystem. The rootfs type is supplied by QEMU's native Multiboot
- * module-argument syntax.
+ * line. Point it at the canonical path of the real ELF in the boot filesystem
+ * so the published wrapper filename does not become part of the guest ABI. The
+ * rootfs type is supplied by QEMU's native Multiboot module-argument syntax.
  *
  * The original ELF begins at file offset 0xea8. Loading this wrapper at the
  * page-aligned address 0xbff000 places the ELF at its patched load address
@@ -23,8 +22,10 @@
 
 .global _start
 _start:
-	mov 16(%ebx), %ecx
-	movb $'/', (%ecx)
+	movl $kernel_path, 16(%ebx)
 
 	mov $0xc00060, %ecx
 	jmp *%ecx
+
+kernel_path:
+	.asciz "/platform/i86pc/kernel/amd64/unix"

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-BASE_ISO=/host/build/bin/qemu/i386-aros/base/aros.iso
+BASE_ISO=/host/build/bin/qemu/i386-aros/2026-07-30/base/aros.iso
 TEMPLATE=/host/build/data/templates/basic.tar
 POPULATE=/host/build/data/templates/basic.amiga
 

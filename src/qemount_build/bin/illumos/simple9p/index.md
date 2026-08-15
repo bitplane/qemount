@@ -5,7 +5,7 @@ output_platforms:
     provides:
       - bin/${OUTPUT_PLATFORM}/simple9p
 env:
-  BUILDER: builder/compiler/illumos/qemount-0.1
+  BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
   - sources/simple9p-0.6.2.tar.xz

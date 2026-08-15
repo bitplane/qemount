@@ -8,7 +8,7 @@ output=$base/boot/xplatform/i86pc/kernel/amd64/unix
 
 mkdir -p "${output%/*}" /work
 gcc -m32 -c /build/boot.S -o /work/boot.o
-ld -m elf_i386 -Ttext=0 -e _start --oformat=binary \
+ld -m elf_i386 -Ttext=0xbff000 -e _start --oformat=binary \
     /work/boot.o -o /work/boot.bin
 prefix_size=$((0xea8))
 test "$(stat -c %s /work/boot.bin)" -le "$prefix_size"

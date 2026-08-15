@@ -1,10 +1,10 @@
 ---
 title: AROS PC i386 qemount Appliance
 requires:
-  - bin/qemu/${OUTPUT_ARCH}-aros/base/aros.iso
+  - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
   - bin/${OUTPUT_ARCH}-aros/simple9p
 provides:
-  - bin/qemu/${OUTPUT_ARCH}-aros/qemount/aros.iso
+  - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/aros.iso
 ---
 
 # AROS PC i386 qemount Appliance

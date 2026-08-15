@@ -3,7 +3,7 @@ format: fs/v6
 requires:
   - docker:builder/disk/research-unix
 build_requires:
-  - bin/qemu/x86_64-9front/qemount/9front.iso
+  - bin/qemu/x86_64-9front/11957/9front.iso
   - data/templates/basic.tar
 env:
   RESEARCH_UNIX_FORMAT: v6

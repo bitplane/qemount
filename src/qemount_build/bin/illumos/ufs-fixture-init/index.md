@@ -5,7 +5,7 @@ output_platforms:
     provides:
       - bin/${OUTPUT_PLATFORM}/ufs-fixture-init
 env:
-  BUILDER: builder/compiler/illumos/qemount-0.1
+  BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
 ---

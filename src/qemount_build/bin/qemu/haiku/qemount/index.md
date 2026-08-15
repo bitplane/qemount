@@ -4,10 +4,10 @@ env:
   BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
-  - bin/qemu/${OUTPUT_ARCH}-haiku/base/haiku.image
+  - bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/base/haiku.image
   - bin/${OUTPUT_ARCH}-haiku/simple9p
 provides:
-  - bin/qemu/${OUTPUT_ARCH}-haiku/qemount/haiku.image
+  - bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
 ---
 
 # Haiku qemount Appliance

@@ -5,7 +5,7 @@ build_platforms:
 env:
   OUTPUT_ARCH: x86_64
 requires:
-  - docker:builder/compiler/haiku
+  - docker:builder/compiler/haiku/r1-beta6-hrev59919-1
 provides:
   - docker:builder/disk/haiku
 ---

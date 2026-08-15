@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-base=/host/build/bin/qemu/x86_64-illumos/illumos/qemount
+base=/host/build/bin/qemu/x86_64-illumos/2026-08-13
 rootfs=$base/rootfs.iso
 output=/host/build/data/fs/basic.ufs-solaris
 
@@ -42,7 +42,7 @@ if ! run-until-marker \
         -monitor none \
         -serial file:/work/serial.log \
         -no-reboot \
-        -kernel xplatform/i86pc/kernel/amd64/unix \
+        -kernel kernel \
         -initrd '/work/rootfs.iso type=rootfs' \
         -append '-B fstype=hsfs,console=ttya' \
         -drive file="$output",if=none,id=fixture,format=raw \

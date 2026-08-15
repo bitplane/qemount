@@ -3,11 +3,11 @@ title: illumos qemount Appliance
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/xplatform/i86pc/kernel/amd64/unix
-      - bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount/rootfs.iso
+      - bin/qemu/${OUTPUT_PLATFORM}/2026-08-13/kernel
+      - bin/qemu/${OUTPUT_PLATFORM}/2026-08-13/rootfs.iso
 env:
   BUILDER: builder/disk/guest
-  ILLUMOS_BUILDER: builder/compiler/illumos/qemount-0.1
+  ILLUMOS_BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
   - docker:${ILLUMOS_BUILDER}

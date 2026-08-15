@@ -6,7 +6,7 @@ requires:
   - sources/aros-ports/grub-2.12.tar.gz
   - sources/aros-ports/pci.ids
 provides:
-  - bin/qemu/${OUTPUT_ARCH}-aros/base/aros.iso
+  - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
 ---
 
 # AROS PC i386 Base Guest

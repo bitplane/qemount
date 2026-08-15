@@ -5,7 +5,7 @@ test "$OUTPUT_ARCH" = x86_64
 
 base=/opt/illumos/qemount
 staging=/work/root
-output_base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/illumos/qemount
+output_base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/2026-08-13
 output=$output_base/rootfs.iso
 
 rm -rf "$staging"
@@ -67,7 +67,7 @@ xorriso -as mkisofs \
     -o "$output.tmp" "$staging"
 mv "$output.tmp" "$output"
 
-kernel=$output_base/xplatform/i86pc/kernel/amd64/unix
+kernel=$output_base/kernel
 mkdir -p "${kernel%/*}"
 install -m 0644 \
     "$base/boot/xplatform/i86pc/kernel/amd64/unix" "$kernel"

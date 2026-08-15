@@ -6,7 +6,7 @@ output_platforms:
       - bin/${OUTPUT_PLATFORM}/qemount-init
       - bin/${OUTPUT_PLATFORM}/qemount-bootstrap
 env:
-  BUILDER: builder/compiler/illumos/qemount-0.1
+  BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
 ---

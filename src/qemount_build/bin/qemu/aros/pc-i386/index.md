@@ -5,7 +5,7 @@ output_platforms:
 env:
   AROS_TARGET: pc-i386
   AROS_VARIANT: tiny
-  BUILDER: builder/compiler/aros/pc-i386
+  BUILDER: builder/compiler/aros/2026-07-30/pc-i386
 requires:
   - docker:${BUILDER}
 ---

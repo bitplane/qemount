@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-boot_iso=/host/build/bin/qemu/x86_64-9front/qemount/9front.iso
+boot_iso=/host/build/bin/qemu/x86_64-9front/11957/9front.iso
 template=/host/build/data/templates/basic.tar
 
 for output in "$@"; do
@@ -26,4 +26,3 @@ for output in "$@"; do
         exit 1
     fi
 done
-

@@ -1,5 +1,5 @@
 ARG OUTPUT_ARCH
-FROM builder/compiler/haiku
+FROM builder/compiler/haiku/r1-beta6-hrev59919-1
 ARG OUTPUT_ARCH
 
 # Build bfs_shell tool

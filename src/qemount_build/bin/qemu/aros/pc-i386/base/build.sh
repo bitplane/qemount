@@ -7,7 +7,7 @@ SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=$CACHE_DIR/toolchain-build
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/base
+OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 BUILD_JOBS=${JOBS:-1}
 

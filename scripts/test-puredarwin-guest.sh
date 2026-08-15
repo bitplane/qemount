@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-GUEST=${QEMOUNT_PUREDARWIN_GUEST:-$PROJECT_ROOT/build/bin/qemu/x86_64-darwin/puredarwin/qemount/puredarwin.raw}
+GUEST=${QEMOUNT_PUREDARWIN_GUEST:-$PROJECT_ROOT/build/bin/qemu/x86_64-darwin/17.4/puredarwin.raw}
 RUNNER=$PROJECT_ROOT/src/qemount_build/builder/run/qemu-darwin/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 RUNNER_PID=
