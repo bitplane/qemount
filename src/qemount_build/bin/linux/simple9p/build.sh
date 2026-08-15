@@ -10,7 +10,6 @@ tar -xf /host/build/sources/simple9p-0.6.4.tar.xz \
 
 # Build the optimized static server using its pinned libixp tree.
 make -C /work/simple9p-source \
-    CC=gcc AR=ar STRIP=strip \
     RELEASE_CFLAGS="-Os -DNDEBUG -DS9_PATH_MAX=1024" \
     release
 

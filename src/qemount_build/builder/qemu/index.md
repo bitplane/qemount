@@ -9,7 +9,6 @@ requires:
   - sources/pixman-0.44.2.tar.gz
   - sources/libffi-3.4.6.tar.gz
   - sources/libiconv-1.17.tar.gz
-  - sdk/darwin/11.3/MacOSX11.3.sdk
 output_platforms:
   x86_64-linux-musl:
     provides:
@@ -27,6 +26,8 @@ output_platforms:
       - bin/qemu-system/x86_64-windows-gnu/qemu-system-aarch64.exe
       - bin/qemu-system/x86_64-windows-gnu/qemu-system-m68k.exe
   x86_64-darwin:
+    requires:
+      - sdk/darwin/11.3/MacOSX11.3.sdk
     provides:
       - bin/qemu-system/x86_64-darwin/qemu-system-x86_64
       - bin/qemu-system/x86_64-darwin/qemu-system-aarch64

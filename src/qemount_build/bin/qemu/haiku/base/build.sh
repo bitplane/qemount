@@ -7,6 +7,10 @@ BUILD_JOBS=${JOBS:-1}
 CACHE_DIR=/src/haiku/generated
 INIT_DIR=/src/haiku/build/qemount/init
 
+# The compiler toolbox defaults ordinary consumers to the Haiku target. Jam's
+# configured build graph owns compiler selection for both host and target work.
+unset CC AR STRIP READELF
+
 mkdir -p "$INIT_DIR"
 install -m 755 /host/build/bin/${OUTPUT_ARCH}-haiku/qemount-init \
     "$INIT_DIR/launch_daemon"
