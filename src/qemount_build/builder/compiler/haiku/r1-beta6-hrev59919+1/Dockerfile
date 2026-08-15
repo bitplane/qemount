@@ -26,3 +26,19 @@ RUN cd generated && \
 
 RUN mkdir -p /opt/haiku-sysroot/boot/system && \
     ln -s ../../develop /opt/haiku-sysroot/boot/system/develop
+
+COPY --chmod=755 cc.sh /usr/local/bin/haiku-cc
+
+RUN set -eu; \
+    TOOL_PREFIX=/toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-; \
+    mkdir -p /usr/local/libexec; \
+    ln -s "${TOOL_PREFIX}gcc" /usr/local/libexec/haiku-gcc; \
+    ln -s "${TOOL_PREFIX}ar" /usr/local/bin/haiku-ar; \
+    ln -s "${TOOL_PREFIX}strip" /usr/local/bin/haiku-strip; \
+    ln -s "${TOOL_PREFIX}readelf" /usr/local/bin/haiku-readelf
+
+ENV HAIKU_SYSROOT=/opt/haiku-sysroot \
+    CC=haiku-cc \
+    AR=haiku-ar \
+    STRIP=haiku-strip \
+    READELF=haiku-readelf

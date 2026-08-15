@@ -16,6 +16,10 @@ provides:
 Haiku build environment containing the cross-compiler, source tree, matching
 cross-development sysroot and compiled objects used by the appliance.
 
+Consumers inherit `CC`, `AR`, `STRIP`, `READELF`, and `HAIKU_SYSROOT`. The
+compiler wrapper supplies the target sysroot for compilation and linking, so
+ordinary build systems do not need to know the cross-toolchain layout.
+
 The OCI repository component spells upstream's `hrev59919+1` as
 `hrev59919-1`, because `+` is not valid in a repository name.
 
