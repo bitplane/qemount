@@ -9,18 +9,18 @@ SYSROOT=/opt/haiku-sysroot
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
 
-tar -xf /host/build/sources/simple9p-0.6.2.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.3.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 
-make -C "$SIMPLE9P_SOURCE" \
+make -C "$SIMPLE9P_SOURCE" release \
     NETWORK=0 \
+    STATIC=0 \
     CC="${TOOL_PREFIX}gcc --sysroot=${SYSROOT}" \
-    CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
+    AR="${TOOL_PREFIX}ar" \
+    STRIP="${TOOL_PREFIX}strip --strip-unneeded" \
+    RELEASE_CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
     LDFLAGS="--sysroot=${SYSROOT}" \
-    LIBS="build/libixp.a"
-
-"${TOOL_PREFIX}strip" --strip-unneeded \
-    "$SIMPLE9P_SOURCE/build/simple9p"
+    THREAD_LIBS=
 
 "${TOOL_PREFIX}readelf" -h "$SIMPLE9P_SOURCE/build/simple9p" \
     | grep -q "Advanced Micro Devices X86-64"

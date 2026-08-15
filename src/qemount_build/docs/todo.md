@@ -33,6 +33,8 @@
 
 ## 3. Polish the turd
 
+- [ ] consider renaming the project to `mountin` once emulator back-ends are
+      cleanly separated from QEMU
 - [ ] install scripts
   - [ ] add installers
   - [ ] xdg launcher

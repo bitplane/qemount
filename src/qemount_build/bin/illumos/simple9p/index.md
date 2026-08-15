@@ -8,7 +8,7 @@ env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-0.6.2.tar.xz
+  - sources/simple9p-0.6.3.tar.xz
 ---
 
 # simple9p for illumos
