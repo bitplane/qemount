@@ -5,6 +5,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <termios.h>
 #include <unistd.h>
 
 static const char ready[] = "[qemount-init] ready\n";
@@ -77,10 +78,37 @@ walk_devices(const char *path)
 	(void) closedir(directory);
 }
 
+static int
+open_stream(const char *path)
+{
+	struct termios mode;
+	int descriptor;
+
+	descriptor = open(path, O_RDWR);
+	if (descriptor < 0)
+		return (-1);
+	if (tcgetattr(descriptor, &mode) != 0) {
+		(void) close(descriptor);
+		return (-1);
+	}
+	mode.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR |
+	    ICRNL | IXON);
+	mode.c_oflag &= ~OPOST;
+	mode.c_cflag &= ~(CSIZE | PARENB);
+	mode.c_cflag |= CS8;
+	mode.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+	mode.c_cc[VMIN] = 1;
+	mode.c_cc[VTIME] = 0;
+	if (tcsetattr(descriptor, TCSAFLUSH, &mode) != 0) {
+		(void) close(descriptor);
+		return (-1);
+	}
+	return (descriptor);
+}
+
 int
 main(void)
 {
-	char address[sizeof (stream_device) + sizeof ("stream!")];
 	int console;
 	pid_t server;
 
@@ -103,12 +131,16 @@ main(void)
 		    "[qemount-init] 9P serial device not found\n",
 		    sizeof ("[qemount-init] 9P serial device not found\n") - 1);
 	} else {
-		(void) snprintf(address, sizeof (address), "stream!%s",
-		    stream_device);
 		server = fork();
 		if (server == 0) {
+			int stream = open_stream(stream_device);
+
+			if (stream < 0 || dup2(stream, STDIN_FILENO) < 0)
+				_exit(126);
+			if (stream != STDIN_FILENO)
+				(void) close(stream);
 			(void) execl("/sbin/simple9p", "simple9p", "-d", "-r",
-			    "-p", address, "/mnt", (char *)NULL);
+			    "-p", "-", "/mnt", (char *)NULL);
 			_exit(127);
 		}
 		if (server < 0)
