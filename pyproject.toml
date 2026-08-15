@@ -1,6 +1,6 @@
 [project]
-name = "mountin-build"
-description = "Builder for mountin"
+name = "mountin"
+description = "Mount anything"
 version = "0.1.0"
 authors = [
     { name = "Gareth Davidson", email = "gaz@bitplane.net" }
