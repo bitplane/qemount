@@ -9,7 +9,7 @@ TARGET=x86_64-apple-macos10.13
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$SOURCE" "$OBJECTS" "$OUTPUT_DIR"
-tar -xf /host/build/sources/simple9p-0.6.3.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.4.tar.xz \
     -C "$SOURCE" --strip-components=1
 
 CC="clang-14 --target=$TARGET -isysroot $SDK -mmacosx-version-min=10.13"

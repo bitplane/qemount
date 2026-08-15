@@ -1,7 +1,7 @@
 ---
 title: simple9p for AROS
 requires:
-  - sources/simple9p-0.6.3.tar.xz
+  - sources/simple9p-0.6.4.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-aros/simple9p
 ---

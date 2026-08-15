@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-src=/source/usr/src
-onbld=$src/tools/proto/root_i386-nd/opt/onbld
+source_root=/source/usr/src
+onbld=$source_root/tools/proto/root_i386-nd/opt/onbld
 sysroot=/opt/illumos/sysroot
 
 exec "$onbld/bin/amd64/ld" \

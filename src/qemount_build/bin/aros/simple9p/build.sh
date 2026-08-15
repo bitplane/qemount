@@ -10,7 +10,7 @@ OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-aros
 
 rm -rf "$SIMPLE9P_SOURCE"
 mkdir -p "$SIMPLE9P_SOURCE" "$OUTPUT_DIR"
-tar -xf /host/build/sources/simple9p-0.6.3.tar.xz \
+tar -xf /host/build/sources/simple9p-0.6.4.tar.xz \
     -C "$SIMPLE9P_SOURCE" --strip-components=1
 
 make -C "$SIMPLE9P_SOURCE" release \

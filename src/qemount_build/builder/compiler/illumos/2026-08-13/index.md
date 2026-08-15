@@ -25,3 +25,8 @@ Linux-hosted compiler, native build tools and target sysroot for the illumos
 generation last synchronized with upstream on 2026-08-13. The source is fetched
 from our `qemount-0.1` patch-set tag. The image builds the exact headers,
 startup objects, runtime linker and libraries used by appliance programs.
+
+The image exports `CC`, `AR` and `STRIP` for conventional Make builds. Their
+versioned command names are `x86_64-illumos-cc`, `x86_64-illumos-ar` and
+`x86_64-illumos-strip`; `x86_64-illumos-ld` exposes the corresponding native
+link interface.

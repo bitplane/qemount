@@ -9,7 +9,7 @@ env:
   BUILDER: builder/compiler/puredarwin/17.4
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-0.6.3.tar.xz
+  - sources/simple9p-0.6.4.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-darwin/simple9p
   - bin/${OUTPUT_ARCH}-darwin/stream64

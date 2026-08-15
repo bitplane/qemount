@@ -1,9 +1,9 @@
 ---
-title: simple9p v0.6.3
+title: simple9p v0.6.4
 urls:
-  - https://github.com/bitplane/simple9p/releases/download/v0.6.3/simple9p-0.6.3.tar.xz
+  - https://github.com/bitplane/simple9p/releases/download/v0.6.4/simple9p-0.6.4.tar.xz
 provides:
-  - sources/simple9p-0.6.3.tar.xz
+  - sources/simple9p-0.6.4.tar.xz
 ---
 
 # simple9p
