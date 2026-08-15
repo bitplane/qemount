@@ -30,6 +30,10 @@ produce x86 multilib or shared target libraries because the appliance has no
 32-bit or dynamically linked programs. CTF generation is disabled because the
 published appliance does not ship CTF debugging data.
 
+Consumers inherit `CC`, `AR`, `STRIP`, and `NETBSD_SYSROOT`. The compiler
+wrapper supplies the target sysroot for both compilation and linking, so normal
+build systems do not need to know the NetBSD tools or object-tree layout.
+
 Architecture mapping:
 - x86_64 → amd64/x86_64
 - aarch64 → evbarm/aarch64

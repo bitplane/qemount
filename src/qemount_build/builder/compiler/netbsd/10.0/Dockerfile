@@ -149,11 +149,28 @@ COPY --from=builder /tmp/nbgnutriple /tmp/nbgnutriple
 COPY --from=builder /opt/netbsd/tools /usr/tools
 COPY --from=builder /opt/netbsd/obj /usr/obj
 COPY --from=builder /usr/src/share/mk /usr/src/share/mk
+COPY --chmod=755 cc.sh /usr/local/bin/netbsd-cc
 
-# Set up environment for cross-compilation
-# Child images can use these for building binaries
-ENV NETBSD_OBJ=/usr/obj
-ENV NETBSD_TOOLS=/usr/tools
+# Give consumers an architecture-independent compiler interface. The target
+# mapping remains an implementation detail of this image.
+RUN set -eu; \
+    NBARCH=$(cat /tmp/nbarch); \
+    NBGNUTRIPLE=$(cat /tmp/nbgnutriple); \
+    mkdir -p /usr/local/libexec /opt/netbsd; \
+    ln -s "/usr/tools/bin/${NBGNUTRIPLE}--netbsd-gcc" \
+        /usr/local/libexec/netbsd-gcc; \
+    ln -s "/usr/tools/bin/${NBGNUTRIPLE}--netbsd-ar" \
+        /usr/local/bin/netbsd-ar; \
+    ln -s "/usr/tools/bin/${NBGNUTRIPLE}--netbsd-strip" \
+        /usr/local/bin/netbsd-strip; \
+    ln -s "/usr/obj/destdir.${NBARCH}" /opt/netbsd/sysroot
+
+ENV NETBSD_OBJ=/usr/obj \
+    NETBSD_TOOLS=/usr/tools \
+    NETBSD_SYSROOT=/opt/netbsd/sysroot \
+    CC=netbsd-cc \
+    AR=netbsd-ar \
+    STRIP=netbsd-strip
 
 # Create standard directories
 RUN mkdir -p /build /outputs /host/build
