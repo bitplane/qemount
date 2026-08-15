@@ -1,15 +1,21 @@
 .section .text
 .code32
 
+#ifndef DBOOT_ENTRY
+#error DBOOT_ENTRY must be derived from the illumos kernel ELF
+#endif
+
 /*
  * QEMU's Multiboot loader uses the host-side kernel path as the kernel command
- * line. Point it at the canonical path of the real ELF in the boot filesystem
- * so the published wrapper filename does not become part of the guest ABI. The
- * rootfs type is supplied by QEMU's native Multiboot module-argument syntax.
+ * line. The launcher exposes the published kernel through an xplatform/...
+ * alias, so replacing its first byte produces the canonical /platform/... path
+ * of the real ELF in the boot filesystem while retaining QEMU's command-line
+ * allocation and any arguments which follow it. The rootfs type is supplied by
+ * QEMU's native Multiboot module-argument syntax.
  *
- * The original ELF begins at file offset 0xea8. Loading this wrapper at the
- * page-aligned address 0xbff000 places the ELF at its patched load address
- * 0xbffea8 and lets QEMU page-align the rootfs module which follows it.
+ * boot-build.sh places the original ELF so its first loadable segment lands at
+ * the physical address declared by that ELF and derives DBOOT_ENTRY from its
+ * dboot_image symbol rather than assuming a particular link address.
  */
 .long 0x1badb002
 .long 0x00010003
@@ -22,10 +28,8 @@
 
 .global _start
 _start:
-	movl $kernel_path, 16(%ebx)
+	mov 16(%ebx), %ecx
+	movb $'/', (%ecx)
 
-	mov $0xc00060, %ecx
+	mov $DBOOT_ENTRY, %ecx
 	jmp *%ecx
-
-kernel_path:
-	.asciz "/platform/i86pc/kernel/amd64/unix"

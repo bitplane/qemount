@@ -5,8 +5,9 @@ base=/host/build/bin/qemu/x86_64-illumos/2026-08-13
 rootfs=$base/rootfs.iso
 output=/host/build/data/fs/basic.ufs-solaris
 
-rm -rf /work/fixture /work/root /work/rootfs.iso
-mkdir -p /work/fixture /work/root
+rm -rf /work/boot /work/fixture /work/root /work/rootfs.iso
+mkdir -p /work/boot/xplatform/i86pc/kernel/amd64 /work/fixture /work/root
+ln -s "$base/kernel" /work/boot/xplatform/i86pc/kernel/amd64/unix
 tar -xf /host/build/data/templates/basic.tar -C /work/fixture
 
 xorriso -osirrox on -indev "$rootfs" -extract / /work/root \
@@ -30,7 +31,7 @@ xorriso -as mkisofs \
     -o /work/rootfs.iso /work/root
 
 truncate -s 32M "$output"
-cd "$base"
+cd /work/boot
 if ! run-until-marker \
     'illumos UFS fixture complete' \
     /work/serial.log /work/qemu.log 180 2 -- \
@@ -42,7 +43,7 @@ if ! run-until-marker \
         -monitor none \
         -serial file:/work/serial.log \
         -no-reboot \
-        -kernel kernel \
+        -kernel xplatform/i86pc/kernel/amd64/unix \
         -initrd '/work/rootfs.iso type=rootfs' \
         -append '-B fstype=hsfs,console=ttya' \
         -drive file="$output",if=none,id=fixture,format=raw \
