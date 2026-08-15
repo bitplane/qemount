@@ -9,6 +9,7 @@ makefile=$src/cmd/make/bin/make.rules.file
 sysroot=/opt/illumos/sysroot
 output=/host/build/bin/${OUTPUT_PLATFORM}/mkfs.ufs
 
+mkdir -p "${output%/*}"
 rm -rf /proto
 cp -a "$sysroot" /proto
 cd "$src/cmd/fs.d/ufs/mkfs"
