@@ -3,7 +3,7 @@ set -e
 
 OUTPUT_PATH="$1"
 INPUT="/host/build/data/templates/basic.tar"
-SOURCE="/host/build/sources/acefile-qemount-0.2.tar.gz"
+SOURCE="/host/build/sources/acefile-mountin-2026-08-15.tar.gz"
 
 mkdir -p /tmp/template
 tar -xf "$INPUT" -C /tmp/template

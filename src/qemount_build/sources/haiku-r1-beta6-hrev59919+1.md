@@ -2,7 +2,7 @@
 title: Haiku R1 Beta 6 hrev59919+1
 version: r1-beta6-hrev59919+1
 urls:
-  - git+https://github.com/bitplane/Haiku.git#qemount-2026-08-01-2
+  - git+https://github.com/bitplane/Haiku.git#mountin-2026-08-15
 provides:
   - sources/haiku-r1-beta6-hrev59919+1.tar.gz
 ---

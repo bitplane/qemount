@@ -13,7 +13,7 @@ requires:
   - docker:${BUILDER}
 build_requires:
   - sources/binutils-2.46.1.tar.bz2
-  - sources/illumos-gate-qemount-0.1.tar.gz
+  - sources/illumos-gate-mountin-2026-08-15.tar.gz
   - bin/${BUILD_ARCH}-linux-gnu/dmake
   - bin/${BUILD_ARCH}-linux-gnu/lib/libmakestate.so.1
   - bin/${BUILD_ARCH}-linux-gnu/lib/64/libelf.so.1
@@ -23,7 +23,7 @@ build_requires:
 
 Linux-hosted compiler, native build tools and target sysroot for the illumos
 generation last synchronized with upstream on 2026-08-13. The source is fetched
-from our `qemount-0.1` patch-set tag. The image builds the exact headers,
+from our `mountin-2026-08-15` patch-set tag. The image builds the exact headers,
 startup objects, runtime linker and libraries used by appliance programs.
 
 The image exports `CC`, `AR` and `STRIP` for conventional Make builds. Their

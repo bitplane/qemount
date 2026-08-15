@@ -2,7 +2,7 @@
 title: 9front bootstrap 11957
 version: 11957
 urls:
-  - https://github.com/bitplane/9front/releases/download/qemount-0.1/9front-11957.amd64.qcow2.gz
+  - https://github.com/bitplane/9front/releases/download/mountin-2026-08-15/9front-11957.amd64.qcow2.gz
 provides:
   - sources/9front-11957.amd64.qcow2.gz
 ---

@@ -1,9 +1,9 @@
 ---
-title: 9pfuse qemount-0.4
+title: 9pfuse Mountin 2026-08-15
 urls:
-  - https://github.com/bitplane/9pfuse/archive/refs/tags/qemount-0.4.tar.gz
+  - https://github.com/bitplane/9pfuse/archive/refs/tags/mountin-2026-08-15.tar.gz
 provides:
-  - sources/9pfuse-qemount-0.4.tar.gz
+  - sources/9pfuse-mountin-2026-08-15.tar.gz
 ---
 
 # 9pfuse

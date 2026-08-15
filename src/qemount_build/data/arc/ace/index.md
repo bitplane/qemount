@@ -4,7 +4,7 @@ requires:
   - docker:builder/disk/debian
   - data/templates/basic.tar
 build_requires:
-  - sources/acefile-qemount-0.2.tar.gz
+  - sources/acefile-mountin-2026-08-15.tar.gz
 provides:
   - data/arc/basic.ace
 ---

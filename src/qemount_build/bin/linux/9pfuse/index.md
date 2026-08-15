@@ -2,7 +2,7 @@
 title: 9pfuse
 requires:
   - docker:${BUILDER}
-  - sources/9pfuse-qemount-0.4.tar.gz
+  - sources/9pfuse-mountin-2026-08-15.tar.gz
 provides:
   - bin/${OUTPUT_ARCH}-linux-${ENV}/9pfuse
 ---
