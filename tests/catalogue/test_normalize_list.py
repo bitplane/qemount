@@ -1,6 +1,6 @@
 """Tests for catalogue.normalize_list."""
 
-from qemount_build.catalogue import normalize_list
+from mountin_build.catalogue import normalize_list
 
 
 def test_strings_become_keys():

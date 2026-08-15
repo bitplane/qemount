@@ -1,7 +1,7 @@
 import subprocess
 import tarfile
 
-from qemount_build.builder.downloader.download import clone_repo, temporary_output
+from mountin_build.builder.downloader.download import clone_repo, temporary_output
 
 
 def test_temporary_outputs_are_unique(tmp_path):
@@ -27,9 +27,9 @@ def test_clone_repo_publishes_complete_archive(tmp_path):
         [
             "git",
             "-c",
-            "user.name=qemount tests",
+            "user.name=mountin tests",
             "-c",
-            "user.email=tests@qemount.invalid",
+            "user.email=tests@mountin.invalid",
             "commit",
             "-m",
             "fixture",
@@ -49,9 +49,9 @@ def test_clone_repo_publishes_complete_archive(tmp_path):
         [
             "git",
             "-c",
-            "user.name=qemount tests",
+            "user.name=mountin tests",
             "-c",
-            "user.email=tests@qemount.invalid",
+            "user.email=tests@mountin.invalid",
             "commit",
             "-m",
             "updated fixture",
@@ -87,9 +87,9 @@ def test_full_clone_exports_tree_without_repository_history(tmp_path):
         [
             "git",
             "-c",
-            "user.name=qemount tests",
+            "user.name=mountin tests",
             "-c",
-            "user.email=tests@qemount.invalid",
+            "user.email=tests@mountin.invalid",
             "commit",
             "-m",
             "fixture",

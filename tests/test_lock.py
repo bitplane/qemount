@@ -1,6 +1,6 @@
 import pytest
 
-from qemount_build.lock import BuildDirectoryBusy, build_directory_lock
+from mountin_build.lock import BuildDirectoryBusy, build_directory_lock
 
 
 def test_build_directory_lock_rejects_a_second_owner(tmp_path):

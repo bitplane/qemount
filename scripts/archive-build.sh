@@ -6,17 +6,17 @@ CAPSULE_DIR=/time-capsule
 
 cd "$SOURCE_DIR"
 make dev
-"$SOURCE_DIR/.venv/bin/qemount-build" outputs --all-platforms \
-    | xargs -r "$SOURCE_DIR/.venv/bin/qemount-build" build
-"$SOURCE_DIR/.venv/bin/qemount-build" inventory
+"$SOURCE_DIR/.venv/bin/mountin-build" outputs --all-platforms \
+    | xargs -r "$SOURCE_DIR/.venv/bin/mountin-build" build
+"$SOURCE_DIR/.venv/bin/mountin-build" inventory
 
 mkdir -p "$CAPSULE_DIR"
 
 date -u +%Y-%m-%dT%H:%M:%SZ > "$CAPSULE_DIR/created-at.txt"
-git rev-parse HEAD > "$CAPSULE_DIR/qemount-commit.txt"
-git status --porcelain=v1 --untracked-files=all > "$CAPSULE_DIR/qemount-status.txt"
-git bundle verify "$CAPSULE_DIR/qemount.bundle" \
-    > "$CAPSULE_DIR/qemount-bundle.txt" 2>&1
+git rev-parse HEAD > "$CAPSULE_DIR/mountin-commit.txt"
+git status --porcelain=v1 --untracked-files=all > "$CAPSULE_DIR/mountin-status.txt"
+git bundle verify "$CAPSULE_DIR/mountin.bundle" \
+    > "$CAPSULE_DIR/mountin-bundle.txt" 2>&1
 
 uname -a > "$CAPSULE_DIR/uname.txt"
 cp /etc/os-release "$CAPSULE_DIR/os-release"
@@ -24,9 +24,9 @@ dpkg-query -W -f='${binary:Package}\t${Version}\n' \
     | sort > "$CAPSULE_DIR/packages.tsv"
 python3 --version > "$CAPSULE_DIR/python-version.txt" 2>&1
 
-"$SOURCE_DIR/.venv/bin/qemount-build" outputs \
+"$SOURCE_DIR/.venv/bin/mountin-build" outputs \
     --all-platforms --include-unavailable \
-    > "$CAPSULE_DIR/qemount-outputs.txt"
+    > "$CAPSULE_DIR/mountin-outputs.txt"
 find "$SOURCE_DIR/build" -type f -printf '%s\t%TY-%Tm-%TdT%TH:%TM:%TSZ\t%p\n' \
     | sort -k3 > "$CAPSULE_DIR/build-files.tsv"
 

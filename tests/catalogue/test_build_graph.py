@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from qemount_build.catalogue import load, build_graph, resolve_output, resolve_path
+from mountin_build.catalogue import load, build_graph, resolve_output, resolve_path
 
 
 DATA_DIR = Path(__file__).parent / "data"

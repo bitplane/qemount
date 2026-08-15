@@ -1,0 +1,73 @@
+#!/bin/rc
+
+if(! ~ $#* 2) {
+	echo 'usage: mountin-build objtype compiler' >[1=2]
+	exit usage
+}
+
+objtype=$1
+compiler=$2
+
+# Build the native static-library closure.  Keeping the library build native
+# avoids duplicating 9front's linker dependency rules while the runtime proto
+# excludes the archives from the appliance.
+cd /sys/src
+mk libs
+
+# The top-level command mkfile exposes individual install targets.  Build cp
+# first because the remaining install rules use it to populate /$objtype/bin.
+cd /sys/src/cmd
+mk cp.install
+commands=(init basename bind cat cfs chmod cmp dd echo ls mkdir mntgen mount mv ps pwd ramfs rm sed sleep srv tar test tlsclient unmount xd)
+for(command in $commands)
+	mk $command^.install
+
+cd /sys/src/cmd/awk
+mk install
+cd /sys/src/cmd/grep
+mk install
+cd /sys/src/cmd/rc
+mk install
+cd /sys/src/cmd/auth/secstore
+mk install
+cd /sys/src/cmd/aux/kbdfs
+mk install
+cd /sys/src/cmd/aux/wpa
+mk install
+cd /sys/src/cmd/ip/ipconfig
+mk install
+cd /sys/src/cmd/ndb/dnsgetip
+mk install
+cd /sys/src/cmd/9660srv
+mk install
+cd /sys/src/cmd/dossrv
+mk install
+cd /sys/src/cmd/exportfs
+mk install
+cd /sys/src/cmd/paqfs
+mk paqfs.install
+mk mkpaqfs.install
+cd /sys/src/cmd/auth/factotum
+mk factotum.install
+cd /sys/src/cmd/aux/flashfs
+mk flashfs.install
+mk mkflashfs.install
+cd /sys/src/cmd/gefs
+mk install
+cd /sys/src/cmd/hjfs
+mk install
+cd /sys/src/cmd/cwfs/cwfs64x
+mk install
+cd /sys/src/cmd/tapefs
+for(command in v6fs 32vfs v10fs)
+	mk $command^.install
+cd /sys/src/cmd/disk
+mk mbr.install
+cd /sys/src/cmd/disk/prep
+for(command in edisk fdisk prep)
+	mk $command^.install
+
+cd /usr/glenda/mountin-build
+$compiler^c /n/src/mountin/mountin-fsprobe.c
+$compiler^l -o /$objtype/bin/mountin-fsprobe mountin-fsprobe.$compiler
+rm mountin-fsprobe.$compiler

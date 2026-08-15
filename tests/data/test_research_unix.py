@@ -8,7 +8,7 @@ import pytest
 
 SCRIPT = (
     Path(__file__).parents[2]
-    / "src/qemount_build/builder/disk/research-unix/mkresearchunix.py"
+    / "src/mountin_build/builder/disk/research-unix/mkresearchunix.py"
 )
 SPEC = importlib.util.spec_from_file_location("mkresearchunix", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None

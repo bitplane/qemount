@@ -1,0 +1,54 @@
+#!/bin/rc
+
+mkdir -p /tmp
+ramfs -m /tmp
+echo 'w0 /dev/sdF0/data' >/tmp/mountin-cwfs.map
+{
+	echo config w0
+	echo service mountincwfs
+	echo filsys main w0
+	echo ream main
+	echo noauth
+	echo end
+} | cwfs64x -c -n mountincwfs -m /tmp/mountin-cwfs.map -f w0
+command_status=$status
+if(! ~ $"command_status '') exit failure
+
+echo 'users default' >>/srv/mountincwfs.cmd
+echo 'newuser glenda' >>/srv/mountincwfs.cmd
+echo 'create /basic glenda glenda 775 d' >>/srv/mountincwfs.cmd
+sleep 1
+mkdir -p /n/cwfs-verify
+mount -c /srv/mountincwfs /n/cwfs-verify main
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /n/cwfs-verify
+tar xf /n/mountin-fixture/basic.tar
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/cwfs-verify/basic/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /
+echo halt >>/srv/mountincwfs.cmd
+while(test -e /srv/mountincwfs.cmd) sleep 1
+unmount /n/cwfs-verify >[2=]
+
+cwfs64x -n mountincwfs -m /tmp/mountin-cwfs.map -f w0
+command_status=$status
+if(! ~ $"command_status '') exit failure
+echo 'users default' >>/srv/mountincwfs.cmd
+echo 'newuser glenda' >>/srv/mountincwfs.cmd
+sleep 1
+mount /srv/mountincwfs /n/cwfs-verify main
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/cwfs-verify/basic/nested_dir/file_in_dir.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cmp /n/cwfs-verify/basic/hello.txt /n/mountin-fixture/expected.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+echo halt >>/srv/mountincwfs.cmd
+while(test -e /srv/mountincwfs.cmd) sleep 1
+unmount /n/cwfs-verify >[2=]

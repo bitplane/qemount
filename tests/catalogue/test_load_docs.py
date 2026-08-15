@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from qemount_build.catalogue import load_docs
+from mountin_build.catalogue import load_docs
 
 
 DATA_DIR = Path(__file__).parent / "data"

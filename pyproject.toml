@@ -1,6 +1,6 @@
 [project]
-name = "qemount-build"
-description = "Builder for qemount"
+name = "mountin-build"
+description = "Builder for mountin"
 version = "0.1.0"
 authors = [
     { name = "Gareth Davidson", email = "gaz@bitplane.net" }
@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-qemount-build = "qemount_build.main:main"
+mountin-build = "mountin_build.main:main"
 
 [build-system]
 build-backend = "flit_core.buildapi"

@@ -1,5 +1,5 @@
 *
-!.qemount-archive.bundle
+!.mountin-archive.bundle
 !scripts/
 scripts/*
 !scripts/archive-build.sh

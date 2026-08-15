@@ -1,0 +1,19 @@
+#!/bin/rc
+
+mountin_disk=`{cat '#ec/mountindisk'}
+mountin_channel=`{cat '#ec/mountinchannel'}
+echo '[mountin] disk' $mountin_disk 'channel' $mountin_channel
+
+/rc/bin/mountin-mount $mountin_disk
+
+echo b115200 > $mountin_channel^ctl
+
+fn mountin_export {
+	echo '[mountin] export ready'
+	exec exportfs -r /
+}
+
+if(~ $mountin_channel /dev/eia0)
+	mountin_export <>$mountin_channel >[1=0]
+
+mountin_export <>$mountin_channel >[1=0] &

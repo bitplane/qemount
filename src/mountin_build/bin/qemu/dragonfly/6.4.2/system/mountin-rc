@@ -1,0 +1,14 @@
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export PATH
+
+mount -t tmpfs tmpfs /tmp
+
+echo "[mountin] DragonFly appliance ready"
+
+if [ -x /etc/mountin-fixture ]; then
+    /etc/mountin-fixture
+fi
+
+exec /bin/sh

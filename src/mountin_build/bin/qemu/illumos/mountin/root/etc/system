@@ -1,0 +1,2 @@
+* mountin illumos appliance
+set halt_on_panic=1

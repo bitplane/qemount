@@ -2,8 +2,8 @@
 
 ## Vision
 
-qemount mounts anything. Disk images, archives, filesystems from dead operating
-systems - if it ever existed, qemount should be able to open it.
+mountin mounts anything. Disk images, archives, filesystems from dead operating
+systems - if it ever existed, mountin should be able to open it.
 
 The approach: spin up tiny VMs (guests) that use real kernels to read formats,
 expose the contents over 9P protocol to the host. Linux 6.12 for broad modern
@@ -40,7 +40,7 @@ or awkward, fix it immediately rather than accumulating cruft.
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                         libqemount                              │
+│                         libmountin                              │
 │  - Recursive format detection (disk → partition → fs → archive) │
 │  - Guest selection (best kernel for format + host arch)         │
 │  - Transport orchestration (9P, future: NFS, etc.)              │
@@ -54,18 +54,18 @@ or awkward, fix it immediately rather than accumulating cruft.
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-libqemount is the brain. Clients ask it to "mount this and give me a transport
+libmountin is the brain. Clients ask it to "mount this and give me a transport
 endpoint". It detects the format, picks the right guest, starts QEMU, returns
 a socket. The client connects and does I/O.
 
 ## Build System
 
-The Python package `qemount_build` orchestrates everything via podman
+The Python package `mountin_build` orchestrates everything via podman
 containers.
 
 ### Concepts
 
-**Catalogue**: All `*.md` files in `src/qemount_build/` are parsed. YAML
+**Catalogue**: All `*.md` files in `src/mountin_build/` are parsed. YAML
 frontmatter defines build metadata, markdown body becomes documentation.
 
 **Paths**: File paths map to logical catalogue paths. `bin/linux/busybox/index.md`
@@ -99,13 +99,13 @@ builds a container image. `requires: docker:...` means it needs that image.
 
 ```bash
 # Show what can be built
-qemount-build outputs
+mountin-build outputs
 
 # Show dependency graph for a target
-qemount-build deps bin/x86_64-linux-musl/busybox
+mountin-build deps bin/x86_64-linux-musl/busybox
 
 # Build a target (and all dependencies)
-qemount-build build bin/x86_64-linux-musl/busybox
+mountin-build build bin/x86_64-linux-musl/busybox
 ```
 
 ### Build flow
@@ -118,7 +118,7 @@ qemount-build build bin/x86_64-linux-musl/busybox
 ## Directory Structure
 
 ```
-src/qemount_build/          # Python package (the build system)
+src/mountin_build/          # Python package (the build system)
 ├── bin/                    # Binary build definitions
 │   ├── detect/             # Format detection CLI tool
 │   ├── linux/              # Linux-hosted binaries (busybox, etc.)
@@ -136,7 +136,7 @@ src/qemount_build/          # Python package (the build system)
 │       └── disk/           # Disk image formats (qcow2, vdi, etc.)
 ├── lib/                    # Library builds
 │   ├── format/             # Compiles detection rules → msgpack
-│   └── qemount/            # Rust library (libqemount)
+│   └── mountin/            # Rust library (libmountin)
 ├── sources/                # Source tarball definitions
 ├── catalogue.py            # Loads markdown → catalogue dict
 ├── runner.py               # Executes builds via podman
@@ -249,8 +249,8 @@ Examples:
 - `bin/x86_64-linux-musl/busybox` - Linux static binary
 - `bin/x86_64-linux-gnu/detect` - Linux dynamic binary
 - `bin/x86_64-netbsd/simple9p` - NetBSD (no env suffix)
-- `lib/x86_64-darwin/libqemount.dylib` - macOS
-- `lib/x86_64-windows-gnu/qemount.dll` - Windows
+- `lib/x86_64-darwin/libmountin.dylib` - macOS
+- `lib/x86_64-windows-gnu/mountin.dll` - Windows
 
 **Environment variables:**
 - `BUILD_PLATFORM` - Build machine platform (for example x86_64-linux)
@@ -297,7 +297,7 @@ Mature build system with cut-down appliances. What works:
 - 9pfuse client connects and mounts
 
 What's next:
-- libqemount: guest selection and orchestration (not just detection)
+- libmountin: guest selection and orchestration (not just detection)
 - Consistent target naming
 - More formats, more guests
 - Frontend clients (FUSE wrapper, then plugins, then everything else)

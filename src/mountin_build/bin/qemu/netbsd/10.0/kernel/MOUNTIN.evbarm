@@ -1,0 +1,19 @@
+# MOUNTIN - NetBSD/evbarm kernel for the QEMU virt machine
+
+include "arch/evbarm/conf/GENERIC64"
+
+# The appliance has no USB television hardware.  NetBSD 10's GENERIC64
+# configuration selects auvitek, whose DTV half does not link on aarch64.
+no auvitek* at uhub?
+
+# GENERIC.common deliberately disables LFS.
+file-system LFS
+
+# QEMU devices used by the appliance.
+viocon* at virtio?
+
+# Root filesystem embedded by mdsetimage.
+no options MEMORY_DISK_DYNAMIC
+options MEMORY_DISK_IS_ROOT
+options MEMORY_DISK_ROOT_SIZE=@RAMDISK_SECTORS@
+options MEMORY_DISK_RBFLAGS=RB_SINGLE

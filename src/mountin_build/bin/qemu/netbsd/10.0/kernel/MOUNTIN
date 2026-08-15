@@ -1,0 +1,79 @@
+#
+# MOUNTIN - NetBSD/amd64 filesystem appliance
+#
+
+include "arch/amd64/conf/std.amd64"
+
+ident "MOUNTIN"
+maxusers 8
+
+options INCLUDE_CONFIG_FILE
+options INSECURE
+options RTC_OFFSET=0
+options BUFQ_PRIOCSCAN
+
+makeoptions COPTS="-Os"
+
+# Partition discovery.
+options DKWEDGE_AUTODISCOVER
+options DKWEDGE_METHOD_GPT
+options DKWEDGE_METHOD_BSDLABEL
+options DKWEDGE_METHOD_MBR
+options DKWEDGE_METHOD_APPLE
+options DKWEDGE_METHOD_RDB
+options DKWEDGE_METHOD_TOS
+options DISKLABEL_EI
+
+# Filesystems exposed by this guest.
+file-system ADOSFS
+file-system CD9660
+file-system EFS
+file-system EXT2FS
+file-system FFS
+file-system FILECORE
+file-system HFS
+file-system LFS
+file-system MFS
+file-system MSDOSFS
+file-system NTFS
+file-system PROCFS
+file-system TMPFS
+file-system UDF
+file-system V7FS
+
+options FFS_EI
+options UFS_DIRHASH
+options WAPBL
+options LFS_DIRHASH
+
+config netbsd root on ? type ?
+
+# PC platform used by the runner.
+acpi0 at mainbus0
+options ACPI_SCANPCI
+qemufwcfg* at acpi?
+
+pci* at mainbus? bus ?
+pci* at pchb? bus ?
+pchb* at pci? dev ? function ?
+pcib* at pci? dev ? function ?
+ichlpcib* at pci? dev ? function ?
+
+isa0 at pcib?
+isa0 at ichlpcib?
+attimer0 at isa?
+pcppi0 at isa?
+sysbeep0 at pcppi?
+com0 at isa? port 0x3f8 irq 4
+
+# Fixed virtual hardware: block images and the full-duplex 9P channel.
+virtio* at pci? dev ? function ?
+ld* at virtio?
+viocon* at virtio?
+
+# Embedded root filesystem.
+pseudo-device md
+options MEMORY_DISK_HOOKS
+options MEMORY_DISK_IS_ROOT
+options MEMORY_DISK_ROOT_SIZE=@RAMDISK_SECTORS@
+options MEMORY_DISK_RBFLAGS=RB_SINGLE

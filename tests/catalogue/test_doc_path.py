@@ -2,7 +2,7 @@
 
 import pytest
 
-from qemount_build.catalogue import doc_path
+from mountin_build.catalogue import doc_path
 
 
 @pytest.mark.parametrize("file_path,meta,expected", [

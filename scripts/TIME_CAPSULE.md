@@ -1,10 +1,10 @@
-# qemount build time capsule
+# mountin build time capsule
 
 This archive is an exported Linux container filesystem containing:
 
-- the complete qemount Git repository and history at the recorded revision;
+- the complete mountin Git repository and history at the recorded revision;
 - every downloaded source archive and generated build output;
-- the qemount build cache and logs;
+- the mountin build cache and logs;
 - a private Podman image store containing the complete builder images,
   toolchains, guest builders, and test-data builders used by the build;
 - inventories and SHA-256 checksums under `/time-capsule`.
@@ -17,7 +17,7 @@ captured Podman images.
 Place the `.tar.xz`, `.README.md`, and `.sha256` files in one directory:
 
 ```sh
-sha256sum -c *_qemount.sha256
+sha256sum -c *_mountin.sha256
 ```
 
 ## Import the capsule
@@ -26,7 +26,7 @@ Importing converts the exported root filesystem back into a local container
 image. Choose any local image name:
 
 ```sh
-xz -dc *_qemount.tar.xz | podman import - qemount-time-capsule:archived
+xz -dc *_mountin.tar.xz | podman import - mountin-time-capsule:archived
 ```
 
 The export format does not retain the original container command or working
@@ -35,7 +35,7 @@ directory, so specify both when opening it:
 ```sh
 podman run --rm -it --privileged \
   --workdir /src \
-  qemount-time-capsule:archived \
+  mountin-time-capsule:archived \
   /bin/bash
 ```
 
@@ -47,21 +47,21 @@ installation can use the image store at `/var/lib/containers`.
 Inside the capsule:
 
 ```sh
-cat /time-capsule/qemount-commit.txt
+cat /time-capsule/mountin-commit.txt
 cat /time-capsule/podman-images.tsv
 cd /
 sha256sum -c /time-capsule/metadata.sha256
 sha256sum -c /time-capsule/payload.sha256
 ```
 
-The qemount checkout is at `/src`, with build outputs under `/src/build`.
+The mountin checkout is at `/src`, with build outputs under `/src/build`.
 `/src/build/inventory.json` records the catalogue artefacts that were actually
 present, including outputs contributed by other build platforms.
 The complete repository can also be reconstructed independently from its Git
 bundle:
 
 ```sh
-git clone /time-capsule/qemount.bundle /tmp/qemount
+git clone /time-capsule/mountin.bundle /tmp/mountin
 ```
 
 Captured builder images can be inspected or run with the nested Podman:

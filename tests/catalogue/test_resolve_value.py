@@ -2,7 +2,7 @@
 
 import pytest
 
-from qemount_build.catalogue import resolve_value
+from mountin_build.catalogue import resolve_value
 
 
 @pytest.mark.parametrize("value,context,expected", [

@@ -1,6 +1,0 @@
-#!/bin/rc
-
-/n/qemount-fixture/mksacfs -o /n/qemount/basic.sacfs /n/qemount-fixture/TestData/basic
-command_status=$status
-if(! ~ $"command_status '') exit failure
-unmount /n/qemount

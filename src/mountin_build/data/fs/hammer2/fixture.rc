@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+mountpoint=/tmp/mountin-fixture
+
+newfs_hammer2 -b 8M -r 8M -L MOUNTIN_HAMMER2 /dev/vbd0
+mkdir -p "$mountpoint"
+mount -t hammer2 /dev/vbd0@MOUNTIN_HAMMER2 "$mountpoint"
+cp -Rp /TestData/. "$mountpoint"/
+sync
+umount "$mountpoint"
+mount -t hammer2 /dev/vbd0@MOUNTIN_HAMMER2 "$mountpoint"
+test "$(cat "$mountpoint/basic/hello.txt")" = "Hello, world!"
+umount "$mountpoint"
+echo "HAMMER2 fixture complete"
+shutdown -p now

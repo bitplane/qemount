@@ -1,8 +1,8 @@
-# 🔌 qemount
+# 🔌 mountin
 
 Mount anything by giving the image or data file to an operating system that
 understands it or has native tools for it, then exposing the result over 9P.
-qemount runs one small guest per image, using real kernels and filesystem
+mountin runs one small guest per image, using real kernels and filesystem
 implementations instead of reimplementing every format on the host. In future,
 it'll support archive formats and obscure data files too.
 
@@ -36,7 +36,7 @@ Install:
 * `fuse` to mount images with the 9p client.
 * `xz` if you want to archive the lot.
 
-Everything else is installed in containers, use the `qemount_build` module or
+Everything else is installed in containers, use the `mountin_build` module or
 script to build stuff. It might take a while.
 
 ```sh
@@ -45,18 +45,18 @@ make dev
 source .venv/bin/activate
 
 # list targets
-qemount-build outputs
+mountin-build outputs
 
 # pick one and build it
-qemount-build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
+mountin-build build bin/qemu/x86_64-linux/6.12/boot/rootfs.img
 
 # inspect or explicitly request cross-platform outputs
-qemount-build outputs --output-arch i386
-qemount-build outputs --output-platform x86_64-windows-gnu
-qemount-build outputs --all-platforms
+mountin-build outputs --output-arch i386
+mountin-build outputs --output-platform x86_64-windows-gnu
+mountin-build outputs --all-platforms
 
 # record the catalogue artefacts currently present
-qemount-build inventory
+mountin-build inventory
 
 make help   # for a full list of targets.
 # make      # build everything for this arch
@@ -64,10 +64,10 @@ make help   # for a full list of targets.
 ```
 
 Guest and transport selection, detection engine and launch layer are still
-under construction, see the [todo list](src/qemount_build/docs/todo.md). There's
+under construction, see the [todo list](src/mountin_build/docs/todo.md). There's
 `./scripts` for data recovery though.
 
-Catalogue and format encyclopedia can be found is in the `src/qemount_build/`
+Catalogue and format encyclopedia can be found is in the `src/mountin_build/`
 tree - there's no html builder yet.
 
 ## Format support

@@ -1,0 +1,6 @@
+#!/bin/rc
+
+/n/mountin-fixture/mksacfs -o /n/mountin/basic.sacfs /n/mountin-fixture/TestData/basic
+command_status=$status
+if(! ~ $"command_status '') exit failure
+unmount /n/mountin

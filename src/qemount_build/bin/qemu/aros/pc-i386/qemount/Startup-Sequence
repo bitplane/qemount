@@ -1,9 +1,0 @@
-FailAt 21
-C:Assign LIBS: SYS:Libs
-C:Mount DEVS:DOSDrivers/DEBUG
-C:Echo "qemount: startup" >DEBUG:
-C:Automount
-C:Echo "qemount: volumes mounted" >DEBUG:
-C:Mount DEVS:DOSDrivers/SER
-C:Echo "qemount: serial mounted" >DEBUG:
-C:simple9p -p stream!SER:UNIT=1

@@ -1,0 +1,163 @@
+#!/bin/rc
+
+if(! ~ $#* 1) {
+	echo 'usage: mountin-mount disk' >[1=2]
+	exit usage
+}
+
+mountin_disk=$1
+
+# Discover partitions on the one attached target disk. diskparts asks the
+# native EFI, FDISK and Plan 9 partition readers to publish their partitions
+# beneath the target device.
+diskparts $mountin_disk
+
+mkdir -p /mnt /tmp
+ramfs -m /tmp
+
+# DOS and ISO9660 servers can serve several devices through attach specs, so
+# keep one instance of each for all candidates.
+dossrv -r mountindos
+9660srv mountiniso
+
+mountin_parts=($mountin_disk/data)
+for(mountin_dev in $mountin_disk/*) {
+	mountin_name=`{basename $mountin_dev}
+	if(! ~ $mountin_name ctl data raw)
+		mountin_parts=($mountin_parts $mountin_dev)
+}
+
+mountin_index=0
+mountin_mounts=()
+
+fn mountin_mounted {
+	echo '[mountin] mounted' $mountin_dev 'at' $mountin_mnt \
+		'('^$mountin_type^')'
+	mountin_done=yes
+	mountin_mounts=($mountin_mounts $mountin_mnt)
+}
+
+fn mountin_cleanup {
+	unmount $mountin_mnt >[2]/dev/null
+	rm -d $mountin_mnt >[2]/dev/null
+	mkdir -p $mountin_mnt
+}
+
+for(mountin_dev in $mountin_parts) {
+	mountin_name=`{basename $mountin_dev}
+	mountin_mnt=/mnt/$mountin_name
+	mountin_done=no
+	mountin_index=$mountin_index^x
+	mkdir -p $mountin_mnt
+
+	# Servers with strong, non-destructive validation go first.
+	if(~ $mountin_done no) {
+		if(mount /srv/mountiniso $mountin_mnt $mountin_dev >[2]/dev/null) {
+			mountin_type=iso9660
+			mountin_mounted
+		}
+	}
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		if(mount /srv/mountindos $mountin_mnt $mountin_dev >[2]/dev/null) {
+			mountin_type=fat
+			mountin_mounted
+		}
+	}
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		if(paqfs -q -v -m $mountin_mnt $mountin_dev >[2]/dev/null) {
+			mountin_type=paqfs
+			mountin_mounted
+		}
+	}
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		if(aux/flashfs -r -f $mountin_dev -m $mountin_mnt >[2]/dev/null) {
+			mountin_type=flashfs
+			mountin_mounted
+		}
+	}
+
+	# GEFS has a read-only server mode and validates its root while starting.
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		mountin_srv=mountingefs$mountin_index
+		if(gefs -A -S -R -m 16 -t 0 -f $mountin_dev \
+			-n $mountin_srv >[2]/dev/null) {
+			if(mount /srv/$mountin_srv $mountin_mnt %main \
+				>[2]/dev/null) {
+				mountin_type=gefs
+				mountin_mounted
+			}
+		}
+		if(~ $mountin_done no && test -e /srv/$mountin_srv.cmd)
+			echo halt >>/srv/$mountin_srv.cmd
+	}
+
+	# The tapefs readers do not validate their input, so select one only after
+	# the appliance probe has validated its root inode and directory entries.
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		mountin_type=`{mountin-fsprobe $mountin_dev}
+		mountin_reader_status=failure
+		switch($mountin_type) {
+		case v6
+			fs/v6fs -m $mountin_mnt $mountin_dev >[2]/dev/null
+			mountin_reader_status=$status
+		case 32v
+			fs/32vfs -m $mountin_mnt $mountin_dev >[2]/dev/null
+			mountin_reader_status=$status
+		case v10
+			fs/v10fs -m $mountin_mnt $mountin_dev >[2]/dev/null
+			mountin_reader_status=$status
+		}
+		if(~ $"mountin_reader_status '') {
+			mountin_mounted
+		}
+	}
+
+	# HJFS validates its superblock while starting. It has no read-only mode,
+	# so keep it after the read-only probes and never invoke its ream option.
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		mountin_srv=mountinhjfs$mountin_index
+		if(hjfs -f $mountin_dev -n $mountin_srv -S -m 16 \
+			>[2]/dev/null) {
+			if(mount /srv/$mountin_srv $mountin_mnt >[2]/dev/null) {
+				mountin_type=hjfs
+				mountin_mounted
+			}
+		}
+		if(~ $mountin_done no && test -e /srv/$mountin_srv.cmd)
+			echo halt >>/srv/$mountin_srv.cmd
+	}
+
+	# CWFS has no reliable raw signature. Only try it when a Plan 9 partition
+	# name identifies the candidate as a CWFS device.
+	if(~ $mountin_done no && ~ $mountin_name cwfs cwfs.* worm worm.*) {
+		mountin_cleanup
+		mountin_srv=mountincwfs$mountin_index
+		mountin_map=/tmp/$mountin_srv.map
+		echo 'w0' $mountin_dev >$mountin_map
+		if(cwfs64x -n $mountin_srv -m $mountin_map -f w0 \
+			>[2]/dev/null) {
+			echo 'users default' >>/srv/$mountin_srv.cmd
+			echo 'newuser glenda' >>/srv/$mountin_srv.cmd
+			sleep 1
+			if(mount /srv/$mountin_srv $mountin_mnt main >[2]/dev/null) {
+				mountin_type=cwfs
+				mountin_mounted
+			}
+		}
+	}
+
+	if(~ $mountin_done no) {
+		mountin_cleanup
+		rm -d $mountin_mnt >[2]/dev/null
+		echo '[mountin] unrecognised volume:' $mountin_dev
+	}
+}
+
+if(~ $#mountin_mounts 0)
+	echo '[mountin] no mountable volumes found'

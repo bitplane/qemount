@@ -3,7 +3,7 @@
 import json
 from argparse import Namespace
 
-from qemount_build.main import (
+from mountin_build.main import (
     normalize_target,
     expand_targets,
     get_jobs,

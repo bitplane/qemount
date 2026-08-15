@@ -5,7 +5,7 @@ from pathlib import Path
 
 SCRIPT = (
     Path(__file__).parents[2]
-    / "src/qemount_build/builder/run/qemu-9front/serial_relay.py"
+    / "src/mountin_build/builder/run/qemu-9front/serial_relay.py"
 )
 
 
@@ -20,7 +20,7 @@ def test_wait_for_marker_handles_split_marker(monkeypatch):
     module = load_serial_relay()
 
     class Channel:
-        chunks = iter((b"boot [qem", b"ount] mounted /dev", b"/sdG0\r\n"))
+        chunks = iter((b"boot [moun", b"tin] mounted /dev", b"/sdG0\r\n"))
 
         def recv(self, _size):
             return next(self.chunks)
@@ -28,6 +28,6 @@ def test_wait_for_marker_handles_split_marker(monkeypatch):
     output = io.BytesIO()
     monkeypatch.setattr(module.sys, "stdout", type("Output", (), {"buffer": output})())
 
-    module.wait_for_marker(Channel(), b"[qemount] mounted")
+    module.wait_for_marker(Channel(), b"[mountin] mounted")
 
-    assert output.getvalue() == b"boot [qemount] mounted /dev/sdG0\r\n"
+    assert output.getvalue() == b"boot [mountin] mounted /dev/sdG0\r\n"

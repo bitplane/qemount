@@ -5,16 +5,16 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from qemount_build.catalogue import (
+from mountin_build.catalogue import (
     build_graph,
     build_provides_index,
     load,
     resolve_provider_instances,
 )
-from qemount_build.provider_cache import provider_cache_container
+from mountin_build.provider_cache import provider_cache_container
 
 
-PACKAGE_DIR = Path(__file__).parents[2] / "src" / "qemount_build"
+PACKAGE_DIR = Path(__file__).parents[2] / "src" / "mountin_build"
 CONTEXT = {
     "BUILD_PLATFORM": "x86_64-linux",
     "BUILD_ARCH": "x86_64",
@@ -48,8 +48,8 @@ def test_every_provider_instance_receives_its_automatic_cache():
     for path in catalogue["paths"]:
         for instance in resolve_provider_instances(path, catalogue, CONTEXT):
             expected = provider_cache_container()
-            assert instance["context"]["QEMOUNT_CACHE_DIR"] == expected
-            assert instance["meta"]["env"]["QEMOUNT_CACHE_DIR"] == expected
+            assert instance["context"]["MOUNTIN_CACHE_DIR"] == expected
+            assert instance["meta"]["env"]["MOUNTIN_CACHE_DIR"] == expected
 
 
 def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
@@ -78,7 +78,7 @@ def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
 
 def test_puredarwin_guests_do_not_depend_on_the_macos_sdk():
     for target in (
-        "bin/x86_64-darwin/qemount-init",
+        "bin/x86_64-darwin/mountin-init",
         "bin/x86_64-darwin/simple9p",
     ):
         nodes = graph_for(target)["nodes"]
@@ -148,9 +148,9 @@ def test_qemu_netbsd_architecture_profiles():
         assert result.stdout == profile
 
 
-def test_qemount_binaries_do_not_embed_the_format_catalogue():
+def test_mountin_binaries_do_not_embed_the_format_catalogue():
     for target in (
-        "lib/x86_64-linux-gnu/libqemount.a",
+        "lib/x86_64-linux-gnu/libmountin.a",
         "bin/x86_64-linux-gnu/detect",
     ):
         assert "lib/format" not in graph_for(target)["nodes"]
@@ -227,7 +227,7 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     providers = buildable_providers(context)
 
     assert "docker:builder/compiler/haiku/r1-beta6-hrev59919-1" not in providers
-    assert "bin/x86_64-haiku/qemount-init" not in providers
+    assert "bin/x86_64-haiku/mountin-init" not in providers
     assert "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image" not in providers
     assert "data/fs/basic.beos-bfs" not in providers
 
@@ -290,5 +290,5 @@ def test_9front_cross_build_matrix():
         "bin/qemu/x86_64-9front/11957/9front.iso", arm_context
     )
 
-    assert "bin/qemu/9front/qemount@aarch64-9front" in arm_guest["nodes"]
-    assert "bin/qemu/9front/qemount@x86_64-9front" in x86_guest["nodes"]
+    assert "bin/qemu/9front/mountin@aarch64-9front" in arm_guest["nodes"]
+    assert "bin/qemu/9front/mountin@x86_64-9front" in x86_guest["nodes"]

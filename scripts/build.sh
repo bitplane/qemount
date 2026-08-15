@@ -2,4 +2,4 @@
 
 source .venv/bin/activate
 
-qemount-build outputs | xargs -r qemount-build build
+mountin-build outputs | xargs -r mountin-build build

@@ -1,0 +1,35 @@
+#!/bin/rc
+
+gefs -r glenda -f /dev/sdF0/data
+command_status=$status
+if(! ~ $"command_status '') exit failure
+gefs -A -S -f /dev/sdF0/data -n mountingefs
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mkdir -p /n/gefs-verify
+mount -c /srv/mountingefs /n/gefs-verify %main
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /n/gefs-verify
+tar xf /n/mountin-fixture/basic.tar
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/gefs-verify/basic/hello.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+cd /
+echo halt >>/srv/mountingefs.cmd
+while(test -e /srv/mountingefs.cmd) sleep 1
+unmount /n/gefs-verify >[2=]
+gefs -A -S -f /dev/sdF0/data -n mountingefs
+command_status=$status
+if(! ~ $"command_status '') exit failure
+mount /srv/mountingefs /n/gefs-verify %main
+command_status=$status
+if(! ~ $"command_status '') exit failure
+test -f /n/gefs-verify/basic/nested_dir/file_in_dir.txt
+command_status=$status
+if(! ~ $"command_status '') exit failure
+echo halt >>/srv/mountingefs.cmd
+while(test -e /srv/mountingefs.cmd) sleep 1
+unmount /n/gefs-verify >[2=]

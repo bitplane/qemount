@@ -2,18 +2,18 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BOOT_IMAGE=${QEMOUNT_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image}
-NINEPFUSE=${QEMOUNT_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
-RUNNER=$PROJECT_ROOT/src/qemount_build/builder/run/qemu-haiku/run.sh
+BOOT_IMAGE=${MOUNTIN_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image}
+NINEPFUSE=${MOUNTIN_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
+RUNNER=$PROJECT_ROOT/src/mountin_build/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
 LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/integration
-TEMP_PARENT=${QEMOUNT_TEST_TMPDIR:-$PROJECT_ROOT/build/tmp}
-WRITE_TEST_SIZE=${QEMOUNT_HAIKU_WRITE_TEST_SIZE:-4096}
-KEEP_TEST_WORK=${QEMOUNT_KEEP_TEST_WORK:-0}
-FORCE_MUTATION=${QEMOUNT_HAIKU_FORCE_MUTATION:-0}
+TEMP_PARENT=${MOUNTIN_TEST_TMPDIR:-$PROJECT_ROOT/build/tmp}
+WRITE_TEST_SIZE=${MOUNTIN_HAIKU_WRITE_TEST_SIZE:-4096}
+KEEP_TEST_WORK=${MOUNTIN_KEEP_TEST_WORK:-0}
+FORCE_MUTATION=${MOUNTIN_HAIKU_FORCE_MUTATION:-0}
 NINEPFUSE_ARGS=(-n 1)
-if [[ ${QEMOUNT_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
+if [[ ${MOUNTIN_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
     NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
 fi
 
@@ -99,7 +99,7 @@ else
 fi
 
 mkdir -p "$LOG_DIR" "$TEMP_PARENT"
-WORK_DIR=$(mktemp -d "$TEMP_PARENT/qemount-haiku-test.XXXXXXXX")
+WORK_DIR=$(mktemp -d "$TEMP_PARENT/mountin-haiku-test.XXXXXXXX")
 QEMU_PID=
 MOUNT_POINT=
 
@@ -131,7 +131,7 @@ wait_for_guest() {
     local deadline=$((SECONDS + 180))
 
     until [[ -S "$socket_path" ]] \
-        && grep -q "qemount: serving / over" "$log_file" 2>/dev/null; do
+        && grep -q "mountin: serving / over" "$log_file" 2>/dev/null; do
         if ! kill -0 "$QEMU_PID" 2>/dev/null; then
             echo "Haiku exited before starting simple9p; see $log_file" >&2
             return 1
@@ -276,14 +276,14 @@ for case_name in "${cases[@]}"; do
         dd if=/dev/zero of="$case_dir/write-test.bin" bs="$WRITE_TEST_SIZE" \
             count=1 status=none
         timeout 60 cp "$case_dir/write-test.bin" \
-            "$target_root/qemount-write-test.bin"
+            "$target_root/mountin-write-test.bin"
         timeout 60 cmp "$case_dir/write-test.bin" \
-            "$target_root/qemount-write-test.bin"
-        if ! remove_with_guest_watch "$target_root/qemount-write-test.bin" \
+            "$target_root/mountin-write-test.bin"
+        if ! remove_with_guest_watch "$target_root/mountin-write-test.bin" \
             "$log_file"; then
             exit 1
         fi
-        if [[ -e "$target_root/qemount-write-test.bin" ]]; then
+        if [[ -e "$target_root/mountin-write-test.bin" ]]; then
             echo "Delete did not persist for $case_name" >&2
             exit 1
         fi
@@ -291,14 +291,14 @@ for case_name in "${cases[@]}"; do
         target_root=${target_roots[0]}
         set +e
         timeout 30 sh -c 'printf test > "$1"' sh \
-            "$target_root/qemount-write-test.txt" 2>>"$log_file"
+            "$target_root/mountin-write-test.txt" 2>>"$log_file"
         write_status=$?
         set -e
         if [[ "$write_status" == 0 || "$write_status" == 124 ]]; then
             echo "Read-only write did not fail cleanly for $case_name" >&2
             exit 1
         fi
-        test ! -e "$target_root/qemount-write-test.txt"
+        test ! -e "$target_root/mountin-write-test.txt"
     fi
 
     "$FUSERMOUNT" -u -z "$MOUNT_POINT"

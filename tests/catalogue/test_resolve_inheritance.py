@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from qemount_build.catalogue import load_docs, map_paths, resolve_inheritance
+from mountin_build.catalogue import load_docs, map_paths, resolve_inheritance
 
 
 DATA_DIR = Path(__file__).parent / "data"

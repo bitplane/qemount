@@ -2,7 +2,7 @@
 
 .PHONY: help all install test dev coverage clean gc build archive cloc
 
-PROJECT_NAME := qemount_build
+PROJECT_NAME := mountin_build
 
 BUILD_PLATFORM ?= $(shell ./scripts/canonical_arch.sh)-linux
 REGISTRY ?= localhost
@@ -10,7 +10,7 @@ export BUILD_PLATFORM
 export REGISTRY
 
 all: .venv/.installed-dev  ## build all locally buildable output platforms
-	.venv/bin/qemount-build outputs --all-platforms | xargs -r .venv/bin/qemount-build build
+	.venv/bin/mountin-build outputs --all-platforms | xargs -r .venv/bin/mountin-build build
 
 install: .venv/.installed  ## install the venv and project packages
 
@@ -28,8 +28,8 @@ build: .venv/.installed-dev scripts/build.sh  ## build host-compatible outputs
 clean:  ## delete caches and the venv
 	scripts/clean.sh
 
-gc: .venv/.installed-dev  ## collect obsolete qemount build state
-	.venv/bin/qemount-build gc
+gc: .venv/.installed-dev  ## collect obsolete mountin build state
+	.venv/bin/mountin-build gc
 
 dist: scripts/dist.sh  ## build the distributable files
 	scripts/dist.sh $(PROJECT_NAME)

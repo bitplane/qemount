@@ -18,10 +18,10 @@ if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
 fi
 
 DATE=$(date -u +%Y-%m-%d_%H-%M-%SZ)
-QEMOUNT_COMMIT=$(git rev-parse HEAD)
-BUILDER_IMAGE="qemount-builder"
-CONTAINER_NAME="qemount-build-${DATE}-$$"
-BUNDLE_FILE="$ROOT_DIR/.qemount-archive.bundle"
+MOUNTIN_COMMIT=$(git rev-parse HEAD)
+BUILDER_IMAGE="mountin-builder"
+CONTAINER_NAME="mountin-build-${DATE}-$$"
+BUNDLE_FILE="$ROOT_DIR/.mountin-archive.bundle"
 CONTAINER_CREATED=0
 ARCHIVE_TMP=
 ARCHIVE_FILE=
@@ -70,8 +70,8 @@ log_cmd() {
     echo "=== $label complete ===" | ts
 }
 
-echo "=== Preparing qemount time capsule ===" | ts
-echo "Source commit: $QEMOUNT_COMMIT" | ts
+echo "=== Preparing mountin time capsule ===" | ts
+echo "Source commit: $MOUNTIN_COMMIT" | ts
 rm -f -- "$BUNDLE_FILE"
 git bundle create "$BUNDLE_FILE" --all HEAD
 git bundle verify "$BUNDLE_FILE" 2>&1 | ts
@@ -79,8 +79,8 @@ git bundle verify "$BUNDLE_FILE" 2>&1 | ts
 log_cmd "Building archive environment" \
     env CONTAINERS_REGISTRIES_CONF="$ROOT_DIR/scripts/registries.archive.conf" \
     podman build \
-        --build-arg "QEMOUNT_COMMIT=$QEMOUNT_COMMIT" \
-        --label "org.opencontainers.image.revision=$QEMOUNT_COMMIT" \
+        --build-arg "MOUNTIN_COMMIT=$MOUNTIN_COMMIT" \
+        --label "org.opencontainers.image.revision=$MOUNTIN_COMMIT" \
         -f scripts/Dockerfile.archive \
         -t "$BUILDER_IMAGE" \
         .
@@ -93,10 +93,10 @@ log_cmd "Running build" \
     podman start --attach "$CONTAINER_NAME"
 
 mkdir -p build/archive
-ARCHIVE_FILE="build/archive/${DATE}_qemount.tar.xz"
+ARCHIVE_FILE="build/archive/${DATE}_mountin.tar.xz"
 ARCHIVE_TMP="${ARCHIVE_FILE}.tmp"
-README_FILE="build/archive/${DATE}_qemount.README.md"
-CHECKSUM_FILE="build/archive/${DATE}_qemount.sha256"
+README_FILE="build/archive/${DATE}_mountin.README.md"
+CHECKSUM_FILE="build/archive/${DATE}_mountin.sha256"
 
 # Use export instead of save - exports container filesystem directly
 # without the layer overhead that makes podman save pathologically slow

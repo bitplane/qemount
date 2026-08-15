@@ -1,0 +1,69 @@
+# Content of the mountin Haiku appliance image.
+
+SYSTEM_BIN = ;
+SYSTEM_APPS = ;
+DESKBAR_APPLICATIONS = ;
+DESKBAR_DESKTOP_APPLETS = ;
+SYSTEM_PREFERENCES = ;
+SYSTEM_DEMOS = ;
+
+
+rule HaikuImageGetSystemLibs
+{
+	return
+		[ MultiArchDefaultGristFiles libroot.so : revisioned ]
+		[ BuildFeatureAttribute gcc_syslibs : libgcc_s.so.1 ]
+		;
+}
+
+
+rule HaikuImageGetPrivateSystemLibs
+{
+	return ;
+}
+
+
+SYSTEM_SERVERS = ;
+
+SYSTEM_NETWORK_DEVICES = ;
+SYSTEM_NETWORK_DATALINK_PROTOCOLS = ;
+SYSTEM_NETWORK_PPP = ;
+SYSTEM_NETWORK_PROTOCOLS = ;
+SYSTEM_BT_STACK = ;
+
+SYSTEM_ADD_ONS_ACCELERANTS = ;
+SYSTEM_ADD_ONS_TRANSLATORS = ;
+SYSTEM_ADD_ONS_LOCALE_CATALOGS = ;
+SYSTEM_ADD_ONS_MEDIA = ;
+SYSTEM_ADD_ONS_MEDIA_PLUGINS = ;
+SYSTEM_ADD_ONS_PRINT = ;
+SYSTEM_ADD_ONS_PRINT_TRANSPORT = ;
+SYSTEM_ADD_ONS_SCREENSAVERS = ;
+SYSTEM_ADD_ONS_DRIVERS_AUDIO = ;
+SYSTEM_ADD_ONS_DRIVERS_AUDIO_OLD = ;
+SYSTEM_ADD_ONS_DRIVERS_GRAPHICS = ;
+SYSTEM_ADD_ONS_DRIVERS_MIDI = ;
+SYSTEM_ADD_ONS_DRIVERS_NET = ;
+SYSTEM_ADD_ONS_DRIVERS_POWER = ;
+SYSTEM_ADD_ONS_DRIVERS_SENSOR = ;
+
+SYSTEM_ADD_ONS_BUS_MANAGERS = [ FFilterByBuildFeatures
+	acpi@x86,x86_64
+	ata
+	isa@x86,x86_64
+	pci
+	scsi
+] ;
+
+SYSTEM_ADD_ONS_FILE_SYSTEMS =
+	bfs
+	btrfs
+	exfat
+	ext2
+	fat
+	iso9660
+	ntfs
+	packagefs
+	reiserfs
+	udf
+;

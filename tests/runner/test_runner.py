@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from qemount_build.cache import save_cache, update_output_hash
-from qemount_build.runner import (
+from mountin_build.cache import save_cache, update_output_hash
+from mountin_build.runner import (
     build_log_path,
     dockerfile_build_args,
     get_image_tag,
@@ -32,14 +32,14 @@ def test_dockerfile_build_args_reads_global_and_stage_arguments(tmp_path):
         "ARG BASE=example\n"
         "FROM ${BASE}\n"
         "  ARG JOBS\n"
-        "ARG QEMOUNT_CACHE_DIR=/cache\n"
+        "ARG MOUNTIN_CACHE_DIR=/cache\n"
         "RUN true\n"
     )
 
     assert dockerfile_build_args(dockerfile) == {
         "BASE",
         "JOBS",
-        "QEMOUNT_CACHE_DIR",
+        "MOUNTIN_CACHE_DIR",
     }
 
 
@@ -95,7 +95,7 @@ def test_run_streaming_tees_output_to_stream_and_log(tmp_path):
     assert terminal.getvalue() == "stdout\nstderr\n"
     retained = log_path.read_text()
     assert "stdout\nstderr\n" in retained
-    assert "[qemount] exit status: 0\n" in retained
+    assert "[mountin] exit status: 0\n" in retained
 
 
 def test_run_streaming_retains_failed_command_without_replaying_it(tmp_path):
@@ -117,7 +117,7 @@ def test_run_streaming_retains_failed_command_without_replaying_it(tmp_path):
     assert terminal.getvalue() == "broken\n"
     retained = log_path.read_text()
     assert retained.count("broken") == 1
-    assert "[qemount] exit status: 23\n" in retained
+    assert "[mountin] exit status: 23\n" in retained
 
 
 def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
@@ -149,7 +149,7 @@ def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
 
     process = Process()
     monkeypatch.setattr(
-        "qemount_build.runner.subprocess.Popen", lambda *args, **kwargs: process
+        "mountin_build.runner.subprocess.Popen", lambda *args, **kwargs: process
     )
     log_path = tmp_path / "stage.run.log"
 
@@ -158,7 +158,7 @@ def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
 
     assert process.terminated
     assert process.waited
-    assert "[qemount] interrupted\n" in log_path.read_text()
+    assert "[mountin] interrupted\n" in log_path.read_text()
 
 
 def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch):
@@ -176,9 +176,9 @@ def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch)
         removed.append(cmd)
         return SimpleNamespace(returncode=0)
 
-    monkeypatch.setattr("qemount_build.runner.run_streaming", interrupt)
-    monkeypatch.setattr("qemount_build.runner.subprocess.run", record_run)
-    monkeypatch.setattr("qemount_build.runner.podman_runtime_args", lambda: [])
+    monkeypatch.setattr("mountin_build.runner.run_streaming", interrupt)
+    monkeypatch.setattr("mountin_build.runner.subprocess.run", record_run)
+    monkeypatch.setattr("mountin_build.runner.podman_runtime_args", lambda: [])
 
     with pytest.raises(KeyboardInterrupt):
         run_container(
@@ -303,7 +303,7 @@ def test_failed_output_transaction_restores_previous_file(tmp_path):
     finish_output_transaction(tmp_path, ["data/result"], backups, False)
 
     assert output.read_text() == "previous"
-    assert not (output.parent / "result.qemount-previous").exists()
+    assert not (output.parent / "result.mountin-previous").exists()
 
 
 def test_successful_output_transaction_discards_previous_file(tmp_path):
@@ -315,7 +315,7 @@ def test_successful_output_transaction_discards_previous_file(tmp_path):
     finish_output_transaction(tmp_path, ["result"], backups, True)
 
     assert output.read_text() == "replacement"
-    assert not (tmp_path / "result.qemount-previous").exists()
+    assert not (tmp_path / "result.mountin-previous").exists()
 
 
 def test_failed_output_transaction_restores_previous_directory(tmp_path):
@@ -330,7 +330,7 @@ def test_failed_output_transaction_restores_previous_directory(tmp_path):
 
     assert (output / "previous.h").read_text() == "previous"
     assert not (output / "partial.h").exists()
-    assert not (tmp_path / "sdk.qemount-previous").exists()
+    assert not (tmp_path / "sdk.mountin-previous").exists()
 
 
 def test_successful_output_transaction_discards_previous_directory(tmp_path):
@@ -344,7 +344,7 @@ def test_successful_output_transaction_discards_previous_directory(tmp_path):
     finish_output_transaction(tmp_path, ["sdk"], backups, True)
 
     assert (output / "replacement.h").read_text() == "replacement"
-    assert not (tmp_path / "sdk.qemount-previous").exists()
+    assert not (tmp_path / "sdk.mountin-previous").exists()
 
 
 def test_new_transaction_recovers_previous_file_after_interruption(tmp_path):
@@ -372,12 +372,12 @@ def test_provider_cache_is_reused_only_for_identical_inputs(tmp_path):
 
     prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "two")
     assert not (cache / "objects").exists()
-    assert (cache.parent / ".qemount-input").read_text() == "two\n"
+    assert (cache.parent / ".mountin-input").read_text() == "two\n"
 
 
 def test_provider_cache_metadata_is_outside_the_builder_workspace(tmp_path):
     cache = prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one")
-    marker = cache.parent / ".qemount-input"
+    marker = cache.parent / ".mountin-input"
 
     for child in cache.iterdir():
         if child.is_dir():

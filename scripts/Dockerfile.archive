@@ -1,7 +1,7 @@
 FROM docker.io/library/ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG QEMOUNT_COMMIT
+ARG MOUNTIN_COMMIT
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     podman \
@@ -19,15 +19,15 @@ RUN mkdir -p /etc/containers /var/lib/containers /run/containers && \
     printf '[storage]\ndriver = "overlay"\nrunroot = "/run/containers"\ngraphroot = "/var/lib/containers"\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' > /etc/containers/storage.conf
 
 COPY scripts/registries.archive.conf /etc/containers/registries.conf
-COPY .qemount-archive.bundle /time-capsule/qemount.bundle
-RUN test -n "$QEMOUNT_COMMIT" && \
-    git clone /time-capsule/qemount.bundle /src && \
-    git -C /src checkout --detach "$QEMOUNT_COMMIT" && \
-    test "$(git -C /src rev-parse HEAD)" = "$QEMOUNT_COMMIT"
+COPY .mountin-archive.bundle /time-capsule/mountin.bundle
+RUN test -n "$MOUNTIN_COMMIT" && \
+    git clone /time-capsule/mountin.bundle /src && \
+    git -C /src checkout --detach "$MOUNTIN_COMMIT" && \
+    test "$(git -C /src rev-parse HEAD)" = "$MOUNTIN_COMMIT"
 
-COPY --chmod=755 scripts/archive-build.sh /usr/local/bin/qemount-archive-build
+COPY --chmod=755 scripts/archive-build.sh /usr/local/bin/mountin-archive-build
 COPY scripts/TIME_CAPSULE.md /TIME_CAPSULE.md
 
 WORKDIR /src
 
-CMD ["/usr/local/bin/qemount-archive-build"]
+CMD ["/usr/local/bin/mountin-archive-build"]
