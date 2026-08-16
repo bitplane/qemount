@@ -31,12 +31,6 @@ clean:  ## delete caches and the venv
 gc: .venv/.installed-dev  ## collect obsolete mountin build state
 	.venv/bin/mountin-build gc
 
-dist: scripts/dist.sh  ## build the distributable files
-	scripts/dist.sh $(PROJECT_NAME)
-
-release: scripts/release.sh  ## publish to pypi
-	scripts/release.sh $(PROJECT_NAME)
-
 archive: scripts/archive.sh scripts/Dockerfile.archive scripts/archive-build.sh scripts/registries.archive.conf scripts/TIME_CAPSULE.md  ## build complete archive in container
 	scripts/archive.sh
 

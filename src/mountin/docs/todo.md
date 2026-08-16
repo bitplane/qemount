@@ -42,8 +42,6 @@
 
 ## 3. Polish the turd
 
-- [ ] consider renaming the project to `mountin` once emulator back-ends are
-      cleanly separated from QEMU
 - [ ] install scripts
   - [ ] add installers
   - [ ] xdg launcher
@@ -59,9 +57,8 @@
 ## 4. Stretch goals
 
 - [ ] add more guests
-  - [ ] Atari ST (STEEM?)
+  - [ ] Atari ST
   - [ ] RISC OS
-  - [x] illumos
 - [ ] bundle source
   - [ ] firstly, download source packages into builder images for archival
         purposes

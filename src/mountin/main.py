@@ -14,9 +14,13 @@ import json
 import logging
 import os
 import platform
+import subprocess
 import sys
+from importlib.metadata import version
 from pathlib import Path
 
+from . import log as logsetup
+from .cache import hash_file, load_cache, save_cache, update_output_hash
 from .catalogue import (
     build_graph,
     build_output_index,
@@ -24,13 +28,12 @@ from .catalogue import (
     load,
     resolve_provider_instances,
 )
-from .runner import run_build
-from .inventory import create_inventory, write_inventory
-from .cache import load_cache, save_cache, hash_file
 from .gc import collect
+from .inventory import create_inventory, write_inventory
 from .lock import BuildDirectoryBusy, build_directory_lock
 from .provider_cache import provider_cache_name
-from . import log as logsetup
+from .runner import run_build
+from .source import export_source_tree, resolve_source_authority
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +59,37 @@ def get_default_build_platform():
     return f"{get_default_arch()}-{system}"
 
 
-def build_context(build_platform: str) -> dict:
+def get_release_ref(repository: Path | None = None) -> str:
+    """Return the exact release tag or a short, unique commit name."""
+    repository = repository or Path(__file__).resolve().parents[2]
+    try:
+        tags = subprocess.run(
+            ["git", "tag", "--points-at", "HEAD", "--list", "v[0-9]*"],
+            cwd=repository,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return f"v{version('mountin')}"
+    if len(tags) > 1:
+        raise ValueError(f"HEAD has multiple release tags: {', '.join(tags)}")
+    if tags:
+        return tags[0]
+    return subprocess.run(
+        ["git", "rev-parse", "--short=6", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def build_context(
+    build_platform: str,
+    repository: Path | None = None,
+    source_kind: str = "checkout",
+) -> dict:
     """Create the immutable context shared by all provider variants."""
     parts = build_platform.split("-")
     if len(parts) != 2:
@@ -66,6 +99,8 @@ def build_context(build_platform: str) -> dict:
         "BUILD_ARCH": parts[0],
         "BUILD_OS": parts[1],
         "JOBS": str(get_jobs()),
+        "RELEASE_REF": get_release_ref(repository),
+        "SOURCE_KIND": source_kind,
     }
 
 
@@ -193,12 +228,31 @@ def expand_targets(patterns: list[str], catalogue: dict, context: dict) -> list[
 
 def cmd_build(args, catalogue, context):
     """Build targets and their dependencies."""
-    pkg_dir = Path(__file__).parent
     build_dir = Path("build").absolute()
     build_dir.mkdir(exist_ok=True)
 
     try:
         with build_directory_lock(build_dir, blocking=False):
+            cache = load_cache(build_dir)
+            source_output = "sources/mountin"
+            source_tree = build_dir / source_output
+            previous = cache.get(source_output, {}).get("input_hash")
+            source_identity, changed = export_source_tree(
+                args.source_authority, source_tree, previous
+            )
+            update_output_hash(
+                cache,
+                source_output,
+                source_identity,
+                build_dir,
+                provenance={"source_kind": args.source_authority.kind},
+            )
+            if changed:
+                log.info("Exported build source to %s", source_tree)
+
+            pkg_dir = source_tree / "src" / "mountin"
+            catalogue = load(pkg_dir)
+
             # Expand patterns and strip build/ prefix
             targets = expand_targets(args.targets, catalogue, context)
             if not targets:
@@ -210,8 +264,7 @@ def cmd_build(args, catalogue, context):
             catalogue_file.write_text(json.dumps(catalogue, indent=2))
             log.debug("Wrote catalogue to %s", catalogue_file)
 
-            # Update cache with new catalogue hash so dependents see the change
-            cache = load_cache(build_dir)
+            # Update cache with implicit input hashes so dependents see changes.
             hash_file(catalogue_file, cache, "build:catalogue.json")
             save_cache(build_dir, cache)
 
@@ -355,12 +408,16 @@ def main():
     # Configure logging
     logsetup.setup(args.log_level)
 
-    # Load catalogue
-    pkg_dir = Path(__file__).parent
-    catalogue = load(pkg_dir)
+    source_authority = resolve_source_authority()
+    catalogue = load(source_authority.catalogue_root)
 
     # Build context
-    context = build_context(args.build_platform)
+    context = build_context(
+        args.build_platform,
+        source_authority.repository,
+        source_authority.kind,
+    )
+    args.source_authority = source_authority
 
     # Run command
     return run_command(args.func, args, catalogue, context)

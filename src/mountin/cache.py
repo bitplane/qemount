@@ -132,7 +132,14 @@ def hash_path_inputs(
         else:
             req_path = build_dir / req
             if req_path.exists():
-                h.update(hash_file(req_path, cache, f"build:{req}").encode())
+                if req_path.is_dir():
+                    cached = cache.get(req)
+                    if cached and cached.get("kind") == "directory":
+                        h.update(cached["hash"].encode())
+                    else:
+                        h.update(hash_files(req_path, cache, f"build:{req}").encode())
+                else:
+                    h.update(hash_file(req_path, cache, f"build:{req}").encode())
 
     # Hash build_requires (mounted during docker build)
     for req in sorted(resolved.get("build_requires", {}).keys()):
@@ -167,7 +174,14 @@ def hash_output_inputs(
         h.update(req.encode())
         req_path = build_dir / req
         if req_path.exists():
-            h.update(hash_file(req_path, cache, f"build:{req}").encode())
+            if req_path.is_dir():
+                cached = cache.get(req)
+                if cached and cached.get("kind") == "directory":
+                    h.update(cached["hash"].encode())
+                else:
+                    h.update(hash_files(req_path, cache, f"build:{req}").encode())
+            else:
+                h.update(hash_file(req_path, cache, f"build:{req}").encode())
     return h.hexdigest()
 
 

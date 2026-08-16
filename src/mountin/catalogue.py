@@ -12,8 +12,8 @@ import yaml
 
 from .provider_cache import provider_cache_container
 
-
 VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
+IMPLICIT_OUTPUTS = {"catalogue.json", "sources/mountin"}
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -461,6 +461,15 @@ def build_output_index(
                     f"build platform {build_platform} is not in "
                     f"build_platforms ({supported})"
                 )
+            source_kinds = meta.get("source_kinds", {})
+            source_kind = context.get("SOURCE_KIND")
+            if buildable and source_kinds and source_kind not in source_kinds:
+                supported = ", ".join(source_kinds)
+                buildable = False
+                reason = (
+                    f"source kind {source_kind} is not in source_kinds "
+                    f"({supported})"
+                )
 
             for output in meta.get("provides", {}):
                 if output in index:
@@ -485,6 +494,8 @@ def build_output_index(
             for requirement in meta.get("requires", {}):
                 dependency = index.get(requirement)
                 if dependency is None:
+                    if requirement in IMPLICIT_OUTPUTS:
+                        continue
                     if build_dir is None or (build_dir / requirement).exists():
                         continue
                     record["buildable"] = False
@@ -540,8 +551,8 @@ def build_graph(targets: list[str], catalogue: dict, context: dict, build_dir: P
         if output not in index:
             if output in outputs:
                 raise KeyError(f"Not buildable: {output}: {outputs[output]['reason']}")
-            # Allow file dependencies that exist in build_dir
-            if (build_dir / output).exists():
+            # Allow build-system inputs and existing external files.
+            if output in IMPLICIT_OUTPUTS or (build_dir / output).exists():
                 return
             raise KeyError(f"No provider for: {output} (required by {chain[-1] if chain else 'root'})")
 

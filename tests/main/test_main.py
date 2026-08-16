@@ -1,20 +1,35 @@
 """Tests for main.py CLI helpers."""
 
 import json
+import subprocess
 from argparse import Namespace
 
 from mountin.main import (
-    normalize_target,
-    expand_targets,
-    get_jobs,
-    get_default_arch,
     build_context,
-    compatible_output_arches,
-    run_command,
+    cmd_deps,
     cmd_dump,
     cmd_outputs,
-    cmd_deps,
+    compatible_output_arches,
+    expand_targets,
+    get_default_arch,
+    get_jobs,
+    get_release_ref,
+    normalize_target,
+    run_command,
 )
+
+
+def make_git_repository(path):
+    subprocess.run(["git", "init", "-q", path], check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"], cwd=path, check=True
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test"], cwd=path, check=True
+    )
+    (path / "file").write_text("content")
+    subprocess.run(["git", "add", "file"], cwd=path, check=True)
+    subprocess.run(["git", "commit", "-qm", "initial"], cwd=path, check=True)
 
 
 def test_run_command_handles_keyboard_interrupt(caplog):
@@ -102,6 +117,37 @@ def test_build_context_splits_canonical_platform():
     context = build_context("aarch64-linux")
     assert context["BUILD_ARCH"] == "aarch64"
     assert context["BUILD_OS"] == "linux"
+
+
+def test_release_ref_uses_unique_six_character_abbreviation(tmp_path):
+    make_git_repository(tmp_path)
+    expected = subprocess.run(
+        ["git", "rev-parse", "--short=6", "HEAD"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    assert get_release_ref(tmp_path) == expected
+
+
+def test_release_ref_prefers_exact_version_tag(tmp_path):
+    make_git_repository(tmp_path)
+    subprocess.run(["git", "tag", "v0.1.0"], cwd=tmp_path, check=True)
+
+    assert get_release_ref(tmp_path) == "v0.1.0"
+
+
+def test_release_ref_ignores_non_release_tags(tmp_path):
+    make_git_repository(tmp_path)
+    subprocess.run(["git", "tag", "checkpoint"], cwd=tmp_path, check=True)
+
+    assert get_release_ref(tmp_path) != "checkpoint"
+
+
+def test_release_ref_uses_package_version_outside_checkout(tmp_path):
+    assert get_release_ref(tmp_path) == "v0.1.0"
 
 
 def test_compatible_output_arches_include_32_bit_x86():

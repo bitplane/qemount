@@ -96,3 +96,28 @@ def test_same_provider_expands_to_distinct_platform_instances():
     assert outputs["bin/aarch64-linux-musl/tool"]["id"] == (
         "tool@aarch64-linux-musl"
     )
+
+
+def test_build_output_index_honours_source_kind():
+    cat = {
+        "paths": {
+            "release": {
+                "meta": {
+                    "source_kinds": {"checkout": {}},
+                    "provides": {"release/package": {}},
+                },
+                "sources": [],
+            }
+        }
+    }
+
+    checkout = build_output_index(
+        cat, {"BUILD_PLATFORM": "x86_64-linux", "SOURCE_KIND": "checkout"}
+    )
+    distribution = build_output_index(
+        cat, {"BUILD_PLATFORM": "x86_64-linux", "SOURCE_KIND": "distribution"}
+    )
+
+    assert checkout["release/package"]["buildable"]
+    assert not distribution["release/package"]["buildable"]
+    assert "source kind distribution" in distribution["release/package"]["reason"]

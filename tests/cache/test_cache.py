@@ -322,6 +322,37 @@ def test_hash_path_inputs_file_dep():
         assert h1 != h2
 
 
+def test_hash_path_inputs_uses_declared_directory_identity():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg_dir = root / "pkg"
+        build_dir = root / "build"
+        dependency = build_dir / "sources/project"
+        (pkg_dir / "mypath").mkdir(parents=True)
+        dependency.mkdir(parents=True)
+        (dependency / "source").write_text("content")
+        resolved = {"requires": {"sources/project": {}}}
+
+        first = hash_path_inputs(
+            "mypath",
+            pkg_dir,
+            resolved,
+            {},
+            build_dir,
+            {"sources/project": {"kind": "directory", "hash": "first"}},
+        )
+        second = hash_path_inputs(
+            "mypath",
+            pkg_dir,
+            resolved,
+            {},
+            build_dir,
+            {"sources/project": {"kind": "directory", "hash": "second"}},
+        )
+
+        assert first != second
+
+
 def test_hash_file_cache_hit():
     """hash_file uses cached hash when mtime and size unchanged."""
     with tempfile.TemporaryDirectory() as tmp:
