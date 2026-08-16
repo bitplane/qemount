@@ -1,10 +1,10 @@
 # 🔌 mountin
 
-Mount anything by giving the image or data file to an operating system that
-understands it or has native tools for it, then exposing the result over 9P.
-mountin runs one small guest per image, using real kernels and filesystem
-implementations instead of reimplementing every format on the host. In future,
-it'll support archive formats and obscure data files too.
+`mountin` mounts disk images in an appropriate guest operating system, using its
+kernel and filesystem drivers, then exposes it over 9p. So you get read/write
+access to obscure filesystems using a well tested driver (in theory).
+
+In future, it'll support archive formats and obscure data files too.
 
 ## ✅ STATUS
 
@@ -17,8 +17,8 @@ it'll support archive formats and obscure data files too.
 Currently, there's:
 
 * guests for Linux 2.6, Linux 6.12, NetBSD 10.0, Dragonfly BSD, PureDarwin,
-  AROS and Haiku. Architecture coverage varies depending on build host.
-* 9P2000.U support via a [9p server](https://github.com/bitplane/simple9p) an
+  AROS, Haiku and Illumos. Architecture coverage varies depending on build host.
+* 9P2000.U support via a [9p server](https://github.com/bitplane/simple9p) a
   9pfuse client.
 * A huge collection of test data fixtures, with many custom mkfs and archive and
   compression tools.
