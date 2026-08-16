@@ -5,7 +5,7 @@ from pathlib import Path
 
 SCRIPT = (
     Path(__file__).parents[2]
-    / "src/mountin_build/builder/run/qemu-9front/serial_relay.py"
+    / "src/mountin/builder/run/qemu-9front/serial_relay.py"
 )
 
 

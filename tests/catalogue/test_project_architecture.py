@@ -5,16 +5,16 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from mountin_build.catalogue import (
+from mountin.catalogue import (
     build_graph,
     build_provides_index,
     load,
     resolve_provider_instances,
 )
-from mountin_build.provider_cache import provider_cache_container
+from mountin.provider_cache import provider_cache_container
 
 
-PACKAGE_DIR = Path(__file__).parents[2] / "src" / "mountin_build"
+PACKAGE_DIR = Path(__file__).parents[2] / "src" / "mountin"
 CONTEXT = {
     "BUILD_PLATFORM": "x86_64-linux",
     "BUILD_ARCH": "x86_64",

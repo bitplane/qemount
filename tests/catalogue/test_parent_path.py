@@ -2,7 +2,7 @@
 
 import pytest
 
-from mountin_build.catalogue import parent_path
+from mountin.catalogue import parent_path
 
 
 @pytest.mark.parametrize("path,expected", [

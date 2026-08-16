@@ -2,7 +2,7 @@
 
 .PHONY: help all install test dev coverage clean gc build archive cloc
 
-PROJECT_NAME := mountin_build
+PROJECT_NAME := mountin
 
 BUILD_PLATFORM ?= $(shell ./scripts/canonical_arch.sh)-linux
 REGISTRY ?= localhost

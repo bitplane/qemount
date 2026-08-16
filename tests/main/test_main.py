@@ -3,7 +3,7 @@
 import json
 from argparse import Namespace
 
-from mountin_build.main import (
+from mountin.main import (
     normalize_target,
     expand_targets,
     get_jobs,

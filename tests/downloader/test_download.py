@@ -1,7 +1,7 @@
 import subprocess
 import tarfile
 
-from mountin_build.builder.downloader.download import clone_repo, temporary_output
+from mountin.builder.downloader.download import clone_repo, temporary_output
 
 
 def test_temporary_outputs_are_unique(tmp_path):

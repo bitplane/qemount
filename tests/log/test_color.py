@@ -3,7 +3,7 @@
 import io
 import logging
 
-from mountin_build.log import ColorFormatter, RESET
+from mountin.log import ColorFormatter, RESET
 
 
 def make_record(level=logging.INFO, msg='hello'):
@@ -25,7 +25,7 @@ def test_colors_suppressed_when_disabled():
 
 
 def test_setup_disables_color_for_non_tty(monkeypatch):
-    from mountin_build import log as logmod
+    from mountin import log as logmod
 
     buf = io.StringIO()
     monkeypatch.setattr(logmod.sys, 'stderr', buf)

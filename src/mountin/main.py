@@ -268,7 +268,7 @@ def cmd_gc(args, catalogue, context):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="mountin_build",
+        prog="mountin",
         description="Catalogue inspection tool for mountin build system",
     )
     parser.add_argument(

@@ -3,7 +3,7 @@
 import tempfile
 from pathlib import Path
 
-from mountin_build.cache import (
+from mountin.cache import (
     load_cache,
     save_cache,
     hash_file,

@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from mountin_build.cache import save_cache, update_output_hash
-from mountin_build.runner import (
+from mountin.cache import save_cache, update_output_hash
+from mountin.runner import (
     build_log_path,
     dockerfile_build_args,
     get_image_tag,
@@ -149,7 +149,7 @@ def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
 
     process = Process()
     monkeypatch.setattr(
-        "mountin_build.runner.subprocess.Popen", lambda *args, **kwargs: process
+        "mountin.runner.subprocess.Popen", lambda *args, **kwargs: process
     )
     log_path = tmp_path / "stage.run.log"
 
@@ -176,9 +176,9 @@ def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch)
         removed.append(cmd)
         return SimpleNamespace(returncode=0)
 
-    monkeypatch.setattr("mountin_build.runner.run_streaming", interrupt)
-    monkeypatch.setattr("mountin_build.runner.subprocess.run", record_run)
-    monkeypatch.setattr("mountin_build.runner.podman_runtime_args", lambda: [])
+    monkeypatch.setattr("mountin.runner.run_streaming", interrupt)
+    monkeypatch.setattr("mountin.runner.subprocess.run", record_run)
+    monkeypatch.setattr("mountin.runner.podman_runtime_args", lambda: [])
 
     with pytest.raises(KeyboardInterrupt):
         run_container(

@@ -1,7 +1,7 @@
 import json
 
-from mountin_build.cache import save_cache, update_output_hash
-from mountin_build.inventory import create_inventory, write_inventory
+from mountin.cache import save_cache, update_output_hash
+from mountin.inventory import create_inventory, write_inventory
 
 
 def catalogue():

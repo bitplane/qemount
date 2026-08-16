@@ -1,5 +1,5 @@
 """
-mountin_build - Build orchestrator for mountin disk image tools.
+mountin - Build orchestrator for mountin disk image tools.
 """
 
 from importlib.metadata import version

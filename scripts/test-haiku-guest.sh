@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 BOOT_IMAGE=${MOUNTIN_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image}
 NINEPFUSE=${MOUNTIN_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
-RUNNER=$PROJECT_ROOT/src/mountin_build/builder/run/qemu-haiku/run.sh
+RUNNER=$PROJECT_ROOT/src/mountin/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
 LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/integration

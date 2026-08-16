@@ -60,12 +60,12 @@ a socket. The client connects and does I/O.
 
 ## Build System
 
-The Python package `mountin_build` orchestrates everything via podman
+The Python package `mountin` orchestrates everything via podman
 containers.
 
 ### Concepts
 
-**Catalogue**: All `*.md` files in `src/mountin_build/` are parsed. YAML
+**Catalogue**: All `*.md` files in `src/mountin/` are parsed. YAML
 frontmatter defines build metadata, markdown body becomes documentation.
 
 **Paths**: File paths map to logical catalogue paths. `bin/linux/busybox/index.md`
@@ -118,7 +118,7 @@ mountin-build build bin/x86_64-linux-musl/busybox
 ## Directory Structure
 
 ```
-src/mountin_build/          # Python package (the build system)
+src/mountin/                # Python package (the build system)
 ├── bin/                    # Binary build definitions
 │   ├── detect/             # Format detection CLI tool
 │   ├── linux/              # Linux-hosted binaries (busybox, etc.)

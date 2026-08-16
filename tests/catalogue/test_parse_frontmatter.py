@@ -1,6 +1,6 @@
 """Tests for catalogue.parse_frontmatter."""
 
-from mountin_build.catalogue import parse_frontmatter
+from mountin.catalogue import parse_frontmatter
 
 
 def test_no_frontmatter():

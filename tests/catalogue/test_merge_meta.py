@@ -1,6 +1,6 @@
 """Tests for catalogue.merge_meta."""
 
-from mountin_build.catalogue import merge_meta
+from mountin.catalogue import merge_meta
 
 
 def test_child_extends_parent():

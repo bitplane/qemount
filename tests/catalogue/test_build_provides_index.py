@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from mountin_build.catalogue import build_output_index, build_provides_index, load
+from mountin.catalogue import build_output_index, build_provides_index, load
 
 
 DATA_DIR = Path(__file__).parent / "data"

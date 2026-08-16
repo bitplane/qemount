@@ -2,7 +2,7 @@
 
 import pytest
 
-from mountin_build.catalogue import resolve_vars
+from mountin.catalogue import resolve_vars
 
 
 @pytest.mark.parametrize("value,context,expected", [

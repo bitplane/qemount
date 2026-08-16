@@ -36,7 +36,7 @@ Install:
 * `fuse` to mount images with the 9p client.
 * `xz` if you want to archive the lot.
 
-Everything else is installed in containers, use the `mountin_build` module or
+Everything else is installed in containers, use the `mountin` module or
 script to build stuff. It might take a while.
 
 ```sh
@@ -64,10 +64,10 @@ make help   # for a full list of targets.
 ```
 
 Guest and transport selection, detection engine and launch layer are still
-under construction, see the [todo list](src/mountin_build/docs/todo.md). There's
+under construction, see the [todo list](src/mountin/docs/todo.md). There's
 `./scripts` for data recovery though.
 
-Catalogue and format encyclopedia can be found is in the `src/mountin_build/`
+Catalogue and format encyclopedia can be found is in the `src/mountin/`
 tree - there's no html builder yet.
 
 ## Format support

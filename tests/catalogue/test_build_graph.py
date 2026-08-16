@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from mountin_build.catalogue import load, build_graph, resolve_output, resolve_path
+from mountin.catalogue import load, build_graph, resolve_output, resolve_path
 
 
 DATA_DIR = Path(__file__).parent / "data"

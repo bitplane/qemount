@@ -1,9 +1,9 @@
-from mountin_build.gc import (
+from mountin.gc import (
     orphaned_provider_caches,
     parse_obsolete_images,
     remove_obsolete_images,
 )
-from mountin_build.provider_cache import remove_provider_cache
+from mountin.provider_cache import remove_provider_cache
 
 
 def test_parse_obsolete_images_selects_only_unique_untagged_images():
@@ -32,7 +32,7 @@ def test_remove_obsolete_images_skips_images_retained_by_containers(monkeypatch)
             return Result(1, "image is in use by a container")
         return Result(0)
 
-    monkeypatch.setattr("mountin_build.gc.subprocess.run", remove)
+    monkeypatch.setattr("mountin.gc.subprocess.run", remove)
 
     assert remove_obsolete_images(["unused", "retained"]) == 1
     assert commands == [
@@ -65,8 +65,8 @@ def test_remove_provider_cache_uses_podman_user_namespace(tmp_path, monkeypatch)
         cache.rmdir()
         return type("Result", (), {"returncode": 0})()
 
-    monkeypatch.setattr("mountin_build.provider_cache.shutil.rmtree", deny)
-    monkeypatch.setattr("mountin_build.provider_cache.subprocess.run", remove)
+    monkeypatch.setattr("mountin.provider_cache.shutil.rmtree", deny)
+    monkeypatch.setattr("mountin.provider_cache.subprocess.run", remove)
 
     remove_provider_cache(tmp_path, cache)
 

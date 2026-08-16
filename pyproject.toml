@@ -27,7 +27,7 @@ dev = [
 ]
 
 [project.scripts]
-mountin-build = "mountin_build.main:main"
+mountin-build = "mountin.main:main"
 
 [build-system]
 build-backend = "flit_core.buildapi"
