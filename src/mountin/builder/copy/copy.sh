@@ -1,15 +1,26 @@
 #!/bin/sh
 set -eu
 
-if [ "$#" -eq 0 ] || [ $(( $# % 2 )) -ne 0 ]; then
-    echo "usage: mountin-copy SOURCE DESTINATION [...]" >&2
+if [ "$#" -eq 0 ]; then
+    echo "usage: mountin-copy OUTPUT [...]" >&2
     exit 2
 fi
 
 while [ "$#" -gt 0 ]; do
-    source_path=$1
-    destination_path=$2
-    shift 2
+    destination_path=$1
+    shift
+
+    requirement_count=$(printf '%s' "$META" | jq \
+        --arg output "$destination_path" \
+        '.provides[$output].requires // {} | length')
+    if [ "$requirement_count" -ne 1 ]; then
+        echo "copy output must require exactly one source: $destination_path" >&2
+        exit 2
+    fi
+    source_path=$(printf '%s' "$META" | jq -r \
+        --arg output "$destination_path" \
+        '.provides[$output].requires |
+         if type == "array" then .[0] else keys[0] end')
 
     for path in "$source_path" "$destination_path"; do
         case "$path" in

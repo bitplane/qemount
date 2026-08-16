@@ -1,4 +1,6 @@
-FROM busybox:1.37.0-musl
+FROM alpine:3.22
+
+RUN apk add --no-cache jq
 
 COPY --chmod=755 copy.sh /usr/local/bin/mountin-copy
 

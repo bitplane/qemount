@@ -7,5 +7,5 @@ provides:
 # File Copier
 
 Minimal build container for copying existing outputs without changing their
-contents. Its arguments are alternating source and destination paths relative
-to the build directory.
+contents. Each provided output declares exactly one required source; the
+container receives the requested output paths and copies their sources there.
