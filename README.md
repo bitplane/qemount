@@ -74,11 +74,10 @@ tree - there's no html builder yet.
 
 Guest operating systems are the smallest builds I could get running while
 preserving broad support. Every entry below has been tested end to end; `(ro)`
-means read-only. Absence from a guest row is not proof of incompatibility.
-YMMV, expect occasional regressions.
+means read-only. Absence of evidence, YMMV, expect occasional regressions etc.
 
-| Guest | Partition tables and disk layouts | Filesystems |
-| ----- | --------------------------------- | ----------- |
+| Guest | Tables / layouts | Filesystems |
+| ----- | ---------------- | ----------- |
 | **Linux 6.12** | MBR/DOS, GPT, BSD disklabel, Apple APM, Amiga RDB, Atari AHDI, Sun SPARC VTOC8, SGI DVH, LDM, Minix, UBI, Acorn, AIX, Ultrix, SYSV68, Rio Karma, OSF/1, HP-UX LIF, QNX4 PT, Plan 9, NetWare, Hybrid MBR, Protective MBR, OpenBSD, DragonFly, CP/M-86 | ext2/3/4, FAT12/16/32, exFAT, NTFS (`ntfs3`), ISO9660, UDF, HFS/HFS+, XFS, JFS, Btrfs, F2FS, bcachefs, EROFS, ReiserFS, Amiga OFS/FFS, Minix, V7, SysV, SquashFS, CramFS, RomFS, EFS, BeFS, HPFS, QNX4/6, ADFS, VxFS, OMFS, NILFS2, GFS2, BFS, JFFS2, UBIFS, High Sierra |
 | **Linux 2.6** | MBR/DOS, GPT, BSD disklabel, Apple APM, Amiga RDB, Atari AHDI, Sun SPARC VTOC8, SGI DVH, Minix, UBI, Acorn, AIX, Ultrix, SYSV68, OSF/1, HP-UX LIF, QNX4 PT, Plan 9, NetWare, Hybrid MBR, Protective MBR, OpenBSD, CP/M-86 | ext2/3/4, FAT12/16/32, ISO9660, UDF, HFS/HFS+, XFS, JFS, Btrfs, ReiserFS, Amiga OFS/FFS, Minix, V7, SquashFS, CramFS, RomFS, EFS, BeFS, HPFS, QNX4, ADFS, VxFS, OMFS, NILFS2, GFS2, OCFS2, BFS, JFFS2, High Sierra |
 | **NetBSD 10** | MBR/DOS, GPT, BSD disklabel, Apple APM, Amiga RDB, Atari AHDI, Hybrid MBR, Protective MBR | ext2/3 (ext3 via ext2), FAT12/16/32, ISO9660, UDF, HFS+, UFS/FFS, LFS, V7, EFS, Filecore |
@@ -89,19 +88,9 @@ YMMV, expect occasional regressions.
 | **9front** | MBR/DOS, Plan 9 | FAT12/16/32, ISO9660 (no Rock Ridge symlinks), PAQFS (ro), FlashFS, HJFS, GEFS, CWFS, V5/V6 (ro), UNIX/32V (ro), V10 (ro) |
 | **illumos x86_64** | MBR/DOS, GPT, Solaris x86 VTOC16 (inside MBR) | FAT12/16/32, ISO9660, UFS1 |
 
-### Known bad results
-
-These combinations have been tested but are not counted as support:
+### 💩 Known bad
 
 - **Linux 6.12:** UFS/FFS support is limited.
 - **Linux 2.6:** NTFS (`ntfs`), UFS/FFS, and SysV; SysV symlinks can crash the guest.
 - **NetBSD 10:** NTFS (`ntfs`) and Amiga OFS/FFS (`adosfs`).
 - **DragonFly 6.4:** NTFS directory reads can panic the guest.
-
-### Tracked gaps
-
-These formats were present in the old matrices but do not yet have a working
-guest:
-
-- **Partition tables and disk layouts:** IBM DASD (S/390), PC-98, and NeXT.
-- **Filesystems:** SACFS (the reader uses obsolete 9P1), Coda, ZFS, APFS, and ReFS.
