@@ -3,12 +3,12 @@ set -eu
 
 test "$OUTPUT_ARCH" = x86_64
 
-source=/work/simple9p
-output=/host/build/bin/${OUTPUT_PLATFORM}/simple9p
+source=/work/9d
+output=/host/build/bin/${OUTPUT_PLATFORM}/9d
 
 rm -rf "$source"
 mkdir -p "$source" "${output%/*}"
-tar -xf /host/build/sources/simple9p-0.6.4.tar.xz \
+tar -xf /host/build/sources/9d-0.7.0.tar.xz \
     -C "$source" --strip-components=1
 
 make -C "$source" release \
@@ -16,6 +16,6 @@ make -C "$source" release \
     API_CPPFLAGS="-D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_REENTRANT" \
     RELEASE_CFLAGS="-Os -DNDEBUG -DS9_PATH_MAX=1024"
 
-install -m 0755 "$source/build/simple9p" "$output"
+install -m 0755 "$source/build/9d" "$output"
 /usr/bin/readelf -d "$output" \
     | grep -q 'Shared library: \[libc.so.1\]'

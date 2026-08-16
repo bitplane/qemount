@@ -133,11 +133,11 @@ wait_for_guest() {
     until [[ -S "$socket_path" ]] \
         && grep -q "mountin: serving / over" "$log_file" 2>/dev/null; do
         if ! kill -0 "$QEMU_PID" 2>/dev/null; then
-            echo "Haiku exited before starting simple9p; see $log_file" >&2
+            echo "Haiku exited before starting 9d; see $log_file" >&2
             return 1
         fi
         if ((SECONDS >= deadline)); then
-            echo "Haiku did not start simple9p within 180 seconds; see $log_file" >&2
+            echo "Haiku did not start 9d within 180 seconds; see $log_file" >&2
             return 1
         fi
         sleep 0.2

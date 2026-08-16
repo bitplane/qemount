@@ -1,17 +1,17 @@
 ---
-title: simple9p for illumos
+title: 9d for illumos
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${OUTPUT_PLATFORM}/simple9p
+      - bin/${OUTPUT_PLATFORM}/9d
 env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
-  - sources/simple9p-0.6.4.tar.xz
+  - sources/9d-0.7.0.tar.xz
 ---
 
-# simple9p for illumos
+# 9d for illumos
 
-Networkless illumos build of simple9p for the mountin appliance. It is compiled
+Networkless illumos build of 9d for the mountin appliance. It is compiled
 against the matching sysroot carried by the versioned illumos toolbox.

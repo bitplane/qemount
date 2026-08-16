@@ -9,7 +9,7 @@ requires:
   - docker:${PUREDARWIN_BUILDER}
   - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
   - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/rootfs.img
-  - bin/${OUTPUT_ARCH}-darwin/simple9p
+  - bin/${OUTPUT_ARCH}-darwin/9d
   - bin/${OUTPUT_ARCH}-darwin/stream64
   - bin/${OUTPUT_ARCH}-darwin/mountin-init
 provides:

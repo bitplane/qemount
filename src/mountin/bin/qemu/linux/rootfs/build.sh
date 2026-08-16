@@ -13,7 +13,7 @@ mkdir -p "$ROOT/dev" "$ROOT/mnt" "$ROOT/proc" "$ROOT/sys" "$ROOT/tmp"
 # Copy binaries
 mkdir -p "$ROOT/bin"
 cp -v "$BINDIR/busybox" "$ROOT/bin/"
-cp -v "$BINDIR/simple9p" "$ROOT/bin/"
+cp -v "$BINDIR/9d" "$ROOT/bin/"
 cp -v "$BINDIR/socat" "$ROOT/bin/"
 cp -v "$BINDIR/dropbearmulti" "$ROOT/bin/"
 

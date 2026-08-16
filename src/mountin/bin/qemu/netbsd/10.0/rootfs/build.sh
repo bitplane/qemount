@@ -45,10 +45,10 @@ cp -v /root/etc/* /ramdisk/etc/
 /usr/tools/bin/nbpwd_mkdb -d /ramdisk /ramdisk/etc/master.passwd
 
 # Copy mountin tools from build
-if [ -f "$BIN_DIR/simple9p" ]; then
-    echo "Adding simple9p..."
-    cp -v "$BIN_DIR/simple9p" /ramdisk/bin/
-    chmod 755 /ramdisk/bin/simple9p
+if [ -f "$BIN_DIR/9d" ]; then
+    echo "Adding 9d..."
+    cp -v "$BIN_DIR/9d" /ramdisk/bin/
+    chmod 755 /ramdisk/bin/9d
 fi
 
 # Let makefs calculate the minimum complete filesystem. Runtime scratch and

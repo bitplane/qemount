@@ -2,18 +2,18 @@
 title: AROS PC i386 mountin Appliance
 requires:
   - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
-  - bin/${OUTPUT_ARCH}-aros/simple9p
+  - bin/${OUTPUT_ARCH}-aros/9d
 provides:
   - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/aros.iso
 ---
 
 # AROS PC i386 mountin Appliance
 
-Purpose-built AROS ISO with simple9p serving all mounted DOS volumes beneath a
+Purpose-built AROS ISO with 9d serving all mounted DOS volumes beneath a
 synthetic root over the second serial unit. The image is assembled from an
 explicit runtime allowlist and a dependency-closed GRUB module set instead of
 carrying the AROS Live CD. It retains the native bootstrap, disk discovery,
-AFFS, FAT, PFS and SFS handlers, and the libraries required by simple9p.
+AFFS, FAT, PFS and SFS handlers, and the libraries required by 9d.
 
 The resulting guest is roughly 3 MiB. The base operating system and guest
 program remain separate build outputs, while the matching SDK lives in the

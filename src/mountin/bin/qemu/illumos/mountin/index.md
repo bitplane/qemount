@@ -13,14 +13,14 @@ requires:
   - docker:${ILLUMOS_BUILDER}
   - bin/${OUTPUT_PLATFORM}/mountin-init
   - bin/${OUTPUT_PLATFORM}/mountin-bootstrap
-  - bin/${OUTPUT_PLATFORM}/simple9p
+  - bin/${OUTPUT_PLATFORM}/9d
 ---
 
 # illumos mountin Appliance
 
 Minimal source-built illumos appliance for QEMU. The kernel boots the HSFS
 root module, discovers attached block devices, mounts supported volumes beneath
-`/mnt`, and serves that namespace over its second serial port using simple9p.
+`/mnt`, and serves that namespace over its second serial port using 9d.
 
 The published pair are both direct QEMU inputs. Kernel, module and sysroot
 intermediates remain inside the versioned toolbox and appliance build stages.

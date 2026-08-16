@@ -37,8 +37,8 @@ install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/mountin-bootstrap \
     "$staging/sbin/init"
 install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/mountin-init \
     "$staging/sbin/mountin-init"
-install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/simple9p \
-    "$staging/sbin/simple9p"
+install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/9d \
+    "$staging/sbin/9d"
 ln -s ../devices/pseudo/cn@0:console "$staging/dev/console"
 ln -s ../devices/pseudo/mm@0:null "$staging/dev/null"
 ln -s ../devices/pseudo/mm@0:zero "$staging/dev/zero"

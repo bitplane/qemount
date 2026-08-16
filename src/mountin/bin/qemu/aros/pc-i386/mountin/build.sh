@@ -2,7 +2,7 @@
 set -eu
 
 BASE_ISO=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
-SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-aros/simple9p
+NINED=/host/build/bin/${OUTPUT_ARCH}-aros/9d
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30
 OUTPUT_TMP=$OUTPUT_DIR/aros.iso.tmp
 STAGING_DIR=/work/iso
@@ -60,7 +60,7 @@ while IFS= read -r module; do
 done < /grub-modules.txt
 
 mkdir -p "$STAGING_DIR/C" "$STAGING_DIR/S"
-install -m 755 "$SIMPLE9P" "$STAGING_DIR/C/simple9p"
+install -m 755 "$NINED" "$STAGING_DIR/C/9d"
 install -m 644 /grub.cfg "$STAGING_DIR/boot/grub/grub.cfg"
 install -m 644 /Startup-Sequence "$STAGING_DIR/S/Startup-Sequence"
 

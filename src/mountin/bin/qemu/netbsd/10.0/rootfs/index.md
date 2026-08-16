@@ -1,7 +1,7 @@
 ---
 title: NetBSD 10.0 Rootfs
 requires:
-  - bin/${OUTPUT_ARCH}-netbsd/simple9p
+  - bin/${OUTPUT_ARCH}-netbsd/9d
   - bin/${OUTPUT_ARCH}-netbsd/mountin-rescue
   - share/${OUTPUT_ARCH}-netbsd/mountin-devices.mtree
 provides:

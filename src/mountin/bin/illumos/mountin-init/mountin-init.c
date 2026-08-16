@@ -139,18 +139,18 @@ main(void)
 				_exit(126);
 			if (stream != STDIN_FILENO)
 				(void) close(stream);
-			(void) execl("/sbin/simple9p", "simple9p", "-d", "-r",
+			(void) execl("/sbin/9d", "9d", "-d", "-r",
 			    "-p", "-", "/mnt", (char *)NULL);
 			_exit(127);
 		}
 		if (server < 0)
 			(void) write(STDERR_FILENO,
-			    "[mountin-init] failed to start simple9p\n",
-			    sizeof ("[mountin-init] failed to start simple9p\n") - 1);
+			    "[mountin-init] failed to start 9d\n",
+			    sizeof ("[mountin-init] failed to start 9d\n") - 1);
 		else if (waitpid(server, NULL, 0) == server)
 			(void) write(STDERR_FILENO,
-			    "[mountin-init] simple9p stopped\n",
-			    sizeof ("[mountin-init] simple9p stopped\n") - 1);
+			    "[mountin-init] 9d stopped\n",
+			    sizeof ("[mountin-init] 9d stopped\n") - 1);
 	}
 	for (;;)
 		(void) pause();

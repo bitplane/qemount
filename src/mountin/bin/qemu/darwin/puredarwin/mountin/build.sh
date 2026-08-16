@@ -3,7 +3,7 @@ set -euo pipefail
 
 BASE_SYSTEM=/opt/puredarwin/base-system.tar.gz
 BOOT_DIR=/opt/puredarwin/boot
-SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-darwin/simple9p
+NINED=/host/build/bin/${OUTPUT_ARCH}-darwin/9d
 STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
 MOUNTIN_INIT=/host/build/bin/${OUTPUT_ARCH}-darwin/mountin-init
 KERNEL=/host/build/bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
@@ -48,7 +48,7 @@ mkdir -p \
 ln -s private/etc "$STAGING/etc"
 ln -s private/tmp "$STAGING/tmp"
 ln -s private/var "$STAGING/var"
-install -m 755 "$SIMPLE9P" "$STAGING/usr/bin/simple9p"
+install -m 755 "$NINED" "$STAGING/usr/bin/9d"
 install -m 755 "$STREAM64" "$STAGING/usr/bin/stream64"
 install -m 755 "$MOUNTIN_INIT" "$STAGING/sbin/launchd"
 install -m 644 "$BOOT_DIR/efiemu64.o" "$STAGING/boot/grub/i386-pc/efiemu64.o"

@@ -1,13 +1,13 @@
 #!/bin/sh
 set -eu
 
-SOURCE=/work/simple9p
+SOURCE=/work/9d
 OBJECTS=/work/objects
 OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$SOURCE" "$OBJECTS" "$OUTPUT_DIR"
-tar -xf /host/build/sources/simple9p-0.6.4.tar.xz \
+tar -xf /host/build/sources/9d-0.7.0.tar.xz \
     -C "$SOURCE" --strip-components=1
 
 make -C "$SOURCE" release \
@@ -18,9 +18,9 @@ make -C "$SOURCE" release \
     RELEASE_CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
     LDFLAGS="-Wl,-dead_strip"
 
-"$OBJDUMP" --macho --private-headers "$SOURCE/build/simple9p" \
+"$OBJDUMP" --macho --private-headers "$SOURCE/build/9d" \
     | grep -Eq 'LC_(BUILD_VERSION|VERSION_MIN_MACOSX)'
-install -m 755 "$SOURCE/build/simple9p" "$OUTPUT_DIR/simple9p"
+install -m 755 "$SOURCE/build/9d" "$OUTPUT_DIR/9d"
 
 "$CC" -Os -g0 -Wl,-dead_strip -o "$OBJECTS/stream64" \
     /stream64.c

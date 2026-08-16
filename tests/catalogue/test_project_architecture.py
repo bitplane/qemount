@@ -79,7 +79,7 @@ def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
 def test_puredarwin_guests_do_not_depend_on_the_macos_sdk():
     for target in (
         "bin/x86_64-darwin/mountin-init",
-        "bin/x86_64-darwin/simple9p",
+        "bin/x86_64-darwin/9d",
     ):
         nodes = graph_for(target)["nodes"]
         assert "builder/compiler/puredarwin/17.4@x86_64-darwin" in nodes
@@ -185,8 +185,8 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
     }
     providers = buildable_providers(context)
 
-    assert providers["bin/i386-aros/simple9p"] == "bin/aros/simple9p"
-    assert providers["bin/x86_64-darwin/simple9p"] == "bin/darwin/simple9p"
+    assert providers["bin/i386-aros/9d"] == "bin/aros/9d"
+    assert providers["bin/x86_64-darwin/9d"] == "bin/darwin/9d"
 
     aros = graph_for("bin/qemu/i386-aros/2026-07-30/aros.iso", context)
     darwin = graph_for(
@@ -194,8 +194,8 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
         context,
     )
 
-    assert "bin/aros/simple9p@i386-aros" in aros["nodes"]
-    assert "bin/darwin/simple9p@x86_64-darwin" in darwin["nodes"]
+    assert "bin/aros/9d@i386-aros" in aros["nodes"]
+    assert "bin/darwin/9d@x86_64-darwin" in darwin["nodes"]
 
 
 def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
@@ -247,8 +247,8 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
         assert "docker:builder/disk/netbsd" in providers
         assert "data/fs/basic.v7" in providers
         assert "data/pt/basic.disklabel" in providers
-        assert "bin/x86_64-netbsd/simple9p" in providers
-        assert "bin/aarch64-netbsd/simple9p" in providers
+        assert "bin/x86_64-netbsd/9d" in providers
+        assert "bin/aarch64-netbsd/9d" in providers
         assert "bin/qemu/x86_64-netbsd/10.0/boot/boot.img" in providers
         assert "bin/qemu/aarch64-netbsd/10.0/boot/netbsd" in providers
         assert "bin/qemu/aarch64-netbsd/10.0/boot/boot.img" not in providers

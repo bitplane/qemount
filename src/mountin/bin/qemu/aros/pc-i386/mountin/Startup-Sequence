@@ -6,4 +6,4 @@ C:Automount
 C:Echo "mountin: volumes mounted" >DEBUG:
 C:Mount DEVS:DOSDrivers/SER
 C:Echo "mountin: serial mounted" >DEBUG:
-C:simple9p -p stream!SER:UNIT=1
+C:9d -p stream!SER:UNIT=1

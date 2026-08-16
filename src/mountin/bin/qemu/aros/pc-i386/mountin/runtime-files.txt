@@ -32,7 +32,7 @@ L/fat-handler
 L/pfs3-handler
 L/sfs-handler
 
-# Runtime libraries used by simple9p's AROS C environment.
+# Runtime libraries used by 9d's AROS C environment.
 Libs/iffparse.library
 Libs/locale.library
 Libs/posixc.library

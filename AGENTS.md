@@ -248,7 +248,7 @@ Paths follow Rust target triple order: `{arch}-{os}[-{env}]`
 Examples:
 - `bin/x86_64-linux-musl/busybox` - Linux static binary
 - `bin/x86_64-linux-gnu/detect` - Linux dynamic binary
-- `bin/x86_64-netbsd/simple9p` - NetBSD (no env suffix)
+- `bin/x86_64-netbsd/9d` - NetBSD (no env suffix)
 - `lib/x86_64-darwin/libmountin.dylib` - macOS
 - `lib/x86_64-windows-gnu/mountin.dll` - Windows
 

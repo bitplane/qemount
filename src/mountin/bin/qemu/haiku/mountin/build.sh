@@ -2,7 +2,7 @@
 set -eu
 
 BASE_IMAGE=/host/build/bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/base/haiku.image
-SIMPLE9P=/host/build/bin/${OUTPUT_ARCH}-haiku/simple9p
+NINED=/host/build/bin/${OUTPUT_ARCH}-haiku/9d
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 WORK_IMAGE=$OUTPUT_DIR/.haiku.image.tmp
@@ -13,14 +13,14 @@ cp "$BASE_IMAGE" "$WORK_IMAGE"
 
 printf '%s\n' \
 	'mkdir -p "/myfs/system/non-packaged/bin"' \
-	"cp -f :\"$SIMPLE9P\" \"/myfs/system/non-packaged/bin/simple9p\"" \
+	"cp -f :\"$NINED\" \"/myfs/system/non-packaged/bin/9d\"" \
 	| bfs_shell "$WORK_IMAGE"
 
-rm -f /work/simple9p.verify
+rm -f /work/9d.verify
 printf '%s\n' \
-	'cp "/myfs/system/non-packaged/bin/simple9p" :"/work/simple9p.verify"' \
+	'cp "/myfs/system/non-packaged/bin/9d" :"/work/9d.verify"' \
 	| bfs_shell "$WORK_IMAGE"
-cmp "$SIMPLE9P" /work/simple9p.verify
-test -x /work/simple9p.verify
+cmp "$NINED" /work/9d.verify
+test -x /work/9d.verify
 
 mv "$WORK_IMAGE" "$OUTPUT_IMAGE"

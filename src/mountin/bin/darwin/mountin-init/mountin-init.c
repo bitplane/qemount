@@ -10,7 +10,7 @@
 
 #define CONSOLE_PATH "/dev/console"
 #define MOUNT_PATH "/Volumes/MOUNTIN_TARGET"
-#define SIMPLE9P_PATH "/usr/bin/simple9p"
+#define NINED_PATH "/usr/bin/9d"
 #define STREAM64_PATH "/usr/bin/stream64"
 #define MAX_DISKS 10
 #define MAX_SLICES 128
@@ -135,7 +135,7 @@ main(void)
     raw_console();
     if (write(STDOUT_FILENO, "MOUNTIN_9P_READY", 16) != 16)
         fail("announce 9P service");
-    execl(STREAM64_PATH, STREAM64_PATH, CONSOLE_PATH, SIMPLE9P_PATH,
+    execl(STREAM64_PATH, STREAM64_PATH, CONSOLE_PATH, NINED_PATH,
         "-p", "-", MOUNT_PATH, (char *)NULL);
     fail("start 9P service");
 }

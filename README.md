@@ -18,7 +18,7 @@ Currently, there's:
 
 * guests for Linux 2.6, Linux 6.12, NetBSD 10.0, Dragonfly BSD, PureDarwin,
   AROS, Haiku and Illumos. Architecture coverage varies depending on build host.
-* 9P2000.U support via a [9p server](https://github.com/bitplane/simple9p) a
+* 9P2000.U support via a [9p server](https://github.com/bitplane/9d) a
   9pfuse client.
 * A huge collection of test data fixtures, with many custom mkfs and archive and
   compression tools.

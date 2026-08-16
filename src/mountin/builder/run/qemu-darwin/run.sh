@@ -109,7 +109,7 @@ PROXY_PID=$!
 deadline=$((SECONDS + 180))
 until [[ -S "$SOCKET_PATH" ]]; do
     if ! kill -0 "$QEMU_PID" 2>/dev/null; then
-        echo "PureDarwin exited before starting simple9p" >&2
+        echo "PureDarwin exited before starting 9d" >&2
         exit 1
     fi
     if ! kill -0 "$PROXY_PID" 2>/dev/null; then
@@ -117,7 +117,7 @@ until [[ -S "$SOCKET_PATH" ]]; do
         exit 1
     fi
     if ((SECONDS >= deadline)); then
-        echo "PureDarwin did not start simple9p within 180 seconds" >&2
+        echo "PureDarwin did not start 9d within 180 seconds" >&2
         exit 1
     fi
     sleep 0.1

@@ -15,8 +15,8 @@ done
 echo "[9P] Device found at $PORT_PATH"
 ls -la "$PORT_PATH"
 
-echo "[9P] Testing simple9p binary..."
-/bin/simple9p -h 2>&1 || true
+echo "[9P] Testing 9d binary..."
+/bin/9d -h 2>&1 || true
 
 echo "[9P] Contents of MOUNT_POINT:"
 ls -la "$MOUNT_POINT" 2>&1 || echo "[9P] Failed to list $MOUNT_POINT"
@@ -25,7 +25,7 @@ ls -la "$MOUNT_POINT" 2>&1 || echo "[9P] Failed to list $MOUNT_POINT"
 echo "[9P] Starting 9P server loop..."
 while true; do
     echo "[9P] Serving 9P on $PORT_PATH with -d flag..."
-    /bin/simple9p -d -p - <> "$PORT_PATH" 2>&1
+    /bin/9d -d -p - <> "$PORT_PATH" 2>&1
     RET=$?
     echo "[9P] Server exited with code $RET, restarting..."
     sleep 1

@@ -15,7 +15,7 @@
 
 
 #define SERIAL_PATH "/dev/ports/pc_serial0"
-#define SIMPLE9P_PATH "/system/non-packaged/bin/simple9p"
+#define NINED_PATH "/system/non-packaged/bin/9d"
 #define DEBUG_PATH "/dev/dprintf"
 
 
@@ -140,13 +140,13 @@ main(void)
 	if (mountChild < 0)
 		log_message("could not start volume mounting");
 
-	char* simple9p[] = {
-		SIMPLE9P_PATH, "-p", "stream!" SERIAL_PATH, "/", NULL
+	char* nined[] = {
+		NINED_PATH, "-p", "stream!" SERIAL_PATH, "/", NULL
 	};
 	for (;;) {
 		log_message("serving / over " SERIAL_PATH);
-		int status = run(simple9p);
-		log_message("simple9p exited with status %d; restarting", status);
+		int status = run(nined);
+		log_message("9d exited with status %d; restarting", status);
 		sleep(1);
 	}
 }
