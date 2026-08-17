@@ -4,6 +4,7 @@ Build runner for mountin build system.
 Executes build steps in dependency order using podman.
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -16,17 +17,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import TextIO
 
-from .catalogue import build_graph
-from .provider_cache import provider_cache_relative, remove_provider_cache
 from .cache import (
+    hash_path_inputs,
     image_is_current,
+    is_output_dirty,
     load_cache,
     save_cache,
-    hash_path_inputs,
-    is_output_dirty,
-    update_output_hash,
     update_image_hash,
+    update_output_hash,
 )
+from .catalogue import build_graph
+from .provider_cache import provider_cache_relative, remove_provider_cache
 
 log = logging.getLogger(__name__)
 
@@ -307,7 +308,12 @@ def get_file_provides(provides: list) -> list:
 
 def local_image_tag(path: str, output_platform: str | None) -> str:
     """Return a valid, variant-specific local container image tag."""
-    tag = f"localhost/{path}".lower()
+    original = path.lower()
+    repository = re.sub(r"[^a-z0-9._/-]+", "-", original)
+    if repository != original:
+        digest = hashlib.sha256(original.encode()).hexdigest()[:8]
+        repository = f"{repository}-{digest}"
+    tag = f"localhost/{repository}"
     return f"{tag}:{output_platform}" if output_platform else tag
 
 

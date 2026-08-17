@@ -1,6 +1,7 @@
 """Tests for runner.py helpers."""
 
 import io
+import re
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,22 +10,23 @@ import pytest
 
 from mountin.cache import save_cache, update_output_hash
 from mountin.runner import (
-    build_log_path,
-    dockerfile_build_args,
-    get_image_tag,
-    get_docker_provides,
-    get_file_provides,
-    image_needs_no_cache,
-    podman_runtime_args,
-    provider_environment,
-    prepare_provider_cache,
     begin_output_transaction,
     build_image,
-    run_container,
+    build_log_path,
+    dockerfile_build_args,
     finish_output_transaction,
+    get_docker_provides,
+    get_file_provides,
+    get_image_tag,
+    image_needs_no_cache,
+    local_image_tag,
+    podman_runtime_args,
+    prepare_provider_cache,
+    provider_environment,
+    run_build,
+    run_container,
     run_streaming,
     validate_path_provides,
-    run_build,
 )
 
 
@@ -44,6 +46,16 @@ def test_provider_environment_includes_the_complete_build_context():
         "CUSTOM": "yes",
     }
 
+
+def test_local_image_tag_normalizes_invalid_repository_characters_without_collisions():
+    normalized = local_image_tag(
+        "guest/haiku/r1-beta6-hrev59919+1", "x86_64-haiku"
+    )
+
+    assert re.fullmatch(r"localhost/[a-z0-9._/-]+:[a-z0-9_.-]+", normalized)
+    assert normalized != local_image_tag(
+        "guest/haiku/r1-beta6-hrev59919-1", "x86_64-haiku"
+    )
 
 def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):
     context = tmp_path / "context"
