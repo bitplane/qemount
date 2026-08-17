@@ -2,7 +2,7 @@
 title: 9d
 requires:
   - docker:${BUILDER}
-  - sources/9d-0.7.0.tar.xz
+  - sources/9d-0.7.1.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-linux-${ENV}/9d
 ---

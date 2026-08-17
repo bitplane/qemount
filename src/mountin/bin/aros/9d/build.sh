@@ -6,7 +6,7 @@ OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-aros
 
 rm -rf "$NINED_SOURCE"
 mkdir -p "$NINED_SOURCE" "$OUTPUT_DIR"
-tar -xf /host/build/sources/9d-0.7.0.tar.xz \
+tar -xf /host/build/sources/9d-0.7.1.tar.xz \
     -C "$NINED_SOURCE" --strip-components=1
 
 make -C "$NINED_SOURCE" release \

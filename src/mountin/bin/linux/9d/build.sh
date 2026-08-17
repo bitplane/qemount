@@ -5,7 +5,7 @@ cd /work
 
 # Extract the complete release source.
 mkdir -p 9d-source
-tar -xf /host/build/sources/9d-0.7.0.tar.xz \
+tar -xf /host/build/sources/9d-0.7.1.tar.xz \
     -C 9d-source --strip-components=1
 
 # Build the optimized static server using its pinned libixp tree.

@@ -9,7 +9,7 @@ env:
   BUILDER: builder/compiler/puredarwin/17.4
 requires:
   - docker:${BUILDER}
-  - sources/9d-0.7.0.tar.xz
+  - sources/9d-0.7.1.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-darwin/9d
   - bin/${OUTPUT_ARCH}-darwin/stream64

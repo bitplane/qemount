@@ -8,7 +8,7 @@ env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:
   - docker:${BUILDER}
-  - sources/9d-0.7.0.tar.xz
+  - sources/9d-0.7.1.tar.xz
 ---
 
 # 9d for illumos

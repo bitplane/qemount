@@ -1,7 +1,7 @@
 ---
 title: 9d for AROS
 requires:
-  - sources/9d-0.7.0.tar.xz
+  - sources/9d-0.7.1.tar.xz
 provides:
   - bin/${OUTPUT_ARCH}-aros/9d
 ---
