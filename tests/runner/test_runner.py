@@ -16,6 +16,7 @@ from mountin.runner import (
     get_file_provides,
     image_needs_no_cache,
     podman_runtime_args,
+    provider_environment,
     prepare_provider_cache,
     begin_output_transaction,
     build_image,
@@ -25,6 +26,23 @@ from mountin.runner import (
     validate_path_provides,
     run_build,
 )
+
+
+def test_provider_environment_includes_the_complete_build_context():
+    context = {
+        "BUILD_PLATFORM": "x86_64-linux",
+        "OUTPUT_PLATFORM": "x86_64-linux",
+        "JOBS": "12",
+        "RELEASE_REF": "abcdef",
+        "SOURCE_KIND": "checkout",
+        "SELF": "guest/linux/2.6/kernel",
+    }
+
+    assert provider_environment(context, {"env": {"JOBS": "1", "CUSTOM": "yes"}}) == {
+        **context,
+        "JOBS": "1",
+        "CUSTOM": "yes",
+    }
 
 
 def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):

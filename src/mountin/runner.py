@@ -290,6 +290,11 @@ def get_image_tag(resolved: dict) -> str | None:
     return runs_on[7:]
 
 
+def provider_environment(context: dict, meta: dict) -> dict:
+    """Return the execution environment for a resolved provider instance."""
+    return {**context, **meta.get("env", {})}
+
+
 def get_docker_provides(provides: list) -> list:
     """Get docker: provides, stripping prefix."""
     return [p[7:] for p in provides if p.startswith("docker:")]
@@ -434,12 +439,7 @@ def run_build(
         path = record["provider"]
         instance_context = {**record["context"], "SELF": path}
         meta = record["meta"].copy()
-        platform_env = {
-            key: value
-            for key, value in instance_context.items()
-            if key.startswith("BUILD_") or key.startswith("OUTPUT_")
-        }
-        env = {**platform_env, **meta.get("env", {})}
+        env = provider_environment(instance_context, meta)
         meta["env"] = env
 
         provides = list(meta.get("provides", {}).keys())
