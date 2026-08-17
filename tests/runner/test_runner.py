@@ -18,6 +18,7 @@ from mountin.runner import (
     podman_runtime_args,
     prepare_provider_cache,
     begin_output_transaction,
+    build_image,
     run_container,
     finish_output_transaction,
     run_streaming,
@@ -26,15 +27,37 @@ from mountin.runner import (
 )
 
 
+def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):
+    context = tmp_path / "context"
+    context.mkdir()
+    (context / "Dockerfile").write_text("FROM scratch\n")
+    commands = []
+
+    def run(command, *_args, **_kwargs):
+        commands.append(command)
+        return 0
+
+    monkeypatch.setattr("mountin.runner.run_streaming", run)
+    monkeypatch.setattr("mountin.runner.get_image_id", lambda _tag: "sha256:image")
+
+    assert (
+        build_image(
+            "example",
+            context,
+            "localhost/example",
+            {"BUILD_PLATFORM": "x86_64-linux"},
+            [],
+            tmp_path,
+        )
+        == "sha256:image"
+    )
+    assert ["--label", "org.mountin.managed=true"] == commands[0][2:4]
+    assert not any("input-hash" in argument for argument in commands[0])
+
+
 def test_dockerfile_build_args_reads_global_and_stage_arguments(tmp_path):
     dockerfile = tmp_path / "Dockerfile"
-    dockerfile.write_text(
-        "ARG BASE=example\n"
-        "FROM ${BASE}\n"
-        "  ARG JOBS\n"
-        "ARG MOUNTIN_CACHE_DIR=/cache\n"
-        "RUN true\n"
-    )
+    dockerfile.write_text("ARG BASE=example\nFROM ${BASE}\n  ARG JOBS\nARG MOUNTIN_CACHE_DIR=/cache\nRUN true\n")
 
     assert dockerfile_build_args(dockerfile) == {
         "BASE",
@@ -65,11 +88,11 @@ def test_build_log_path_mirrors_catalogue_path(tmp_path):
     """Stage logs mirror catalogue paths and distinguish command phases."""
     result = build_log_path(
         tmp_path,
-        "bin/qemu/aros/pc-i386/base",
+        "guest/aros/2026-07-30",
         "run",
     )
 
-    assert result == (tmp_path / "logs/bin/qemu/aros/pc-i386/base.run.log")
+    assert result == (tmp_path / "logs/guest/aros/2026-07-30.run.log")
 
 
 def test_run_streaming_tees_output_to_stream_and_log(tmp_path):
@@ -148,9 +171,7 @@ def test_run_streaming_stops_child_when_interrupted(tmp_path, monkeypatch):
             return self.returncode
 
     process = Process()
-    monkeypatch.setattr(
-        "mountin.runner.subprocess.Popen", lambda *args, **kwargs: process
-    )
+    monkeypatch.setattr("mountin.runner.subprocess.Popen", lambda *args, **kwargs: process)
     log_path = tmp_path / "stage.run.log"
 
     with pytest.raises(KeyboardInterrupt):
@@ -190,11 +211,7 @@ def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch)
         )
 
     assert removed == [["podman", "rm", "--force", "test-container-id"]]
-    mounts = [
-        commands[0][index + 1]
-        for index, argument in enumerate(commands[0])
-        if argument == "-v"
-    ]
+    mounts = [commands[0][index + 1] for index, argument in enumerate(commands[0]) if argument == "-v"]
     assert any(mount.endswith(":/cache") for mount in mounts)
     assert not list((tmp_path / "cache/containers").iterdir())
 
@@ -247,49 +264,37 @@ def test_image_allows_cache_without_mounted_inputs():
 
 def test_validate_path_provides_valid_docker():
     """Docker provides with Dockerfile is valid."""
-    result = validate_path_provides(
-        "mypath", ["builder/base"], [], has_dockerfile=True, runs_on_tag=None
-    )
+    result = validate_path_provides("mypath", ["builder/base"], [], has_dockerfile=True, runs_on_tag=None)
     assert result is None
 
 
 def test_validate_path_provides_docker_no_dockerfile():
     """Docker provides without Dockerfile is invalid."""
-    result = validate_path_provides(
-        "mypath", ["builder/base"], [], has_dockerfile=False, runs_on_tag=None
-    )
+    result = validate_path_provides("mypath", ["builder/base"], [], has_dockerfile=False, runs_on_tag=None)
     assert "provides docker image but has no Dockerfile" in result
 
 
 def test_validate_path_provides_valid_file_with_dockerfile():
     """File provides with Dockerfile is valid."""
-    result = validate_path_provides(
-        "mypath", [], ["data/foo"], has_dockerfile=True, runs_on_tag=None
-    )
+    result = validate_path_provides("mypath", [], ["data/foo"], has_dockerfile=True, runs_on_tag=None)
     assert result is None
 
 
 def test_validate_path_provides_valid_file_with_runs_on():
     """File provides with runs_on is valid."""
-    result = validate_path_provides(
-        "mypath", [], ["data/foo"], has_dockerfile=False, runs_on_tag="builder/base"
-    )
+    result = validate_path_provides("mypath", [], ["data/foo"], has_dockerfile=False, runs_on_tag="builder/base")
     assert result is None
 
 
 def test_validate_path_provides_file_no_dockerfile_no_runs_on():
     """File provides without Dockerfile or runs_on is invalid."""
-    result = validate_path_provides(
-        "mypath", [], ["data/foo"], has_dockerfile=False, runs_on_tag=None
-    )
+    result = validate_path_provides("mypath", [], ["data/foo"], has_dockerfile=False, runs_on_tag=None)
     assert "provides files but has no Dockerfile or runs_on" in result
 
 
 def test_validate_path_provides_no_provides():
     """No provides is valid."""
-    result = validate_path_provides(
-        "mypath", [], [], has_dockerfile=False, runs_on_tag=None
-    )
+    result = validate_path_provides("mypath", [], [], has_dockerfile=False, runs_on_tag=None)
     assert result is None
 
 
@@ -365,9 +370,7 @@ def test_provider_cache_is_reused_only_for_identical_inputs(tmp_path):
     cache = prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one")
     (cache / "objects").write_text("reusable")
 
-    assert prepare_provider_cache(
-        tmp_path, "x86_64-linux", "stage", "one"
-    ) == cache
+    assert prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one") == cache
     assert (cache / "objects").read_text() == "reusable"
 
     prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "two")
@@ -386,6 +389,4 @@ def test_provider_cache_metadata_is_outside_the_builder_workspace(tmp_path):
             child.unlink()
 
     assert marker.read_text() == "one\n"
-    assert prepare_provider_cache(
-        tmp_path, "x86_64-linux", "stage", "one"
-    ) == cache
+    assert prepare_provider_cache(tmp_path, "x86_64-linux", "stage", "one") == cache

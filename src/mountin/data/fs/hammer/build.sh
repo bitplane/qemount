@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-base_iso=/host/build/bin/qemu/x86_64-dragonfly/6.4.2/system/dragonfly.iso
+base_iso=/host/build/guest/x86_64-dragonfly/6.4.2/dragonfly.iso
 template=/host/build/data/templates/basic.tar
 
 for output in "$@"; do

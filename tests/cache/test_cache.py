@@ -4,6 +4,8 @@ import tempfile
 from pathlib import Path
 
 from mountin.cache import (
+    image_cache_key,
+    image_is_current,
     load_cache,
     save_cache,
     hash_file,
@@ -12,6 +14,7 @@ from mountin.cache import (
     strip_ref_prefix,
     is_output_dirty,
     update_output_hash,
+    update_image_hash,
 )
 
 
@@ -19,7 +22,16 @@ def test_load_cache_missing():
     """Loading from non-existent file returns empty dict."""
     with tempfile.TemporaryDirectory() as tmp:
         cache = load_cache(Path(tmp))
-        assert cache == {"__schema__": 2}
+        assert cache == {"__schema__": 3}
+
+
+def test_image_cache_tracks_tag_id_and_inputs():
+    cache = {}
+    update_image_hash(cache, "x86_64-linux", "localhost/example", "sha256:a", "inputs")
+
+    assert image_cache_key("x86_64-linux", "localhost/example", "sha256:a") in cache
+    assert image_is_current(cache, "x86_64-linux", "localhost/example", "sha256:a", "inputs")
+    assert not image_is_current(cache, "x86_64-linux", "localhost/example", "sha256:b", "inputs")
 
 
 def test_save_and_load_cache():

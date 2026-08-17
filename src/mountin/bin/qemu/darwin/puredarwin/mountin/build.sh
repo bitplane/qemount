@@ -1,13 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-BASE_SYSTEM=/opt/puredarwin/base-system.tar.gz
-BOOT_DIR=/opt/puredarwin/boot
+SYSTEM=/host/build/guest/${OUTPUT_PLATFORM}/17.4/system
+BASE_SYSTEM=$SYSTEM/base-system.tar.gz
+BOOT_DIR=$SYSTEM/boot
 NINED=/host/build/bin/${OUTPUT_ARCH}-darwin/9d
 STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
 MOUNTIN_INIT=/host/build/bin/${OUTPUT_ARCH}-darwin/mountin-init
-KERNEL=/host/build/bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
-ROOTFS=/host/build/bin/qemu/${BUILD_ARCH}-linux/6.12/boot/rootfs.img
+KERNEL=/host/build/guest/${BUILD_ARCH}-linux/6.12/kernel
+ROOTFS=/host/build/guest/${BUILD_ARCH}-linux/base/rootfs.img
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_PLATFORM}/17.4
 OUTPUT=$OUTPUT_DIR/puredarwin.raw
 STAGING=/work/root

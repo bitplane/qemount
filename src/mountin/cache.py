@@ -14,7 +14,39 @@ from .log import timed
 
 
 CACHE_FILE = "cache/build_cache.json"
-CACHE_SCHEMA = 2
+CACHE_SCHEMA = 3
+
+
+def image_cache_key(build_platform: str, tag: str, image_id: str) -> str:
+    """Return the machine-specific cache key for a local container image."""
+    return f"image:{build_platform}:{tag}:{image_id}"
+
+
+def image_is_current(
+    cache: dict,
+    build_platform: str,
+    tag: str,
+    image_id: str | None,
+    input_hash: str,
+) -> bool:
+    """Return whether the tagged image is the cached result of these inputs."""
+    if not image_id:
+        return False
+    cached = cache.get(image_cache_key(build_platform, tag, image_id), {})
+    return cached.get("input_hash") == input_hash
+
+
+def update_image_hash(
+    cache: dict,
+    build_platform: str,
+    tag: str,
+    image_id: str,
+    input_hash: str,
+) -> None:
+    """Record the external input identity of a locally tagged image."""
+    cache[image_cache_key(build_platform, tag, image_id)] = {
+        "input_hash": input_hash,
+    }
 
 
 def stable_json(value) -> str:
@@ -26,7 +58,7 @@ def strip_ref_prefix(ref: str) -> str:
     """Strip docker: or file: prefix from a ref."""
     for prefix in ("docker:", "file:"):
         if ref.startswith(prefix):
-            return ref[len(prefix):]
+            return ref[len(prefix) :]
     return ref
 
 
@@ -76,9 +108,7 @@ def hash_file(path: Path, cache: dict, cache_path: str | None = None) -> str:
 
 
 @timed
-def hash_files(
-    directory: Path, cache: dict, cache_prefix: str | None = None
-) -> str:
+def hash_files(directory: Path, cache: dict, cache_prefix: str | None = None) -> str:
     """Hash all files in a directory recursively."""
     h = hashlib.md5()
     if not directory.exists():

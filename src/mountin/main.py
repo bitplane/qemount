@@ -46,16 +46,12 @@ ARCH_COMPATIBILITY = {
 def get_default_arch():
     """Get the canonical architecture of the build machine."""
     machine = platform.machine()
-    return {"x86_64": "x86_64", "aarch64": "aarch64", "arm64": "aarch64"}.get(
-        machine, machine
-    )
+    return {"x86_64": "x86_64", "aarch64": "aarch64", "arm64": "aarch64"}.get(machine, machine)
 
 
 def get_default_build_platform():
     """Get the canonical platform of the build machine."""
-    system = {"linux": "linux", "darwin": "darwin", "win32": "windows"}.get(
-        sys.platform, sys.platform
-    )
+    system = {"linux": "linux", "darwin": "darwin", "win32": "windows"}.get(sys.platform, sys.platform)
     return f"{get_default_arch()}-{system}"
 
 
@@ -226,6 +222,14 @@ def expand_targets(patterns: list[str], catalogue: dict, context: dict) -> list[
     return targets
 
 
+def format_catalogue(catalogue: dict) -> dict:
+    """Return the detection-only catalogue consumed by the format compiler."""
+    return {
+        "files": {path: data for path, data in catalogue.get("files", {}).items() if path.startswith("docs/format/")},
+        "paths": {path: data for path, data in catalogue.get("paths", {}).items() if path.startswith("format/")},
+    }
+
+
 def cmd_build(args, catalogue, context):
     """Build targets and their dependencies."""
     build_dir = Path("build").absolute()
@@ -237,9 +241,7 @@ def cmd_build(args, catalogue, context):
             source_output = "sources/mountin"
             source_tree = build_dir / source_output
             previous = cache.get(source_output, {}).get("input_hash")
-            source_identity, changed = export_source_tree(
-                args.source_authority, source_tree, previous
-            )
+            source_identity, changed = export_source_tree(args.source_authority, source_tree, previous)
             update_output_hash(
                 cache,
                 source_output,
@@ -264,8 +266,17 @@ def cmd_build(args, catalogue, context):
             catalogue_file.write_text(json.dumps(catalogue, indent=2))
             log.debug("Wrote catalogue to %s", catalogue_file)
 
+            format_data = format_catalogue(catalogue)
+            format_file = build_dir / "catalogue" / "format.json"
+            format_file.parent.mkdir(parents=True, exist_ok=True)
+            format_text = json.dumps(format_data, indent=2)
+            if not format_file.exists() or format_file.read_text() != format_text:
+                format_file.write_text(format_text)
+            log.debug("Wrote format catalogue to %s", format_file)
+
             # Update cache with implicit input hashes so dependents see changes.
             hash_file(catalogue_file, cache, "build:catalogue.json")
+            hash_file(format_file, cache, "build:catalogue/format.json")
             save_cache(build_dir, cache)
 
             success = run_build(
@@ -303,9 +314,7 @@ def cmd_gc(args, catalogue, context):
             for instance in resolve_provider_instances(path, catalogue, context)
         }
         with build_directory_lock(build_dir, blocking=False):
-            images, provider_caches = collect(
-                build_dir, live_cache_names, args.dry_run
-            )
+            images, provider_caches = collect(build_dir, live_cache_names, args.dry_run)
     except (BuildDirectoryBusy, RuntimeError) as error:
         log.error("Garbage collection failed: %s", error)
         return 1
@@ -344,9 +353,7 @@ def main():
 
     # outputs
     outputs_parser = subparsers.add_parser("outputs", help="List all outputs")
-    outputs_parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show provider path"
-    )
+    outputs_parser.add_argument("-v", "--verbose", action="store_true", help="Show provider path")
     outputs_parser.add_argument(
         "--output-arch",
         action="append",
@@ -374,33 +381,21 @@ def main():
     # deps
     deps_parser = subparsers.add_parser("deps", help="Show dependencies for targets")
     deps_parser.add_argument("targets", nargs="+", help="Target outputs (supports globs)")
-    deps_parser.add_argument(
-        "--order", action="store_true", help="Print only build order, one per line"
-    )
+    deps_parser.add_argument("--order", action="store_true", help="Print only build order, one per line")
     deps_parser.set_defaults(func=cmd_deps)
 
     # build
     build_parser = subparsers.add_parser("build", help="Build a target")
     build_parser.add_argument("targets", nargs="+", help="Target outputs to build")
-    build_parser.add_argument(
-        "-f", "--force", action="store_true", help="Force rebuild even if exists"
-    )
+    build_parser.add_argument("-f", "--force", action="store_true", help="Force rebuild even if exists")
     build_parser.set_defaults(func=cmd_build)
 
-    inventory_parser = subparsers.add_parser(
-        "inventory", help="Inventory catalogue artefacts present in build/"
-    )
-    inventory_parser.add_argument(
-        "--output", default="build/inventory.json", help="Inventory destination"
-    )
+    inventory_parser = subparsers.add_parser("inventory", help="Inventory catalogue artefacts present in build/")
+    inventory_parser.add_argument("--output", default="build/inventory.json", help="Inventory destination")
     inventory_parser.set_defaults(func=cmd_inventory)
 
-    gc_parser = subparsers.add_parser(
-        "gc", help="Collect obsolete mountin build state"
-    )
-    gc_parser.add_argument(
-        "--dry-run", action="store_true", help="Report without removing anything"
-    )
+    gc_parser = subparsers.add_parser("gc", help="Collect obsolete mountin build state")
+    gc_parser.add_argument("--dry-run", action="store_true", help="Report without removing anything")
     gc_parser.set_defaults(func=cmd_gc)
 
     args = parser.parse_args()

@@ -6,8 +6,8 @@ set -e
 
 BUILD_ARCH="${BUILD_ARCH:-x86_64}"
 KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.12"')
-KERNEL="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/kernel"
-ROOTFS="/host/build/bin/qemu/${BUILD_ARCH}-linux/${KERNEL_VERSION}/boot/rootfs.img"
+KERNEL="/host/build/guest/${BUILD_ARCH}-linux/${KERNEL_VERSION}/kernel"
+ROOTFS="/host/build/guest/${BUILD_ARCH}-linux/base/rootfs.img"
 
 source /build/qemu-linux-arch.sh
 set_qemu_linux_arch_profile "$BUILD_ARCH"

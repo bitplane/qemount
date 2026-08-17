@@ -1,8 +1,8 @@
 ---
 title: NetBSD 10.0 Boot Image
 requires:
-  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
-  - bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
+  - guest/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
+  - guest/${OUTPUT_ARCH}-netbsd/10.0/appliance/rootfs/ramdisk.fs
 output_platforms:
   x86_64-netbsd:
     provides:

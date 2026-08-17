@@ -1,0 +1,12 @@
+---
+title: Linux 6.12 Kernel
+requires:
+  - sources/linux-6.12.tar.xz
+provides:
+  - guest/${OUTPUT_ARCH}-linux/6.12/kernel
+---
+
+# Linux 6.12 Kernel
+
+Kernel build for the 6.12 guest. Supports x86_64 and aarch64. The source and
+object tree is retained in the build cache for incremental rebuilds.

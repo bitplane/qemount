@@ -2,7 +2,7 @@
 format: fs/lfs
 requires:
   - docker:builder/disk/netbsd
-  - bin/qemu/x86_64-netbsd/10.0/boot/boot.img
+  - guest/x86_64-netbsd/10.0/boot/boot.img
   - bin/x86_64-netbsd/newfs_lfs
   - data/templates/basic.tar
 provides:

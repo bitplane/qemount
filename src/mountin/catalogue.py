@@ -13,7 +13,7 @@ import yaml
 from .provider_cache import provider_cache_container
 
 VAR_PATTERN = re.compile(r'\$\{(\w+)\}')
-IMPLICIT_OUTPUTS = {"catalogue.json", "sources/mountin"}
+IMPLICIT_OUTPUTS = {"catalogue.json", "catalogue/format.json", "sources/mountin"}
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:

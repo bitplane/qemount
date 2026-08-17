@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-BASE_ISO=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
+BASE_ISO=/host/build/guest/${OUTPUT_ARCH}-aros/2026-07-30/aros.iso
 NINED=/host/build/bin/${OUTPUT_ARCH}-aros/9d
 OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30
 OUTPUT_TMP=$OUTPUT_DIR/aros.iso.tmp

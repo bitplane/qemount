@@ -1,7 +1,7 @@
 ---
 title: Linux 2.6 Boot
 requires:
-  - bin/qemu/${OUTPUT_ARCH}-linux/2.6/kernel
+  - guest/${OUTPUT_ARCH}-linux/2.6/kernel
   - bin/qemu/${OUTPUT_ARCH}-linux/rootfs/rootfs.img
 provides:
   - bin/qemu/${OUTPUT_ARCH}-linux/2.6/boot/kernel

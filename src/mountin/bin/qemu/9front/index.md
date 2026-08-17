@@ -6,6 +6,6 @@ requires:
   - docker:${BUILDER}
 ---
 
-# 9front guests
+# 9front appliances
 
-Guests built by 9front's native toolchain from pinned upstream source.
+Final QEMU inputs published from the architecture-specific guest components.

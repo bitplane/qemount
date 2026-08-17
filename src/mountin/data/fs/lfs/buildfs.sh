@@ -6,7 +6,7 @@ output=$2
 work=/work/lfs
 helper=$work/helper
 helper_image=$work/helper.fs
-boot=/host/build/bin/qemu/x86_64-netbsd/10.0/boot/boot.img
+boot=/host/build/guest/x86_64-netbsd/10.0/boot/boot.img
 formatter=/host/build/bin/x86_64-netbsd/newfs_lfs
 
 rm -rf "$work"

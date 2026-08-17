@@ -9,7 +9,7 @@ from .provider_cache import remove_provider_cache
 
 log = logging.getLogger(__name__)
 
-MOUNTIN_LABEL = "org.mountin.input-hash"
+MOUNTIN_LABEL = "org.mountin.managed=true"
 
 
 def _podman_lines(arguments: list[str]) -> list[str]:

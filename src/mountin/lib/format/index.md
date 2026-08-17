@@ -1,7 +1,7 @@
 ---
 title: Format detection rules
 requires:
-  - catalogue.json
+  - catalogue/format.json
 provides:
   - lib/format.bin
 ---
@@ -11,7 +11,7 @@ provides:
 Compiles detection rules from the catalogue into a msgpack binary
 for consumption by the Rust detection library.
 
-Reads `format/*` paths from `catalogue.json` and extracts their
+Reads `format/*` paths from `catalogue/format.json` and extracts their
 `detect:` metadata into a normalized structure.
 
 ## Detection Schema

@@ -4,15 +4,16 @@ env:
   BUILDER: builder/disk/haiku
 requires:
   - docker:${BUILDER}
-  - bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/base/haiku.image
+  - guest/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
   - bin/${OUTPUT_ARCH}-haiku/9d
+  - bin/${OUTPUT_ARCH}-haiku/mountin-init
 provides:
   - bin/qemu/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
 ---
 
 # Haiku mountin Appliance
 
-Adds 9d to the mountin appliance. At boot Haiku
+Adds the mountin init and 9d to the base guest. At boot Haiku
 mounts every filesystem it recognises, then serves the resulting system root
 over its second PC serial port.
 

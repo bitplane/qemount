@@ -3,7 +3,7 @@ format: fs/flashfs
 requires:
   - docker:builder/disk/9front
 build_requires:
-  - bin/qemu/x86_64-9front/11957/9front.iso
+  - guest/x86_64-9front/11957/9front.iso
   - data/templates/basic.tar
 provides:
   - data/fs/basic.flashfs

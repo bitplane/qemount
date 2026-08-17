@@ -144,6 +144,7 @@ src/mountin/                # Python package (the build system)
 
 build/                      # Build outputs (gitignored)
 ├── bin/                    # Compiled binaries by target triple
+├── guest/                  # Reusable guest kernels, roots and boot files
 ├── lib/                    # Compiled libraries by target triple
 ├── data/                   # Generated test filesystem images
 ├── sources/                # Downloaded source tarballs
@@ -283,6 +284,8 @@ Compiler images follow the same separation:
 - Target-specific variants may live beneath that version when required.
 - Guest assembly consumes the toolbox; it does not publish build trees,
   sysroots or SDKs as runtime outputs.
+- `guest/<platform>/<version>` contains reusable, inspectable operating-system
+  components shared by fixture builders and appliance assembly.
 - `bin/qemu/...` contains only files consumed by the emulator or launcher.
   Intermediate objects belong in the toolbox image or provider cache.
 

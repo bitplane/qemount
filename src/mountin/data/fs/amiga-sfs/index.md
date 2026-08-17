@@ -3,7 +3,7 @@ format: fs/amiga-sfs
 requires:
   - docker:builder/disk/guest
 build_requires:
-  - bin/qemu/i386-aros/2026-07-30/base/aros.iso
+  - guest/i386-aros/2026-07-30/aros.iso
   - data/templates/basic.tar
   - data/templates/basic.amiga
 provides:

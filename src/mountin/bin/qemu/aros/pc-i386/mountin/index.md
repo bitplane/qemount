@@ -1,7 +1,7 @@
 ---
 title: AROS PC i386 mountin Appliance
 requires:
-  - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/base/aros.iso
+  - guest/${OUTPUT_ARCH}-aros/2026-07-30/aros.iso
   - bin/${OUTPUT_ARCH}-aros/9d
 provides:
   - bin/qemu/${OUTPUT_ARCH}-aros/2026-07-30/aros.iso

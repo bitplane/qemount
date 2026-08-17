@@ -1,7 +1,7 @@
 ---
 title: Linux 6.12 Boot
 requires:
-  - bin/qemu/${OUTPUT_ARCH}-linux/6.12/kernel
+  - guest/${OUTPUT_ARCH}-linux/6.12/kernel
   - bin/qemu/${OUTPUT_ARCH}-linux/rootfs/rootfs.img
 provides:
   - bin/qemu/${OUTPUT_ARCH}-linux/6.12/boot/kernel

@@ -3,7 +3,7 @@ format: fs/hammer
 requires:
   - docker:builder/disk/guest
 build_requires:
-  - bin/qemu/x86_64-dragonfly/6.4.2/system/dragonfly.iso
+  - guest/x86_64-dragonfly/6.4.2/dragonfly.iso
   - data/templates/basic.tar
 provides:
   - data/fs/basic.hammer

@@ -3,7 +3,7 @@ set -e
 
 mkdir -p /host/build/bin/qemu/${OUTPUT_ARCH}-linux/6.12/boot
 
-cp -v /host/build/bin/qemu/${OUTPUT_ARCH}-linux/6.12/kernel \
+cp -v /host/build/guest/${OUTPUT_ARCH}-linux/6.12/kernel \
       /host/build/bin/qemu/${OUTPUT_ARCH}-linux/6.12/boot/kernel
 
 cp -v /host/build/bin/qemu/${OUTPUT_ARCH}-linux/rootfs/rootfs.img \

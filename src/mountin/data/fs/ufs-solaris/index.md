@@ -2,8 +2,7 @@
 format: fs/ufs1
 requires:
   - docker:builder/disk/guest
-  - bin/qemu/x86_64-illumos/2026-08-13/kernel
-  - bin/qemu/x86_64-illumos/2026-08-13/rootfs.iso
+  - guest/x86_64-illumos/2026-08-13/system
   - bin/x86_64-illumos/mkfs.ufs
   - bin/x86_64-illumos/ufs-fixture-init
   - data/templates/basic.tar

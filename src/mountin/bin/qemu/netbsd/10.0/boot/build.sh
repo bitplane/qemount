@@ -5,8 +5,8 @@ NBARCH=$(cat /tmp/nbarch)
 NBGNUTRIPLE=$(cat /tmp/nbgnutriple)
 DESTDIR="/usr/obj/destdir.$NBARCH"
 TOOLDIR="/usr/tools"
-KERNEL_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/kernel"
-ROOTFS_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/rootfs"
+KERNEL_DIR="/host/build/guest/${OUTPUT_ARCH}-netbsd/10.0/kernel"
+ROOTFS_DIR="/host/build/guest/${OUTPUT_ARCH}-netbsd/10.0/appliance/rootfs"
 OUTPUT_DIR="/host/build/bin/qemu/${OUTPUT_ARCH}-netbsd/10.0/boot"
 
 echo "Assembling NetBSD boot image for $OUTPUT_ARCH..."

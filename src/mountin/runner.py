@@ -19,11 +19,13 @@ from typing import TextIO
 from .catalogue import build_graph
 from .provider_cache import provider_cache_relative, remove_provider_cache
 from .cache import (
+    image_is_current,
     load_cache,
     save_cache,
     hash_path_inputs,
     is_output_dirty,
     update_output_hash,
+    update_image_hash,
 )
 
 log = logging.getLogger(__name__)
@@ -179,7 +181,6 @@ def build_image(
     env: dict,
     build_requires: list[str],
     build_dir: Path,
-    input_hash: str,
     no_cache: bool = False,
 ) -> str | None:
     """Build a container image.
@@ -196,7 +197,7 @@ def build_image(
         " (no-cache)" if no_cache else "",
     )
     cmd = ["podman", "build"]
-    cmd.extend(["--label", f"org.mountin.input-hash={input_hash}"])
+    cmd.extend(["--label", "org.mountin.managed=true"])
 
     if no_cache:
         cmd.append("--no-cache")
@@ -204,12 +205,7 @@ def build_image(
     cache_dir = build_dir / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{cache_dir.absolute()}:/host/build/cache:rw"])
-    provider_cache = (
-        build_dir
-        / "cache"
-        / provider_cache_relative(env["BUILD_PLATFORM"], stage)
-        / "work"
-    )
+    provider_cache = build_dir / "cache" / provider_cache_relative(env["BUILD_PLATFORM"], stage) / "work"
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{provider_cache.absolute()}:/cache:rw"])
 
@@ -263,12 +259,7 @@ def run_container(
     cmd = ["podman", "run", "--rm", "--cidfile", str(cid_path)]
     cmd.extend(podman_runtime_args())
     cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
-    provider_cache = (
-        build_dir
-        / "cache"
-        / provider_cache_relative(env["BUILD_PLATFORM"], stage)
-        / "work"
-    )
+    provider_cache = build_dir / "cache" / provider_cache_relative(env["BUILD_PLATFORM"], stage) / "work"
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["-v", f"{provider_cache.absolute()}:/cache"])
     for key, value in env.items():
@@ -333,13 +324,9 @@ def remove_output(path: Path) -> None:
         path.unlink()
 
 
-def prepare_provider_cache(
-    build_dir: Path, build_platform: str, instance_id: str, input_hash: str
-) -> Path:
+def prepare_provider_cache(build_dir: Path, build_platform: str, instance_id: str, input_hash: str) -> Path:
     """Make a provider's private cache match its complete input identity."""
-    cache_root = build_dir / "cache" / provider_cache_relative(
-        build_platform, instance_id
-    )
+    cache_root = build_dir / "cache" / provider_cache_relative(build_platform, instance_id)
     marker = cache_root / ".mountin-input"
     try:
         current = marker.read_text().strip()
@@ -375,9 +362,7 @@ def begin_output_transaction(build_dir: Path, outputs: list[str]) -> dict[str, P
     return backups
 
 
-def finish_output_transaction(
-    build_dir: Path, outputs: list[str], backups: dict[str, Path], success: bool
-) -> None:
+def finish_output_transaction(build_dir: Path, outputs: list[str], backups: dict[str, Path], success: bool) -> None:
     """Commit generated outputs or restore the previous valid files."""
     for output in outputs:
         path = build_dir / output
@@ -475,31 +460,31 @@ def run_build(
             "build_platform": context.get("BUILD_PLATFORM"),
             "output_platform": record.get("output_platform"),
         }
-        input_hash = hash_path_inputs(
-            path, pkg_dir, meta, dep_hashes, build_dir, cache
-        )
-        prepare_provider_cache(
-            build_dir, context["BUILD_PLATFORM"], instance_id, input_hash
-        )
+        input_hash = hash_path_inputs(path, pkg_dir, meta, dep_hashes, build_dir, cache)
+        prepare_provider_cache(build_dir, context["BUILD_PLATFORM"], instance_id, input_hash)
         dep_hashes[instance_id] = input_hash
-        for provided in provides:
-            dep_hashes[provided.removeprefix("docker:")] = input_hash
+        for provided in docker_tags:
+            dep_hashes[provided] = input_hash
 
         # Validate provides are buildable
-        error = validate_path_provides(
-            path, docker_tags, file_outputs, dockerfile.exists(), runs_on_tag
-        )
+        error = validate_path_provides(path, docker_tags, file_outputs, dockerfile.exists(), runs_on_tag)
         if error:
             log.error(error)
             return False
 
         # Build image if Dockerfile exists
         if dockerfile.exists():
-            tag = docker_tags[0] if docker_tags else local_image_tag(
-                path, record["output_platform"]
-            )
+            tag = docker_tags[0] if docker_tags else local_image_tag(path, record["output_platform"])
             # Container stores are machine-local even when build/ is shared.
-            if not force and get_image_input_hash(tag) == input_hash:
+            image_id = get_image_id(tag)
+            current = image_is_current(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+            # One-time migration from images built before image identity moved
+            # out of the Dockerfile layer cache key.
+            if not current and image_id and get_image_input_hash(tag) == input_hash:
+                update_image_hash(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+                save_cache(build_dir, cache)
+                current = True
+            if not force and current:
                 log.info("Clean: %s (image)", tag)
             else:
                 image_id = build_image(
@@ -509,11 +494,12 @@ def run_build(
                     env,
                     build_requires,
                     build_dir,
-                    input_hash,
                     no_cache=image_needs_no_cache(force, build_requires),
                 )
                 if not image_id:
                     return False
+                update_image_hash(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+                save_cache(build_dir, cache)
 
         # Done if no file outputs
         if not file_outputs:
@@ -528,12 +514,14 @@ def run_build(
             dirty_outputs = needed_outputs
         else:
             dirty_outputs = [
-                o for o in needed_outputs
-                if is_output_dirty(o, input_hash, cache, build_dir, get_output_requires(o))
+                o for o in needed_outputs if is_output_dirty(o, input_hash, cache, build_dir, get_output_requires(o))
             ]
 
         if not dirty_outputs:
             log.info("Clean: %s", path)
+            for output_name in file_outputs:
+                if output_name in cache and (build_dir / output_name).exists():
+                    dep_hashes[output_name] = cache[output_name]["hash"]
             continue
 
         # Use runs_on tag if no Dockerfile was built
@@ -568,6 +556,9 @@ def run_build(
                 get_output_requires(output_name),
                 provenance,
             )
+        for output_name in file_outputs:
+            if output_name in cache and (build_dir / output_name).exists():
+                dep_hashes[output_name] = cache[output_name]["hash"]
         # Save cache after each successful build step
         save_cache(build_dir, cache)
 

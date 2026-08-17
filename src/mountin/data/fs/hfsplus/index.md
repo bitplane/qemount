@@ -3,8 +3,8 @@ format: fs/hfsplus
 requires:
   - docker:builder/disk/qemu
   - data/templates/basic.tar
-  - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/kernel
-  - bin/qemu/${BUILD_ARCH}-linux/6.12/boot/rootfs.img
+  - guest/${BUILD_ARCH}-linux/6.12/kernel
+  - guest/${BUILD_ARCH}-linux/base/rootfs.img
 provides:
   - data/fs/basic.hfsplus
 ---

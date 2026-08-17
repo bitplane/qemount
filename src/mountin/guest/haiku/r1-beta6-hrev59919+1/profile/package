@@ -1,0 +1,69 @@
+local haikuPackage = haiku.hpkg ;
+HaikuPackage $(haikuPackage) ;
+HAIKU_CONTAINER_STRIP_EXECUTABLES on $(haikuPackage) = 1 ;
+
+# Boot and storage modules for the QEMU PC appliance.
+AddFilesToPackage add-ons kernel bus_managers
+	: $(SYSTEM_ADD_ONS_BUS_MANAGERS) ;
+AddFilesToPackage add-ons kernel busses ata :
+	generic_ide_pci
+	ide_isa@x86
+	;
+AddFilesToPackage add-ons kernel busses pci :
+	<pci>x86@x86,x86_64
+	;
+AddFilesToPackage add-ons kernel file_systems
+	: $(SYSTEM_ADD_ONS_FILE_SYSTEMS) ;
+AddFilesToPackage add-ons kernel generic :
+	ata_adapter
+	dpc
+	scsi_periph
+	<module>tty
+	;
+AddFilesToPackage add-ons kernel partitioning_systems :
+	efi_gpt
+	intel
+	session
+	;
+
+if $(TARGET_ARCH) = x86 || $(TARGET_ARCH) = x86_64 {
+	AddFilesToPackage add-ons kernel cpu : generic_x86 ;
+}
+
+AddNewDriversToPackage disk scsi :
+	scsi_cd
+	scsi_disk
+	;
+AddDriversToPackage :
+	dprintf
+	;
+AddDriversToPackage ports : pc_serial ;
+
+AddFilesToPackage : <revisioned>kernel_$(TARGET_ARCH) ;
+AddLibrariesToPackage lib
+	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
+AddFilesToPackage servers : launch_daemon ;
+AddFilesToPackage : runtime_loader ;
+AddFilesToPackage bin : $(SYSTEM_BIN) ;
+
+AddBootModuleSymlinksToPackage
+	acpi@x86,x86_64
+	ata
+	ata_adapter
+	bfs
+	dpc
+	efi_gpt
+	generic_ide_pci
+	ide_isa@x86
+	intel
+	isa@x86,x86_64
+	packagefs
+	pci
+	<pci>x86@x86,x86_64
+	scsi
+	scsi_cd
+	scsi_disk
+	scsi_periph
+;
+
+BuildHaikuPackage $(haikuPackage) : haiku_mountin ;
