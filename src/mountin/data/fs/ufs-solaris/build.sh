@@ -13,6 +13,8 @@ cp -a "$system/root/." /work/root/
 cp -a /work/fixture /work/root/TestData
 install -m 0755 /host/build/bin/x86_64-illumos/mkfs.ufs \
     /work/root/sbin/mkfs.ufs
+install -m 0755 /host/build/bin/x86_64-illumos/mountin-bootstrap \
+    /work/root/sbin/init
 install -m 0755 /host/build/bin/x86_64-illumos/ufs-fixture-init \
     /work/root/sbin/mountin-init
 find /work/root -exec touch -h -d @0 {} +
