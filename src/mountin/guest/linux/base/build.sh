@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-BINDIR="/host/build/bin/${OUTPUT_ARCH}-linux-${ENV}"
+BINDIR="/host/build/bin/${TARGET_ARCH}-linux-${ENV}"
 ROOT="/work/root"
 rm -rf "$ROOT"
 cp -a /root "$ROOT"
@@ -24,5 +24,5 @@ truncate -s "$IMG_SIZE" /work/rootfs.img
 mke2fs -t ext2 -d "$ROOT" /work/rootfs.img
 
 # Copy to output
-mkdir -p /host/build/guest/${OUTPUT_ARCH}-linux/base
-cp /work/rootfs.img /host/build/guest/${OUTPUT_ARCH}-linux/base/
+mkdir -p /host/build/guest/${TARGET_ARCH}-linux/base
+cp /work/rootfs.img /host/build/guest/${TARGET_ARCH}-linux/base/

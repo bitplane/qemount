@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+test "$TARGET_ARCH" = x86_64
 
 base=/opt/illumos/mountin
 output=$base/boot/xplatform/i86pc/kernel/amd64/unix

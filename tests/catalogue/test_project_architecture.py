@@ -19,7 +19,7 @@ CONTEXT = {
     "BUILD_PLATFORM": "x86_64-linux",
     "BUILD_ARCH": "x86_64",
     "BUILD_OS": "linux",
-    "JOBS": "1",
+    "BUILD_JOBS": "1",
 }
 
 
@@ -49,7 +49,7 @@ def test_every_provider_instance_receives_its_automatic_cache():
         for instance in resolve_provider_instances(path, catalogue, CONTEXT):
             expected = provider_cache_container()
             assert instance["context"]["MOUNTIN_CACHE_DIR"] == expected
-            assert instance["meta"]["env"]["MOUNTIN_CACHE_DIR"] == expected
+            assert instance["meta"]["execution_env"]["MOUNTIN_CACHE_DIR"] == expected
 
 
 def test_qemu_zig_wrapper_translates_darwin_target(tmp_path):
@@ -178,7 +178,7 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
-        "JOBS": "1",
+        "BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -200,7 +200,7 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
-        "JOBS": "1",
+        "BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -219,7 +219,7 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
-        "JOBS": "1",
+        "BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -234,7 +234,7 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
-        "JOBS": "1",
+        "BUILD_JOBS": "1",
     }
 
     for context in (CONTEXT, arm_context):
@@ -257,7 +257,7 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@x86_64-netbsd" in x86_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_data["nodes"]
-    assert arm_guest["nodes"]["builder/compiler/netbsd/10.0@aarch64-netbsd"]["meta"]["env"]["JOBS"] == "1"
+    assert arm_guest["nodes"]["builder/compiler/netbsd/10.0@aarch64-netbsd"]["meta"]["execution_env"]["BUILD_JOBS"] == "1"
 
 
 def test_9front_cross_build_matrix():
@@ -265,7 +265,7 @@ def test_9front_cross_build_matrix():
         "BUILD_PLATFORM": "aarch64-linux",
         "BUILD_ARCH": "aarch64",
         "BUILD_OS": "linux",
-        "JOBS": "1",
+        "BUILD_JOBS": "1",
     }
 
     for context in (CONTEXT, arm_context):

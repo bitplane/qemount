@@ -94,7 +94,7 @@ def build_context(
         "BUILD_PLATFORM": build_platform,
         "BUILD_ARCH": parts[0],
         "BUILD_OS": parts[1],
-        "JOBS": str(get_jobs()),
+        "BUILD_JOBS": str(get_jobs()),
         "RELEASE_REF": get_release_ref(repository),
         "SOURCE_KIND": source_kind,
     }
@@ -146,7 +146,7 @@ def cmd_outputs(args, catalogue, context):
             all_platforms
             or record["output_platform"] is None
             or record["output_platform"] in selected_platforms
-            or record["context"]["OUTPUT_ARCH"] in selected_arches
+            or record["context"]["TARGET_ARCH"] in selected_arches
         )
         and (include_unavailable or record["buildable"])
     }

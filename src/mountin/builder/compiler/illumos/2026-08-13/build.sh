@@ -16,7 +16,7 @@ cd /build/binutils-build
     --disable-ld \
     --disable-nls \
     --disable-werror
-make -j"${JOBS:-1}" all-gas
+make -j"${BUILD_JOBS:-1}" all-gas
 make install-gas
 ln -s x86_64-pc-solaris2.11-as /opt/illumos-binutils/bin/as
 

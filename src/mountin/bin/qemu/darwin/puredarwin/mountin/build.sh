@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-SYSTEM=/host/build/guest/${OUTPUT_PLATFORM}/17.4/system
+SYSTEM=/host/build/guest/${TARGET_PLATFORM}/17.4/system
 BASE_SYSTEM=$SYSTEM/base-system.tar.gz
 BOOT_DIR=$SYSTEM/boot
-NINED=/host/build/bin/${OUTPUT_ARCH}-darwin/9d
-STREAM64=/host/build/bin/${OUTPUT_ARCH}-darwin/stream64
-MOUNTIN_INIT=/host/build/bin/${OUTPUT_ARCH}-darwin/mountin-init
+NINED=/host/build/bin/${TARGET_ARCH}-darwin/9d
+STREAM64=/host/build/bin/${TARGET_ARCH}-darwin/stream64
+MOUNTIN_INIT=/host/build/bin/${TARGET_ARCH}-darwin/mountin-init
 KERNEL=/host/build/guest/${BUILD_ARCH}-linux/6.12/kernel
 ROOTFS=/host/build/guest/${BUILD_ARCH}-linux/base/rootfs.img
-OUTPUT_DIR=/host/build/bin/qemu/${OUTPUT_PLATFORM}/17.4
+OUTPUT_DIR=/host/build/bin/qemu/${TARGET_PLATFORM}/17.4
 OUTPUT=$OUTPUT_DIR/puredarwin.raw
 STAGING=/work/root
 SOURCE=/work/source.ext2

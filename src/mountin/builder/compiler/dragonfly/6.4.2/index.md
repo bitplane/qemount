@@ -9,7 +9,8 @@ output_platforms:
       - docker:builder/compiler/dragonfly/6.4.2/x86_64
 env:
   BUILDER: builder/compiler/dragonfly
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 requires:
   - docker:${BUILDER}
 build_requires:

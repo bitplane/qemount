@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+test "$TARGET_ARCH" = x86_64
 
-output=/host/build/bin/${OUTPUT_PLATFORM}/mountin-init
-bootstrap=/host/build/bin/${OUTPUT_PLATFORM}/mountin-bootstrap
+output=/host/build/bin/${TARGET_PLATFORM}/mountin-init
+bootstrap=/host/build/bin/${TARGET_PLATFORM}/mountin-bootstrap
 object=/work/mountin-init.o
 bootstrap_object=/work/mountin-bootstrap.o
 

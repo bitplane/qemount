@@ -2,8 +2,8 @@ ARG BUILDER
 FROM ${BUILDER}
 
 ARG BUILD_ARCH
-ARG JOBS=1
-ARG OUTPUT_ARCH
+ARG BUILD_JOBS=1
+ARG TARGET_ARCH
 
 COPY --chmod=755 build.sh sysroot-build.sh /build/
 COPY plockstat-stubs.c /build/plockstat-stubs.c

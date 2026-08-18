@@ -3,16 +3,16 @@ title: illumos mountin appliance
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/2026-08-13/kernel
-      - bin/qemu/${OUTPUT_PLATFORM}/2026-08-13/rootfs.iso
+      - bin/qemu/${TARGET_PLATFORM}/2026-08-13/kernel
+      - bin/qemu/${TARGET_PLATFORM}/2026-08-13/rootfs.iso
 env:
   BUILDER: builder/disk/guest
 requires:
   - docker:${BUILDER}
-  - guest/${OUTPUT_PLATFORM}/2026-08-13/system
-  - bin/${OUTPUT_PLATFORM}/mountin-init
-  - bin/${OUTPUT_PLATFORM}/mountin-bootstrap
-  - bin/${OUTPUT_PLATFORM}/9d
+  - guest/${TARGET_PLATFORM}/2026-08-13/system
+  - bin/${TARGET_PLATFORM}/mountin-init
+  - bin/${TARGET_PLATFORM}/mountin-bootstrap
+  - bin/${TARGET_PLATFORM}/9d
 ---
 
 # illumos mountin appliance

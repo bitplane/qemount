@@ -5,16 +5,16 @@ env:
 output_platforms:
   x86_64-9front:
     requires:
-      - guest/${OUTPUT_PLATFORM}/11957/9front.iso
+      - guest/${TARGET_PLATFORM}/11957/9front.iso
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/11957/9front.iso
+      - bin/qemu/${TARGET_PLATFORM}/11957/9front.iso
   aarch64-9front:
     requires:
-      - guest/${OUTPUT_PLATFORM}/11957/9front.qcow2
-      - guest/${OUTPUT_PLATFORM}/11957/u-boot.bin
+      - guest/${TARGET_PLATFORM}/11957/9front.qcow2
+      - guest/${TARGET_PLATFORM}/11957/u-boot.bin
     provides:
-      - bin/qemu/${OUTPUT_PLATFORM}/11957/9front.qcow2
-      - bin/qemu/${OUTPUT_PLATFORM}/11957/u-boot.bin
+      - bin/qemu/${TARGET_PLATFORM}/11957/9front.qcow2
+      - bin/qemu/${TARGET_PLATFORM}/11957/u-boot.bin
 requires:
   - docker:${BUILDER}
 ---

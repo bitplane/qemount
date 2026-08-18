@@ -8,7 +8,8 @@ env:
   BUILDER: builder/compiler/haiku/r1-beta6-hrev59919-1
   HAIKU_IMAGE_SIZE: "7"
   HAIKU_REVISION: hrev59919+1
-  JOBS: "1"
+execution_env:
+  BUILD_JOBS: "1"
 requires:
   - docker:${BUILDER}
 ---

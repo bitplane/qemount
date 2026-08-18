@@ -1,7 +1,5 @@
 ---
 title: Builders
-env:
-  SELF: ${SELF}
 ---
 
 # Builders

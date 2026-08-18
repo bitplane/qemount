@@ -1,7 +1,7 @@
 ARG ILLUMOS_BUILDER
 FROM ${ILLUMOS_BUILDER}
 
-ARG OUTPUT_ARCH
+ARG TARGET_ARCH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-multilib \

@@ -4,9 +4,9 @@ requires:
   - docker:${BUILDER}
   - source.tar
 provides:
-  - output/${OUTPUT_ARCH}/leaf
+  - output/${TARGET_ARCH}/leaf
 ---
 
 # Leaf
 
-Uses inherited BUILDER and OUTPUT_ARCH.
+Uses inherited BUILDER and TARGET_ARCH.

@@ -1,6 +1,6 @@
 ---
 title: Mountin
-env:
+execution_env:
   MOUNTIN_CACHE_DIR: ${MOUNTIN_CACHE_DIR}
   CARGO_HOME: /host/build/cache/cargo
   CARGO_TARGET_DIR: ${MOUNTIN_CACHE_DIR}/cargo-target

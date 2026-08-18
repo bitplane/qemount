@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/9pfuse-mountin-2026-08-15.tar.gz
 provides:
-  - bin/${OUTPUT_ARCH}-linux-${ENV}/9pfuse
+  - bin/${TARGET_ARCH}-linux-${ENV}/9pfuse
 ---
 
 # 9pfuse

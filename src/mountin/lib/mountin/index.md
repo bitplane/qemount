@@ -1,7 +1,7 @@
 ---
 title: mountin library
-env:
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 requires:
   - docker:builder/compiler/rust
 output_platforms:

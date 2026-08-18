@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+test "$TARGET_ARCH" = x86_64
 
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld

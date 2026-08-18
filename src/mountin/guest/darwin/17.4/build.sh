@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-output=/host/build/guest/${OUTPUT_PLATFORM}/17.4/system
+output=/host/build/guest/${TARGET_PLATFORM}/17.4/system
 mkdir -p "${output%/*}"
 temporary=${output}.tmp
 rm -rf "$temporary"

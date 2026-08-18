@@ -1,16 +1,16 @@
 ---
 title: NetBSD 10.0 fixture boot image
 requires:
-  - guest/${OUTPUT_ARCH}-netbsd/10.0/kernel/netbsd.gdb
-  - guest/${OUTPUT_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
+  - guest/${TARGET_ARCH}-netbsd/10.0/kernel/netbsd.gdb
+  - guest/${TARGET_ARCH}-netbsd/10.0/rootfs/ramdisk.fs
 output_platforms:
   x86_64-netbsd:
     provides:
-      - guest/${OUTPUT_ARCH}-netbsd/10.0/boot/boot.img
-      - guest/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
+      - guest/${TARGET_ARCH}-netbsd/10.0/boot/boot.img
+      - guest/${TARGET_ARCH}-netbsd/10.0/boot/netbsd
   aarch64-netbsd:
     provides:
-      - guest/${OUTPUT_ARCH}-netbsd/10.0/boot/netbsd
+      - guest/${TARGET_ARCH}-netbsd/10.0/boot/netbsd
 ---
 
 # NetBSD 10.0 fixture boot image

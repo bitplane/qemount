@@ -1,8 +1,7 @@
 ---
 title: Binaries
-env:
-  SELF: ${SELF}
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 ---
 
 # Binaries

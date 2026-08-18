@@ -3,7 +3,7 @@ set -eu
 
 SOURCE=/work/9d
 OBJECTS=/work/objects
-OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
+OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-darwin
 
 rm -rf "$SOURCE" "$OBJECTS"
 mkdir -p "$SOURCE" "$OBJECTS" "$OUTPUT_DIR"

@@ -34,7 +34,7 @@ TARGET_RANLIB=i686-linux-gnu-ranlib \
     --disable-liblzma \
     --disable-nls \
     --disable-werror
-make -j"${JOBS:-1}" TARGET_CC="$TARGET_CC"
+make -j"${BUILD_JOBS:-1}" TARGET_CC="$TARGET_CC"
 make install TARGET_CC="$TARGET_CC"
 
 cat > "$CONFIG" <<'EOF'

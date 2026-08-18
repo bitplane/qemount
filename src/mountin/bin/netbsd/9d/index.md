@@ -3,7 +3,7 @@ title: 9d
 requires:
   - sources/9d-0.7.1.tar.xz
 provides:
-  - bin/${OUTPUT_ARCH}-netbsd/9d
+  - bin/${TARGET_ARCH}-netbsd/9d
 ---
 
 # 9d

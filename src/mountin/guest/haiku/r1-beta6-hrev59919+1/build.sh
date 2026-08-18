@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR=/host/build/guest/${OUTPUT_ARCH}-haiku/r1-beta6-hrev59919+1
+OUTPUT_DIR=/host/build/guest/${TARGET_ARCH}-haiku/r1-beta6-hrev59919+1
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
-BUILD_JOBS=${JOBS:-1}
+BUILD_JOBS=${BUILD_JOBS:-1}
 CACHE_DIR=/src/haiku/generated
 
 # The compiler toolbox defaults ordinary consumers to the Haiku target. Jam's

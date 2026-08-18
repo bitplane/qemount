@@ -23,8 +23,8 @@ cd reiser4progs-1.2.2
     LDFLAGS="-L/opt/libaal/lib"
 make -j$(nproc)
 
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-gnu
+mkdir -p /host/build/bin/${TARGET_ARCH}-linux-gnu
 # Binary may be in progs/mkfs/ or mkfs.reiser4/ depending on version
-find . -name mkfs.reiser4 -type f -executable | head -1 | xargs cp -v -t /host/build/bin/${OUTPUT_ARCH}-linux-gnu/
+find . -name mkfs.reiser4 -type f -executable | head -1 | xargs cp -v -t /host/build/bin/${TARGET_ARCH}-linux-gnu/
 # busy tool for userspace file manipulation (create/cp/ls without mounting)
-cp -v $(find . -name busy -type f -executable | head -1) /host/build/bin/${OUTPUT_ARCH}-linux-gnu/reiser4-busy
+cp -v $(find . -name busy -type f -executable | head -1) /host/build/bin/${TARGET_ARCH}-linux-gnu/reiser4-busy

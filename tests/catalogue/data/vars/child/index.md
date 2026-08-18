@@ -5,7 +5,7 @@ env:
 requires:
   - docker:${BUILDER}
 provides:
-  - output/${OUTPUT_ARCH}/thing
+  - output/${TARGET_ARCH}/thing
 ---
 
 # Child

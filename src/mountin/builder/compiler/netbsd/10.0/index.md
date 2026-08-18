@@ -10,8 +10,8 @@ output_platforms:
   aarch64-netbsd:
     provides:
       - docker:builder/compiler/netbsd/10.0/aarch64
-env:
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 build_requires:
   - sources/netbsd-10.0-src.tgz
   - sources/netbsd-10.0-syssrc.tgz

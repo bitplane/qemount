@@ -5,7 +5,7 @@ no_inherit:
   - build_requires
 env:
   BUILD_ARCH: ${BUILD_ARCH}
-  OUTPUT_ARCH: ${OUTPUT_ARCH}
+  TARGET_ARCH: ${TARGET_ARCH}
 output_platforms:
   x86_64-test: {}
   aarch64-test: {}

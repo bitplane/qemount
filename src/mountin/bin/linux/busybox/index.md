@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/busybox-1.36.1.tar.bz2
 provides:
-  - bin/${OUTPUT_ARCH}-linux-${ENV}/busybox
+  - bin/${TARGET_ARCH}-linux-${ENV}/busybox
 ---
 
 # BusyBox

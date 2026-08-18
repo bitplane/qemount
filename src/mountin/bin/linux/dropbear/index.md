@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/dropbear-2025.88.tar.bz2
 provides:
-  - bin/${OUTPUT_ARCH}-linux-${ENV}/dropbearmulti
+  - bin/${TARGET_ARCH}-linux-${ENV}/dropbearmulti
 ---
 
 # Dropbear

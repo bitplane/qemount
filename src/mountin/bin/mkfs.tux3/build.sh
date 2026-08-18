@@ -10,6 +10,6 @@ cd mkfs-tux3-2015.06.01
 # $(LDFLAGS), so wrap CC with -static to get a static binary.
 make -j$(nproc) CC="gcc -static"
 
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-gnu
-cp -v mkfs.tux3 /host/build/bin/${OUTPUT_ARCH}-linux-gnu/
-strip /host/build/bin/${OUTPUT_ARCH}-linux-gnu/mkfs.tux3
+mkdir -p /host/build/bin/${TARGET_ARCH}-linux-gnu
+cp -v mkfs.tux3 /host/build/bin/${TARGET_ARCH}-linux-gnu/
+strip /host/build/bin/${TARGET_ARCH}-linux-gnu/mkfs.tux3

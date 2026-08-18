@@ -1,8 +1,8 @@
-ARG OUTPUT_ARCH
+ARG TARGET_ARCH
 ARG HAIKU_REVISION
-ARG JOBS=1
+ARG BUILD_JOBS=1
 FROM ghcr.io/haiku/toolchain-worker-master@sha256:b89005bb884ee4b127e59169ce28924460bfe7765f79d1ac186fb55fa5944ee6
-ARG OUTPUT_ARCH
+ARG TARGET_ARCH
 ARG HAIKU_REVISION
 
 WORKDIR /src
@@ -13,16 +13,16 @@ RUN mkdir haiku && \
 WORKDIR /src/haiku
 RUN mkdir -p generated && \
     cd generated && \
-    ../configure --cross-tools-prefix /toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-
+    ../configure --cross-tools-prefix /toolchains/cross-tools-${TARGET_ARCH}/bin/${TARGET_ARCH}-unknown-haiku-
 
 RUN cd generated && \
-    jam -q -j"${JOBS}" "-sHAIKU_REVISION=${HAIKU_REVISION}" \
-        haiku_cross_devel_sysroot_${OUTPUT_ARCH}.hpkg && \
+    jam -q -j"${BUILD_JOBS}" "-sHAIKU_REVISION=${HAIKU_REVISION}" \
+        haiku_cross_devel_sysroot_${TARGET_ARCH}.hpkg && \
     mkdir -p /opt/haiku-sysroot && \
     LD_LIBRARY_PATH=objects/linux/lib \
         objects/linux/x86_64/release/tools/package/package extract \
         -C /opt/haiku-sysroot \
-        objects/haiku/${OUTPUT_ARCH}/packaging/packages/haiku_cross_devel_sysroot_${OUTPUT_ARCH}.hpkg
+        objects/haiku/${TARGET_ARCH}/packaging/packages/haiku_cross_devel_sysroot_${TARGET_ARCH}.hpkg
 
 RUN mkdir -p /opt/haiku-sysroot/boot/system && \
     ln -s ../../develop /opt/haiku-sysroot/boot/system/develop
@@ -30,7 +30,7 @@ RUN mkdir -p /opt/haiku-sysroot/boot/system && \
 COPY --chmod=755 cc.sh /usr/local/bin/haiku-cc
 
 RUN set -eu; \
-    TOOL_PREFIX=/toolchains/cross-tools-${OUTPUT_ARCH}/bin/${OUTPUT_ARCH}-unknown-haiku-; \
+    TOOL_PREFIX=/toolchains/cross-tools-${TARGET_ARCH}/bin/${TARGET_ARCH}-unknown-haiku-; \
     mkdir -p /usr/local/libexec; \
     ln -s "${TOOL_PREFIX}gcc" /usr/local/libexec/haiku-gcc; \
     ln -s "${TOOL_PREFIX}ar" /usr/local/bin/haiku-ar; \

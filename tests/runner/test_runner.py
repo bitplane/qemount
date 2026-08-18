@@ -30,19 +30,26 @@ from mountin.runner import (
 )
 
 
-def test_provider_environment_includes_the_complete_build_context():
+def test_provider_environment_exposes_execution_context_only():
     context = {
         "BUILD_PLATFORM": "x86_64-linux",
-        "OUTPUT_PLATFORM": "x86_64-linux",
-        "JOBS": "12",
+        "TARGET_PLATFORM": "x86_64-linux",
+        "BUILD_JOBS": "12",
         "RELEASE_REF": "abcdef",
         "SOURCE_KIND": "checkout",
-        "SELF": "guest/linux/2.6/kernel",
+        "MOUNTIN_CACHE_DIR": "/cache",
     }
 
-    assert provider_environment(context, {"env": {"JOBS": "1", "CUSTOM": "yes"}}) == {
-        **context,
-        "JOBS": "1",
+    meta = {
+        "execution_env": {"BUILD_JOBS": "1"},
+        "env": {"CUSTOM": "yes"},
+    }
+
+    assert provider_environment(context, meta) == {
+        "BUILD_PLATFORM": "x86_64-linux",
+        "TARGET_PLATFORM": "x86_64-linux",
+        "BUILD_JOBS": "1",
+        "MOUNTIN_CACHE_DIR": "/cache",
         "CUSTOM": "yes",
     }
 
@@ -87,11 +94,11 @@ def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):
 
 def test_dockerfile_build_args_reads_global_and_stage_arguments(tmp_path):
     dockerfile = tmp_path / "Dockerfile"
-    dockerfile.write_text("ARG BASE=example\nFROM ${BASE}\n  ARG JOBS\nARG MOUNTIN_CACHE_DIR=/cache\nRUN true\n")
+    dockerfile.write_text("ARG BASE=example\nFROM ${BASE}\n  ARG BUILD_JOBS\nARG MOUNTIN_CACHE_DIR=/cache\nRUN true\n")
 
     assert dockerfile_build_args(dockerfile) == {
         "BASE",
-        "JOBS",
+        "BUILD_JOBS",
         "MOUNTIN_CACHE_DIR",
     }
 

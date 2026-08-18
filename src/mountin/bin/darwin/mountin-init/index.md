@@ -10,7 +10,7 @@ env:
 requires:
   - docker:${BUILDER}
 provides:
-  - bin/${OUTPUT_ARCH}-darwin/mountin-init
+  - bin/${TARGET_ARCH}-darwin/mountin-init
 ---
 
 # mountin init for Darwin

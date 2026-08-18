@@ -7,7 +7,7 @@ requires:
 output_platforms:
   x86_64-dragonfly:
     provides:
-      - guest/${OUTPUT_PLATFORM}/6.4.2/dragonfly.iso
+      - guest/${TARGET_PLATFORM}/6.4.2/dragonfly.iso
 ---
 
 # DragonFly BSD 6.4.2 system

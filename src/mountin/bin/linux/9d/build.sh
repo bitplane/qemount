@@ -14,6 +14,6 @@ make -C /work/9d-source \
     release
 
 # Copy to output
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
+mkdir -p /host/build/bin/${TARGET_ARCH}-linux-${ENV}
 cp -v /work/9d-source/build/9d \
-    /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/
+    /host/build/bin/${TARGET_ARCH}-linux-${ENV}/

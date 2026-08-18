@@ -124,7 +124,7 @@ The compiled `format.bin` is msgpack with structure:
         "fs/ext4": {"all": [...]},
         "arc/gzip": {"all": [...]},
         "arc/cpio": {"any": [...]},
-    }
+    },
 }
 ```
 

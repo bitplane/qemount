@@ -3,8 +3,8 @@ title: mountin init for illumos
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${OUTPUT_PLATFORM}/mountin-init
-      - bin/${OUTPUT_PLATFORM}/mountin-bootstrap
+      - bin/${TARGET_PLATFORM}/mountin-init
+      - bin/${TARGET_PLATFORM}/mountin-bootstrap
 env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:

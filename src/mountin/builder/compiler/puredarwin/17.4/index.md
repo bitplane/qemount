@@ -9,7 +9,8 @@ output_platforms:
       - docker:builder/compiler/puredarwin/17.4
 env:
   BUILDER: builder/compiler/puredarwin
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 requires:
   - docker:${BUILDER}
 build_requires:

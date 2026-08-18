@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-darwin
+OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-darwin
 OUTPUT=$OUTPUT_DIR/mountin-init
 
 mkdir -p "$OUTPUT_DIR"

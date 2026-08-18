@@ -7,7 +7,7 @@ output_platforms:
   x86_64-netbsd: {}
   aarch64-netbsd: {}
 env:
-  BUILDER: builder/compiler/netbsd/10.0/${OUTPUT_ARCH}
+  BUILDER: builder/compiler/netbsd/10.0/${TARGET_ARCH}
 requires:
   - docker:${BUILDER}
 ---

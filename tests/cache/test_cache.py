@@ -267,6 +267,61 @@ def test_hash_path_inputs_env():
         assert h1 != h2
 
 
+def test_hash_path_inputs_ignores_execution_environment():
+    """Scheduling and cache locations do not identify an artefact."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        (pkg_dir / "mypath").mkdir(parents=True)
+        build_dir.mkdir()
+
+        first = {"execution_env": {"BUILD_JOBS": "1", "CARGO_HOME": "/one"}}
+        second = {"execution_env": {"BUILD_JOBS": "32", "CARGO_HOME": "/two"}}
+
+        h1 = hash_path_inputs("mypath", pkg_dir, first, {}, build_dir, {})
+        h2 = hash_path_inputs("mypath", pkg_dir, second, {}, build_dir, {})
+
+        assert h1 == h2
+
+
+def test_hash_path_inputs_ignores_build_context_but_includes_target_context():
+    """Host execution details are excluded; target properties are semantic."""
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / "pkg"
+        build_dir = Path(tmp) / "build"
+        (pkg_dir / "mypath").mkdir(parents=True)
+        build_dir.mkdir()
+
+        x86_host = {
+            "BUILD_PLATFORM": "x86_64-linux",
+            "BUILD_JOBS": "32",
+            "RELEASE_REF": "aaaaaa",
+            "SOURCE_KIND": "checkout",
+            "TARGET_PLATFORM": "x86_64-netbsd",
+            "TARGET_ARCH": "x86_64",
+        }
+        arm_host = {
+            "BUILD_PLATFORM": "aarch64-linux",
+            "BUILD_JOBS": "4",
+            "RELEASE_REF": "bbbbbb",
+            "SOURCE_KIND": "distribution",
+            "TARGET_PLATFORM": "x86_64-netbsd",
+            "TARGET_ARCH": "x86_64",
+        }
+        arm_target = {
+            **arm_host,
+            "TARGET_PLATFORM": "aarch64-netbsd",
+            "TARGET_ARCH": "aarch64",
+        }
+
+        h1 = hash_path_inputs("mypath", pkg_dir, {}, {}, build_dir, {}, x86_host)
+        h2 = hash_path_inputs("mypath", pkg_dir, {}, {}, build_dir, {}, arm_host)
+        h3 = hash_path_inputs("mypath", pkg_dir, {}, {}, build_dir, {}, arm_target)
+
+        assert h1 == h2
+        assert h1 != h3
+
+
 def test_hash_path_inputs_metadata():
     """hash_path_inputs includes resolved metadata consumed through META."""
     with tempfile.TemporaryDirectory() as tmp:

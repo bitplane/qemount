@@ -2,7 +2,8 @@
 title: AROS 2026-07-30 PC i386 Cross-Compiler
 env:
   BUILDER: builder/compiler/aros
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 requires:
   - docker:${BUILDER}
 build_requires:

@@ -1,7 +1,5 @@
 ---
 title: Test Data
-env:
-  SELF: ${SELF}
 ---
 
 # Test Data Builders

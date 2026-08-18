@@ -5,7 +5,7 @@ build_requires:
 requires:
   - docker:builder/compiler/rust
 provides:
-  - bin/${OUTPUT_ARCH}-linux-musl/mkfs.ext
+  - bin/${TARGET_ARCH}-linux-musl/mkfs.ext
 ---
 
 # mkfs.ext

@@ -12,6 +12,6 @@ meson setup build \
 
 meson compile -C build
 
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
-cp -v build/9pfuse /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/
-strip /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/9pfuse
+mkdir -p /host/build/bin/${TARGET_ARCH}-linux-${ENV}
+cp -v build/9pfuse /host/build/bin/${TARGET_ARCH}-linux-${ENV}/
+strip /host/build/bin/${TARGET_ARCH}-linux-${ENV}/9pfuse

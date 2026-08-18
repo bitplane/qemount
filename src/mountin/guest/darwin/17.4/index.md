@@ -5,7 +5,7 @@ env:
 requires:
   - docker:${BUILDER}
 provides:
-  - guest/${OUTPUT_PLATFORM}/17.4/system
+  - guest/${TARGET_PLATFORM}/17.4/system
 ---
 
 # PureDarwin 17.4 guest system

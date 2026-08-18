@@ -29,10 +29,10 @@ sed "s/@RAMDISK_SECTORS@/8192/g" "$CONFIG" \
 mkdir -p "$OBJ_DIR"
 /usr/tools/bin/nbconfig -s "$SYS_DIR" -b "$OBJ_DIR" \
     "$MOUNTIN_CACHE_DIR/MOUNTIN"
-/usr/tools/bin/nbmake-"$NBARCH" -C "$OBJ_DIR" -j"${JOBS}" \
+/usr/tools/bin/nbmake-"$NBARCH" -C "$OBJ_DIR" -j"${BUILD_JOBS}" \
     NETBSDSRCDIR="$SOURCE_DIR/usr/src" depend all
 
 # Copy unstripped kernel (needed for mdsetimage)
-OUTPUT_DIR="/host/build/guest/${OUTPUT_ARCH}-netbsd/10.0/kernel"
+OUTPUT_DIR="/host/build/guest/${TARGET_ARCH}-netbsd/10.0/kernel"
 mkdir -p "$OUTPUT_DIR"
 cp "$OBJ_DIR/netbsd" "$OUTPUT_DIR/netbsd.gdb"

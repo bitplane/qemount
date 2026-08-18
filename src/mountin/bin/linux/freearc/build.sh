@@ -4,7 +4,7 @@ set -eu
 VERSION=0.51
 SOURCE_DIR=/work/FreeArc-$VERSION-sources
 OBJECT_DIR=$MOUNTIN_CACHE_DIR/objects
-OUTPUT_DIR=/host/build/bin/${OUTPUT_ARCH}-linux-gnu
+OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-linux-gnu
 
 rm -rf "$SOURCE_DIR"
 mkdir -p /work "$OBJECT_DIR/ghc" "$OUTPUT_DIR"

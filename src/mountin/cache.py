@@ -124,6 +124,23 @@ def hash_files(directory: Path, cache: dict, cache_prefix: str | None = None) ->
     return h.hexdigest()
 
 
+def artifact_metadata(meta: dict) -> dict:
+    """Return the declarative metadata that identifies an artefact.
+
+    Operational variables control where or how a build runs.  They do not
+    describe its result, so changing a job count, host, or cache directory
+    must not invalidate otherwise identical artefacts.
+    """
+    identity = meta.copy()
+    identity.pop("execution_env", None)
+    return identity
+
+
+def artifact_context(context: dict) -> dict:
+    """Return target properties that affect the produced artefact."""
+    return {key: value for key, value in context.items() if key.startswith("TARGET_")}
+
+
 @timed
 def hash_path_inputs(
     path: str,
@@ -132,16 +149,16 @@ def hash_path_inputs(
     dep_hashes: dict,
     build_dir: Path,
     cache: dict,
+    context: dict | None = None,
 ) -> str:
     """
     Compute input hash for a catalogue path.
 
     Includes:
     - All files in the path's directory (Dockerfile, build.sh, overlays)
-    - Resolved catalogue metadata passed to builds via META
+    - Resolved declarative catalogue metadata passed to builds via META
     - Hashes of all requires (from dep_hashes, Merkle tree)
     - Hashes of all build_requires (files mounted during docker build)
-    - Env vars
     """
     h = hashlib.md5()
 
@@ -151,7 +168,8 @@ def hash_path_inputs(
 
     # Hash resolved metadata. Build scripts consume this through META, and
     # single-file catalogue entries may not have a matching context directory.
-    h.update(stable_json(resolved).encode())
+    h.update(stable_json(artifact_metadata(resolved)).encode())
+    h.update(stable_json(artifact_context(context or {})).encode())
 
     # Hash dependency hashes (Merkle tree) or file contents
     for req in sorted(resolved.get("requires", {}).keys()):
@@ -180,11 +198,6 @@ def hash_path_inputs(
                 h.update(hash_file(req_path, cache, f"build:{req}").encode())
             else:
                 h.update(hash_files(req_path, cache, f"build:{req}").encode())
-
-    # Hash env vars
-    env = resolved.get("env", {})
-    if env:
-        h.update(json.dumps(sorted(env.items())).encode())
 
     return h.hexdigest()
 

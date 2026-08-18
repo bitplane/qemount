@@ -1,7 +1,7 @@
 ARG BUILDER
 FROM ${BUILDER}
 
-ARG JOBS=1
+ARG BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

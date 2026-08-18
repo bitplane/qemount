@@ -8,7 +8,8 @@ output_platforms:
       - docker:builder/compiler/illumos/2026-08-13
 env:
   BUILDER: builder/compiler/illumos
-  JOBS: ${JOBS}
+execution_env:
+  BUILD_JOBS: ${BUILD_JOBS}
 requires:
   - docker:${BUILDER}
 build_requires:

@@ -82,10 +82,10 @@ requires:
 output_platforms:
   x86_64-linux-musl:
     provides:
-      - bin/${OUTPUT_PLATFORM}/busybox
+      - bin/${TARGET_PLATFORM}/busybox
   aarch64-linux-musl:
     provides:
-      - bin/${OUTPUT_PLATFORM}/busybox
+      - bin/${TARGET_PLATFORM}/busybox
 ---
 ```
 
@@ -256,9 +256,18 @@ Examples:
 **Environment variables:**
 - `BUILD_PLATFORM` - Build machine platform (for example x86_64-linux)
 - `BUILD_ARCH`, `BUILD_OS` - Components of the build platform
-- `OUTPUT_PLATFORM` - Platform targeted by a provider instance
-- `OUTPUT_ARCH`, `OUTPUT_OS`, `OUTPUT_ENV` - Output platform components
+- `BUILD_JOBS` - Build parallelism; operational, not part of artefact identity
+- `TARGET_PLATFORM` - Platform targeted by a provider instance
+- `TARGET_ARCH`, `TARGET_OS`, `TARGET_ENV` - Output platform components
 - `ENV` - libc environment (musl, gnu) - only for Linux
+
+Frontmatter `env` contains semantic variables and participates in artefact
+identity. Use `execution_env` for operational controls such as job limits and
+cache locations; these are passed to the provider but deliberately excluded
+from its input hash. Injected `BUILD_*` and `MOUNTIN_*` variables are likewise
+operational. Injected `TARGET_*` variables are semantic and are hashed.
+Catalogue-only context such as `RELEASE_REF` and `SOURCE_KIND` is available for
+resolution but is not exported to every provider.
 
 Providers declare `output_platforms` independently from `build_platforms`.
 The former describes the artefacts they produce; the latter constrains which

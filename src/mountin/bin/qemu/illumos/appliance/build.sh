@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+test "$TARGET_ARCH" = x86_64
 
-system=/host/build/guest/${OUTPUT_PLATFORM}/2026-08-13/system
+system=/host/build/guest/${TARGET_PLATFORM}/2026-08-13/system
 staging=/work/root
-output_base=/host/build/bin/qemu/${OUTPUT_PLATFORM}/2026-08-13
+output_base=/host/build/bin/qemu/${TARGET_PLATFORM}/2026-08-13
 output=$output_base/rootfs.iso
 
 rm -rf "$staging"
@@ -24,11 +24,11 @@ mkdir -p \
     "$staging/system/contract" \
     "$staging/system/object"
 cp -a "$system/root/." "$staging/"
-install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/mountin-bootstrap \
+install -m 0755 /host/build/bin/${TARGET_PLATFORM}/mountin-bootstrap \
     "$staging/sbin/init"
-install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/mountin-init \
+install -m 0755 /host/build/bin/${TARGET_PLATFORM}/mountin-init \
     "$staging/sbin/mountin-init"
-install -m 0755 /host/build/bin/${OUTPUT_PLATFORM}/9d \
+install -m 0755 /host/build/bin/${TARGET_PLATFORM}/9d \
     "$staging/sbin/9d"
 
 mkdir -p "${output%/*}"

@@ -2,7 +2,7 @@ ARG BUILDER
 FROM ${BUILDER}
 
 ARG BUILD_ARCH
-ARG JOBS=1
+ARG BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
 ENV TAR_OPTIONS=--no-same-owner
 
@@ -34,7 +34,7 @@ RUN set -eu; \
         --with-optimization="-Os -fno-defer-pop -mpreferred-stack-boundary=4" \
     ; \
     make -j1 tools; \
-    make -j"${JOBS}" crosstools; \
+    make -j"${BUILD_JOBS}" crosstools; \
     HOST_TOOLS=bin/linux-${BUILD_ARCH}/tools; \
     mkdir -p \
         /opt/aros-toolbox/bin/pc-i386-tiny/AROS \

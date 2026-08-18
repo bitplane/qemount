@@ -3,7 +3,7 @@ title: 9d for illumos
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${OUTPUT_PLATFORM}/9d
+      - bin/${TARGET_PLATFORM}/9d
 env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:

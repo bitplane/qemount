@@ -3,7 +3,7 @@ title: illumos guest system
 output_platforms:
   x86_64-illumos:
     provides:
-      - guest/${OUTPUT_PLATFORM}/2026-08-13/system
+      - guest/${TARGET_PLATFORM}/2026-08-13/system
 env:
   ILLUMOS_BUILDER: builder/compiler/illumos/2026-08-13
 requires:

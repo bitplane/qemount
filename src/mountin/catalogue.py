@@ -360,20 +360,20 @@ def split_platform(platform: str | None) -> dict:
     """Return the canonical components of a target platform name."""
     if not platform:
         return {
-            "OUTPUT_PLATFORM": "",
-            "OUTPUT_ARCH": "",
-            "OUTPUT_OS": "",
-            "OUTPUT_ENV": "",
+            "TARGET_PLATFORM": "",
+            "TARGET_ARCH": "",
+            "TARGET_OS": "",
+            "TARGET_ENV": "",
         }
 
     parts = platform.split("-")
     if len(parts) < 2:
         raise ValueError(f"Invalid output platform: {platform}")
     return {
-        "OUTPUT_PLATFORM": platform,
-        "OUTPUT_ARCH": parts[0],
-        "OUTPUT_OS": parts[1],
-        "OUTPUT_ENV": "-".join(parts[2:]),
+        "TARGET_PLATFORM": platform,
+        "TARGET_ARCH": parts[0],
+        "TARGET_OS": parts[1],
+        "TARGET_ENV": "-".join(parts[2:]),
     }
 
 

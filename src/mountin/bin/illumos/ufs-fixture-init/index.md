@@ -3,7 +3,7 @@ title: illumos UFS fixture init
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${OUTPUT_PLATFORM}/ufs-fixture-init
+      - bin/${TARGET_PLATFORM}/ufs-fixture-init
 env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:

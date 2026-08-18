@@ -3,7 +3,7 @@ title: illumos UFS formatter
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${OUTPUT_PLATFORM}/mkfs.ufs
+      - bin/${TARGET_PLATFORM}/mkfs.ufs
 env:
   BUILDER: builder/compiler/illumos/2026-08-13
 requires:

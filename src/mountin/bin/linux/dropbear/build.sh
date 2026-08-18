@@ -7,8 +7,8 @@ cd dropbear-2025.88
 
 ./configure --disable-zlib
 
-make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 STATIC=1 -j${JOBS}
+make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" MULTI=1 STATIC=1 -j${BUILD_JOBS}
 
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}
-cp -v dropbearmulti /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/
-strip /host/build/bin/${OUTPUT_ARCH}-linux-${ENV}/dropbearmulti || true
+mkdir -p /host/build/bin/${TARGET_ARCH}-linux-${ENV}
+cp -v dropbearmulti /host/build/bin/${TARGET_ARCH}-linux-${ENV}/
+strip /host/build/bin/${TARGET_ARCH}-linux-${ENV}/dropbearmulti || true

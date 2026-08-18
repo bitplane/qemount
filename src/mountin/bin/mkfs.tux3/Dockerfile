@@ -1,5 +1,5 @@
 FROM debian:bookworm-slim
-ARG OUTPUT_ARCH
+ARG TARGET_ARCH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libc6-dev \

@@ -15,6 +15,6 @@ make -C /work/9d-source \
     release
 
 # Copy to output
-mkdir -p /host/build/bin/${OUTPUT_ARCH}-netbsd
+mkdir -p /host/build/bin/${TARGET_ARCH}-netbsd
 cp -v /work/9d-source/build/9d \
-    /host/build/bin/${OUTPUT_ARCH}-netbsd/
+    /host/build/bin/${TARGET_ARCH}-netbsd/

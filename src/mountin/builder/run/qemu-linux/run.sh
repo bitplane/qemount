@@ -20,7 +20,7 @@ if [ $# -lt 3 ]; then
     exit 1
 fi
 
-OUTPUT_ARCH="$1"
+TARGET_ARCH="$1"
 KERNEL="$2"
 BOOT_IMG="$3"
 shift 3
@@ -29,7 +29,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 PROJECT_ROOT=$(cd -- "$SCRIPT_DIR/../../../../.." && pwd)
 FIRMWARE_DIR=${MOUNTIN_QEMU_FIRMWARE:-$PROJECT_ROOT/build/bin/qemu-system/firmware}
 source "$SCRIPT_DIR/../../disk/qemu/qemu-linux-arch.sh"
-set_qemu_linux_arch_profile "$OUTPUT_ARCH"
+set_qemu_linux_arch_profile "$TARGET_ARCH"
 
 # Default values
 IMAGES=()

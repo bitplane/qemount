@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import TextIO
 
 from .cache import (
+    artifact_metadata,
     hash_path_inputs,
     image_is_current,
     is_output_dirty,
@@ -292,8 +293,18 @@ def get_image_tag(resolved: dict) -> str | None:
 
 
 def provider_environment(context: dict, meta: dict) -> dict:
-    """Return the execution environment for a resolved provider instance."""
-    return {**context, **meta.get("env", {})}
+    """Return variables exposed to a provider at execution time.
+
+    Catalogue-only context, such as source availability and release naming,
+    is deliberately not exported.  It participates in catalogue resolution,
+    but is not an input to every build in the graph.
+    """
+    inherited = {key: value for key, value in context.items() if key.startswith(("BUILD_", "TARGET_", "MOUNTIN_"))}
+    return {
+        **inherited,
+        **meta.get("execution_env", {}),
+        **meta.get("env", {}),
+    }
 
 
 def get_docker_provides(provides: list) -> list:
@@ -443,10 +454,9 @@ def run_build(
     for instance_id in graph["order"]:
         record = graph["nodes"][instance_id]
         path = record["provider"]
-        instance_context = {**record["context"], "SELF": path}
+        instance_context = record["context"]
         meta = record["meta"].copy()
         env = provider_environment(instance_context, meta)
-        meta["env"] = env
 
         provides = list(meta.get("provides", {}).keys())
         if not provides:
@@ -466,7 +476,15 @@ def run_build(
             "build_platform": context.get("BUILD_PLATFORM"),
             "output_platform": record.get("output_platform"),
         }
-        input_hash = hash_path_inputs(path, pkg_dir, meta, dep_hashes, build_dir, cache)
+        input_hash = hash_path_inputs(
+            path,
+            pkg_dir,
+            meta,
+            dep_hashes,
+            build_dir,
+            cache,
+            instance_context,
+        )
         prepare_provider_cache(build_dir, context["BUILD_PLATFORM"], instance_id, input_hash)
         dep_hashes[instance_id] = input_hash
         for provided in docker_tags:
@@ -537,7 +555,7 @@ def run_build(
         backups = begin_output_transaction(build_dir, dirty_outputs)
 
         # Run container to produce file outputs
-        env["META"] = json.dumps(meta)
+        env["META"] = json.dumps(artifact_metadata(meta))
         success, log_path = run_container(instance_id, tag, build_dir, env, dirty_outputs)
         if not success:
             finish_output_transaction(build_dir, dirty_outputs, backups, False)

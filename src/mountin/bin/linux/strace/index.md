@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/strace-6.7.tar.xz
 provides:
-  - bin/${OUTPUT_ARCH}-linux-${ENV}/strace
+  - bin/${TARGET_ARCH}-linux-${ENV}/strace
 ---
 
 # strace

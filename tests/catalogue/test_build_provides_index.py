@@ -13,7 +13,7 @@ DATA_DIR = Path(__file__).parent / "data"
 def test_build_provides_index_simple():
     """Index maps outputs to paths."""
     cat = load(DATA_DIR / "vars")
-    ctx = {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "x86_64"}
+    ctx = {"BUILD_ARCH": "x86_64", "TARGET_ARCH": "x86_64"}
 
     index = build_provides_index(cat, ctx)
 
@@ -24,8 +24,8 @@ def test_build_provides_index_simple():
 def test_build_provides_index_enumerates_platforms_independently_of_build_host():
     cat = load(DATA_DIR / "vars")
 
-    index_x86 = build_provides_index(cat, {"BUILD_ARCH": "x86_64", "OUTPUT_ARCH": "x86_64"})
-    index_arm = build_provides_index(cat, {"BUILD_ARCH": "aarch64", "OUTPUT_ARCH": "aarch64"})
+    index_x86 = build_provides_index(cat, {"BUILD_ARCH": "x86_64", "TARGET_ARCH": "x86_64"})
+    index_arm = build_provides_index(cat, {"BUILD_ARCH": "aarch64", "TARGET_ARCH": "aarch64"})
 
     assert "output/x86_64/thing" in index_x86
     assert "output/aarch64/thing" in index_x86

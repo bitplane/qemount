@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-test "$OUTPUT_ARCH" = x86_64
+test "$TARGET_ARCH" = x86_64
 
 WORLD=${DRAGONFLY_OBJ}/usr/src/world_x86_64
 ROOT=/work/root
-OUTPUT_DIR=/host/build/guest/${OUTPUT_PLATFORM}/6.4.2
+OUTPUT_DIR=/host/build/guest/${TARGET_PLATFORM}/6.4.2
 TARGET_INSTALL="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/install -N ${DRAGONFLY_SRC}/etc"
 
 cd "$DRAGONFLY_SRC"
@@ -30,14 +30,14 @@ world_make()
     INSTALLSTRIPPED=1 \
     M4="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/m4" \
     PATH="${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/bin:/usr/local/bin:/usr/pkg/bin" \
-        /usr/bin/bmake -m "$DRAGONFLY_SRC/share/mk" -j"${JOBS}" \
+        /usr/bin/bmake -m "$DRAGONFLY_SRC/share/mk" -j"${BUILD_JOBS}" \
             -DSYSBUILD -DNOMAN -DNOPIC -DNOPROFILE "$@"
 }
 
 top_make()
 {
     HOST_CPU_FAMILY=${BUILD_PLATFORM%%-*}
-    /usr/bin/bmake -j"${JOBS}" \
+    /usr/bin/bmake -j"${BUILD_JOBS}" \
         BUILD_ARCH=x86_64 \
         HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
         HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
@@ -76,7 +76,7 @@ while IFS= read -r path; do
     esac
 done < /build/runtime-files.txt
 
-bmake -j"${JOBS}" \
+bmake -j"${BUILD_JOBS}" \
     KERNCONF=MOUNTIN \
     MODULES_OVERRIDE="vfs/ext2fs vfs/ntfs vfs/udf libiconv" \
     MACHINE=x86_64 \

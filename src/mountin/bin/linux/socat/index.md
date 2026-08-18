@@ -4,7 +4,7 @@ requires:
   - docker:${BUILDER}
   - sources/socat-1.7.4.4.tar.gz
 provides:
-  - bin/${OUTPUT_ARCH}-linux-${ENV}/socat
+  - bin/${TARGET_ARCH}-linux-${ENV}/socat
 ---
 
 # socat
