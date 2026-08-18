@@ -1,13 +1,13 @@
 ---
 title: Linux appliance rootfs
 env:
-  BUILDER: builder/compiler/linux/6
+  MOUNTIN_BUILDER: builder/compiler/linux/6
 requires:
-  - docker:${BUILDER}
-  - guest/${TARGET_ARCH}-linux/base/rootfs.img
-  - bin/${TARGET_ARCH}-linux-${ENV}/9d
+  - docker:${MOUNTIN_BUILDER}
+  - guest/${MOUNTIN_TARGET_ARCH}-linux/base/rootfs.img
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/9d
 provides:
-  - bin/qemu/${TARGET_ARCH}-linux/rootfs/rootfs.img
+  - bin/qemu/${MOUNTIN_TARGET_ARCH}-linux/rootfs/rootfs.img
 ---
 
 # Linux appliance rootfs

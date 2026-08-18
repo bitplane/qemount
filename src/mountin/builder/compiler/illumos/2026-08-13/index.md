@@ -7,17 +7,17 @@ output_platforms:
     provides:
       - docker:builder/compiler/illumos/2026-08-13
 env:
-  BUILDER: builder/compiler/illumos
+  MOUNTIN_BUILDER: builder/compiler/illumos
 execution_env:
-  BUILD_JOBS: ${BUILD_JOBS}
+  MOUNTIN_BUILD_JOBS: ${MOUNTIN_BUILD_JOBS}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 build_requires:
   - sources/binutils-2.46.1.tar.bz2
   - sources/illumos-gate-mountin-2026-08-15.tar.gz
-  - bin/${BUILD_ARCH}-linux-gnu/dmake
-  - bin/${BUILD_ARCH}-linux-gnu/lib/libmakestate.so.1
-  - bin/${BUILD_ARCH}-linux-gnu/lib/64/libelf.so.1
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-gnu/dmake
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-gnu/lib/libmakestate.so.1
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-gnu/lib/64/libelf.so.1
 ---
 
 # illumos 2026-08-13 Build Toolbox

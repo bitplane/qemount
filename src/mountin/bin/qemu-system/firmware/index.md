@@ -1,7 +1,7 @@
 ---
 title: QEMU PC Firmware
 env:
-  BUILDER: builder/disk/debian
+  MOUNTIN_BUILDER: builder/disk/debian
 requires:
   - docker:builder/disk/debian
   - sources/qemu-10.2.0.tar.xz

@@ -5,7 +5,7 @@ build_requires:
 requires:
   - docker:builder/compiler/rust
 provides:
-  - bin/${TARGET_ARCH}-linux-musl/lzx
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-musl/lzx
 ---
 
 # lzx

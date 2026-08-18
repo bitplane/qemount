@@ -26,9 +26,9 @@ def catalogue():
 
 def context():
     return {
-        "BUILD_PLATFORM": "x86_64-linux",
-        "BUILD_ARCH": "x86_64",
-        "BUILD_OS": "linux",
+        "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+        "MOUNTIN_BUILD_ARCH": "x86_64",
+        "MOUNTIN_BUILD_OS": "linux",
     }
 
 

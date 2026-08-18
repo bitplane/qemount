@@ -18,6 +18,6 @@ build_dir=$source_dir/usr/src/sbin/newfs_lfs
 /usr/tools/bin/nbmake-"$nbarch" -C "$build_dir" \
     NETBSDSRCDIR="$source_dir/usr/src" MKMAN=no LDSTATIC=-static dependall
 
-output=/host/build/bin/${TARGET_ARCH}-netbsd/newfs_lfs
+output=/host/build/bin/${MOUNTIN_TARGET_ARCH}-netbsd/newfs_lfs
 mkdir -p "$(dirname "$output")"
 cp "$build_dir/newfs_lfs" "$output"

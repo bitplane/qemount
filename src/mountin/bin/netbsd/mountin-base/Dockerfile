@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER}
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER}
 
 COPY Makefile list /work/mountin-crunch/
 COPY mount-filecore-node.patch /work/

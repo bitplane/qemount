@@ -1,7 +1,7 @@
 ---
 title: Haiku Appliance Base
 provides:
-  - guest/${TARGET_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
+  - guest/${MOUNTIN_TARGET_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
 ---
 
 # Haiku Appliance Base

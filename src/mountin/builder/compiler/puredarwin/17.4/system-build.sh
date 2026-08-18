@@ -43,7 +43,7 @@ SYSROOT_DIR=$CACHE_DIR/sysroot-llvm14
 OUTPUT_DIR=/opt/puredarwin
 TARGET_ARCHIVE=$OUTPUT_DIR/base-system.tar.gz
 OUTPUT_SYSROOT=$OUTPUT_DIR/sysroot
-BUILD_JOBS=${BUILD_JOBS:-1}
+MOUNTIN_BUILD_JOBS=${MOUNTIN_BUILD_JOBS:-1}
 
 mkdir -p "$CACHE_DIR"
 extract_source() {
@@ -125,9 +125,9 @@ cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G Ninja \
     -DPUREDARWIN_LIBUNWIND_SOURCE_DIR="$LIBUNWIND_DIR" \
     -DPUREDARWIN_EXTERNAL_SOURCE_ROOT="$DARWIN_SOURCE_DIR" \
     -DPUREDARWIN_TARGET_TRIPLE=x86_64-apple-macos10.13 \
-    -DPUREDARWIN_BUILD_JOBS="$BUILD_JOBS"
+    -DPUREDARWIN_BUILD_JOBS="$MOUNTIN_BUILD_JOBS"
 
-cmake --build "$BUILD_DIR" --parallel "$BUILD_JOBS" --target \
+cmake --build "$BUILD_DIR" --parallel "$MOUNTIN_BUILD_JOBS" --target \
     xnu \
     AppleAPIC \
     AppleI386GenericPlatform \

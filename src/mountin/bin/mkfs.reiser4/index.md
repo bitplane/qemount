@@ -15,8 +15,8 @@ build_requires:
   - sources/reiser4progs-1.2.2.tar.gz
 requires: []
 provides:
-  - bin/${TARGET_ARCH}-linux-gnu/mkfs.reiser4
-  - bin/${TARGET_ARCH}-linux-gnu/reiser4-busy
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-gnu/mkfs.reiser4
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-gnu/reiser4-busy
 ---
 
 # mkfs.reiser4

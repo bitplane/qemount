@@ -12,8 +12,8 @@ CFLAGS="-Wno-unterminated-string-initialization" ./configure \
     --disable-mpers \
     --enable-bundled=yes
 
-make -j${BUILD_JOBS}
+make -j${MOUNTIN_BUILD_JOBS}
 
-mkdir -p /host/build/bin/${TARGET_ARCH}-linux-${ENV}
-cp -v src/strace /host/build/bin/${TARGET_ARCH}-linux-${ENV}/
-strip /host/build/bin/${TARGET_ARCH}-linux-${ENV}/strace || true
+mkdir -p /host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}
+cp -v src/strace /host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/
+strip /host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/strace || true

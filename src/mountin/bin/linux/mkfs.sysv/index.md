@@ -5,7 +5,7 @@ build_requires:
 requires:
   - docker:builder/compiler/rust
 provides:
-  - bin/${TARGET_ARCH}-linux-musl/mkfs.sysv
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-musl/mkfs.sysv
 ---
 
 # mkfs.sysv

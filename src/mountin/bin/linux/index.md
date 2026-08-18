@@ -11,8 +11,8 @@ output_platforms:
     build_platforms:
       aarch64-linux: {}
 env:
-  BUILDER: builder/compiler/linux/6
-  ENV: musl
+  MOUNTIN_BUILDER: builder/compiler/linux/6
+  MOUNTIN_LIBC: musl
 ---
 
 # Linux binaries
@@ -20,6 +20,6 @@ env:
 Binaries built for the Linux operating system. These might run on a host or
 inside a guest, but they're ELF binaries.
 
-C-built children typically use the `${BUILDER}` (linux 6.x) image; Rust-built
+C-built children typically use the `${MOUNTIN_BUILDER}` (linux 6.x) image; Rust-built
 children use `builder/compiler/rust`. Each child declares its own builder
 image in `requires:`.

@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER}
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER}
 
 COPY kernel-build.patch /tmp/kernel-build.patch
 RUN patch -d /usr/src -p1 < /tmp/kernel-build.patch

@@ -4,7 +4,7 @@ build_requires:
   - sources/netbsd-10.0-src.tgz
   - sources/netbsd-10.0-syssrc.tgz
 provides:
-  - bin/${TARGET_ARCH}-netbsd/newfs_lfs
+  - bin/${MOUNTIN_TARGET_ARCH}-netbsd/newfs_lfs
 ---
 
 # NetBSD LFS formatter

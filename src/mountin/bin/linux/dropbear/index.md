@@ -1,10 +1,10 @@
 ---
 title: Dropbear
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - sources/dropbear-2025.88.tar.bz2
 provides:
-  - bin/${TARGET_ARCH}-linux-${ENV}/dropbearmulti
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/dropbearmulti
 ---
 
 # Dropbear

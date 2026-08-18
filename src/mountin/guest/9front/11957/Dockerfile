@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER}
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER}
 
 COPY --chmod=755 build.sh build.py /build/
 COPY plan9.ini plan9-arm64.ini mountin.rc mountin-mount.rc mountin-init.rc \

@@ -4,9 +4,9 @@ build_platforms:
   x86_64-linux: {}
   aarch64-linux: {}
 env:
-  BUILDER: builder/compiler/netbsd/10.0/${BUILD_ARCH}
+  MOUNTIN_BUILDER: builder/compiler/netbsd/10.0/${MOUNTIN_BUILD_ARCH}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 provides:
   - docker:builder/disk/netbsd
 ---

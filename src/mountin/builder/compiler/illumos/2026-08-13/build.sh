@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-host_bin=/host/build/bin/${BUILD_ARCH}-linux-gnu
+host_bin=/host/build/bin/${MOUNTIN_BUILD_ARCH}-linux-gnu
 source_archive=/host/build/sources/illumos-gate-mountin-2026-08-15.tar.gz
 binutils_archive=/host/build/sources/binutils-2.46.1.tar.bz2
 
@@ -16,7 +16,7 @@ cd /build/binutils-build
     --disable-ld \
     --disable-nls \
     --disable-werror
-make -j"${BUILD_JOBS:-1}" all-gas
+make -j"${MOUNTIN_BUILD_JOBS:-1}" all-gas
 make install-gas
 ln -s x86_64-pc-solaris2.11-as /opt/illumos-binutils/bin/as
 

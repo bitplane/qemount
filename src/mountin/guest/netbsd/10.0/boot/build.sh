@@ -5,11 +5,11 @@ NBARCH=$(cat /tmp/nbarch)
 NBGNUTRIPLE=$(cat /tmp/nbgnutriple)
 DESTDIR="/usr/obj/destdir.$NBARCH"
 TOOLDIR="/usr/tools"
-KERNEL_DIR="/host/build/guest/${TARGET_ARCH}-netbsd/10.0/kernel"
-ROOTFS_DIR="/host/build/guest/${TARGET_ARCH}-netbsd/10.0/rootfs"
-OUTPUT_DIR="/host/build/guest/${TARGET_ARCH}-netbsd/10.0/boot"
+KERNEL_DIR="/host/build/guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/kernel"
+ROOTFS_DIR="/host/build/guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/rootfs"
+OUTPUT_DIR="/host/build/guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/boot"
 
-echo "Assembling NetBSD boot image for $TARGET_ARCH..."
+echo "Assembling NetBSD boot image for $MOUNTIN_TARGET_ARCH..."
 
 # Copy kernel and ramdisk from build
 cp "$KERNEL_DIR/netbsd.gdb" /work/netbsd.gdb
@@ -29,7 +29,7 @@ echo "Stripping kernel..."
 mkdir -p "$OUTPUT_DIR"
 cp /work/netbsd.stripped "$OUTPUT_DIR/netbsd"
 
-case "$TARGET_ARCH" in
+case "$MOUNTIN_TARGET_ARCH" in
     x86_64)
         echo "Creating BIOS boot image..."
         mkdir -p /work/bootfs
@@ -54,7 +54,7 @@ case "$TARGET_ARCH" in
         # QEMU's virt machine loads the kernel directly.
         ;;
     *)
-        echo "Unsupported NetBSD boot architecture: $TARGET_ARCH" >&2
+        echo "Unsupported NetBSD boot architecture: $MOUNTIN_TARGET_ARCH" >&2
         exit 1
         ;;
 esac

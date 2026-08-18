@@ -1,10 +1,10 @@
 ---
 title: 9pfuse
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - sources/9pfuse-mountin-2026-08-15.tar.gz
 provides:
-  - bin/${TARGET_ARCH}-linux-${ENV}/9pfuse
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/9pfuse
 ---
 
 # 9pfuse

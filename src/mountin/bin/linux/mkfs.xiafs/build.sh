@@ -10,9 +10,9 @@ tar xf /host/build/sources/${CRATE}-${VERSION}.tar.gz
 cd ${CRATE}-${VERSION}
 
 cargo zigbuild --release --locked \
-    --target ${TARGET_ARCH}-unknown-linux-musl
+    --target ${MOUNTIN_TARGET_ARCH}-unknown-linux-musl
 
-OUT=/host/build/bin/${TARGET_ARCH}-linux-musl
+OUT=/host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-musl
 mkdir -p ${OUT}
 TARGET=${CARGO_TARGET_DIR:-target}
-cp -v ${TARGET}/${TARGET_ARCH}-unknown-linux-musl/release/${CRATE} ${OUT}/${BIN_DOT}
+cp -v ${TARGET}/${MOUNTIN_TARGET_ARCH}-unknown-linux-musl/release/${CRATE} ${OUT}/${BIN_DOT}

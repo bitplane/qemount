@@ -3,11 +3,11 @@ title: 9d for illumos
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${TARGET_PLATFORM}/9d
+      - bin/${MOUNTIN_TARGET_PLATFORM}/9d
 env:
-  BUILDER: builder/compiler/illumos/2026-08-13
+  MOUNTIN_BUILDER: builder/compiler/illumos/2026-08-13
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - sources/9d-0.7.1.tar.xz
 ---
 

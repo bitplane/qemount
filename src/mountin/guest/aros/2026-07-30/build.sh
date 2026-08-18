@@ -7,9 +7,9 @@ SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=$CACHE_DIR/toolchain-build
-OUTPUT_DIR=/host/build/guest/${TARGET_ARCH}-aros/2026-07-30
+OUTPUT_DIR=/host/build/guest/${MOUNTIN_TARGET_ARCH}-aros/2026-07-30
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
-BUILD_JOBS=${BUILD_JOBS:-1}
+MOUNTIN_BUILD_JOBS=${MOUNTIN_BUILD_JOBS:-1}
 
 # The compiler toolbox defaults ordinary consumers to the AROS target. This
 # source build also creates Linux host tools and selects both compilers through
@@ -59,8 +59,8 @@ if [ ! -f "$GUEST_BUILD_DIR/.mountin-bootstrap" ]; then
 fi
 cd "$GUEST_BUILD_DIR"
 "$SOURCE_DIR/configure" \
-    --target="$AROS_TARGET" \
-    --enable-target-variant="$AROS_VARIANT" \
+    --target="$MOUNTIN_AROS_TARGET" \
+    --enable-target-variant="$MOUNTIN_AROS_VARIANT" \
     --enable-build-type=nightly \
     --enable-ccache \
     --with-portssources="$PORTS_DIR" \
@@ -73,28 +73,28 @@ cd "$GUEST_BUILD_DIR"
 
 # Unlike the other fetched build inputs, AROS looks for pci.ids in its
 # generated-file directory rather than PORTSSOURCEDIR.
-PCI_IDS_DIR="$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/gen/rom/hidds/pci"
+PCI_IDS_DIR="$GUEST_BUILD_DIR/bin/${MOUNTIN_AROS_TARGET}-${MOUNTIN_AROS_VARIANT}/gen/rom/hidds/pci"
 mkdir -p "$PCI_IDS_DIR"
 cp "$PORTS_DIR/pci.ids" "$PCI_IDS_DIR/pci.ids"
 
 # Build only the serial HIDD stubs needed by serial.device. AROS's aggregate
 # libhiddstubs target collects every HIDD stub and, through the global linklibs
 # target, expands this appliance build into the complete SDK.
-HIDDSTUBS=$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/AROS/Developer/lib/libhiddstubs.a
-make -j"$BUILD_JOBS" hidd-serial-stubs
+HIDDSTUBS=$GUEST_BUILD_DIR/bin/${MOUNTIN_AROS_TARGET}-${MOUNTIN_AROS_VARIANT}/AROS/Developer/lib/libhiddstubs.a
+make -j"$MOUNTIN_BUILD_JOBS" hidd-serial-stubs
 mkdir -p "$(dirname "$HIDDSTUBS")"
 /opt/aros-toolchain/i386-aros-ar rcs "$HIDDSTUBS" \
-    "$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/gen/lib/hidd/serial_stubs.o"
-TARGET_ARCH=${AROS_TARGET%-*}
-TARGET_CPU=${AROS_TARGET#*-}
+    "$GUEST_BUILD_DIR/bin/${MOUNTIN_AROS_TARGET}-${MOUNTIN_AROS_VARIANT}/gen/lib/hidd/serial_stubs.o"
+MOUNTIN_TARGET_ARCH=${MOUNTIN_AROS_TARGET%-*}
+TARGET_CPU=${MOUNTIN_AROS_TARGET#*-}
 export AROS_HOST_ARCH=linux
-export AROS_HOST_CPU="$BUILD_ARCH"
-export AROS_TARGET_ARCH="$TARGET_ARCH"
+export AROS_HOST_CPU="$MOUNTIN_BUILD_ARCH"
+export AROS_TARGET_ARCH="$MOUNTIN_TARGET_ARCH"
 export AROS_TARGET_CPU="$TARGET_CPU"
 # The generated include rules do not order their nested directories before the
 # generators. Invoke MetaMake directly for the selected directory closure,
 # avoiding both that race and the root Makefile's per-target crosstool wrapper.
-MMAKE=$GUEST_BUILD_DIR/bin/linux-${BUILD_ARCH}/tools/mmake
+MMAKE=$GUEST_BUILD_DIR/bin/linux-${MOUNTIN_BUILD_ARCH}/tools/mmake
 export MMAKE_CONFIG="$GUEST_BUILD_DIR/mmake.config"
 # MetaMake has a fixed 64-entry command-line target array. Keep comfortably
 # below it while still amortising its source-tree scan across each batch.
@@ -106,10 +106,10 @@ while IFS= read -r target; do
     case "$target" in
         ""|\#*) continue ;;
     esac
-    make -j"$BUILD_JOBS" "$target"
+    make -j"$MOUNTIN_BUILD_JOBS" "$target"
 done < /build/mmake-targets.txt
 
-AROS_DIR=$GUEST_BUILD_DIR/bin/${AROS_TARGET}-${AROS_VARIANT}/AROS
+AROS_DIR=$GUEST_BUILD_DIR/bin/${MOUNTIN_AROS_TARGET}-${MOUNTIN_AROS_VARIANT}/AROS
 
 while IFS= read -r line; do
     case "$line" in
@@ -134,11 +134,11 @@ while IFS= read -r line; do
         CURDIR="$current_dir" \
         TARGET="$meta_target" \
         AROS_HOST_ARCH=linux \
-        AROS_HOST_CPU="$BUILD_ARCH" \
-        AROS_TARGET_ARCH="$TARGET_ARCH" \
+        AROS_HOST_CPU="$MOUNTIN_BUILD_ARCH" \
+        AROS_TARGET_ARCH="$MOUNTIN_TARGET_ARCH" \
         AROS_TARGET_CPU="$TARGET_CPU" \
         --file="$GUEST_BUILD_DIR/$current_dir/mmakefile" \
-        -j"$BUILD_JOBS" \
+        -j"$MOUNTIN_BUILD_JOBS" \
         $goals
 done < /build/mmake-outputs.txt
 

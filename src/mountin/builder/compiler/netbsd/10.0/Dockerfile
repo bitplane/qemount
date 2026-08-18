@@ -1,12 +1,12 @@
-ARG TARGET_ARCH
-ARG BUILD_PLATFORM
-ARG BUILD_JOBS=1
+ARG MOUNTIN_TARGET_ARCH
+ARG MOUNTIN_BUILD_PLATFORM
+ARG MOUNTIN_BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
 
 FROM debian:bookworm-slim AS base
-ARG TARGET_ARCH
-ARG BUILD_PLATFORM
-ARG BUILD_JOBS=1
+ARG MOUNTIN_TARGET_ARCH
+ARG MOUNTIN_BUILD_PLATFORM
+ARG MOUNTIN_BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
 
 # Install build dependencies for NetBSD build.sh
@@ -40,9 +40,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 FROM base AS builder
-ARG TARGET_ARCH
-ARG BUILD_PLATFORM
-ARG BUILD_JOBS=1
+ARG MOUNTIN_TARGET_ARCH
+ARG MOUNTIN_BUILD_PLATFORM
+ARG MOUNTIN_BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
 
 WORKDIR /build
@@ -63,21 +63,21 @@ WORKDIR /usr/src
 
 # Map mountin architecture names to NetBSD MACHINE and MACHINE_ARCH values.
 # GNU triple prefix is used for cross tools (x86_64--netbsd-strip, etc)
-RUN if [ "$TARGET_ARCH" = "x86_64" ]; then \
+RUN if [ "$MOUNTIN_TARGET_ARCH" = "x86_64" ]; then \
         echo "amd64" > /tmp/nbarch; \
         echo "x86_64" > /tmp/nbmachinearch; \
         echo "amd64" > /tmp/nbkernarch; \
         echo "x86_64" > /tmp/nbgnutriple; \
-    elif [ "$TARGET_ARCH" = "aarch64" ]; then \
+    elif [ "$MOUNTIN_TARGET_ARCH" = "aarch64" ]; then \
         echo "evbarm" > /tmp/nbarch; \
         echo "aarch64" > /tmp/nbmachinearch; \
         echo "evbarm" > /tmp/nbkernarch; \
         echo "aarch64" > /tmp/nbgnutriple; \
     else \
-        echo "$TARGET_ARCH" > /tmp/nbarch; \
-        echo "$TARGET_ARCH" > /tmp/nbmachinearch; \
-        echo "$TARGET_ARCH" > /tmp/nbkernarch; \
-        echo "$TARGET_ARCH" > /tmp/nbgnutriple; \
+        echo "$MOUNTIN_TARGET_ARCH" > /tmp/nbarch; \
+        echo "$MOUNTIN_TARGET_ARCH" > /tmp/nbmachinearch; \
+        echo "$MOUNTIN_TARGET_ARCH" > /tmp/nbkernarch; \
+        echo "$MOUNTIN_TARGET_ARCH" > /tmp/nbgnutriple; \
     fi
 
 # Build the C-only cross-compilation toolchain and the target headers/libraries.
@@ -91,7 +91,7 @@ RUN set -eu; \
     ln -s "$CACHE_DIR/tools" /usr/tools; \
     NBARCH=$(cat /tmp/nbarch); \
     NBMACHINEARCH=$(cat /tmp/nbmachinearch); \
-    ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$BUILD_JOBS" \
+    ./build.sh -O /usr/obj -T /usr/tools -U -u -j"$MOUNTIN_BUILD_JOBS" \
         -m "$NBARCH" -a "$NBMACHINEARCH" \
         -V MKCOMPAT=no -V MKCTF=no -V MKDEBUG=no -V MKDEBUGLIB=no \
         -V MKHTML=no -V MKINFO=no -V MKMAN=no -V MKNLS=no \
@@ -140,7 +140,7 @@ RUN set -eu; \
     rm -rf "$IMAGE_DESTDIR/lib/i386" "$IMAGE_DESTDIR/usr/lib/i386"
 
 FROM base
-ARG TARGET_ARCH
+ARG MOUNTIN_TARGET_ARCH
 
 COPY --from=builder /tmp/nbarch /tmp/nbarch
 COPY --from=builder /tmp/nbmachinearch /tmp/nbmachinearch

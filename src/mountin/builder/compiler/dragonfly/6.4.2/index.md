@@ -8,11 +8,11 @@ output_platforms:
     provides:
       - docker:builder/compiler/dragonfly/6.4.2/x86_64
 env:
-  BUILDER: builder/compiler/dragonfly
+  MOUNTIN_BUILDER: builder/compiler/dragonfly
 execution_env:
-  BUILD_JOBS: ${BUILD_JOBS}
+  MOUNTIN_BUILD_JOBS: ${MOUNTIN_BUILD_JOBS}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 build_requires:
   - sources/dragonfly-6.4.2.tar.gz
 ---

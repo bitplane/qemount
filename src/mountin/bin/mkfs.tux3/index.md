@@ -14,7 +14,7 @@ build_requires:
   - sources/mkfs-tux3-2015.06.01.tar.gz
 requires: []
 provides:
-  - bin/${TARGET_ARCH}-linux-gnu/mkfs.tux3
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-gnu/mkfs.tux3
 ---
 
 # mkfs.tux3

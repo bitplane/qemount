@@ -8,11 +8,11 @@ output_platforms:
     provides:
       - docker:builder/compiler/puredarwin/17.4
 env:
-  BUILDER: builder/compiler/puredarwin
+  MOUNTIN_BUILDER: builder/compiler/puredarwin
 execution_env:
-  BUILD_JOBS: ${BUILD_JOBS}
+  MOUNTIN_BUILD_JOBS: ${MOUNTIN_BUILD_JOBS}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 build_requires:
   - sources/architecture-268.tar.gz
   - sources/applefilesystemdriver-23.tar.gz

@@ -1,7 +1,7 @@
 ---
 title: mountin init for Haiku
 provides:
-  - bin/${TARGET_ARCH}-haiku/mountin-init
+  - bin/${MOUNTIN_TARGET_ARCH}-haiku/mountin-init
 ---
 
 # mountin init for Haiku

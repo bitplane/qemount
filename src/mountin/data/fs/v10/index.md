@@ -6,7 +6,7 @@ build_requires:
   - guest/x86_64-9front/11957/9front.iso
   - data/templates/basic.tar
 env:
-  RESEARCH_UNIX_FORMAT: v10
+  MOUNTIN_RESEARCH_UNIX_FORMAT: v10
 provides:
   - data/fs/basic.v10
 ---

@@ -5,8 +5,8 @@ build_requires:
   - sources/netbsd-10.0-syssrc.tgz
   - sources/netbsd-10.0-sharesrc.tgz
 provides:
-  - bin/${TARGET_ARCH}-netbsd/mountin-rescue
-  - share/${TARGET_ARCH}-netbsd/mountin-devices.mtree
+  - bin/${MOUNTIN_TARGET_ARCH}-netbsd/mountin-rescue
+  - share/${MOUNTIN_TARGET_ARCH}-netbsd/mountin-devices.mtree
 ---
 
 # NetBSD mountin userspace

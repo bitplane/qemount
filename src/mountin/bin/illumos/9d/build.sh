@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-test "$TARGET_ARCH" = x86_64
+test "$MOUNTIN_TARGET_ARCH" = x86_64
 
 source=/work/9d
-output=/host/build/bin/${TARGET_PLATFORM}/9d
+output=/host/build/bin/${MOUNTIN_TARGET_PLATFORM}/9d
 
 rm -rf "$source"
 mkdir -p "$source" "${output%/*}"

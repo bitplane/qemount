@@ -3,8 +3,8 @@ title: Haiku R1 Beta 6 hrev59919+1 Toolbox
 build_platforms:
   x86_64-linux: {}
 env:
-  TARGET_ARCH: x86_64
-  HAIKU_REVISION: hrev59919+1
+  MOUNTIN_TARGET_ARCH: x86_64
+  MOUNTIN_HAIKU_REVISION: hrev59919+1
 build_requires:
   - sources/haiku-r1-beta6-hrev59919+1.tar.gz
 provides:

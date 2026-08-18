@@ -1,7 +1,7 @@
-ARG ILLUMOS_BUILDER
-FROM ${ILLUMOS_BUILDER}
+ARG MOUNTIN_ILLUMOS_BUILDER
+FROM ${MOUNTIN_ILLUMOS_BUILDER}
 
-ARG TARGET_ARCH
+ARG MOUNTIN_TARGET_ARCH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-multilib \

@@ -1,10 +1,10 @@
 ---
 title: strace
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - sources/strace-6.7.tar.xz
 provides:
-  - bin/${TARGET_ARCH}-linux-${ENV}/strace
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/strace
 ---
 
 # strace

@@ -3,11 +3,11 @@ title: illumos guest system
 output_platforms:
   x86_64-illumos:
     provides:
-      - guest/${TARGET_PLATFORM}/2026-08-13/system
+      - guest/${MOUNTIN_TARGET_PLATFORM}/2026-08-13/system
 env:
-  ILLUMOS_BUILDER: builder/compiler/illumos/2026-08-13
+  MOUNTIN_ILLUMOS_BUILDER: builder/compiler/illumos/2026-08-13
 requires:
-  - docker:${ILLUMOS_BUILDER}
+  - docker:${MOUNTIN_ILLUMOS_BUILDER}
 ---
 
 # illumos guest system

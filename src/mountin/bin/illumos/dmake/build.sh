@@ -3,7 +3,7 @@ set -eu
 
 SOURCE_ARCHIVE=/host/build/sources/schilytools-2024-03-21.tar.gz
 SOURCE_DIR=/work/schilytools
-OUTPUT_DIR=/host/build/bin/${TARGET_PLATFORM}
+OUTPUT_DIR=/host/build/bin/${MOUNTIN_TARGET_PLATFORM}
 
 mkdir -p /work
 tar -xzf "$SOURCE_ARCHIVE" -C /work
@@ -59,6 +59,6 @@ cd "$ELFUTILS_DIR"
     --without-bzlib \
     --without-lzma \
     --without-zstd
-make -j"${BUILD_JOBS:-1}" -C lib all
-make -j"${BUILD_JOBS:-1}" -C libelf install
+make -j"${MOUNTIN_BUILD_JOBS:-1}" -C lib all
+make -j"${MOUNTIN_BUILD_JOBS:-1}" -C libelf install
 cp /work/elfutils-install/lib/libelf.so.1 "$OUTPUT_DIR/lib/64/libelf.so.1"

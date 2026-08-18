@@ -138,7 +138,11 @@ def artifact_metadata(meta: dict) -> dict:
 
 def artifact_context(context: dict) -> dict:
     """Return target properties that affect the produced artefact."""
-    return {key: value for key, value in context.items() if key.startswith("TARGET_")}
+    return {
+        key: value
+        for key, value in context.items()
+        if key.startswith("MOUNTIN_TARGET_")
+    }
 
 
 @timed

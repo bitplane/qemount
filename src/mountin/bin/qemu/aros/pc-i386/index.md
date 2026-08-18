@@ -3,11 +3,11 @@ title: AROS PC i386 Guest
 output_platforms:
   i386-aros: {}
 env:
-  AROS_TARGET: pc-i386
-  AROS_VARIANT: tiny
-  BUILDER: builder/compiler/aros/2026-07-30/pc-i386
+  MOUNTIN_AROS_TARGET: pc-i386
+  MOUNTIN_AROS_VARIANT: tiny
+  MOUNTIN_BUILDER: builder/compiler/aros/2026-07-30/pc-i386
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # AROS PC i386 Guest

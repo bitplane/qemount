@@ -14,6 +14,6 @@ make -C /work/9d-source \
     release
 
 # Copy to output
-mkdir -p /host/build/bin/${TARGET_ARCH}-linux-${ENV}
+mkdir -p /host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}
 cp -v /work/9d-source/build/9d \
-    /host/build/bin/${TARGET_ARCH}-linux-${ENV}/
+    /host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/

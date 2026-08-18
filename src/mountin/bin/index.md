@@ -1,7 +1,7 @@
 ---
 title: Binaries
 execution_env:
-  BUILD_JOBS: ${BUILD_JOBS}
+  MOUNTIN_BUILD_JOBS: ${MOUNTIN_BUILD_JOBS}
 ---
 
 # Binaries

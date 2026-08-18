@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER} AS netbsd
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER} AS netbsd
 
 FROM debian:bookworm-slim
 

@@ -275,8 +275,8 @@ def test_hash_path_inputs_ignores_execution_environment():
         (pkg_dir / "mypath").mkdir(parents=True)
         build_dir.mkdir()
 
-        first = {"execution_env": {"BUILD_JOBS": "1", "CARGO_HOME": "/one"}}
-        second = {"execution_env": {"BUILD_JOBS": "32", "CARGO_HOME": "/two"}}
+        first = {"execution_env": {"MOUNTIN_BUILD_JOBS": "1", "CARGO_HOME": "/one"}}
+        second = {"execution_env": {"MOUNTIN_BUILD_JOBS": "32", "CARGO_HOME": "/two"}}
 
         h1 = hash_path_inputs("mypath", pkg_dir, first, {}, build_dir, {})
         h2 = hash_path_inputs("mypath", pkg_dir, second, {}, build_dir, {})
@@ -293,25 +293,25 @@ def test_hash_path_inputs_ignores_build_context_but_includes_target_context():
         build_dir.mkdir()
 
         x86_host = {
-            "BUILD_PLATFORM": "x86_64-linux",
-            "BUILD_JOBS": "32",
-            "RELEASE_REF": "aaaaaa",
-            "SOURCE_KIND": "checkout",
-            "TARGET_PLATFORM": "x86_64-netbsd",
-            "TARGET_ARCH": "x86_64",
+            "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+            "MOUNTIN_BUILD_JOBS": "32",
+            "MOUNTIN_RELEASE_REF": "aaaaaa",
+            "MOUNTIN_SOURCE_KIND": "checkout",
+            "MOUNTIN_TARGET_PLATFORM": "x86_64-netbsd",
+            "MOUNTIN_TARGET_ARCH": "x86_64",
         }
         arm_host = {
-            "BUILD_PLATFORM": "aarch64-linux",
-            "BUILD_JOBS": "4",
-            "RELEASE_REF": "bbbbbb",
-            "SOURCE_KIND": "distribution",
-            "TARGET_PLATFORM": "x86_64-netbsd",
-            "TARGET_ARCH": "x86_64",
+            "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+            "MOUNTIN_BUILD_JOBS": "4",
+            "MOUNTIN_RELEASE_REF": "bbbbbb",
+            "MOUNTIN_SOURCE_KIND": "distribution",
+            "MOUNTIN_TARGET_PLATFORM": "x86_64-netbsd",
+            "MOUNTIN_TARGET_ARCH": "x86_64",
         }
         arm_target = {
             **arm_host,
-            "TARGET_PLATFORM": "aarch64-netbsd",
-            "TARGET_ARCH": "aarch64",
+            "MOUNTIN_TARGET_PLATFORM": "aarch64-netbsd",
+            "MOUNTIN_TARGET_ARCH": "aarch64",
         }
 
         h1 = hash_path_inputs("mypath", pkg_dir, {}, {}, build_dir, {}, x86_host)

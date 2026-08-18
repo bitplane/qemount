@@ -1,10 +1,10 @@
 ---
 title: BusyBox
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - sources/busybox-1.36.1.tar.bz2
 provides:
-  - bin/${TARGET_ARCH}-linux-${ENV}/busybox
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/busybox
 ---
 
 # BusyBox

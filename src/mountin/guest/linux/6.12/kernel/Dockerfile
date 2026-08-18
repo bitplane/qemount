@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER}
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER}
 
 RUN apk add --no-cache \
     bc \

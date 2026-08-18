@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-BASE=/host/build/guest/${TARGET_ARCH}-linux/base/rootfs.img
-NINED=/host/build/bin/${TARGET_ARCH}-linux-${ENV}/9d
-OUTPUT=/host/build/bin/qemu/${TARGET_ARCH}-linux/rootfs/rootfs.img
+BASE=/host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/base/rootfs.img
+NINED=/host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/9d
+OUTPUT=/host/build/bin/qemu/${MOUNTIN_TARGET_ARCH}-linux/rootfs/rootfs.img
 
 mkdir -p "$(dirname "$OUTPUT")"
 cp "$BASE" "$OUTPUT"

@@ -1,9 +1,9 @@
 ---
 title: 9front guests
 env:
-  BUILDER: builder/compiler/9front
+  MOUNTIN_BUILDER: builder/compiler/9front
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # 9front appliances

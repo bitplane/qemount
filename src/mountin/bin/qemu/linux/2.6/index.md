@@ -6,9 +6,9 @@ output_platforms:
 build_platforms:
   x86_64-linux: {}
 env:
-  BUILDER: builder/compiler/linux/2
+  MOUNTIN_BUILDER: builder/compiler/linux/2
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # Linux 2.6 Guest

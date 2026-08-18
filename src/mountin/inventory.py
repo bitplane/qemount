@@ -63,7 +63,7 @@ def create_inventory(catalogue: dict, context: dict, build_dir: Path) -> tuple[d
     inventory = {
         "schema": SCHEMA_VERSION,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "build_platform": context["BUILD_PLATFORM"],
+        "build_platform": context["MOUNTIN_BUILD_PLATFORM"],
         "artefacts": artefacts,
     }
     return inventory, sorted(unknown)

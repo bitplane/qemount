@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-case "$TARGET_ARCH" in
+case "$MOUNTIN_TARGET_ARCH" in
     x86_64|aarch64) ;;
     *)
-        echo "Unsupported 9front architecture: $TARGET_ARCH" >&2
+        echo "Unsupported 9front architecture: $MOUNTIN_TARGET_ARCH" >&2
         exit 1
         ;;
 esac
@@ -66,7 +66,7 @@ truncate -s 1536M "$work/output.fat"
 mkfs.vfat -F 32 -n MOUNTINOUT "$work/output.fat" >/dev/null
 
 python3 /build/build.py \
-    "$TARGET_ARCH" \
+    "$MOUNTIN_TARGET_ARCH" \
     "$work/system.qcow2" \
     "$source_iso" \
     "$work/output.fat"
@@ -79,17 +79,17 @@ for output in "$@"; do
     temporary=$(dirname "$output_path")/.$(basename "$output_path").tmp
 
     case "$output" in
-        guest/${TARGET_PLATFORM}/11957/9front.iso)
+        guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.iso)
             mcopy -o -i "$work/output.fat" ::9front.iso "$temporary"
             ;;
-        guest/${TARGET_PLATFORM}/11957/9front.qcow2)
+        guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.qcow2)
             mcopy -o -i "$work/output.fat" ::9front.qcow2 "$temporary"
             qemu-img check -f qcow2 "$temporary"
             ;;
-        guest/${TARGET_PLATFORM}/11957/u-boot.bin)
+        guest/${MOUNTIN_TARGET_PLATFORM}/11957/u-boot.bin)
             cp /usr/lib/u-boot/qemu_arm64/u-boot.bin "$temporary"
             ;;
-        bin/${TARGET_PLATFORM}/mksacfs)
+        bin/${MOUNTIN_TARGET_PLATFORM}/mksacfs)
             mcopy -o -i "$work/output.fat" ::mksacfs "$temporary"
             chmod 755 "$temporary"
             ;;
@@ -101,8 +101,8 @@ for output in "$@"; do
 
     test -s "$temporary"
     case "$output" in
-        guest/${TARGET_PLATFORM}/11957/9front.iso|\
-        guest/${TARGET_PLATFORM}/11957/9front.qcow2)
+        guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.iso|\
+        guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.qcow2)
             size=$(stat -c %s "$temporary")
             limit=$((16 * 1024 * 1024))
             if [ "$size" -gt "$limit" ]; then

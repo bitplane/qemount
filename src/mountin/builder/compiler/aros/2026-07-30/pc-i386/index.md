@@ -1,11 +1,11 @@
 ---
 title: AROS 2026-07-30 PC i386 Cross-Compiler
 env:
-  BUILDER: builder/compiler/aros
+  MOUNTIN_BUILDER: builder/compiler/aros
 execution_env:
-  BUILD_JOBS: ${BUILD_JOBS}
+  MOUNTIN_BUILD_JOBS: ${MOUNTIN_BUILD_JOBS}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 build_requires:
   - sources/aros-2026-07-30.tar.gz
   - sources/aros-ports/binutils-2.32.tar.bz2

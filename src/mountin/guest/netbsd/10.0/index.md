@@ -7,9 +7,9 @@ output_platforms:
   x86_64-netbsd: {}
   aarch64-netbsd: {}
 env:
-  BUILDER: builder/compiler/netbsd/10.0/${TARGET_ARCH}
+  MOUNTIN_BUILDER: builder/compiler/netbsd/10.0/${MOUNTIN_TARGET_ARCH}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # NetBSD 10.0 guest components

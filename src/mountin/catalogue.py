@@ -360,20 +360,20 @@ def split_platform(platform: str | None) -> dict:
     """Return the canonical components of a target platform name."""
     if not platform:
         return {
-            "TARGET_PLATFORM": "",
-            "TARGET_ARCH": "",
-            "TARGET_OS": "",
-            "TARGET_ENV": "",
+            "MOUNTIN_TARGET_PLATFORM": "",
+            "MOUNTIN_TARGET_ARCH": "",
+            "MOUNTIN_TARGET_OS": "",
+            "MOUNTIN_TARGET_ENV": "",
         }
 
     parts = platform.split("-")
     if len(parts) < 2:
         raise ValueError(f"Invalid output platform: {platform}")
     return {
-        "TARGET_PLATFORM": platform,
-        "TARGET_ARCH": parts[0],
-        "TARGET_OS": parts[1],
-        "TARGET_ENV": "-".join(parts[2:]),
+        "MOUNTIN_TARGET_PLATFORM": platform,
+        "MOUNTIN_TARGET_ARCH": parts[0],
+        "MOUNTIN_TARGET_OS": parts[1],
+        "MOUNTIN_TARGET_ENV": "-".join(parts[2:]),
     }
 
 
@@ -447,7 +447,7 @@ def build_output_index(
 ) -> dict:
     """Describe every output and whether it is buildable in this context."""
     index = {}
-    build_platform = context.get("BUILD_PLATFORM")
+    build_platform = context.get("MOUNTIN_BUILD_PLATFORM")
 
     for path in catalogue["paths"]:
         for instance in resolve_provider_instances(path, catalogue, context):
@@ -462,7 +462,7 @@ def build_output_index(
                     f"build_platforms ({supported})"
                 )
             source_kinds = meta.get("source_kinds", {})
-            source_kind = context.get("SOURCE_KIND")
+            source_kind = context.get("MOUNTIN_SOURCE_KIND")
             if buildable and source_kinds and source_kind not in source_kinds:
                 supported = ", ".join(source_kinds)
                 buildable = False

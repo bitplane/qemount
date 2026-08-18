@@ -1,13 +1,13 @@
 #!/bin/sh
 set -eu
 
-test "$TARGET_ARCH" = x86_64
+test "$MOUNTIN_TARGET_ARCH" = x86_64
 
 src=/source/usr/src
 onbld=$src/tools/proto/root_i386-nd/opt/onbld
 makefile=$src/cmd/make/bin/make.rules.file
 sysroot=/opt/illumos/sysroot
-output=/host/build/bin/${TARGET_PLATFORM}/mkfs.ufs
+output=/host/build/bin/${MOUNTIN_TARGET_PLATFORM}/mkfs.ufs
 
 mkdir -p "${output%/*}"
 rm -rf /proto

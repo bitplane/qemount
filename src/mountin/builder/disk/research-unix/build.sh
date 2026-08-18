@@ -4,12 +4,12 @@ set -eu
 boot_iso=/host/build/bin/qemu/x86_64-9front/11957/9front.iso
 template=/host/build/data/templates/basic.tar
 
-case "${RESEARCH_UNIX_FORMAT:?RESEARCH_UNIX_FORMAT is required}" in
+case "${MOUNTIN_RESEARCH_UNIX_FORMAT:?MOUNTIN_RESEARCH_UNIX_FORMAT is required}" in
     v6) reader=fs/v6fs ;;
     32v) reader=fs/32vfs ;;
     v10) reader=fs/v10fs ;;
     *)
-        echo "Unsupported Research Unix format: $RESEARCH_UNIX_FORMAT" >&2
+        echo "Unsupported Research Unix format: $MOUNTIN_RESEARCH_UNIX_FORMAT" >&2
         exit 2
         ;;
 esac
@@ -22,7 +22,7 @@ for output in "$@"; do
     mkdir -p "$work/template" "$(dirname "$output_path")"
     tar -xf "$template" -C "$work/template"
 
-    mkresearchunix.py "$RESEARCH_UNIX_FORMAT" "$output_path" "$work/template"
+    mkresearchunix.py "$MOUNTIN_RESEARCH_UNIX_FORMAT" "$output_path" "$work/template"
 
     printf '%s\n' "$reader" >"$work/reader"
     xorriso -as mkisofs -quiet -R \

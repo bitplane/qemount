@@ -4,13 +4,13 @@ set -e
 # QEMU disk builder - boots Linux VM to duplicate files between filesystems
 # Requires kernel and rootfs.img in /host/build
 
-BUILD_ARCH="${BUILD_ARCH:-x86_64}"
+MOUNTIN_BUILD_ARCH="${MOUNTIN_BUILD_ARCH:-x86_64}"
 KERNEL_VERSION=$(echo "$META" | jq -r '.kernel // "6.12"')
-KERNEL="/host/build/guest/${BUILD_ARCH}-linux/${KERNEL_VERSION}/kernel"
-ROOTFS="/host/build/guest/${BUILD_ARCH}-linux/base/rootfs.img"
+KERNEL="/host/build/guest/${MOUNTIN_BUILD_ARCH}-linux/${KERNEL_VERSION}/kernel"
+ROOTFS="/host/build/guest/${MOUNTIN_BUILD_ARCH}-linux/base/rootfs.img"
 
 source /build/qemu-linux-arch.sh
-set_qemu_linux_arch_profile "$BUILD_ARCH"
+set_qemu_linux_arch_profile "$MOUNTIN_BUILD_ARCH"
 
 # Loop over all outputs in META.provides
 for output in $(echo "$META" | jq -r '.provides | keys[]'); do

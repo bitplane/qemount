@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-test "$TARGET_ARCH" = x86_64
+test "$MOUNTIN_TARGET_ARCH" = x86_64
 
 WORLD=${DRAGONFLY_OBJ}/usr/src/world_x86_64
 ROOT=/work/root
-OUTPUT_DIR=/host/build/guest/${TARGET_PLATFORM}/6.4.2
+OUTPUT_DIR=/host/build/guest/${MOUNTIN_TARGET_PLATFORM}/6.4.2
 TARGET_INSTALL="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/install -N ${DRAGONFLY_SRC}/etc"
 
 cd "$DRAGONFLY_SRC"
@@ -30,15 +30,15 @@ world_make()
     INSTALLSTRIPPED=1 \
     M4="${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin/m4" \
     PATH="${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/ctools_x86_64_x86_64/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/usr/bin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/sbin:${DRAGONFLY_OBJ}/usr/src/btools_x86_64/bin:/usr/local/bin:/usr/pkg/bin" \
-        /usr/bin/bmake -m "$DRAGONFLY_SRC/share/mk" -j"${BUILD_JOBS}" \
+        /usr/bin/bmake -m "$DRAGONFLY_SRC/share/mk" -j"${MOUNTIN_BUILD_JOBS}" \
             -DSYSBUILD -DNOMAN -DNOPIC -DNOPROFILE "$@"
 }
 
 top_make()
 {
-    HOST_CPU_FAMILY=${BUILD_PLATFORM%%-*}
-    /usr/bin/bmake -j"${BUILD_JOBS}" \
-        BUILD_ARCH=x86_64 \
+    HOST_CPU_FAMILY=${MOUNTIN_BUILD_PLATFORM%%-*}
+    /usr/bin/bmake -j"${MOUNTIN_BUILD_JOBS}" \
+        MOUNTIN_BUILD_ARCH=x86_64 \
         HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
         HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
         HOST_LDADD="/tmp/host-compat.o $(pkg-config --libs --static libbsd-overlay) -lresolv -ltirpc" \
@@ -49,8 +49,8 @@ top_make()
         NOCLEAN=1 \
         NO_GAMES=1 \
         NO_SHARE=1 \
-        TARGET_ARCH=x86_64 \
-        TARGET_PLATFORM=pc64 \
+        MOUNTIN_TARGET_ARCH=x86_64 \
+        MOUNTIN_TARGET_PLATFORM=pc64 \
         WORLD_VERSION=600401 \
         "$@"
 }
@@ -76,15 +76,15 @@ while IFS= read -r path; do
     esac
 done < /build/runtime-files.txt
 
-bmake -j"${BUILD_JOBS}" \
+bmake -j"${MOUNTIN_BUILD_JOBS}" \
     KERNCONF=MOUNTIN \
     MODULES_OVERRIDE="vfs/ext2fs vfs/ntfs vfs/udf libiconv" \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
     NOCLEAN=1 \
-    TARGET_ARCH=x86_64 \
-    TARGET_PLATFORM=pc64 \
+    MOUNTIN_TARGET_ARCH=x86_64 \
+    MOUNTIN_TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     buildkernel
 
@@ -98,8 +98,8 @@ bmake \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
-    TARGET_ARCH=x86_64 \
-    TARGET_PLATFORM=pc64 \
+    MOUNTIN_TARGET_ARCH=x86_64 \
+    MOUNTIN_TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     INSTALL="$TARGET_INSTALL" \
     INSTALLSTRIPPED=1 \

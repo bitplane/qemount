@@ -8,7 +8,7 @@ output_platforms:
     build_platforms:
       aarch64-linux: {}
 env:
-  ENV: musl
+  MOUNTIN_LIBC: musl
 ---
 
 # Linux QEMU Guests

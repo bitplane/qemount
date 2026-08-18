@@ -4,7 +4,7 @@ execution_env:
   MOUNTIN_CACHE_DIR: ${MOUNTIN_CACHE_DIR}
   CARGO_HOME: /host/build/cache/cargo
   CARGO_TARGET_DIR: ${MOUNTIN_CACHE_DIR}/cargo-target
-  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig/${BUILD_PLATFORM}
+  ZIG_GLOBAL_CACHE_DIR: /host/build/cache/zig/${MOUNTIN_BUILD_PLATFORM}
 no_inherit:
   - provides
   - build_requires

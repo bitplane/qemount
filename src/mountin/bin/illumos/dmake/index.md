@@ -12,10 +12,10 @@ build_requires:
   - sources/schilytools-2024-03-21.tar.gz
   - sources/elfutils-0.194.tar.bz2
 provides:
-  - bin/${TARGET_PLATFORM}/dmake
-  - bin/${TARGET_PLATFORM}/lib/libmakestate.so.1
-  - bin/${TARGET_PLATFORM}/lib/64/libmakestate.so.1
-  - bin/${TARGET_PLATFORM}/lib/64/libelf.so.1
+  - bin/${MOUNTIN_TARGET_PLATFORM}/dmake
+  - bin/${MOUNTIN_TARGET_PLATFORM}/lib/libmakestate.so.1
+  - bin/${MOUNTIN_TARGET_PLATFORM}/lib/64/libmakestate.so.1
+  - bin/${MOUNTIN_TARGET_PLATFORM}/lib/64/libelf.so.1
 ---
 
 # illumos dmake

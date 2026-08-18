@@ -13,8 +13,8 @@ LDFLAGS="-static" \
     --disable-openssl \
     --disable-readline
 
-make -j${BUILD_JOBS}
+make -j${MOUNTIN_BUILD_JOBS}
 $STRIP socat || true
 
-mkdir -p /host/build/bin/${TARGET_ARCH}-netbsd
-cp -v socat /host/build/bin/${TARGET_ARCH}-netbsd/
+mkdir -p /host/build/bin/${MOUNTIN_TARGET_ARCH}-netbsd
+cp -v socat /host/build/bin/${MOUNTIN_TARGET_ARCH}-netbsd/

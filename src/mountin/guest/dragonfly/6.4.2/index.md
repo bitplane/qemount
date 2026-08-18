@@ -1,13 +1,13 @@
 ---
 title: DragonFly BSD 6.4.2 guest system
 env:
-  BUILDER: builder/compiler/dragonfly/6.4.2/x86_64
+  MOUNTIN_BUILDER: builder/compiler/dragonfly/6.4.2/x86_64
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 output_platforms:
   x86_64-dragonfly:
     provides:
-      - guest/${TARGET_PLATFORM}/6.4.2/dragonfly.iso
+      - guest/${MOUNTIN_TARGET_PLATFORM}/6.4.2/dragonfly.iso
 ---
 
 # DragonFly BSD 6.4.2 system

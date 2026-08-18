@@ -3,13 +3,13 @@ title: 9front mountin appliance
 output_platforms:
   x86_64-9front:
     provides:
-      - guest/${TARGET_PLATFORM}/11957/9front.iso
-      - bin/${TARGET_PLATFORM}/mksacfs
+      - guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.iso
+      - bin/${MOUNTIN_TARGET_PLATFORM}/mksacfs
   aarch64-9front:
     provides:
-      - guest/${TARGET_PLATFORM}/11957/9front.qcow2
-      - guest/${TARGET_PLATFORM}/11957/u-boot.bin
-      - bin/${TARGET_PLATFORM}/mksacfs
+      - guest/${MOUNTIN_TARGET_PLATFORM}/11957/9front.qcow2
+      - guest/${MOUNTIN_TARGET_PLATFORM}/11957/u-boot.bin
+      - bin/${MOUNTIN_TARGET_PLATFORM}/mksacfs
 requires:
   - sources/9front-11957.amd64.qcow2.gz
   - sources/9front-11957.tar.gz

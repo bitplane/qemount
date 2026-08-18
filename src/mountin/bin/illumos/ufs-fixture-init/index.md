@@ -3,11 +3,11 @@ title: illumos UFS fixture init
 output_platforms:
   x86_64-illumos:
     provides:
-      - bin/${TARGET_PLATFORM}/ufs-fixture-init
+      - bin/${MOUNTIN_TARGET_PLATFORM}/ufs-fixture-init
 env:
-  BUILDER: builder/compiler/illumos/2026-08-13
+  MOUNTIN_BUILDER: builder/compiler/illumos/2026-08-13
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # illumos UFS fixture init

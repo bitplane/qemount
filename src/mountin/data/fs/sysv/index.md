@@ -1,7 +1,7 @@
 ---
 format: fs/sysv
 build_requires:
-  - bin/${BUILD_ARCH}-linux-musl/mkfs.sysv
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-musl/mkfs.sysv
 requires:
   - docker:builder/disk/alpine
   - data/templates/basic.tar

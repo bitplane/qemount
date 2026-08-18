@@ -1,16 +1,16 @@
 ---
 title: NetBSD 10.0 Boot Image
 requires:
-  - guest/${TARGET_ARCH}-netbsd/10.0/kernel/netbsd.gdb
-  - guest/${TARGET_ARCH}-netbsd/10.0/appliance/rootfs/ramdisk.fs
+  - guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/kernel/netbsd.gdb
+  - guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/appliance/rootfs/ramdisk.fs
 output_platforms:
   x86_64-netbsd:
     provides:
-      - bin/qemu/${TARGET_ARCH}-netbsd/10.0/boot/boot.img
-      - bin/qemu/${TARGET_ARCH}-netbsd/10.0/boot/netbsd
+      - bin/qemu/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/boot/boot.img
+      - bin/qemu/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/boot/netbsd
   aarch64-netbsd:
     provides:
-      - bin/qemu/${TARGET_ARCH}-netbsd/10.0/boot/netbsd
+      - bin/qemu/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/boot/netbsd
 support:
   # filesystems
   - format/fs/ext2

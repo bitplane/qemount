@@ -3,9 +3,9 @@ set -eu
 
 VERSION=0.4.7
 SOURCE_DIR=/work/rars-$VERSION
-TARGET_TRIPLE=${TARGET_ARCH}-unknown-linux-musl
+TARGET_TRIPLE=${MOUNTIN_TARGET_ARCH}-unknown-linux-musl
 TARGET_DIR=${CARGO_TARGET_DIR:-target}
-OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-linux-musl
+OUTPUT_DIR=/host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-musl
 
 rm -rf "$SOURCE_DIR"
 tar -xzf "/host/build/sources/rars-$VERSION.tar.gz" -C /work

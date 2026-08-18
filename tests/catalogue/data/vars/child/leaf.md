@@ -1,12 +1,12 @@
 ---
 title: Leaf
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
   - source.tar
 provides:
-  - output/${TARGET_ARCH}/leaf
+  - output/${MOUNTIN_TARGET_ARCH}/leaf
 ---
 
 # Leaf
 
-Uses inherited BUILDER and TARGET_ARCH.
+Uses inherited MOUNTIN_BUILDER and MOUNTIN_TARGET_ARCH.

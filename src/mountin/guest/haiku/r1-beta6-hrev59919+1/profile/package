@@ -26,7 +26,7 @@ AddFilesToPackage add-ons kernel partitioning_systems :
 	session
 	;
 
-if $(TARGET_ARCH) = x86 || $(TARGET_ARCH) = x86_64 {
+if $(MOUNTIN_TARGET_ARCH) = x86 || $(MOUNTIN_TARGET_ARCH) = x86_64 {
 	AddFilesToPackage add-ons kernel cpu : generic_x86 ;
 }
 
@@ -39,7 +39,7 @@ AddDriversToPackage :
 	;
 AddDriversToPackage ports : pc_serial ;
 
-AddFilesToPackage : <revisioned>kernel_$(TARGET_ARCH) ;
+AddFilesToPackage : <revisioned>kernel_$(MOUNTIN_TARGET_ARCH) ;
 AddLibrariesToPackage lib
 	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
 AddFilesToPackage servers : launch_daemon ;

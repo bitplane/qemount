@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
 
-BIN_DIR="/host/build/bin/${TARGET_ARCH}-netbsd"
-SHARE_DIR="/host/build/share/${TARGET_ARCH}-netbsd"
-OUTPUT=${1:-guest/${TARGET_ARCH}-netbsd/10.0/rootfs/ramdisk.fs}
+BIN_DIR="/host/build/bin/${MOUNTIN_TARGET_ARCH}-netbsd"
+SHARE_DIR="/host/build/share/${MOUNTIN_TARGET_ARCH}-netbsd"
+OUTPUT=${1:-guest/${MOUNTIN_TARGET_ARCH}-netbsd/10.0/rootfs/ramdisk.fs}
 OUTPUT_PATH="/host/build/$OUTPUT"
 
-echo "Building NetBSD ramdisk for $TARGET_ARCH..."
+echo "Building NetBSD ramdisk for $MOUNTIN_TARGET_ARCH..."
 
 # Create ramdisk directory structure
 mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc \

@@ -61,9 +61,9 @@ def test_build_graph_unavailable_target():
     cat = load(DATA_DIR / "deps")
     cat["paths"]["b"]["meta"]["build_platforms"] = {"x86_64-linux": {}}
     ctx = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
     }
 
     with tempfile.TemporaryDirectory() as tmp:

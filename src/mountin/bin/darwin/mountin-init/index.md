@@ -6,11 +6,11 @@ build_platforms:
 output_platforms:
   x86_64-darwin: {}
 env:
-  BUILDER: builder/compiler/puredarwin/17.4
+  MOUNTIN_BUILDER: builder/compiler/puredarwin/17.4
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 provides:
-  - bin/${TARGET_ARCH}-darwin/mountin-init
+  - bin/${MOUNTIN_TARGET_ARCH}-darwin/mountin-init
 ---
 
 # mountin init for Darwin

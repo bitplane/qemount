@@ -32,23 +32,23 @@ from mountin.runner import (
 
 def test_provider_environment_exposes_execution_context_only():
     context = {
-        "BUILD_PLATFORM": "x86_64-linux",
-        "TARGET_PLATFORM": "x86_64-linux",
-        "BUILD_JOBS": "12",
-        "RELEASE_REF": "abcdef",
-        "SOURCE_KIND": "checkout",
+        "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+        "MOUNTIN_TARGET_PLATFORM": "x86_64-linux",
+        "MOUNTIN_BUILD_JOBS": "12",
+        "MOUNTIN_RELEASE_REF": "abcdef",
+        "MOUNTIN_SOURCE_KIND": "checkout",
         "MOUNTIN_CACHE_DIR": "/cache",
     }
 
     meta = {
-        "execution_env": {"BUILD_JOBS": "1"},
+        "execution_env": {"MOUNTIN_BUILD_JOBS": "1"},
         "env": {"CUSTOM": "yes"},
     }
 
     assert provider_environment(context, meta) == {
-        "BUILD_PLATFORM": "x86_64-linux",
-        "TARGET_PLATFORM": "x86_64-linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+        "MOUNTIN_TARGET_PLATFORM": "x86_64-linux",
+        "MOUNTIN_BUILD_JOBS": "1",
         "MOUNTIN_CACHE_DIR": "/cache",
         "CUSTOM": "yes",
     }
@@ -82,7 +82,7 @@ def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):
             "example",
             context,
             "localhost/example",
-            {"BUILD_PLATFORM": "x86_64-linux"},
+            {"MOUNTIN_BUILD_PLATFORM": "x86_64-linux"},
             [],
             tmp_path,
         )
@@ -94,11 +94,11 @@ def test_build_image_uses_stable_ownership_label(tmp_path, monkeypatch):
 
 def test_dockerfile_build_args_reads_global_and_stage_arguments(tmp_path):
     dockerfile = tmp_path / "Dockerfile"
-    dockerfile.write_text("ARG BASE=example\nFROM ${BASE}\n  ARG BUILD_JOBS\nARG MOUNTIN_CACHE_DIR=/cache\nRUN true\n")
+    dockerfile.write_text("ARG BASE=example\nFROM ${BASE}\n  ARG MOUNTIN_BUILD_JOBS\nARG MOUNTIN_CACHE_DIR=/cache\nRUN true\n")
 
     assert dockerfile_build_args(dockerfile) == {
         "BASE",
-        "BUILD_JOBS",
+        "MOUNTIN_BUILD_JOBS",
         "MOUNTIN_CACHE_DIR",
     }
 
@@ -243,7 +243,7 @@ def test_run_container_removes_container_when_interrupted(tmp_path, monkeypatch)
             "stage",
             "image",
             tmp_path,
-            {"BUILD_PLATFORM": "x86_64-linux"},
+            {"MOUNTIN_BUILD_PLATFORM": "x86_64-linux"},
             ["output"],
         )
 

@@ -207,7 +207,7 @@ def build_image(
     cache_dir = build_dir / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{cache_dir.absolute()}:/host/build/cache:rw"])
-    provider_cache = build_dir / "cache" / provider_cache_relative(env["BUILD_PLATFORM"], stage) / "work"
+    provider_cache = build_dir / "cache" / provider_cache_relative(env["MOUNTIN_BUILD_PLATFORM"], stage) / "work"
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--volume", f"{provider_cache.absolute()}:/cache:rw"])
 
@@ -261,7 +261,7 @@ def run_container(
     cmd = ["podman", "run", "--rm", "--cidfile", str(cid_path)]
     cmd.extend(podman_runtime_args())
     cmd.extend(["-v", f"{build_dir.absolute()}:/host/build"])
-    provider_cache = build_dir / "cache" / provider_cache_relative(env["BUILD_PLATFORM"], stage) / "work"
+    provider_cache = build_dir / "cache" / provider_cache_relative(env["MOUNTIN_BUILD_PLATFORM"], stage) / "work"
     provider_cache.mkdir(parents=True, exist_ok=True)
     cmd.extend(["-v", f"{provider_cache.absolute()}:/cache"])
     for key, value in env.items():
@@ -299,7 +299,12 @@ def provider_environment(context: dict, meta: dict) -> dict:
     is deliberately not exported.  It participates in catalogue resolution,
     but is not an input to every build in the graph.
     """
-    inherited = {key: value for key, value in context.items() if key.startswith(("BUILD_", "TARGET_", "MOUNTIN_"))}
+    inherited = {
+        key: value
+        for key, value in context.items()
+        if key.startswith(("MOUNTIN_BUILD_", "MOUNTIN_TARGET_"))
+        or key == "MOUNTIN_CACHE_DIR"
+    }
     return {
         **inherited,
         **meta.get("execution_env", {}),
@@ -473,7 +478,7 @@ def run_build(
         provenance = {
             "provider": path,
             "provider_instance": instance_id,
-            "build_platform": context.get("BUILD_PLATFORM"),
+            "build_platform": context.get("MOUNTIN_BUILD_PLATFORM"),
             "output_platform": record.get("output_platform"),
         }
         input_hash = hash_path_inputs(
@@ -485,7 +490,7 @@ def run_build(
             cache,
             instance_context,
         )
-        prepare_provider_cache(build_dir, context["BUILD_PLATFORM"], instance_id, input_hash)
+        prepare_provider_cache(build_dir, context["MOUNTIN_BUILD_PLATFORM"], instance_id, input_hash)
         dep_hashes[instance_id] = input_hash
         for provided in docker_tags:
             dep_hashes[provided] = input_hash
@@ -501,11 +506,11 @@ def run_build(
             tag = docker_tags[0] if docker_tags else local_image_tag(path, record["output_platform"])
             # Container stores are machine-local even when build/ is shared.
             image_id = get_image_id(tag)
-            current = image_is_current(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+            current = image_is_current(cache, context["MOUNTIN_BUILD_PLATFORM"], tag, image_id, input_hash)
             # One-time migration from images built before image identity moved
             # out of the Dockerfile layer cache key.
             if not current and image_id and get_image_input_hash(tag) == input_hash:
-                update_image_hash(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+                update_image_hash(cache, context["MOUNTIN_BUILD_PLATFORM"], tag, image_id, input_hash)
                 save_cache(build_dir, cache)
                 current = True
             if not force and current:
@@ -522,7 +527,7 @@ def run_build(
                 )
                 if not image_id:
                     return False
-                update_image_hash(cache, context["BUILD_PLATFORM"], tag, image_id, input_hash)
+                update_image_hash(cache, context["MOUNTIN_BUILD_PLATFORM"], tag, image_id, input_hash)
                 save_cache(build_dir, cache)
 
         # Done if no file outputs

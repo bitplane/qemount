@@ -1,10 +1,10 @@
 ---
 title: AROS PC i386 mountin Appliance
 requires:
-  - guest/${TARGET_ARCH}-aros/2026-07-30/aros.iso
-  - bin/${TARGET_ARCH}-aros/9d
+  - guest/${MOUNTIN_TARGET_ARCH}-aros/2026-07-30/aros.iso
+  - bin/${MOUNTIN_TARGET_ARCH}-aros/9d
 provides:
-  - bin/qemu/${TARGET_ARCH}-aros/2026-07-30/aros.iso
+  - bin/qemu/${MOUNTIN_TARGET_ARCH}-aros/2026-07-30/aros.iso
 ---
 
 # AROS PC i386 mountin Appliance

@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-test "$TARGET_ARCH" = x86_64
+test "$MOUNTIN_TARGET_ARCH" = x86_64
 
-output=/host/build/bin/${TARGET_PLATFORM}/ufs-fixture-init
+output=/host/build/bin/${MOUNTIN_TARGET_PLATFORM}/ufs-fixture-init
 object=/work/ufs-fixture-init.o
 
 mkdir -p "${output%/*}" /work

@@ -22,24 +22,24 @@ cd "$SOURCE_DIR"
 cp /kernel.config /filesystems.config .
 
 # Determine kernel arch
-KERNEL_ARCH=$TARGET_ARCH
-[ "$TARGET_ARCH" = "aarch64" ] && KERNEL_ARCH=arm64
+KERNEL_ARCH=$MOUNTIN_TARGET_ARCH
+[ "$MOUNTIN_TARGET_ARCH" = "aarch64" ] && KERNEL_ARCH=arm64
 
 # Build kernel
 make ARCH=$KERNEL_ARCH defconfig
 ./scripts/kconfig/merge_config.sh -m .config kernel.config filesystems.config
 yes "" | make ARCH=$KERNEL_ARCH oldconfig
-make ARCH=$KERNEL_ARCH -j"${BUILD_JOBS}"
+make ARCH=$KERNEL_ARCH -j"${MOUNTIN_BUILD_JOBS}"
 
 # Copy kernel image
-mkdir -p /host/build/guest/${TARGET_ARCH}-linux/6.12
-if [ "$TARGET_ARCH" = "x86_64" ]; then
-    cp -v arch/x86_64/boot/bzImage /host/build/guest/${TARGET_ARCH}-linux/6.12/kernel
-elif [ "$TARGET_ARCH" = "aarch64" ] || [ "$TARGET_ARCH" = "arm64" ]; then
-    cp -v arch/arm64/boot/Image.gz /host/build/guest/${TARGET_ARCH}-linux/6.12/kernel
-elif [ "$TARGET_ARCH" = "arm" ]; then
-    cp -v arch/arm/boot/zImage /host/build/guest/${TARGET_ARCH}-linux/6.12/kernel
+mkdir -p /host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/6.12
+if [ "$MOUNTIN_TARGET_ARCH" = "x86_64" ]; then
+    cp -v arch/x86_64/boot/bzImage /host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/6.12/kernel
+elif [ "$MOUNTIN_TARGET_ARCH" = "aarch64" ] || [ "$MOUNTIN_TARGET_ARCH" = "arm64" ]; then
+    cp -v arch/arm64/boot/Image.gz /host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/6.12/kernel
+elif [ "$MOUNTIN_TARGET_ARCH" = "arm" ]; then
+    cp -v arch/arm/boot/zImage /host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/6.12/kernel
 else
-    echo "Unsupported architecture: $TARGET_ARCH"
+    echo "Unsupported architecture: $MOUNTIN_TARGET_ARCH"
     exit 1
 fi

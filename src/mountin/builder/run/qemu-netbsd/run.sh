@@ -20,14 +20,14 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-TARGET_ARCH="$1"
+MOUNTIN_TARGET_ARCH="$1"
 BOOT_ARTIFACT="$2"
 shift 2
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/qemu-netbsd-arch.sh"
-set_qemu_netbsd_arch_profile "$TARGET_ARCH" "$BOOT_ARTIFACT"
+set_qemu_netbsd_arch_profile "$MOUNTIN_TARGET_ARCH" "$BOOT_ARTIFACT"
 
 # Default values
 IMAGES=()

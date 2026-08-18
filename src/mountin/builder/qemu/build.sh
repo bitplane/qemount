@@ -2,11 +2,11 @@
 set -ex
 
 QEMU_TARGETS="x86_64-softmmu,aarch64-softmmu,m68k-softmmu"
-BUILD_JOBS=${BUILD_JOBS:-$(nproc)}
+MOUNTIN_BUILD_JOBS=${MOUNTIN_BUILD_JOBS:-$(nproc)}
 CACHE_DIR=${MOUNTIN_CACHE_DIR:?MOUNTIN_CACHE_DIR is required}
 
 # A provider instance normally supplies exactly one host platform.
-PLATFORMS=("${TARGET_PLATFORM:?TARGET_PLATFORM is required}")
+PLATFORMS=("${MOUNTIN_TARGET_PLATFORM:?MOUNTIN_TARGET_PLATFORM is required}")
 
 platforms_from_targets() {
     local platforms=()
@@ -90,12 +90,12 @@ platform_exe_ext() {
 }
 
 platform_needs_exe_wrapper() {
-    local TARGET_ARCH=${1%%-*}
+    local MOUNTIN_TARGET_ARCH=${1%%-*}
 
     case "$1" in
         *-windows-gnu|*-darwin) echo "true" ;;
         *)
-            if [ "$TARGET_ARCH" = "${BUILD_ARCH:?BUILD_ARCH is required}" ]; then
+            if [ "$MOUNTIN_TARGET_ARCH" = "${MOUNTIN_BUILD_ARCH:?MOUNTIN_BUILD_ARCH is required}" ]; then
                 echo "false"
             else
                 echo "true"
@@ -363,7 +363,7 @@ build_deps_for_target() {
         --disable-shared \
         --enable-static \
         --disable-docs
-    make -j$BUILD_JOBS
+    make -j$MOUNTIN_BUILD_JOBS
     make install
 
     # Build libiconv (needed for non-linux targets; musl has iconv built-in)
@@ -383,7 +383,7 @@ build_deps_for_target() {
             --host=$HOST \
             --disable-shared \
             --enable-static
-        make -j$BUILD_JOBS
+        make -j$MOUNTIN_BUILD_JOBS
         make install
     fi
 
@@ -403,7 +403,7 @@ build_deps_for_target() {
         -Dlibpng=disabled \
         -Dtests=disabled \
         ..
-    ninja -j$BUILD_JOBS
+    ninja -j$MOUNTIN_BUILD_JOBS
     ninja install
 
     # Build glib (minimal, no gio)
@@ -424,7 +424,7 @@ build_deps_for_target() {
         -Dxattr=false \
         -Dgio_module_dir=/nonexistent \
         ..
-    ninja -j$BUILD_JOBS
+    ninja -j$MOUNTIN_BUILD_JOBS
     ninja install
 
     echo "=== Deps built for $TARGET ==="
@@ -495,7 +495,7 @@ build_qemu_for_target() {
         --extra-cflags="-I$PREFIX/include -UNDEBUG $C_ARGS" \
         --extra-ldflags="-L$PREFIX/lib $LD_ARGS"
 
-    ninja -C build -j$BUILD_JOBS \
+    ninja -C build -j$MOUNTIN_BUILD_JOBS \
         "qemu-system-x86_64$SUFFIX$EXT" \
         "qemu-system-aarch64$SUFFIX$EXT" \
         "qemu-system-m68k$SUFFIX$EXT"

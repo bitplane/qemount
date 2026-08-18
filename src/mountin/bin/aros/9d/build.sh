@@ -2,7 +2,7 @@
 set -eu
 
 NINED_SOURCE=/work/9d-source
-OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-aros
+OUTPUT_DIR=/host/build/bin/${MOUNTIN_TARGET_ARCH}-aros
 
 rm -rf "$NINED_SOURCE"
 mkdir -p "$NINED_SOURCE" "$OUTPUT_DIR"

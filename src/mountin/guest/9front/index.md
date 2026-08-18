@@ -1,9 +1,9 @@
 ---
 title: 9front guest components
 env:
-  BUILDER: builder/compiler/9front
+  MOUNTIN_BUILDER: builder/compiler/9front
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 ---
 
 # 9front guest components

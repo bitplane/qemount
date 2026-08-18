@@ -115,8 +115,8 @@ def test_get_default_arch_returns_string():
 
 def test_build_context_splits_canonical_platform():
     context = build_context("aarch64-linux")
-    assert context["BUILD_ARCH"] == "aarch64"
-    assert context["BUILD_OS"] == "linux"
+    assert context["MOUNTIN_BUILD_ARCH"] == "aarch64"
+    assert context["MOUNTIN_BUILD_OS"] == "linux"
 
 
 def test_release_ref_uses_unique_six_character_abbreviation(tmp_path):
@@ -284,9 +284,9 @@ def test_cmd_outputs_all_shows_unavailable_reason(capsys):
         "x86_64-linux": {}
     }
     ctx = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
     }
     args = Namespace(verbose=True, include_unavailable=True)
 

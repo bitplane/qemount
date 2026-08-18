@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR=/host/build/guest/${TARGET_ARCH}-haiku/r1-beta6-hrev59919+1
+OUTPUT_DIR=/host/build/guest/${MOUNTIN_TARGET_ARCH}-haiku/r1-beta6-hrev59919+1
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
-BUILD_JOBS=${BUILD_JOBS:-1}
+MOUNTIN_BUILD_JOBS=${MOUNTIN_BUILD_JOBS:-1}
 CACHE_DIR=/src/haiku/generated
 
 # The compiler toolbox defaults ordinary consumers to the Haiku target. Jam's
@@ -12,9 +12,9 @@ unset CC AR STRIP READELF
 
 cd "$CACHE_DIR"
 
-jam -q -j"$BUILD_JOBS" \
-    "-sHAIKU_IMAGE_SIZE=$HAIKU_IMAGE_SIZE" \
-    "-sHAIKU_REVISION=$HAIKU_REVISION" \
+jam -q -j"$MOUNTIN_BUILD_JOBS" \
+    "-sHAIKU_IMAGE_SIZE=$MOUNTIN_HAIKU_IMAGE_SIZE" \
+    "-sHAIKU_REVISION=$MOUNTIN_HAIKU_REVISION" \
     @mountin-raw
 
 mkdir -p "$OUTPUT_DIR"

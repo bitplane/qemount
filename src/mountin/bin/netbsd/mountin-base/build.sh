@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-OUTPUT_DIR="/host/build/bin/${TARGET_ARCH}-netbsd"
-SHARE_DIR="/host/build/share/${TARGET_ARCH}-netbsd"
+OUTPUT_DIR="/host/build/bin/${MOUNTIN_TARGET_ARCH}-netbsd"
+SHARE_DIR="/host/build/share/${MOUNTIN_TARGET_ARCH}-netbsd"
 
 mkdir -p "$OUTPUT_DIR" "$SHARE_DIR"
 cp /opt/mountin/mountin-rescue "$OUTPUT_DIR/mountin-rescue"

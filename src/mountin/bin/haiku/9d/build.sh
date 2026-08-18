@@ -2,7 +2,7 @@
 set -eu
 
 NINED_SOURCE=/work/9d
-OUTPUT_DIR=/host/build/bin/${TARGET_ARCH}-haiku
+OUTPUT_DIR=/host/build/bin/${MOUNTIN_TARGET_ARCH}-haiku
 
 rm -rf "$NINED_SOURCE"
 mkdir -p "$NINED_SOURCE" "$OUTPUT_DIR"

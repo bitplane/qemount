@@ -1,11 +1,11 @@
 ---
 title: Linux 2.6 Boot
 requires:
-  - guest/${TARGET_ARCH}-linux/2.6/kernel
-  - bin/qemu/${TARGET_ARCH}-linux/rootfs/rootfs.img
+  - guest/${MOUNTIN_TARGET_ARCH}-linux/2.6/kernel
+  - bin/qemu/${MOUNTIN_TARGET_ARCH}-linux/rootfs/rootfs.img
 provides:
-  - bin/qemu/${TARGET_ARCH}-linux/2.6/boot/kernel
-  - bin/qemu/${TARGET_ARCH}-linux/2.6/boot/rootfs.img
+  - bin/qemu/${MOUNTIN_TARGET_ARCH}-linux/2.6/boot/kernel
+  - bin/qemu/${MOUNTIN_TARGET_ARCH}-linux/2.6/boot/rootfs.img
 support:
   # filesystems
   - format/fs/ext2

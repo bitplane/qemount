@@ -1,18 +1,18 @@
 ---
 title: PureDarwin mountin Appliance
 env:
-  BUILDER: builder/disk/qemu
-  PUREDARWIN_IMAGE_SIZE: 48M
+  MOUNTIN_BUILDER: builder/disk/qemu
+  MOUNTIN_PUREDARWIN_IMAGE_SIZE: 48M
 requires:
   - docker:builder/disk/qemu
-  - guest/${TARGET_PLATFORM}/17.4/system
-  - guest/${BUILD_ARCH}-linux/6.12/kernel
-  - guest/${BUILD_ARCH}-linux/base/rootfs.img
-  - bin/${TARGET_ARCH}-darwin/9d
-  - bin/${TARGET_ARCH}-darwin/stream64
-  - bin/${TARGET_ARCH}-darwin/mountin-init
+  - guest/${MOUNTIN_TARGET_PLATFORM}/17.4/system
+  - guest/${MOUNTIN_BUILD_ARCH}-linux/6.12/kernel
+  - guest/${MOUNTIN_BUILD_ARCH}-linux/base/rootfs.img
+  - bin/${MOUNTIN_TARGET_ARCH}-darwin/9d
+  - bin/${MOUNTIN_TARGET_ARCH}-darwin/stream64
+  - bin/${MOUNTIN_TARGET_ARCH}-darwin/mountin-init
 provides:
-  - bin/qemu/${TARGET_PLATFORM}/17.4/puredarwin.raw
+  - bin/qemu/${MOUNTIN_TARGET_PLATFORM}/17.4/puredarwin.raw
 ---
 
 # PureDarwin mountin Appliance

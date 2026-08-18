@@ -16,10 +16,10 @@ from mountin.provider_cache import provider_cache_container
 
 PACKAGE_DIR = Path(__file__).parents[2] / "src" / "mountin"
 CONTEXT = {
-    "BUILD_PLATFORM": "x86_64-linux",
-    "BUILD_ARCH": "x86_64",
-    "BUILD_OS": "linux",
-    "BUILD_JOBS": "1",
+    "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+    "MOUNTIN_BUILD_ARCH": "x86_64",
+    "MOUNTIN_BUILD_OS": "linux",
+    "MOUNTIN_BUILD_JOBS": "1",
 }
 
 
@@ -175,10 +175,10 @@ def test_only_amiga_fixtures_depend_on_amiga_manifest():
 
 def test_fixed_arch_guests_resolve_on_arm_hosts():
     context = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -197,10 +197,10 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
 
 def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     context = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -216,10 +216,10 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
 
 def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     context = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
     }
     providers = buildable_providers(context)
 
@@ -231,10 +231,10 @@ def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
 
 def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
     arm_context = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
     }
 
     for context in (CONTEXT, arm_context):
@@ -257,15 +257,15 @@ def test_netbsd_cross_build_matrix_and_host_native_disk_tools():
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@x86_64-netbsd" in x86_guest["nodes"]
     assert "builder/compiler/netbsd/10.0@aarch64-netbsd" in arm_data["nodes"]
-    assert arm_guest["nodes"]["builder/compiler/netbsd/10.0@aarch64-netbsd"]["meta"]["execution_env"]["BUILD_JOBS"] == "1"
+    assert arm_guest["nodes"]["builder/compiler/netbsd/10.0@aarch64-netbsd"]["meta"]["execution_env"]["MOUNTIN_BUILD_JOBS"] == "1"
 
 
 def test_9front_cross_build_matrix():
     arm_context = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
-        "BUILD_JOBS": "1",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
     }
 
     for context in (CONTEXT, arm_context):

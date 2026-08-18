@@ -13,7 +13,7 @@ DATA_DIR = Path(__file__).parent / "data"
 def test_build_provides_index_simple():
     """Index maps outputs to paths."""
     cat = load(DATA_DIR / "vars")
-    ctx = {"BUILD_ARCH": "x86_64", "TARGET_ARCH": "x86_64"}
+    ctx = {"MOUNTIN_BUILD_ARCH": "x86_64", "MOUNTIN_TARGET_ARCH": "x86_64"}
 
     index = build_provides_index(cat, ctx)
 
@@ -24,8 +24,8 @@ def test_build_provides_index_simple():
 def test_build_provides_index_enumerates_platforms_independently_of_build_host():
     cat = load(DATA_DIR / "vars")
 
-    index_x86 = build_provides_index(cat, {"BUILD_ARCH": "x86_64", "TARGET_ARCH": "x86_64"})
-    index_arm = build_provides_index(cat, {"BUILD_ARCH": "aarch64", "TARGET_ARCH": "aarch64"})
+    index_x86 = build_provides_index(cat, {"MOUNTIN_BUILD_ARCH": "x86_64", "MOUNTIN_TARGET_ARCH": "x86_64"})
+    index_arm = build_provides_index(cat, {"MOUNTIN_BUILD_ARCH": "aarch64", "MOUNTIN_TARGET_ARCH": "aarch64"})
 
     assert "output/x86_64/thing" in index_x86
     assert "output/aarch64/thing" in index_x86
@@ -49,9 +49,9 @@ def test_build_host_filter_propagates_to_dependents():
     cat = load(DATA_DIR / "deps")
     cat["paths"]["b"]["meta"]["build_platforms"] = {"x86_64-linux": {}}
     ctx = {
-        "BUILD_PLATFORM": "aarch64-linux",
-        "BUILD_ARCH": "aarch64",
-        "BUILD_OS": "linux",
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
     }
 
     outputs = build_output_index(cat, ctx)
@@ -84,9 +84,9 @@ def test_same_provider_expands_to_distinct_platform_instances():
         }
     }
     context = {
-        "BUILD_PLATFORM": "x86_64-linux",
-        "BUILD_ARCH": "x86_64",
-        "BUILD_OS": "linux",
+        "MOUNTIN_BUILD_PLATFORM": "x86_64-linux",
+        "MOUNTIN_BUILD_ARCH": "x86_64",
+        "MOUNTIN_BUILD_OS": "linux",
     }
     outputs = build_output_index(cat, context)
 
@@ -112,10 +112,10 @@ def test_build_output_index_honours_source_kind():
     }
 
     checkout = build_output_index(
-        cat, {"BUILD_PLATFORM": "x86_64-linux", "SOURCE_KIND": "checkout"}
+        cat, {"MOUNTIN_BUILD_PLATFORM": "x86_64-linux", "MOUNTIN_SOURCE_KIND": "checkout"}
     )
     distribution = build_output_index(
-        cat, {"BUILD_PLATFORM": "x86_64-linux", "SOURCE_KIND": "distribution"}
+        cat, {"MOUNTIN_BUILD_PLATFORM": "x86_64-linux", "MOUNTIN_SOURCE_KIND": "distribution"}
     )
 
     assert checkout["release/package"]["buildable"]

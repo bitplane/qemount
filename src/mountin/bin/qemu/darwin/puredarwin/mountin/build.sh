@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-SYSTEM=/host/build/guest/${TARGET_PLATFORM}/17.4/system
+SYSTEM=/host/build/guest/${MOUNTIN_TARGET_PLATFORM}/17.4/system
 BASE_SYSTEM=$SYSTEM/base-system.tar.gz
 BOOT_DIR=$SYSTEM/boot
-NINED=/host/build/bin/${TARGET_ARCH}-darwin/9d
-STREAM64=/host/build/bin/${TARGET_ARCH}-darwin/stream64
-MOUNTIN_INIT=/host/build/bin/${TARGET_ARCH}-darwin/mountin-init
-KERNEL=/host/build/guest/${BUILD_ARCH}-linux/6.12/kernel
-ROOTFS=/host/build/guest/${BUILD_ARCH}-linux/base/rootfs.img
-OUTPUT_DIR=/host/build/bin/qemu/${TARGET_PLATFORM}/17.4
+NINED=/host/build/bin/${MOUNTIN_TARGET_ARCH}-darwin/9d
+STREAM64=/host/build/bin/${MOUNTIN_TARGET_ARCH}-darwin/stream64
+MOUNTIN_INIT=/host/build/bin/${MOUNTIN_TARGET_ARCH}-darwin/mountin-init
+KERNEL=/host/build/guest/${MOUNTIN_BUILD_ARCH}-linux/6.12/kernel
+ROOTFS=/host/build/guest/${MOUNTIN_BUILD_ARCH}-linux/base/rootfs.img
+OUTPUT_DIR=/host/build/bin/qemu/${MOUNTIN_TARGET_PLATFORM}/17.4
 OUTPUT=$OUTPUT_DIR/puredarwin.raw
 STAGING=/work/root
 SOURCE=/work/source.ext2
@@ -17,14 +17,14 @@ PARTITION=/work/root.hfsplus
 DISK=/work/puredarwin.raw
 
 source /build/qemu-linux-arch.sh
-set_qemu_linux_arch_profile "$BUILD_ARCH"
+set_qemu_linux_arch_profile "$MOUNTIN_BUILD_ARCH"
 
 rm -rf "$STAGING"
 mkdir -p "$STAGING" "$OUTPUT_DIR"
 rm -f "$SOURCE" "$PARTITION" "$DISK" "$OUTPUT.tmp"
 tar -xzf "$BASE_SYSTEM" -C "$STAGING"
 
-truncate -s "$PUREDARWIN_IMAGE_SIZE" "$DISK"
+truncate -s "$MOUNTIN_PUREDARWIN_IMAGE_SIZE" "$DISK"
 disk_bytes=$(stat -c %s "$DISK")
 partition_offset=$((1024 * 1024))
 if [ "$disk_bytes" -le "$partition_offset" ]; then

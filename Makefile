@@ -4,9 +4,9 @@
 
 PROJECT_NAME := mountin
 
-BUILD_PLATFORM ?= $(shell ./scripts/canonical_arch.sh)-linux
+MOUNTIN_BUILD_PLATFORM ?= $(shell ./scripts/canonical_arch.sh)-linux
 REGISTRY ?= localhost
-export BUILD_PLATFORM
+export MOUNTIN_BUILD_PLATFORM
 export REGISTRY
 
 all: .venv/.installed-dev  ## build all locally buildable output platforms

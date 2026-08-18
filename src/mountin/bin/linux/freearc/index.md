@@ -13,7 +13,7 @@ build_requires:
 requires:
   - docker:builder/compiler/freearc
 provides:
-  - bin/${TARGET_ARCH}-linux-gnu/freearc
+  - bin/${MOUNTIN_TARGET_ARCH}-linux-gnu/freearc
 ---
 
 # FreeArc

@@ -1,5 +1,5 @@
-ARG BUILDER
-FROM ${BUILDER}
+ARG MOUNTIN_BUILDER
+FROM ${MOUNTIN_BUILDER}
 
 COPY --chmod=0755 build.sh /build/build.sh
 COPY ufs-fixture-init.c /build/ufs-fixture-init.c

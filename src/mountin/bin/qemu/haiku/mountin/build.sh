@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-BASE_IMAGE=/host/build/guest/${TARGET_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
-NINED=/host/build/bin/${TARGET_ARCH}-haiku/9d
-INIT=/host/build/bin/${TARGET_ARCH}-haiku/mountin-init
-OUTPUT_DIR=/host/build/bin/qemu/${TARGET_ARCH}-haiku/r1-beta6-hrev59919+1
+BASE_IMAGE=/host/build/guest/${MOUNTIN_TARGET_ARCH}-haiku/r1-beta6-hrev59919+1/haiku.image
+NINED=/host/build/bin/${MOUNTIN_TARGET_ARCH}-haiku/9d
+INIT=/host/build/bin/${MOUNTIN_TARGET_ARCH}-haiku/mountin-init
+OUTPUT_DIR=/host/build/bin/qemu/${MOUNTIN_TARGET_ARCH}-haiku/r1-beta6-hrev59919+1
 OUTPUT_IMAGE=$OUTPUT_DIR/haiku.image
 WORK_IMAGE=$OUTPUT_DIR/.haiku.image.tmp
 

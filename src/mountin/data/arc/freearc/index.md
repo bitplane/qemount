@@ -2,7 +2,7 @@
 format: arc/freearc
 requires:
   - docker:builder/compiler/freearc
-  - bin/${BUILD_ARCH}-linux-gnu/freearc
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-gnu/freearc
   - data/templates/basic.tar
 provides:
   - data/arc/basic.freearc

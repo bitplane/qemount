@@ -1,11 +1,11 @@
 ---
 format: fs/mfs
 build_requires:
-  - bin/${BUILD_ARCH}-linux-musl/mkfs.mfs
+  - bin/${MOUNTIN_BUILD_ARCH}-linux-musl/mkfs.mfs
 requires:
   - docker:builder/disk/qemu
-  - guest/${BUILD_ARCH}-linux/6.12/kernel
-  - guest/${BUILD_ARCH}-linux/base/rootfs.img
+  - guest/${MOUNTIN_BUILD_ARCH}-linux/6.12/kernel
+  - guest/${MOUNTIN_BUILD_ARCH}-linux/base/rootfs.img
   - data/templates/basic.tar
 provides:
   - data/fs/basic.mfs

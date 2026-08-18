@@ -5,7 +5,7 @@ requires:
 source_kinds:
   - checkout
 provides:
-  - release/${RELEASE_REF}/pypi
+  - release/${MOUNTIN_RELEASE_REF}/pypi
 ---
 
 # Python Distribution

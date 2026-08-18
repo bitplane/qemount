@@ -1,13 +1,13 @@
 ---
 title: Child
 env:
-  BUILDER: builder/${BUILD_ARCH}
+  MOUNTIN_BUILDER: builder/${MOUNTIN_BUILD_ARCH}
 requires:
-  - docker:${BUILDER}
+  - docker:${MOUNTIN_BUILDER}
 provides:
-  - output/${TARGET_ARCH}/thing
+  - output/${MOUNTIN_TARGET_ARCH}/thing
 ---
 
 # Child
 
-Defines BUILDER from inherited BUILD_ARCH.
+Defines MOUNTIN_BUILDER from inherited MOUNTIN_BUILD_ARCH.
