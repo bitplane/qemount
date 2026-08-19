@@ -38,7 +38,7 @@ top_make()
 {
     HOST_CPU_FAMILY=${MOUNTIN_BUILD_PLATFORM%%-*}
     /usr/bin/bmake -j"${MOUNTIN_BUILD_JOBS}" \
-        MOUNTIN_BUILD_ARCH=x86_64 \
+        BUILD_ARCH=x86_64 \
         HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
         HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
         HOST_LDADD="/tmp/host-compat.o $(pkg-config --libs --static libbsd-overlay) -lresolv -ltirpc" \
@@ -49,8 +49,8 @@ top_make()
         NOCLEAN=1 \
         NO_GAMES=1 \
         NO_SHARE=1 \
-        MOUNTIN_TARGET_ARCH=x86_64 \
-        MOUNTIN_TARGET_PLATFORM=pc64 \
+        TARGET_ARCH=x86_64 \
+        TARGET_PLATFORM=pc64 \
         WORLD_VERSION=600401 \
         "$@"
 }
@@ -83,8 +83,8 @@ bmake -j"${MOUNTIN_BUILD_JOBS}" \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
     NOCLEAN=1 \
-    MOUNTIN_TARGET_ARCH=x86_64 \
-    MOUNTIN_TARGET_PLATFORM=pc64 \
+    TARGET_ARCH=x86_64 \
+    TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     buildkernel
 
@@ -98,8 +98,8 @@ bmake \
     MACHINE=x86_64 \
     MACHINE_ARCH=x86_64 \
     MACHINE_PLATFORM=pc64 \
-    MOUNTIN_TARGET_ARCH=x86_64 \
-    MOUNTIN_TARGET_PLATFORM=pc64 \
+    TARGET_ARCH=x86_64 \
+    TARGET_PLATFORM=pc64 \
     WORLD_VERSION=600401 \
     INSTALL="$TARGET_INSTALL" \
     INSTALLSTRIPPED=1 \

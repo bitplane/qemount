@@ -60,7 +60,7 @@ RUN set -eu; \
     rmdir /usr/obj; \
     ln -s "$CACHE_DIR/obj" /usr/obj; \
     set -- bmake -j"$MOUNTIN_BUILD_JOBS" \
-        MOUNTIN_BUILD_ARCH=x86_64 \
+        BUILD_ARCH=x86_64 \
         HOST_CPU_FAMILY="$HOST_CPU_FAMILY" \
         HOST_CFLAGS="-D_GNU_SOURCE -DDRAGONFLY_LINUX_HOST -include /tmp/host-compat.h -I/usr/include/tirpc $(pkg-config --cflags libbsd-overlay)" \
         HOST_LDADD="/tmp/host-compat.o $(pkg-config --libs --static libbsd-overlay) -lresolv -ltirpc" \
@@ -71,8 +71,8 @@ RUN set -eu; \
         NOCLEAN=1 \
         NO_GAMES=1 \
         NO_SHARE=1 \
-        MOUNTIN_TARGET_ARCH=x86_64 \
-        MOUNTIN_TARGET_PLATFORM=pc64 \
+        TARGET_ARCH=x86_64 \
+        TARGET_PLATFORM=pc64 \
         WORLD_VERSION=600401; \
     "$@" crossworld; \
     "$@" _includes; \
