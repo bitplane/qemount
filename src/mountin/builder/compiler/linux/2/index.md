@@ -1,5 +1,6 @@
 ---
 title: Linux 2.6 Compiler
+-build_platforms: true
 build_platforms:
   x86_64-linux: {}
 provides:

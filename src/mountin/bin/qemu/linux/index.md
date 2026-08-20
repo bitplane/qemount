@@ -1,14 +1,11 @@
 ---
 title: Linux QEMU Guests
 output_platforms:
-  x86_64-linux:
-    build_platforms:
-      x86_64-linux: {}
-  aarch64-linux:
-    build_platforms:
-      aarch64-linux: {}
+  x86_64-linux: {}
+  aarch64-linux: {}
 env:
   MOUNTIN_LIBC: musl
+  MOUNTIN_BUILDER: builder/compiler/linux/6/${MOUNTIN_TARGET_ARCH}
 ---
 
 # Linux QEMU Guests

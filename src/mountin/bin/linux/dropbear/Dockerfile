@@ -2,7 +2,6 @@ ARG MOUNTIN_BUILDER
 FROM ${MOUNTIN_BUILDER}
 
 RUN apk add --no-cache \
-    zlib-dev \
     autoconf \
     automake
 

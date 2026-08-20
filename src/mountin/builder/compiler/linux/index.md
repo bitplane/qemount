@@ -1,8 +1,13 @@
 ---
 title: Linux Compilers
+build_platforms:
+  x86_64-linux: {}
+  aarch64-linux: {}
+provides:
+  - docker:builder/compiler/linux
 ---
 
 # Linux Compilers
 
-GCC toolchains for building Linux userspace binaries. Uses musl libc for
-fully static binaries.
+Host-native bootstrap for building Linux compiler toolboxes. Target compilers
+live under their matching Linux generation.

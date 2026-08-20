@@ -2,6 +2,7 @@
 set -e
 
 BINDIR="/host/build/bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}"
+SHAREDIR="/host/build/share/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}"
 ROOT="/work/root"
 rm -rf "$ROOT"
 cp -a /root "$ROOT"
@@ -11,9 +12,10 @@ cp -v "$BINDIR/busybox" "$ROOT/bin/"
 cp -v "$BINDIR/socat" "$ROOT/bin/"
 cp -v "$BINDIR/dropbearmulti" "$ROOT/bin/"
 cd "$ROOT/bin"
-for cmd in $(./busybox --list); do
+while IFS= read -r applet; do
+    cmd=${applet##*/}
     [ ! -e "$cmd" ] && ln -s busybox "$cmd"
-done
+done < "$SHAREDIR/busybox.links"
 for cmd in dropbear dbclient dropbearkey dropbearconvert scp; do
     [ ! -e "$cmd" ] && ln -s dropbearmulti "$cmd"
 done

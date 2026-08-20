@@ -1,7 +1,5 @@
 ---
 title: Linux 6.12 Guest
-env:
-  MOUNTIN_BUILDER: builder/compiler/linux/6
 requires:
   - docker:${MOUNTIN_BUILDER}
 ---

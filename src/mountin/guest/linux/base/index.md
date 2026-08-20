@@ -1,10 +1,9 @@
 ---
 title: Linux base rootfs
-env:
-  MOUNTIN_BUILDER: builder/compiler/linux/6
 requires:
   - docker:${MOUNTIN_BUILDER}
   - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/busybox
+  - share/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/busybox.links
   - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/socat
   - bin/${MOUNTIN_TARGET_ARCH}-linux-${MOUNTIN_LIBC}/dropbearmulti
 provides:

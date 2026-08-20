@@ -214,6 +214,31 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     assert "guest/linux/2.6/kernel@x86_64-linux" not in reiserfs["nodes"]
 
 
+def test_linux_6_12_cross_build_matrix():
+    arm_context = {
+        "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
+        "MOUNTIN_BUILD_ARCH": "aarch64",
+        "MOUNTIN_BUILD_OS": "linux",
+        "MOUNTIN_BUILD_JOBS": "1",
+    }
+
+    for context in (CONTEXT, arm_context):
+        providers = buildable_providers(context)
+        for arch in ("x86_64", "aarch64"):
+            assert f"docker:builder/compiler/linux/6/{arch}" in providers
+            assert f"bin/{arch}-linux-musl/9d" in providers
+            assert f"guest/{arch}-linux/6.12/kernel" in providers
+            assert f"bin/qemu/{arch}-linux/6.12/boot/kernel" in providers
+
+    for arch, context in (("aarch64", CONTEXT), ("x86_64", arm_context)):
+        graph = graph_for(f"bin/qemu/{arch}-linux/6.12/boot/kernel", context)
+        nodes = graph["nodes"]
+        assert f"builder/compiler/linux/6@{arch}-linux-musl" in nodes
+        assert f"bin/linux/9d@{arch}-linux-musl" in nodes
+        assert f"guest/linux/6.12/kernel@{arch}-linux" in nodes
+        assert f"guest/linux/base@{arch}-linux" in nodes
+
+
 def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
     context = {
         "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",

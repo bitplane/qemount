@@ -3,6 +3,7 @@ title: Linux 2.6 Guest
 -output_platforms: true
 output_platforms:
   x86_64-linux: {}
+-build_platforms: true
 build_platforms:
   x86_64-linux: {}
 env:
