@@ -7,11 +7,6 @@
     - [ ] Fix this in NetBSD, but in a way that will actually work in future.
           Maybe have a shell?
 - [ ] Python build system
-  - [x] replace the macOS SDK in PureDarwin guest builds
-    - [x] install open-source Darwin headers and libraries as a reusable sysroot
-    - [x] publish the sysroot and compiler driver as the PureDarwin toolbox
-    - [x] build 9d and mountin-init without the Apple SDK
-    - [x] prove both binaries inside the PureDarwin guest
   - [ ] define one minimal headless QEMU feature profile across host platforms
     - [ ] build macOS-hosted QEMU against the PureDarwin toolbox instead of the
           Apple SDK
