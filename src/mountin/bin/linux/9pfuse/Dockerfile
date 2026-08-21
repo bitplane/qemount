@@ -3,9 +3,7 @@ FROM ${MOUNTIN_BUILDER}
 
 RUN apk add --no-cache \
     meson \
-    cmake \
-    fuse-dev \
-    fuse-static \
+    pkgconf \
     linux-headers
 
 WORKDIR /work
