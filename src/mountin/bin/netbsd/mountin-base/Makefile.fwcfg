@@ -1,0 +1,6 @@
+PROG=mountin-fwcfg
+NOMAN=
+LDSTATIC=-static
+NOPIE=
+
+.include <bsd.prog.mk>

@@ -78,6 +78,7 @@ QEMU_ARGS=(
     "${QEMU_BOOT_ARGS[@]}"
     -m 256
     -fw_cfg "name=opt/mountin/mode,string=$MODE"
+    -device virtio-rng-pci
 )
 
 # Add user disk images (become ld1, ld2, ld3, ...)

@@ -2,6 +2,7 @@ ARG MOUNTIN_BUILDER
 FROM ${MOUNTIN_BUILDER}
 
 COPY Makefile list /work/mountin-crunch/
+COPY mountin-fwcfg.c Makefile.fwcfg /work/mountin-fwcfg/
 COPY mount-filecore-node.patch /work/
 
 RUN set -eu; \
@@ -13,15 +14,17 @@ RUN set -eu; \
     NBARCH=$(cat /tmp/nbarch); \
     NBMAKE="/usr/tools/bin/nbmake-$NBARCH"; \
     "$NBMAKE" -C /work/mountin-crunch mountin-rescue; \
+    "$NBMAKE" -C /work/mountin-fwcfg -f Makefile.fwcfg mountin-fwcfg; \
     "$NBMAKE" -C /usr/src/etc MAKEDEV; \
     mkdir -p /opt/mountin; \
     cp /work/mountin-crunch/mountin-rescue /opt/mountin/; \
+    cp /work/mountin-fwcfg/mountin-fwcfg /opt/mountin/; \
     { \
         echo '. type=dir optional'; \
         echo './dev type=dir optional'; \
         cd /work; \
         /bin/sh /usr/src/etc/MAKEDEV -s \
-            std ttyVI \
+            std ttyVI qemufwcfg0 \
             ld0 ld1 ld2 ld3 ld4 ld5 ld6 ld7 ld8 ld9 ld10 ld11 ld12 ld13 ld14 ld15 \
             dk0 dk1 dk2 dk3 dk4 dk5 dk6 dk7 dk8 dk9 dk10 dk11 dk12 dk13 dk14 dk15 \
             dk16 dk17 dk18 dk19 dk20 dk21 dk22 dk23 dk24 dk25 dk26 dk27 dk28 dk29 \
@@ -30,7 +33,7 @@ RUN set -eu; \
             dk58 dk59 dk60 dk61 dk62 dk63 \
         | sed -n '2,$s#^\./#./dev/#p'; \
     } > /opt/mountin/devices.mtree; \
-    rm -rf /usr/src /work/mountin-crunch
+    rm -rf /usr/src /work/mountin-crunch /work/mountin-fwcfg
 
 COPY --chmod=755 build.sh /build.sh
 ENTRYPOINT ["/build.sh"]

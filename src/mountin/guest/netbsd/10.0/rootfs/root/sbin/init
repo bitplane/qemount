@@ -149,10 +149,8 @@ fi
 export MOUNT_SUCCESS
 export MOUNT_POINT
 
-# Detect mode from QEMU fw_cfg
-# QEMU passes mode via: -fw_cfg name=opt/mountin/mode,string=<mode>
-# Try to read from sysctl first, fall back to sh
-MODE=$(sysctl -n hw.qemufwcfg.opt.mountin.mode 2>/dev/null || echo "sh")
+# QEMU passes mode through its architecture-independent fw_cfg file directory.
+MODE=$(mountin-fwcfg opt/mountin/mode 2>/dev/null || echo "sh")
 
 SCRIPT="/init.${MODE}"
 

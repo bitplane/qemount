@@ -6,6 +6,7 @@ build_requires:
   - sources/netbsd-10.0-sharesrc.tgz
 provides:
   - bin/${MOUNTIN_TARGET_ARCH}-netbsd/mountin-rescue
+  - bin/${MOUNTIN_TARGET_ARCH}-netbsd/mountin-fwcfg
   - share/${MOUNTIN_TARGET_ARCH}-netbsd/mountin-devices.mtree
 ---
 

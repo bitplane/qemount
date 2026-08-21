@@ -25,12 +25,11 @@ echo "Stripping kernel..."
 "$TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-strip" \
     -o /work/netbsd.stripped /work/netbsd.gdb
 
-# Copy to output
-mkdir -p "$OUTPUT_DIR"
-cp /work/netbsd.stripped "$OUTPUT_DIR/netbsd"
-
 case "$MOUNTIN_TARGET_ARCH" in
     x86_64)
+        mkdir -p "$OUTPUT_DIR"
+        cp /work/netbsd.stripped "$OUTPUT_DIR/netbsd"
+
         echo "Creating BIOS boot image..."
         mkdir -p /work/bootfs
         cp /work/netbsd.stripped /work/bootfs/netbsd
@@ -51,7 +50,13 @@ case "$MOUNTIN_TARGET_ARCH" in
         cp /work/boot.img "$OUTPUT_DIR/boot.img"
         ;;
     aarch64)
-        # QEMU's virt machine loads the kernel directly.
+        # Match NetBSD's evbarm64 mk.generic64 rules. QEMU cannot boot the
+        # regular high-address ELF kernel directly.
+        mkdir -p "$OUTPUT_DIR"
+        "$TOOLDIR/bin/${NBGNUTRIPLE}--netbsd-objcopy" \
+            -S -O binary /work/netbsd.stripped /work/netbsd.bin
+        "$TOOLDIR/bin/nbmkubootimage" -f arm64 -u -a 0x200000 \
+            /work/netbsd.bin "$OUTPUT_DIR/netbsd"
         ;;
     *)
         echo "Unsupported NetBSD boot architecture: $MOUNTIN_TARGET_ARCH" >&2

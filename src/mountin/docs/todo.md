@@ -20,7 +20,7 @@
       - [ ] Linux 2.6
       - [x] Haiku
       - [ ] AROS
-    - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
+    - [x] add an aarch64 kernel configuration and QEMU boot path for NetBSD
     - [ ] define fallback policy for guests that only support x86
 
 ## 2. Link it in

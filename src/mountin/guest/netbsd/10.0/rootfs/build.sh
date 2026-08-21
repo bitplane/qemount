@@ -15,6 +15,7 @@ mkdir -p /ramdisk/bin /ramdisk/sbin /ramdisk/dev /ramdisk/etc \
 # Copy the mountin-specific crunchgen multicall binary.
 RESCUE="/ramdisk/.rescue"
 cp "$BIN_DIR/mountin-rescue" "$RESCUE"
+cp "$BIN_DIR/mountin-fwcfg" /ramdisk/bin/mountin-fwcfg
 
 # Hard link user commands in /bin
 for cmd in cat cp dd df expr ls mkdir rm rmdir sh stty sync sort uname; do
