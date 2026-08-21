@@ -214,6 +214,13 @@ def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
     assert "guest/linux/2.6/kernel@x86_64-linux" not in reiserfs["nodes"]
 
 
+def test_linux_2_6_does_not_declare_aarch64_outputs():
+    providers = buildable_providers(CONTEXT)
+
+    assert "guest/aarch64-linux/2.6/kernel" not in providers
+    assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
+
+
 def test_linux_6_12_cross_build_matrix():
     arm_context = {
         "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
