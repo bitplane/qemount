@@ -17,8 +17,15 @@ make -C "$NINED_SOURCE" release \
     RELEASE_CFLAGS="-Os -g0 -DNDEBUG -DS9_PATH_MAX=1024" \
     THREAD_LIBS=
 
-"$READELF" -h "$NINED_SOURCE/build/9d" \
-    | grep -q "Advanced Micro Devices X86-64"
+case "$MOUNTIN_TARGET_ARCH" in
+    x86_64) elf_machine="Advanced Micro Devices X86-64" ;;
+    aarch64) elf_machine="AArch64" ;;
+    *)
+        echo "Unsupported Haiku architecture: $MOUNTIN_TARGET_ARCH" >&2
+        exit 1
+        ;;
+esac
+"$READELF" -h "$NINED_SOURCE/build/9d" | grep -q "Machine:.*$elf_machine"
 "$READELF" -d "$NINED_SOURCE/build/9d" \
     | grep -q "Shared library: \\[libroot.so\\]"
 if "$READELF" -d "$NINED_SOURCE/build/9d" \

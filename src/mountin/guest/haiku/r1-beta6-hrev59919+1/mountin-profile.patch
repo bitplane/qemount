@@ -17,17 +17,18 @@
  	case "minimum-*" : {
  		HAIKU_BUILD_TYPE = minimum ;
  		EnableBuildFeatures minimum_image ;
-@@ -64,6 +72,9 @@
+@@ -64,6 +74,10 @@
  	DefineBuildProfile bootstrap-anyboot : anyboot-image
  		: "haiku-bootstrap-anyboot.iso" ;
  
 +	# mountin appliance profile
 +	DefineBuildProfile mountin-raw : image : "haiku-mountin.image" ;
++	DefineBuildProfile mountin-mmc : haiku-mmc-image : "haiku-mountin.mmc" ;
 +
  	# minimum profiles
  	DefineBuildProfile minimum-raw : image : "haiku-minimum.image" ;
  	DefineBuildProfile minimum-mmc : haiku-mmc-image : "haiku-minimum.mmc" ;
-@@ -177,6 +188,11 @@
+@@ -177,6 +191,11 @@
  			}
  		}
  

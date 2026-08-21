@@ -18,7 +18,7 @@
     - [ ] cross-compiling
       - [ ] Linux 6.12
       - [ ] Linux 2.6
-      - [ ] Haiku
+      - [x] Haiku
       - [ ] AROS
     - [ ] add an aarch64 kernel configuration and QEMU boot path for NetBSD
     - [ ] define fallback policy for guests that only support x86

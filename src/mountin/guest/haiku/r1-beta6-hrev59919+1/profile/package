@@ -10,7 +10,13 @@ AddFilesToPackage add-ons kernel busses ata :
 	ide_isa@x86
 	;
 AddFilesToPackage add-ons kernel busses pci :
+	<pci>ecam@arm64
 	<pci>x86@x86,x86_64
+	;
+AddFilesToPackage add-ons kernel busses usb :
+	<usb>ehci@arm64
+	<usb>ohci@arm64
+	<usb>xhci@arm64
 	;
 AddFilesToPackage add-ons kernel file_systems
 	: $(SYSTEM_ADD_ONS_FILE_SYSTEMS) ;
@@ -26,7 +32,7 @@ AddFilesToPackage add-ons kernel partitioning_systems :
 	session
 	;
 
-if $(MOUNTIN_TARGET_ARCH) = x86 || $(MOUNTIN_TARGET_ARCH) = x86_64 {
+if $(MOUNTIN_HAIKU_ARCH) = x86 || $(MOUNTIN_HAIKU_ARCH) = x86_64 {
 	AddFilesToPackage add-ons kernel cpu : generic_x86 ;
 }
 
@@ -34,12 +40,18 @@ AddNewDriversToPackage disk scsi :
 	scsi_cd
 	scsi_disk
 	;
+AddNewDriversToPackage disk :
+	usb_disk@arm64
+	;
 AddDriversToPackage :
 	dprintf
 	;
-AddDriversToPackage ports : pc_serial ;
+AddDriversToPackage ports :
+	pc_serial@x86,x86_64
+	usb_serial@arm64
+	;
 
-AddFilesToPackage : <revisioned>kernel_$(MOUNTIN_TARGET_ARCH) ;
+AddFilesToPackage : <revisioned>kernel_$(MOUNTIN_HAIKU_ARCH) ;
 AddLibrariesToPackage lib
 	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
 AddFilesToPackage : runtime_loader ;
@@ -47,22 +59,30 @@ AddFilesToPackage bin : $(SYSTEM_BIN) ;
 
 AddBootModuleSymlinksToPackage
 	acpi@x86,x86_64
+	acpi@arm64
 	ata
 	ata_adapter
 	bfs
 	dpc
 	efi_gpt
+	fdt@arm64
 	generic_ide_pci
 	ide_isa@x86
 	intel
 	isa@x86,x86_64
 	packagefs
 	pci
+	<pci>ecam@arm64
 	<pci>x86@x86,x86_64
 	scsi
 	scsi_cd
 	scsi_disk
 	scsi_periph
+	usb@arm64
+	usb_disk@arm64
+	<usb>ehci@arm64
+	<usb>ohci@arm64
+	<usb>xhci@arm64
 ;
 
 BuildHaikuPackage $(haikuPackage) : haiku_mountin ;

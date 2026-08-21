@@ -13,9 +13,9 @@ provides:
 
 # Haiku mountin Appliance
 
-Adds the mountin init and 9d to the base guest. At boot Haiku
-mounts every filesystem it recognises, then serves the resulting system root
-over its second PC serial port.
+Adds the mountin init and 9d to the base guest. At boot Haiku mounts every
+filesystem it recognises, then serves the resulting system root over a
+dedicated emulated serial device.
 
 The serial carrier handles one 9P request at a time. Use `9pfuse -n 1` when
 mounting this guest.

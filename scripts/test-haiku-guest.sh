@@ -2,12 +2,14 @@
 set -euo pipefail
 
 PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-BOOT_IMAGE=${MOUNTIN_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image}
-NINEPFUSE=${MOUNTIN_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/x86_64-linux-musl/9pfuse}
+TARGET_ARCH=${MOUNTIN_HAIKU_TARGET_ARCH:-x86_64}
+HOST_ARCH=$(uname -m)
+BOOT_IMAGE=${MOUNTIN_HAIKU_BOOT_IMAGE:-$PROJECT_ROOT/build/bin/qemu/$TARGET_ARCH-haiku/r1-beta6-hrev59919+1/haiku.image}
+NINEPFUSE=${MOUNTIN_HAIKU_9PFUSE:-$PROJECT_ROOT/build/bin/$HOST_ARCH-linux-musl/9pfuse}
 RUNNER=$PROJECT_ROOT/src/mountin/builder/run/qemu-haiku/run.sh
 PROBE=$PROJECT_ROOT/scripts/probe_9p_socket.py
 TEMPLATE=$PROJECT_ROOT/build/data/templates/basic.tar
-LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/integration
+LOG_DIR=$PROJECT_ROOT/build/logs/bin/qemu/$TARGET_ARCH-haiku/r1-beta6-hrev59919+1/integration
 TEMP_PARENT=${MOUNTIN_TEST_TMPDIR:-$PROJECT_ROOT/build/tmp}
 WRITE_TEST_SIZE=${MOUNTIN_HAIKU_WRITE_TEST_SIZE:-4096}
 KEEP_TEST_WORK=${MOUNTIN_KEEP_TEST_WORK:-0}
@@ -17,7 +19,7 @@ if [[ ${MOUNTIN_HAIKU_9PFUSE_DEBUG:-0} == 1 ]]; then
     NINEPFUSE_ARGS=(-D "${NINEPFUSE_ARGS[@]}")
 fi
 
-for command in qemu-system-x86_64 python3 timeout cmp tar cp find grep mountpoint dd stat; do
+for command in qemu-system-$TARGET_ARCH python3 timeout cmp tar cp find grep mountpoint dd stat; do
     if ! command -v "$command" >/dev/null; then
         echo "Required command not found: $command" >&2
         exit 1
@@ -200,7 +202,7 @@ for case_name in "${cases[@]}"; do
     cp --reflink=auto "$fixture" "$target_image"
 
     echo "Testing Haiku with $case_name"
-    "$RUNNER" "$BOOT_IMAGE" -i "$target_image" -t "$target_media" \
+    "$RUNNER" "$TARGET_ARCH" "$BOOT_IMAGE" -i "$target_image" -t "$target_media" \
         -s "$socket_path" \
         >"$log_file" 2>&1 &
     QEMU_PID=$!

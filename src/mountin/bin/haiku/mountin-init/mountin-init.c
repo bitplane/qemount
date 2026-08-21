@@ -14,7 +14,11 @@
 #include <fs_volume.h>
 
 
+#if defined(__aarch64__)
+#define SERIAL_PATH "/dev/ports/usb0"
+#else
 #define SERIAL_PATH "/dev/ports/pc_serial0"
+#endif
 #define NINED_PATH "/system/non-packaged/bin/9d"
 #define DEBUG_PATH "/dev/dprintf"
 

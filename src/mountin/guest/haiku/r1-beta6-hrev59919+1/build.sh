@@ -12,10 +12,25 @@ unset CC AR STRIP READELF
 
 cd "$CACHE_DIR"
 
+case "$MOUNTIN_HAIKU_ARCH" in
+    x86_64)
+        target=@mountin-raw
+        source_image=haiku-mountin.image
+        ;;
+    arm64)
+        target=@mountin-mmc
+        source_image=haiku-mmc.image
+        ;;
+    *)
+        echo "Unsupported Haiku architecture: $MOUNTIN_HAIKU_ARCH" >&2
+        exit 1
+        ;;
+esac
+
 jam -q -j"$MOUNTIN_BUILD_JOBS" \
     "-sHAIKU_IMAGE_SIZE=$MOUNTIN_HAIKU_IMAGE_SIZE" \
     "-sHAIKU_REVISION=$MOUNTIN_HAIKU_REVISION" \
-    @mountin-raw
+    "$target"
 
 mkdir -p "$OUTPUT_DIR"
-install -m 644 "$CACHE_DIR/haiku-mountin.image" "$OUTPUT_IMAGE"
+install -m 644 "$CACHE_DIR/$source_image" "$OUTPUT_IMAGE"

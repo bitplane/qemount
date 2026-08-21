@@ -1,6 +1,7 @@
 FROM builder/compiler/haiku
 
 ARG MOUNTIN_TARGET_ARCH
+ARG MOUNTIN_HAIKU_ARCH
 ARG MOUNTIN_HAIKU_REVISION
 ARG MOUNTIN_BUILD_JOBS=1
 ARG MOUNTIN_CACHE_DIR
@@ -19,11 +20,11 @@ RUN set -eu; \
 
 RUN set -eu; \
     cache=$MOUNTIN_CACHE_DIR; \
-    cached_toolchain=$cache/cross-tools-${MOUNTIN_TARGET_ARCH}; \
-    compiler=$cached_toolchain/bin/${MOUNTIN_TARGET_ARCH}-unknown-haiku-gcc; \
+    cached_toolchain=$cache/cross-tools-${MOUNTIN_HAIKU_ARCH}; \
+    machine=$(/src/haiku/build/scripts/find_triplet "$MOUNTIN_HAIKU_ARCH"); \
+    compiler=$cached_toolchain/bin/${machine}-gcc; \
     if [ ! -x "$compiler" ]; then \
         rm -rf "$cached_toolchain" "$cached_toolchain-build"; \
-        machine=$(/src/haiku/build/scripts/find_triplet "$MOUNTIN_TARGET_ARCH"); \
         /src/haiku/build/scripts/build_cross_tools_gcc4 \
             "$machine" /src/haiku /src/buildtools "$cached_toolchain" \
             -j"$MOUNTIN_BUILD_JOBS"; \
@@ -34,13 +35,14 @@ RUN set -eu; \
 WORKDIR /src/haiku
 RUN mkdir -p generated && \
     cd generated && \
-    ../configure --cross-tools-prefix /toolchains/cross-tools-${MOUNTIN_TARGET_ARCH}/bin/${MOUNTIN_TARGET_ARCH}-unknown-haiku-
+    machine=$(../build/scripts/find_triplet "$MOUNTIN_HAIKU_ARCH") && \
+    ../configure --cross-tools-prefix /toolchains/cross-tools-${MOUNTIN_HAIKU_ARCH}/bin/${machine}-
 
 RUN set -eu; \
     cd generated; \
     jam -q -j"${MOUNTIN_BUILD_JOBS}" \
         "-sHAIKU_REVISION=${MOUNTIN_HAIKU_REVISION}" \
-        haiku_cross_devel_sysroot_${MOUNTIN_TARGET_ARCH}.hpkg; \
+        haiku_cross_devel_sysroot_${MOUNTIN_HAIKU_ARCH}.hpkg; \
     package=$(find objects/linux -type f \
         -path '*/release/tools/package/package' -print -quit); \
     test -n "$package"; \
@@ -48,7 +50,7 @@ RUN set -eu; \
     LD_LIBRARY_PATH=objects/linux/lib \
         "$package" extract \
         -C /opt/haiku-sysroot \
-        objects/haiku/${MOUNTIN_TARGET_ARCH}/packaging/packages/haiku_cross_devel_sysroot_${MOUNTIN_TARGET_ARCH}.hpkg
+        objects/haiku/${MOUNTIN_HAIKU_ARCH}/packaging/packages/haiku_cross_devel_sysroot_${MOUNTIN_HAIKU_ARCH}.hpkg
 
 RUN mkdir -p /opt/haiku-sysroot/boot/system && \
     ln -s ../../develop /opt/haiku-sysroot/boot/system/develop
@@ -56,7 +58,8 @@ RUN mkdir -p /opt/haiku-sysroot/boot/system && \
 COPY --chmod=755 cc.sh /usr/local/bin/haiku-cc
 
 RUN set -eu; \
-    TOOL_PREFIX=/toolchains/cross-tools-${MOUNTIN_TARGET_ARCH}/bin/${MOUNTIN_TARGET_ARCH}-unknown-haiku-; \
+    machine=$(/src/haiku/build/scripts/find_triplet "$MOUNTIN_HAIKU_ARCH"); \
+    TOOL_PREFIX=/toolchains/cross-tools-${MOUNTIN_HAIKU_ARCH}/bin/${machine}-; \
     mkdir -p /usr/local/libexec; \
     ln -s "${TOOL_PREFIX}gcc" /usr/local/libexec/haiku-gcc; \
     ln -s "${TOOL_PREFIX}ar" /usr/local/bin/haiku-ar; \
