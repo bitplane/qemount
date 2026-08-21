@@ -7,7 +7,11 @@ WORKDIR /src/haiku/generated
 RUN jam -q '<build>bfs_shell'
 
 # Install to standard location
-RUN cp /src/haiku/generated/objects/linux/${MOUNTIN_TARGET_ARCH}/release/tools/bfs_shell/bfs_shell /usr/local/bin/bfs_shell
+RUN set -eu; \
+    BFS_SHELL=$(find objects/linux -type f \
+        -path '*/release/tools/bfs_shell/bfs_shell' -print -quit); \
+    test -n "$BFS_SHELL"; \
+    cp "$BFS_SHELL" /usr/local/bin/bfs_shell
 
 WORKDIR /build
 COPY --chmod=755 build.sh /build/build.sh

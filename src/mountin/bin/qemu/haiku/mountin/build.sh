@@ -19,11 +19,14 @@ printf '%s\n' \
 	"cp -f :\"$INIT\" \"/myfs/system/non-packaged/servers/launch_daemon\"" \
 	| bfs_shell "$WORK_IMAGE"
 
-rm -f /work/9d.verify
+rm -f /work/9d.verify /work/init.verify
 printf '%s\n' \
 	'cp "/myfs/system/non-packaged/bin/9d" :"/work/9d.verify"' \
+	'cp "/myfs/system/non-packaged/servers/launch_daemon" :"/work/init.verify"' \
 	| bfs_shell "$WORK_IMAGE"
 cmp "$NINED" /work/9d.verify
+cmp "$INIT" /work/init.verify
 test -x /work/9d.verify
+test -x /work/init.verify
 
 mv "$WORK_IMAGE" "$OUTPUT_IMAGE"

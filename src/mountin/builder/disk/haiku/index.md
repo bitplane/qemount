@@ -2,6 +2,7 @@
 title: Haiku Disk Builder
 build_platforms:
   x86_64-linux: {}
+  aarch64-linux: {}
 env:
   MOUNTIN_TARGET_ARCH: x86_64
 requires:

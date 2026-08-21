@@ -42,7 +42,6 @@ AddDriversToPackage ports : pc_serial ;
 AddFilesToPackage : <revisioned>kernel_$(MOUNTIN_TARGET_ARCH) ;
 AddLibrariesToPackage lib
 	: [ HaikuImageGetSystemLibs ] [ HaikuImageGetPrivateSystemLibs ] ;
-AddFilesToPackage servers : launch_daemon ;
 AddFilesToPackage : runtime_loader ;
 AddFilesToPackage bin : $(SYSTEM_BIN) ;
 

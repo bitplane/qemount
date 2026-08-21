@@ -1,0 +1,14 @@
+--- a/src/system/kernel/main.cpp
++++ b/src/system/kernel/main.cpp
+@@ -382 +382,5 @@
++#ifdef HAIKU_MOUNTIN_BUILD
++		status_t status = __find_directory(B_SYSTEM_NONPACKAGED_DIRECTORY,
++#else
+ 		status_t status = __find_directory(B_SYSTEM_SERVERS_DIRECTORY,
++#endif
+@@ -388 +392,5 @@
++#ifdef HAIKU_MOUNTIN_BUILD
++		status = serverPath.Append("/servers/launch_daemon");
++#else
+ 		status = serverPath.Append("/launch_daemon");
++#endif

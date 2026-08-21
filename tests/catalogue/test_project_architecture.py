@@ -241,19 +241,28 @@ def test_linux_6_12_cross_build_matrix():
         assert f"guest/linux/base@{arch}-linux" in nodes
 
 
-def test_haiku_and_dependents_are_unavailable_on_arm_hosts():
-    context = {
+def test_haiku_cross_builds_x86_64_only():
+    arm_context = {
         "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
         "MOUNTIN_BUILD_ARCH": "aarch64",
         "MOUNTIN_BUILD_OS": "linux",
         "MOUNTIN_BUILD_JOBS": "1",
     }
-    providers = buildable_providers(context)
+    for context in (CONTEXT, arm_context):
+        providers = buildable_providers(context)
+        assert "docker:builder/compiler/haiku/r1-beta6-hrev59919-1" in providers
+        assert "bin/x86_64-haiku/mountin-init" in providers
+        assert "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image" in providers
+        assert "data/fs/basic.beos-bfs" in providers
+        assert "bin/aarch64-haiku/mountin-init" not in providers
+        assert "bin/qemu/aarch64-haiku/r1-beta6-hrev59919+1/haiku.image" not in providers
 
-    assert "docker:builder/compiler/haiku/r1-beta6-hrev59919-1" not in providers
-    assert "bin/x86_64-haiku/mountin-init" not in providers
-    assert "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image" not in providers
-    assert "data/fs/basic.beos-bfs" not in providers
+    graph = graph_for(
+        "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image",
+        arm_context,
+    )
+    assert "builder/compiler/haiku/r1-beta6-hrev59919+1" in graph["nodes"]
+    assert "guest/haiku/r1-beta6-hrev59919+1@x86_64-haiku" in graph["nodes"]
 
 
 def test_netbsd_cross_build_matrix_and_host_native_disk_tools():

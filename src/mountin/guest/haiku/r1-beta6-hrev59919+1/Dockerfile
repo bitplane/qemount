@@ -15,6 +15,8 @@ COPY mountin-profile.patch /tmp/mountin-profile.patch
 RUN patch -d /src/haiku -p1 < /tmp/mountin-profile.patch
 COPY mountin-pci-names.patch /tmp/mountin-pci-names.patch
 RUN patch -d /src/haiku -p1 < /tmp/mountin-pci-names.patch
+COPY mountin-init-path.patch /tmp/mountin-init-path.patch
+RUN patch -d /src/haiku -p1 < /tmp/mountin-init-path.patch
 COPY profile/definition /src/haiku/build/mountin/definition
 COPY profile/package /src/haiku/build/jam/packages/HaikuMountin
 COPY profile/package-info /src/haiku/src/data/package_infos/generic/haiku_mountin

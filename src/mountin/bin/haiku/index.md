@@ -2,6 +2,7 @@
 title: Haiku binaries
 build_platforms:
   x86_64-linux: {}
+  aarch64-linux: {}
 output_platforms:
   x86_64-haiku: {}
 env:
