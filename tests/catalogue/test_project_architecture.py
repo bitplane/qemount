@@ -195,30 +195,25 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
     assert "bin/darwin/9d@x86_64-darwin" in darwin["nodes"]
 
 
-def test_linux_2_6_and_dependents_are_unavailable_on_arm_hosts():
-    context = {
+def test_linux_2_6_cross_builds_x86_64_only():
+    arm_context = {
         "MOUNTIN_BUILD_PLATFORM": "aarch64-linux",
         "MOUNTIN_BUILD_ARCH": "aarch64",
         "MOUNTIN_BUILD_OS": "linux",
         "MOUNTIN_BUILD_JOBS": "1",
     }
-    providers = buildable_providers(context)
 
-    assert "docker:builder/compiler/linux/2" not in providers
-    assert "guest/aarch64-linux/2.6/kernel" not in providers
-    assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
-    assert "data/fs/basic.reiserfs" in providers
+    for context in (CONTEXT, arm_context):
+        providers = buildable_providers(context)
+        assert "docker:builder/compiler/linux/2" in providers
+        assert "guest/x86_64-linux/2.6/kernel" in providers
+        assert "bin/qemu/x86_64-linux/2.6/boot/kernel" in providers
+        assert "guest/aarch64-linux/2.6/kernel" not in providers
+        assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
 
-    reiserfs = graph_for("data/fs/basic.reiserfs", context)
-    assert "guest/linux/6.12/kernel@aarch64-linux" in reiserfs["nodes"]
-    assert "guest/linux/2.6/kernel@x86_64-linux" not in reiserfs["nodes"]
-
-
-def test_linux_2_6_does_not_declare_aarch64_outputs():
-    providers = buildable_providers(CONTEXT)
-
-    assert "guest/aarch64-linux/2.6/kernel" not in providers
-    assert "bin/qemu/aarch64-linux/2.6/boot/kernel" not in providers
+    graph = graph_for("bin/qemu/x86_64-linux/2.6/boot/kernel", arm_context)
+    assert "builder/compiler/linux/2" in graph["nodes"]
+    assert "guest/linux/2.6/kernel@x86_64-linux" in graph["nodes"]
 
 
 def test_linux_6_12_cross_build_matrix():

@@ -6,6 +6,7 @@ output_platforms:
 -build_platforms: true
 build_platforms:
   x86_64-linux: {}
+  aarch64-linux: {}
 env:
   MOUNTIN_BUILDER: builder/compiler/linux/2
 requires:

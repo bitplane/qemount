@@ -18,6 +18,12 @@ fi
 
 cd "$SOURCE_DIR"
 
+# Compatibility changes already carried by later upstream Linux releases.
+cp /compiler-gcc5.h include/linux/compiler-gcc5.h
+if grep -q 'defined(@val)' kernel/timeconst.pl; then
+    patch -p1 < /modern-perl.patch
+fi
+
 # Copy config files
 cp /kernel.config /filesystems.config .
 
@@ -32,10 +38,11 @@ else
 fi
 
 # Build kernel
-make ARCH=$KERNEL_ARCH defconfig
+make ARCH=$KERNEL_ARCH CROSS_COMPILE="$CROSS_COMPILE" defconfig
 cat kernel.config filesystems.config >> .config
-yes "" | make ARCH=$KERNEL_ARCH oldconfig
-make ARCH=$KERNEL_ARCH -j"${MOUNTIN_BUILD_JOBS}"
+yes "" | make ARCH=$KERNEL_ARCH CROSS_COMPILE="$CROSS_COMPILE" oldconfig
+make ARCH=$KERNEL_ARCH CROSS_COMPILE="$CROSS_COMPILE" \
+    -j"${MOUNTIN_BUILD_JOBS}"
 
 # Copy kernel image
 mkdir -p /host/build/guest/${MOUNTIN_TARGET_ARCH}-linux/2.6
