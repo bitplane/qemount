@@ -1,13 +1,13 @@
 #!/bin/sh
 set -eu
 
-SOURCE_ARCHIVE=/host/build/sources/aros-2026-07-30.tar.gz
+SOURCE_ARCHIVE=/host/build/sources/aros-2026-08-21.tar.gz
 CACHE_DIR=$MOUNTIN_CACHE_DIR
 SOURCE_DIR=$CACHE_DIR/source
 TOOLCHAIN_DIR=/opt/aros-toolchain
 PORTS_DIR=/host/build/sources/aros-ports
 GUEST_BUILD_DIR=$CACHE_DIR/toolchain-build
-OUTPUT_DIR=/host/build/guest/${MOUNTIN_TARGET_ARCH}-aros/2026-07-30
+OUTPUT_DIR=/host/build/guest/${MOUNTIN_TARGET_ARCH}-aros/2026-08-21
 ISO_OUTPUT=$OUTPUT_DIR/aros.iso
 MOUNTIN_BUILD_JOBS=${MOUNTIN_BUILD_JOBS:-1}
 

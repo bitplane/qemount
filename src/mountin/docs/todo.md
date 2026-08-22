@@ -4,7 +4,7 @@
 
 - [ ] a common interface
   - [ ] `/sbin/init.$mode` executed when `-m` is passed to the command line
-    - [ ] Fix this in NetBSD, but in a way that will actually work in future.
+    - [x] Fix this in NetBSD, but in a way that will actually work in future.
           Maybe have a shell?
 - [ ] Python build system
   - [ ] define one minimal headless QEMU feature profile across host platforms

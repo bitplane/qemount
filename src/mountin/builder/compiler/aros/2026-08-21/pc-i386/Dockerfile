@@ -7,7 +7,7 @@ ARG MOUNTIN_CACHE_DIR
 ENV TAR_OPTIONS=--no-same-owner
 
 RUN set -eu; \
-    SOURCE_ARCHIVE=/host/build/sources/aros-2026-07-30.tar.gz; \
+    SOURCE_ARCHIVE=/host/build/sources/aros-2026-08-21.tar.gz; \
     CACHE_DIR=$MOUNTIN_CACHE_DIR; \
     SOURCE_DIR=$CACHE_DIR/source; \
     BUILD_DIR=$CACHE_DIR/toolchain-build; \

@@ -7,7 +7,7 @@ execution_env:
 requires:
   - docker:${MOUNTIN_BUILDER}
 build_requires:
-  - sources/aros-2026-07-30.tar.gz
+  - sources/aros-2026-08-21.tar.gz
   - sources/aros-ports/binutils-2.32.tar.bz2
   - sources/aros-ports/gcc-6.5.0.tar.xz
   - sources/aros-ports/gmp-6.3.0.tar.bz2
@@ -15,7 +15,7 @@ build_requires:
   - sources/aros-ports/mpc-1.4.1.tar.xz
   - sources/aros-ports/mpfr-4.2.2.tar.bz2
 provides:
-  - docker:builder/compiler/aros/2026-07-30/pc-i386
+  - docker:builder/compiler/aros/2026-08-21/pc-i386
 ---
 
 # AROS 2026-07-30 PC i386 Cross-Compiler

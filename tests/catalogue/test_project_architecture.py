@@ -185,7 +185,7 @@ def test_fixed_arch_guests_resolve_on_arm_hosts():
     assert providers["bin/i386-aros/9d"] == "bin/aros/9d"
     assert providers["bin/x86_64-darwin/9d"] == "bin/darwin/9d"
 
-    aros = graph_for("bin/qemu/i386-aros/2026-07-30/aros.iso", context)
+    aros = graph_for("bin/qemu/i386-aros/2026-08-21/aros.iso", context)
     darwin = graph_for(
         "bin/qemu/x86_64-darwin/17.4/puredarwin.raw",
         context,
@@ -331,7 +331,7 @@ def test_fixture_guests_do_not_depend_on_the_transport_server():
     for target in (
         "guest/x86_64-linux/base/rootfs.img",
         "guest/x86_64-netbsd/10.0/boot/boot.img",
-        "guest/i386-aros/2026-07-30/aros.iso",
+        "guest/i386-aros/2026-08-21/aros.iso",
         "guest/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image",
         "guest/x86_64-illumos/2026-08-13/system",
     ):
@@ -343,7 +343,7 @@ def test_qemu_appliances_consume_reusable_guest_outputs():
     pairs = {
         "bin/qemu/x86_64-linux/6.12/boot/rootfs.img": "guest/x86_64-linux/base/rootfs.img",
         "bin/qemu/x86_64-netbsd/10.0/boot/netbsd": "guest/x86_64-netbsd/10.0/kernel/netbsd.gdb",
-        "bin/qemu/i386-aros/2026-07-30/aros.iso": "guest/i386-aros/2026-07-30/aros.iso",
+        "bin/qemu/i386-aros/2026-08-21/aros.iso": "guest/i386-aros/2026-08-21/aros.iso",
         "bin/qemu/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image": "guest/x86_64-haiku/r1-beta6-hrev59919+1/haiku.image",
         "bin/qemu/x86_64-darwin/17.4/puredarwin.raw": "guest/x86_64-darwin/17.4/system",
         "bin/qemu/x86_64-illumos/2026-08-13/rootfs.iso": "guest/x86_64-illumos/2026-08-13/system",

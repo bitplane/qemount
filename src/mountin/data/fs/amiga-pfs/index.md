@@ -3,7 +3,7 @@ format: fs/amiga-pfs
 requires:
   - docker:builder/disk/guest
 build_requires:
-  - guest/i386-aros/2026-07-30/aros.iso
+  - guest/i386-aros/2026-08-21/aros.iso
   - data/templates/basic.tar
   - data/templates/basic.amiga
 provides:
