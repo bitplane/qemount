@@ -79,6 +79,7 @@ workbench-libs-gadtools-quick
 # Filesystem package.
 kernel-fs-afs-quick
 kernel-fs-cdvdfs-quick
+linklibs-fatbpb
 kernel-partition-quick
 kernel-fs-sfs-quick
 kernel-fs-fat-quick
